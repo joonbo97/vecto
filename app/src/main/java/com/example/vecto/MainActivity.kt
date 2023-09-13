@@ -23,41 +23,11 @@ import com.naver.maps.map.*
 import com.naver.maps.map.overlay.PolylineOverlay
 import com.naver.maps.map.util.FusedLocationSource
 
-class MainActivity : AppCompatActivity(), OnMapReadyCallback, LocationServiceCallback {
+class MainActivity : AppCompatActivity(), OnMapReadyCallback {
     private lateinit var binding: ActivityMainBinding
     private lateinit var mapView: MapFragment
     private lateinit var locationSource: FusedLocationSource // 위치를 반환하는 구현체
     private lateinit var naverMap: NaverMap
-
-
-
-    private val pathPoints = mutableListOf<LatLng>()
-
-    private val serviceConnection = object : ServiceConnection {
-        override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
-            val binder = service as LocationService.LocationServiceBinder
-            val locationService = binder.getService()
-            binder.setCallback(this@MainActivity)
-        }
-
-        override fun onServiceDisconnected(name: ComponentName?) {
-        }
-    }
-
-    private fun bindToLocationService() {
-        val serviceIntent = Intent(this, LocationService::class.java)
-        bindService(serviceIntent, serviceConnection, Context.BIND_AUTO_CREATE)
-    }
-
-
-
-
-
-
-
-
-
-
 
     companion object {
         private const val LOCATION_PERMISSTION_REQUEST_CODE = 1000
@@ -69,7 +39,11 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, LocationServiceCal
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        val permission: Array<String> = arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.POST_NOTIFICATIONS)
+        val permission: Array<String> = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_BACKGROUND_LOCATION, Manifest.permission.POST_NOTIFICATIONS)
+        } else {
+            TODO("VERSION.SDK_INT < Q")
+        }
         //필요한 permission array
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
@@ -140,17 +114,4 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, LocationServiceCal
         }
     }
 
-    override fun onLocationUpdate(latitude: Double, longitude: Double) {
-        val colorHex = "#EC008C"
-        val color = Color.parseColor(colorHex)
-        pathPoints.add(LatLng(latitude, longitude))
-
-        val polyline = PolylineOverlay()
-        polyline.coords = pathPoints
-        polyline.width = 10
-        polyline.capType = PolylineOverlay.LineCap.Round
-        polyline.joinType = PolylineOverlay.LineJoin.Round
-        polyline.color = color
-        polyline.map = naverMap
-    }
 }

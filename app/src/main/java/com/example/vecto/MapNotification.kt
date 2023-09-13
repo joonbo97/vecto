@@ -31,13 +31,10 @@ object MapNotification {
             .setContentIntent(pendingIntent)
             .build()
 
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)//Oreo 이상부터 channel을 사용하므로 구분해서 넣어줌
-        {
-            val serviceChannel = NotificationChannel(CHANNEL_ID, "Channel 입니다", NotificationManager.IMPORTANCE_DEFAULT)
+        val serviceChannel = NotificationChannel(CHANNEL_ID, "Channel 입니다", NotificationManager.IMPORTANCE_DEFAULT)
 
-            val manager = context.getSystemService(NotificationManager::class.java)
-            manager?.createNotificationChannel(serviceChannel)
-        }
+        val manager = context.getSystemService(NotificationManager::class.java)
+        manager?.createNotificationChannel(serviceChannel)
 
         return notification
     }
