@@ -8,26 +8,39 @@ import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.location.LocationManager
-import android.os.Binder
-import android.os.Build
 import android.os.IBinder
 import android.util.Log
-import androidx.core.app.ActivityCompat
-import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
-import com.example.vecto.MapNotification.CHANNEL_ID
+import com.example.vecto.Data.LocationData
+import com.example.vecto.Data.LocationDatabase
 import com.google.android.gms.location.*
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 class LocationService : Service() {
 
     private lateinit var fusedLocationClient: FusedLocationProviderClient
+    private lateinit var locationDatabase: LocationDatabase
 
     private val locationCallback = object : LocationCallback() {
         override fun onLocationResult(locationResult: LocationResult?) {
             locationResult ?: return
             for (location in locationResult.locations) {
-                Log.d("LocationService", "Lat: ${location.latitude}, Long: ${location.longitude}")
+
+                // 현재 날짜와 시간
+                val currentDateTime = LocalDateTime.now()
+                val currentDate = currentDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+                val currentTime = currentDateTime.format(DateTimeFormatter.ofPattern("HH:mm:ss"))
+
+                // 위치 데이터 추가
+                val locationData = LocationData(
+                    date = currentDate,
+                    time = currentTime,
+                    lat = location.latitude,
+                    lng = location.longitude
+                )
+                Log.d("LocationService", "Save Done = Date : $currentDate Time : $currentTime Lat: ${location.latitude}, Long: ${location.longitude}")
+                locationDatabase.addLocationData(locationData)
             }
         }
     }
@@ -35,6 +48,7 @@ class LocationService : Service() {
     override fun onCreate() {
         super.onCreate()
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+        locationDatabase = LocationDatabase(this)
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
