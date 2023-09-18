@@ -118,10 +118,12 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
             pathPoints.add(latLng)
         }
 
-        pathOverlay.coords = pathPoints
-        pathOverlay.width = 10
-        pathOverlay.color = Color.YELLOW
-        pathOverlay.map = naverMap
+        if(pathPoints.size >= 2) {
+            pathOverlay.coords = pathPoints
+            pathOverlay.width = 10
+            pathOverlay.color = Color.YELLOW
+            pathOverlay.map = naverMap
+        }
 
 
 
