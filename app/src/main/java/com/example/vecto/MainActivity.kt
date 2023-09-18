@@ -16,6 +16,7 @@ import com.example.vecto.Data.Auth.pathPoints
 import com.example.vecto.Data.LocationDatabase
 import com.naver.maps.geometry.LatLng
 import com.naver.maps.map.*
+import com.naver.maps.map.overlay.PathOverlay
 import com.naver.maps.map.overlay.PolylineOverlay
 import com.naver.maps.map.util.FusedLocationSource
 
@@ -110,22 +111,37 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
         // SQLite에서 모든 위치 데이터 가져오기
         val locationDataList = LocationDatabase(this).getAllLocationData()
 
-        // Polyline 관련 변수
-        val polylineOverlay = PolylineOverlay()
+        val pathOverlay = PathOverlay()
 
-        // 위치 데이터를 이용하여 Polyline에 좌표 추가
         locationDataList.forEach { locationData ->
-            val latLngList = locationDataList.map { LatLng(it.lat, it.lng) }
-
-            if (polylineOverlay.map == null) {
-                polylineOverlay.width = 10
-                polylineOverlay.capType = PolylineOverlay.LineCap.Round
-                polylineOverlay.joinType = PolylineOverlay.LineJoin.Round
-                polylineOverlay.map = naverMap
-            }
-
-            polylineOverlay.coords = latLngList
+            val latLng = LatLng(locationData.lat, locationData.lng)
+            pathPoints.add(latLng)
         }
+
+        pathOverlay.coords = pathPoints
+        pathOverlay.width = 10
+        pathOverlay.color = Color.YELLOW
+        pathOverlay.map = naverMap
+
+
+
+        /*
+                // Polyline 관련 변수
+                val polylineOverlay = PolylineOverlay()
+
+                // 위치 데이터를 이용하여 Polyline에 좌표 추가
+                locationDataList.forEach { locationData ->
+                    val latLngList = locationDataList.map { LatLng(it.lat, it.lng) }
+
+                    if (polylineOverlay.map == null) {
+                        polylineOverlay.width = 10
+                        polylineOverlay.capType = PolylineOverlay.LineCap.Round
+                        polylineOverlay.joinType = PolylineOverlay.LineJoin.Round
+                        polylineOverlay.map = naverMap
+                    }
+
+                    polylineOverlay.coords = latLngList
+                }*/
 
         val polyline = PolylineOverlay()
 
