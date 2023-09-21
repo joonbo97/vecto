@@ -21,25 +21,27 @@ class LocationService : Service() {
 
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var locationDatabase: LocationDatabase
+    var time_interval: Int = 0
+    var distance_interval: Int = 0
 
     private val locationCallback = object : LocationCallback() {
         override fun onLocationResult(locationResult: LocationResult?) {
             locationResult ?: return
             for (location in locationResult.locations) {
 
-                // 현재 날짜와 시간
+                //현재 날짜와 시간
                 val currentDateTime = LocalDateTime.now()
                 val currentDate = currentDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
                 val currentTime = currentDateTime.format(DateTimeFormatter.ofPattern("HH:mm:ss"))
 
-                // 위치 데이터 추가
+                //위치 데이터 추가
                 val locationData = LocationData(
                     date = currentDate,
                     time = currentTime,
                     lat = location.latitude,
                     lng = location.longitude
                 )
-                Log.d("LocationService", "Save Done = Date : $currentDate Time : $currentTime Lat: ${location.latitude}, Long: ${location.longitude}")
+                Log.d("LocationService", "Save Done = Date : $currentDate Time : $currentTime Lat: ${location.latitude}, Lng: ${location.longitude}")
                 locationDatabase.addLocationData(locationData)
             }
         }
@@ -89,8 +91,8 @@ class LocationService : Service() {
 
     private fun requestLocationUpdates() {
         val locationRequest = LocationRequest.create().apply {
-            interval = 10000
-            fastestInterval = 5000
+            interval = 500
+            fastestInterval = 250
             priority = LocationRequest.PRIORITY_HIGH_ACCURACY
         }
 

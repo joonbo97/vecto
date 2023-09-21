@@ -72,10 +72,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
             initMap()
         }
 
-
-
-        //requestNotificationPermission()
-
         binding.StartServiceButton.setOnClickListener {
             val serviceIntent = Intent(this, LocationService::class.java)
             serviceIntent.action = Actions.START_FOREGROUND
@@ -118,45 +114,23 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
             pathPoints.add(latLng)
         }
 
-        if(pathPoints.size >= 2) {
+        if(pathPoints.size > 1) {
             pathOverlay.coords = pathPoints
-            pathOverlay.width = 10
+            pathOverlay.width = 20
             pathOverlay.color = Color.YELLOW
             pathOverlay.map = naverMap
         }
 
-
-
-        /*
-                // Polyline 관련 변수
-                val polylineOverlay = PolylineOverlay()
-
-                // 위치 데이터를 이용하여 Polyline에 좌표 추가
-                locationDataList.forEach { locationData ->
-                    val latLngList = locationDataList.map { LatLng(it.lat, it.lng) }
-
-                    if (polylineOverlay.map == null) {
-                        polylineOverlay.width = 10
-                        polylineOverlay.capType = PolylineOverlay.LineCap.Round
-                        polylineOverlay.joinType = PolylineOverlay.LineJoin.Round
-                        polylineOverlay.map = naverMap
-                    }
-
-                    polylineOverlay.coords = latLngList
-                }*/
-
-        val polyline = PolylineOverlay()
+        /*val polyline = PolylineOverlay()
 
         naverMap.addOnLocationChangeListener { location ->
-
-
             val colorHex = "#EC008C"
             val color = Color.parseColor(colorHex)
             pathPoints.add(LatLng(location.latitude, location.longitude))
             if (pathPoints.size > 1) {
                 polyline.coords = pathPoints
                 if (polyline.map == null) {
-                    polyline.width = 10
+                    polyline.width = 20
                     polyline.capType = PolylineOverlay.LineCap.Round
                     polyline.joinType = PolylineOverlay.LineJoin.Round
                     polyline.color = color
@@ -164,7 +138,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
                     polyline.map = naverMap
                 }
             }
-        }
+        }*/
     }
 
 }
