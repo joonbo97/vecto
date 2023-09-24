@@ -14,6 +14,7 @@ import androidx.core.content.ContextCompat
 import com.example.vecto.Data.LocationData
 import com.example.vecto.Data.LocationDatabase
 import com.google.android.gms.location.*
+import java.time.Duration
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -21,6 +22,8 @@ class LocationService : Service() {
 
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var locationDatabase: LocationDatabase
+
+    private var lastUpdateTime: LocalDateTime? = null
     var time_interval: Int = 0
     var distance_interval: Int = 0
 
@@ -32,23 +35,31 @@ class LocationService : Service() {
                 if(location.accuracy <= 50) {
                     //현재 날짜와 시간
                     val currentDateTime = LocalDateTime.now()
-                    val currentDate =
-                        currentDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
-                    val currentTime =
-                        currentDateTime.format(DateTimeFormatter.ofPattern("HH:mm:ss"))
 
-                    //위치 데이터 추가
-                    val locationData = LocationData(
-                        date = currentDate,
-                        time = currentTime,
-                        lat = location.latitude,
-                        lng = location.longitude
-                    )
-                    Log.d(
-                        "LocationService",
-                        "Save Done = Date : $currentDate Time : $currentTime Lat: ${location.latitude}, Lng: ${location.longitude}\n accurancy : ${location.accuracy}"
-                    )
-                    locationDatabase.addLocationData(locationData)
+                    //5분이 안되었으면
+                    if(Duration.between(lastUpdateTime, currentDateTime).toMinutes() >= 5) {
+                        val currentDate =
+                            currentDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+                        val currentTime =
+                            currentDateTime.format(DateTimeFormatter.ofPattern("HH:mm:ss"))
+                        val currentSecond =
+                            currentDateTime.format(DateTimeFormatter.ofPattern("ss")).toInt()
+
+                        //위치 데이터 추가
+                        val locationData = LocationData(
+                            date = currentDate,
+                            time = currentTime,
+                            lat = location.latitude,
+                            lng = location.longitude
+                        )
+                        Log.d(
+                            "LocationService",
+                            "Save Done = Date : $currentDate Time : $currentTime Lat: ${location.latitude}, Lng: ${location.longitude}\n accurancy : ${location.accuracy}"
+                        )
+                        locationDatabase.addLocationData(locationData)
+                    }
+
+
                 }
                 else
                 {
