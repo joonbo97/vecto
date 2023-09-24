@@ -110,8 +110,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
         val pathOverlay = PathOverlay()
 
         locationDataList.forEach { locationData ->
-            val latLng = LatLng(locationData.lat, locationData.lng)
-            pathPoints.add(latLng)
+            pathPoints.add(LatLng(locationData.lat, locationData.lng))
         }
 
         if(pathPoints.size > 1) {
@@ -120,25 +119,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
             pathOverlay.color = Color.YELLOW
             pathOverlay.map = naverMap
         }
-
-        /*val polyline = PolylineOverlay()
-
-        naverMap.addOnLocationChangeListener { location ->
-            val colorHex = "#EC008C"
-            val color = Color.parseColor(colorHex)
-            pathPoints.add(LatLng(location.latitude, location.longitude))
-            if (pathPoints.size > 1) {
-                polyline.coords = pathPoints
-                if (polyline.map == null) {
-                    polyline.width = 20
-                    polyline.capType = PolylineOverlay.LineCap.Round
-                    polyline.joinType = PolylineOverlay.LineJoin.Round
-                    polyline.color = color
-
-                    polyline.map = naverMap
-                }
-            }
-        }*/
     }
 
 }

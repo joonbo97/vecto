@@ -20,7 +20,7 @@ class LocationDatabase(context: Context) {
     }
 
     @SuppressLint("Range")
-    fun getAllLocationData(): List<LocationData> {
+    fun getAllLocationData(): MutableList<LocationData> {
         val db = dbHelper.readableDatabase
         val cursor = db.rawQuery("SELECT * FROM location_data", null)
         val dataList = mutableListOf<LocationData>()

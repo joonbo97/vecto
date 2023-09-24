@@ -29,20 +29,31 @@ class LocationService : Service() {
             locationResult ?: return
             for (location in locationResult.locations) {
 
-                //현재 날짜와 시간
-                val currentDateTime = LocalDateTime.now()
-                val currentDate = currentDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
-                val currentTime = currentDateTime.format(DateTimeFormatter.ofPattern("HH:mm:ss"))
+                if(location.accuracy <= 50) {
+                    //현재 날짜와 시간
+                    val currentDateTime = LocalDateTime.now()
+                    val currentDate =
+                        currentDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+                    val currentTime =
+                        currentDateTime.format(DateTimeFormatter.ofPattern("HH:mm:ss"))
 
-                //위치 데이터 추가
-                val locationData = LocationData(
-                    date = currentDate,
-                    time = currentTime,
-                    lat = location.latitude,
-                    lng = location.longitude
-                )
-                Log.d("LocationService", "Save Done = Date : $currentDate Time : $currentTime Lat: ${location.latitude}, Lng: ${location.longitude}")
-                locationDatabase.addLocationData(locationData)
+                    //위치 데이터 추가
+                    val locationData = LocationData(
+                        date = currentDate,
+                        time = currentTime,
+                        lat = location.latitude,
+                        lng = location.longitude
+                    )
+                    Log.d(
+                        "LocationService",
+                        "Save Done = Date : $currentDate Time : $currentTime Lat: ${location.latitude}, Lng: ${location.longitude}\n accurancy : ${location.accuracy}"
+                    )
+                    locationDatabase.addLocationData(locationData)
+                }
+                else
+                {
+                    Log.d("LocationService", "Ignoring ${location.accuracy}")
+                }
             }
         }
     }
