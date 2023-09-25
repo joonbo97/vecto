@@ -111,6 +111,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
 
         val pathOverlay = PathOverlay()
 
+        pathPoints.clear()
         locationDataList.forEach { locationData ->
             pathPoints.add(LatLng(locationData.lat, locationData.lng))
         }
