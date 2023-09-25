@@ -14,8 +14,10 @@ import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import com.example.vecto.Data.Auth.pathPoints
 import com.example.vecto.Data.LocationDatabase
+import com.example.vecto.Data.VisitDatabase
 import com.naver.maps.geometry.LatLng
 import com.naver.maps.map.*
+import com.naver.maps.map.overlay.Marker
 import com.naver.maps.map.overlay.PathOverlay
 import com.naver.maps.map.overlay.PolylineOverlay
 import com.naver.maps.map.util.FusedLocationSource
@@ -118,6 +120,14 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
             pathOverlay.width = 20
             pathOverlay.color = Color.YELLOW
             pathOverlay.map = naverMap
+        }
+
+        val visitDataList = VisitDatabase(this).getAllVisitData()
+
+        visitDataList.forEach { locationData ->
+            val marker = Marker()
+            marker.position = LatLng(locationData.lat, locationData.lng)
+            marker.map = naverMap
         }
     }
 

@@ -1,8 +1,7 @@
 package com.example.vecto.Data
 
 data class LocationData(
-    val date: String,
-    val time: String,
+    val datetime: String,
     val lat: Double,
     val lng: Double
 )
