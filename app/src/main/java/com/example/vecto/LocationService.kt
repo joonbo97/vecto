@@ -15,8 +15,10 @@ import android.util.Log
 import androidx.core.content.ContextCompat
 import com.example.vecto.Data.LocationData
 import com.example.vecto.Data.LocationDatabase
+import com.example.vecto.Data.VisitData
 import com.example.vecto.Data.VisitDatabase
 import com.google.android.gms.location.*
+import com.google.android.gms.location.Priority.PRIORITY_HIGH_ACCURACY
 import com.naver.maps.geometry.LatLng
 import java.time.Duration
 import java.time.LocalDateTime
@@ -35,13 +37,11 @@ class LocationService : Service() {
         override fun onLocationResult(locationResult: LocationResult) {
             for (location in locationResult.locations) {
 
-                //accuracy 70M 이내인 정보만 수집할 것임.
-                if(location.accuracy <= 70) {
+                //accuracy CHECK DISTANCE 이내인 정보만 수집할 것임.
+                if(location.accuracy <= CHECKDISTANCE) {
 
                     //현재 시간
                     val currentDateTime = LocalDateTime.now()
-                    /* val currentSecond =
-                         currentDateTime.format(DateTimeFormatter.ofPattern("ss")).toInt()*/
 
                     //CHECK-DISTANCE 내에 위치
                     if(checkDistance(lastUpdateLocation, LatLng(location.latitude, location.longitude)))
@@ -62,29 +62,61 @@ class LocationService : Service() {
                         {
                             if(cnt > 1)//이번이 처음 방문으로 판단하는 시점이라면
                             {
+                                fun saveNewVisit(){
                                 //평균 값과 처음 업데이트 시간을 visit db에 저장함.
                                 Log.d("LocationService", "방문으로 판단 되었습니다. DateTime : $lastUpdateTime Lat: ${lastUpdateLocation.latitude}, Lng: ${lastUpdateLocation.longitude}\n " +
                                         "accurancy : ${location.accuracy}")
-                                val locationData = LocationData(lastUpdateTime.toString(), lastUpdateLocation.latitude, lastUpdateLocation.longitude)
-                                visitDatabase.addVisitData(locationData)
+                                visitDatabase.addVisitData(VisitData(lastUpdateTime.toString(), lastUpdateLocation.latitude, lastUpdateLocation.longitude, 0))
 
                                 locationDatabase.deleteLocationDataAfter(lastUpdateTime!!)
                                 locationDatabase.updateLocationData(lastUpdateTime.toString(), lastUpdateLocation.latitude, lastUpdateLocation.longitude)
 
                                 cnt = 1
                             }
-                            else//계속 방문중인 상태라면
-                            {
+
+                                if(visitDatabase.isVisitDatabaseEmpty())//경로 측정 이후 처음 방문
+                                {
+                                    saveNewVisit()
+                                }
+                                else//다른방문 장소가 있는 경우
+                                {
+                                    val lastVisitLocation: VisitData = visitDatabase.getLastVisitData()
+                                    val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSS")
+                                    val lastVisitTime = LocalDateTime.parse(lastVisitLocation.datetime, formatter)
+
+
+
+                                    if(Duration.between(lastVisitTime, lastUpdateTime).toMinutes() > 10) //10분이 지났다면, 새로운 방문지로 기록
+                                    {
+                                        saveNewVisit()
+                                    }
+                                    else// 5분이 지나지 않았다면, 기존 방문지인지 여부 판단
+                                    {
+                                        //유효거리 내부에 위치한 방문지이면, 노이즈로 인해 방문이 해제된 것으로 판단하여 기존 visit에 합친다.
+                                        if(checkDistance(LatLng(lastUpdateLocation.latitude, lastUpdateLocation.longitude), LatLng(lastVisitLocation.lat, lastVisitLocation.lng)))
+                                        {
+                                            locationDatabase.deleteLocationDataAfter(lastVisitTime!!)
+                                            Log.d("LocationService", "이전 위치와 합병 되었습니다.")
+                                        }
+                                        //유효거리 외부에 위치하면, 새로운 방문지로 간주함.
+                                        else
+                                        {
+                                            saveNewVisit()
+                                        }
+                                    }
+                                }
+
+
 
                             }
-
+                            //else  //계속 방문중인 상태라면
                         }
                     }
                     else//CHECK-DISTANCE 외부에 위치
                     {
                         //중심 좌표와 갱신 시간을 업데이트함.
                         lastUpdateLocation = LatLng(location.latitude, location.longitude)
-                        lastUpdateTime =  LocalDateTime.now()
+                        lastUpdateTime =  currentDateTime
                         cnt = 1
 
                         //위치 데이터 추가
@@ -95,7 +127,7 @@ class LocationService : Service() {
                     }
 
                 }
-                else//under 70M accuracy is ignored
+                else//under 50M accuracy is ignored
                 {
                     Log.d("LocationService", "Ignoring ${location.accuracy}")
                 }
@@ -163,7 +195,8 @@ class LocationService : Service() {
         val locationRequest = LocationRequest.create().apply {
             interval = 10000
             fastestInterval = 5000
-            priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+            maxWaitTime = 10000
+            priority = PRIORITY_HIGH_ACCURACY
         }
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
@@ -188,6 +221,6 @@ class LocationService : Service() {
 
     companion object {
         const val NOTIFICATION_ID = 12345
-        const val CHECKDISTANCE = 50 //몇 M떨어진 점까지 방문으로 간주할 것인지
+        const val CHECKDISTANCE = 50 //몇M 떨어진 점까지 방문으로 간주할 것인지
     }
 }

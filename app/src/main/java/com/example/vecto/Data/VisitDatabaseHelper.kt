@@ -17,13 +17,14 @@ class VisitDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE
 
     companion object {
         private const val DATABASE_NAME = "visit_database"
-        private const val DATABASE_VERSION = 1
+        private const val DATABASE_VERSION = 2
 
         private const val CREATE_TABLE_QUERY = "CREATE TABLE IF NOT EXISTS visit_data (" +
                 "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 "datetime TEXT, " +
                 "lat REAL, " +
-                "lng REAL" +
+                "lng REAL, " +
+                "staytime INTEGER" +
                 ")"
 
         private const val DROP_TABLE_QUERY = "DROP TABLE IF EXISTS visit_data"

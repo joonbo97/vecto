@@ -17,6 +17,7 @@ import com.example.vecto.Data.LocationDatabase
 import com.example.vecto.Data.VisitDatabase
 import com.naver.maps.geometry.LatLng
 import com.naver.maps.map.*
+import com.naver.maps.map.overlay.CircleOverlay
 import com.naver.maps.map.overlay.Marker
 import com.naver.maps.map.overlay.PathOverlay
 import com.naver.maps.map.overlay.PolylineOverlay
@@ -87,6 +88,10 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
             startService(serviceIntent)
             Toast.makeText(this, "백그라운드 서비스를 종료합니다.", Toast.LENGTH_SHORT).show()
         }
+
+        binding.SearchButton.setOnClickListener {
+            Toast.makeText(this, "공유하고싶은 방문날짜를 선택해주세요.", Toast.LENGTH_SHORT).show()
+        }
     }
 
     private fun initMap(){
@@ -125,9 +130,16 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
 
         val visitDataList = VisitDatabase(this).getAllVisitData()
 
-        visitDataList.forEach { locationData ->
+        visitDataList.forEach { visitData ->
+            // 원 그리기
+            val circleOverlay = CircleOverlay()
+            circleOverlay.center = LatLng(visitData.lat, visitData.lng)
+            circleOverlay.radius = 50.0 // 반지름을 50m로 설정
+            circleOverlay.color = Color.argb(20, 255, 0, 0) // 원의 색상 설정
+            circleOverlay.map = naverMap
+
             val marker = Marker()
-            marker.position = LatLng(locationData.lat, locationData.lng)
+            marker.position = LatLng(visitData.lat, visitData.lng)
             marker.map = naverMap
         }
     }
