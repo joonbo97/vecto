@@ -18,7 +18,7 @@ import com.example.vecto.Data.LocationDatabase
 import com.example.vecto.Data.VisitData
 import com.example.vecto.Data.VisitDatabase
 import com.google.android.gms.location.*
-import com.google.android.gms.location.Priority.PRIORITY_HIGH_ACCURACY
+import com.google.android.gms.location.LocationRequest.PRIORITY_HIGH_ACCURACY
 import com.naver.maps.geometry.LatLng
 import java.time.Duration
 import java.time.LocalDateTime
@@ -31,7 +31,10 @@ class LocationService : Service() {
 
     private var lastUpdateTime: LocalDateTime? = LocalDateTime.now()
     private var lastUpdateLocation: LatLng = LatLng(0.0, 0.0)//center Lat, Lng
+
     var cnt: Int = 1
+    var visitFlag: Boolean = false
+
 
     private val locationCallback = object : LocationCallback() {
         override fun onLocationResult(locationResult: LocationResult) {
@@ -50,7 +53,7 @@ class LocationService : Service() {
                         if(Duration.between(lastUpdateTime, currentDateTime).toMinutes() <= 5) {
                             //중심 좌표 조정
                             cnt++
-                            lastUpdateLocation = LatLng(((lastUpdateLocation.latitude * (cnt-1) + location.latitude)/cnt), ((lastUpdateLocation.longitude * (cnt-1) + location.longitude)/cnt))
+                            lastUpdateLocation = LatLng(((lastUpdateLocation.latitude * (cnt-1) + location.latitude)/cnt), ((lastUpdateLocation.longitude * (cnt-1) + location.longitude) / cnt))
 
                             //위치 데이터 추가
                             val locationData = LocationData(currentDateTime.toString(), location.latitude, location.longitude)
@@ -62,17 +65,33 @@ class LocationService : Service() {
                         {
                             if(cnt > 1)//이번이 처음 방문으로 판단하는 시점이라면
                             {
-                                fun saveNewVisit(){
-                                //평균 값과 처음 업데이트 시간을 visit db에 저장함.
-                                Log.d("LocationService", "방문으로 판단 되었습니다. DateTime : $lastUpdateTime Lat: ${lastUpdateLocation.latitude}, Lng: ${lastUpdateLocation.longitude}\n " +
-                                        "accurancy : ${location.accuracy}")
-                                visitDatabase.addVisitData(VisitData(lastUpdateTime.toString(), lastUpdateLocation.latitude, lastUpdateLocation.longitude, 0))
+                                fun saveNewVisit() {
+                                    //평균 값과 처음 업데이트 시간을 visit db에 저장함.
+                                    Log.d(
+                                        "LocationService",
+                                        "방문으로 판단 되었습니다. DateTime : $lastUpdateTime Lat: ${lastUpdateLocation.latitude}, Lng: ${lastUpdateLocation.longitude}\n " +
+                                                "accurancy : ${location.accuracy}"
+                                    )
+                                    visitDatabase.addVisitData(
+                                        VisitData(
+                                            lastUpdateTime.toString(),
+                                            lastUpdateTime.toString(),
+                                            lastUpdateLocation.latitude,
+                                            lastUpdateLocation.longitude,
+                                            0
+                                        )
+                                    )
 
-                                locationDatabase.deleteLocationDataAfter(lastUpdateTime!!)
-                                locationDatabase.updateLocationData(lastUpdateTime.toString(), lastUpdateLocation.latitude, lastUpdateLocation.longitude)
+                                    locationDatabase.deleteLocationDataAfter(lastUpdateTime!!)
+                                    locationDatabase.updateLocationData(
+                                        lastUpdateTime.toString(),
+                                        lastUpdateLocation.latitude,
+                                        lastUpdateLocation.longitude
+                                    )
 
-                                cnt = 1
-                            }
+                                    cnt = 1
+                                    visitFlag = true
+                                }
 
                                 if(visitDatabase.isVisitDatabaseEmpty())//경로 측정 이후 처음 방문
                                 {
@@ -86,6 +105,7 @@ class LocationService : Service() {
 
 
 
+                                    //이전 방문이 종료된 시각과, 현재 방문이 확인된 시각을 비교
                                     if(Duration.between(lastVisitTime, lastUpdateTime).toMinutes() > 10) //10분이 지났다면, 새로운 방문지로 기록
                                     {
                                         saveNewVisit()
@@ -109,20 +129,44 @@ class LocationService : Service() {
 
 
                             }
-                            //else  //계속 방문중인 상태라면
+                            else  //계속 방문중인 상태라면
+                            {
+                                Log.d("LocationService", "같은 장소에 계속 머무르는 중입니다.")
+                            }
                         }
                     }
                     else//CHECK-DISTANCE 외부에 위치
                     {
-                        //중심 좌표와 갱신 시간을 업데이트함.
+                        if(visitFlag)//방문이 깨진 첫 좌표
+                        {
+                            val endtime = currentDateTime
+                            val lastVisitLocation: VisitData = visitDatabase.getLastVisitData()
+                            val formatter =
+                                DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSS")
+                            val lastVisitTime =
+                                LocalDateTime.parse(lastVisitLocation.datetime, formatter)
+                            val minutesPassed = Duration.between(lastVisitTime, endtime).toMinutes().toInt()
+                            Log.d("LocationService", "직전 방문 기간은 $minutesPassed 분입니다.")
+                            visitDatabase.updateVisitEndtimeData(lastVisitTime.toString(), endtime.toString(), minutesPassed)
+
+                            visitFlag = false
+                        }
+                        // 중심 좌표와 갱신 시간을 업데이트함.
                         lastUpdateLocation = LatLng(location.latitude, location.longitude)
-                        lastUpdateTime =  currentDateTime
+                        lastUpdateTime = currentDateTime
                         cnt = 1
 
                         //위치 데이터 추가
-                        val locationData = LocationData(currentDateTime.toString(), location.latitude, location.longitude)
-                        Log.d("LocationService", "Save Done = DateTime : $currentDateTime Lat: ${location.latitude}, Lng: ${location.longitude}\n " +
-                                "accurancy : ${location.accuracy}")
+                        val locationData = LocationData(
+                            currentDateTime.toString(),
+                            location.latitude,
+                            location.longitude
+                        )
+                        Log.d(
+                            "LocationService",
+                            "Save Done = DateTime : $currentDateTime Lat: ${location.latitude}, Lng: ${location.longitude}\n " +
+                                    "accurancy : ${location.accuracy}"
+                        )
                         locationDatabase.addLocationData(locationData)
                     }
 
@@ -196,7 +240,7 @@ class LocationService : Service() {
             interval = 10000
             fastestInterval = 5000
             maxWaitTime = 10000
-            priority = PRIORITY_HIGH_ACCURACY
+            Priority.PRIORITY_HIGH_ACCURACY
         }
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)

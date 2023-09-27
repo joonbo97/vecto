@@ -11,6 +11,7 @@ class VisitDatabase(context: Context) {
         val db = dbHelper.writableDatabase
         val values = ContentValues().apply {
             put("datetime", visitData.datetime)
+            put("endtime", visitData.endtime)
             put("lat", visitData.lat)
             put("lng", visitData.lng)
             put("staytime", visitData.staytime)
@@ -27,10 +28,11 @@ class VisitDatabase(context: Context) {
 
         while (cursor.moveToNext()) {
             val datetime = cursor.getString(cursor.getColumnIndex("datetime"))
+            val endtime = cursor.getString(cursor.getColumnIndex("endtime"))
             val lat = cursor.getDouble(cursor.getColumnIndex("lat"))
             val lng = cursor.getDouble(cursor.getColumnIndex("lng"))
             val staytime = cursor.getInt(cursor.getColumnIndex("staytime"))
-            dataList.add(VisitData(datetime, lat, lng, staytime))
+            dataList.add(VisitData(datetime, endtime, lat, lng, staytime))
         }
 
         cursor.close()
@@ -48,16 +50,29 @@ class VisitDatabase(context: Context) {
 
     @SuppressLint("Range")
     fun getLastVisitData(): VisitData {
-        val cursor = dbHelper.readableDatabase.rawQuery("SELECT * FROM visit_data ORDER BY id DESC LIMIT 1", null)
+        val cursor = dbHelper.writableDatabase.rawQuery("SELECT * FROM visit_data ORDER BY id DESC LIMIT 1", null)
 
         cursor.moveToFirst()
         val datetime = cursor.getString(cursor.getColumnIndex("datetime"))
+        val endtime = cursor.getString(cursor.getColumnIndex("endtime"))
         val lat = cursor.getDouble(cursor.getColumnIndex("lat"))
         val lng = cursor.getDouble(cursor.getColumnIndex("lng"))
         val staytime = cursor.getInt(cursor.getColumnIndex("staytime"))
         cursor.close()
 
-        return VisitData(datetime, lat, lng, staytime)
+        return VisitData(datetime, endtime, lat, lng, staytime)
     }
 
+    //특정 시간의 데이터를 변경하는 작업
+    fun updateVisitEndtimeData(datetime: String, endtime: String, staytime: Int) {
+        val db = dbHelper.writableDatabase
+        val values = ContentValues().apply {
+            put("endtime", endtime)
+            put("staytime", staytime)
+        }
+        val whereClause = "datetime = ?"
+        val whereArgs = arrayOf(datetime)
+        db.update("location_data", values, whereClause, whereArgs)
+        db.close()
+    }
 }
