@@ -22,6 +22,7 @@ class VisitDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE
         private const val CREATE_TABLE_QUERY = "CREATE TABLE IF NOT EXISTS visit_data (" +
                 "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 "datetime TEXT, " +
+                "endtime TEXT, " +
                 "lat REAL, " +
                 "lng REAL, " +
                 "staytime INTEGER" +
