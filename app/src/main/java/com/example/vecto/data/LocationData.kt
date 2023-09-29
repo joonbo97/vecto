@@ -1,4 +1,4 @@
-package com.example.vecto.Data
+package com.example.vecto.data
 
 data class LocationData(
     val datetime: String,

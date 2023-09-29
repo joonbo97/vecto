@@ -1,4 +1,4 @@
-package com.example.vecto.Data
+package com.example.vecto.data
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData

@@ -1,4 +1,4 @@
-package com.example.vecto.Data
+package com.example.vecto.data
 
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase

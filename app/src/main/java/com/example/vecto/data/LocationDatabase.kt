@@ -1,4 +1,4 @@
-package com.example.vecto.Data
+package com.example.vecto.data
 
 import android.annotation.SuppressLint
 import android.content.ContentValues
@@ -58,5 +58,24 @@ class LocationDatabase(context: Context) {
         val whereArgs = arrayOf(datetime)
         db.update("location_data", values, whereClause, whereArgs)
         db.close()
+    }
+
+    @SuppressLint("Range")
+    fun getLocationDateData(date: String): List<LocationData> {
+        val db = dbHelper.writableDatabase
+        val cursor = db.rawQuery("SELECT * FROM location_data WHERE datetime LIKE ?", arrayOf("$date%"))
+
+        val dataList = mutableListOf<LocationData>()
+
+        while (cursor.moveToNext()) {
+            val datetime = cursor.getString(cursor.getColumnIndex("datetime"))
+            val lat = cursor.getDouble(cursor.getColumnIndex("lat"))
+            val lng = cursor.getDouble(cursor.getColumnIndex("lng"))
+            val locationData = LocationData(datetime, lat, lng)
+            dataList.add(locationData)
+        }
+
+        cursor.close()
+        return dataList
     }
 }

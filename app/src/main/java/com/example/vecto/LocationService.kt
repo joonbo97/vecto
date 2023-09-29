@@ -13,12 +13,11 @@ import android.os.IBinder
 import android.os.Looper
 import android.util.Log
 import androidx.core.content.ContextCompat
-import com.example.vecto.Data.LocationData
-import com.example.vecto.Data.LocationDatabase
-import com.example.vecto.Data.VisitData
-import com.example.vecto.Data.VisitDatabase
+import com.example.vecto.data.LocationData
+import com.example.vecto.data.LocationDatabase
+import com.example.vecto.data.VisitData
+import com.example.vecto.data.VisitDatabase
 import com.google.android.gms.location.*
-import com.google.android.gms.location.LocationRequest.PRIORITY_HIGH_ACCURACY
 import com.naver.maps.geometry.LatLng
 import java.time.Duration
 import java.time.LocalDateTime
@@ -57,7 +56,7 @@ class LocationService : Service() {
 
                             //위치 데이터 추가
                             val locationData = LocationData(currentDateTime.toString(), location.latitude, location.longitude)
-                            Log.d("LocationService", "Save Done = DateTime : $currentDateTime Lat: ${location.latitude}, Lng: ${location.longitude}\n " +
+                            Log.d("LocationService", "CheckDistance에 위치해 있지만, 5분이 되지 않았습니다. \n Save Done = DateTime : $currentDateTime Lat: ${location.latitude}, Lng: ${location.longitude}\n " +
                                     "accurancy : ${location.accuracy}")
                             locationDatabase.addLocationData(locationData)
                         }
@@ -101,7 +100,7 @@ class LocationService : Service() {
                                 {
                                     val lastVisitLocation: VisitData = visitDatabase.getLastVisitData()
                                     val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSS")
-                                    val lastVisitTime = LocalDateTime.parse(lastVisitLocation.datetime, formatter)
+                                    val lastVisitTime = LocalDateTime.parse(lastVisitLocation.endtime, formatter)
 
 
 
@@ -110,12 +109,16 @@ class LocationService : Service() {
                                     {
                                         saveNewVisit()
                                     }
-                                    else// 5분이 지나지 않았다면, 기존 방문지인지 여부 판단
-                                    {
+                                    else//10분이 지나지 않았다면, 기존 방문지인지 여부 판단
+                                    {//TODO 찬혁에러
                                         //유효거리 내부에 위치한 방문지이면, 노이즈로 인해 방문이 해제된 것으로 판단하여 기존 visit에 합친다.
                                         if(checkDistance(LatLng(lastUpdateLocation.latitude, lastUpdateLocation.longitude), LatLng(lastVisitLocation.lat, lastVisitLocation.lng)))
                                         {
                                             locationDatabase.deleteLocationDataAfter(lastVisitTime!!)
+                                            lastUpdateLocation = LatLng(lastVisitLocation.lat, lastVisitLocation.lng)
+
+                                            cnt = 1
+                                            visitFlag = true
                                             Log.d("LocationService", "이전 위치와 합병 되었습니다.")
                                         }
                                         //유효거리 외부에 위치하면, 새로운 방문지로 간주함.
@@ -125,9 +128,6 @@ class LocationService : Service() {
                                         }
                                     }
                                 }
-
-
-
                             }
                             else  //계속 방문중인 상태라면
                             {
@@ -151,6 +151,7 @@ class LocationService : Service() {
 
                             visitFlag = false
                         }
+
                         // 중심 좌표와 갱신 시간을 업데이트함.
                         lastUpdateLocation = LatLng(location.latitude, location.longitude)
                         lastUpdateTime = currentDateTime
