@@ -41,7 +41,7 @@ class LocationDatabase(context: Context) {
     //일정 시간 이후의 데이터를 지우는 작업
     fun deleteLocationDataAfter(datetime: LocalDateTime) {
         val db = dbHelper.writableDatabase
-        val whereClause = "datetime > ?"
+        val whereClause = "datetime >= ?"
         val whereArgs = arrayOf(datetime.toString())
         db.delete("location_data", whereClause, whereArgs)
         db.close()

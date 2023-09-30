@@ -88,10 +88,14 @@ class EditLocationActivity : AppCompatActivity(), OnMapReadyCallback {
 
             DatePickerDialog(this, { _, selectedYear, selectedMonth, selectedDay ->
 
-                val selectedDate = if(selectedMonth > 8) {
+                val selectedDate: String = if((selectedMonth > 8) && (selectedDay > 9)) {
                     "$selectedYear-${selectedMonth + 1}-$selectedDay"
-                } else {
+                } else if(selectedMonth > 8) {
+                    "$selectedYear-${selectedMonth + 1}-0$selectedDay"
+                } else if(selectedDay > 9) {
                     "$selectedYear-0${selectedMonth + 1}-$selectedDay"
+                } else{
+                    "$selectedYear-0${selectedMonth + 1}-0$selectedDay"
                 }
 
                 visitDataList = VisitDatabase(this).getAllVisitData().filter {

@@ -28,7 +28,7 @@ class LocationService : Service() {
     private lateinit var locationDatabase: LocationDatabase
     private lateinit var visitDatabase: VisitDatabase
 
-    private var lastUpdateTime: LocalDateTime? = LocalDateTime.now()
+    private var lastUpdateTime: LocalDateTime? = LocalDateTime.now().withNano(0)
     private var lastUpdateLocation: LatLng = LatLng(0.0, 0.0)//center Lat, Lng
 
     var cnt: Int = 1
@@ -43,7 +43,7 @@ class LocationService : Service() {
                 if(location.accuracy <= CHECKDISTANCE) {
 
                     //현재 시간
-                    val currentDateTime = LocalDateTime.now()
+                    val currentDateTime = LocalDateTime.now().withNano(0)
 
                     //CHECK-DISTANCE 내에 위치
                     if(checkDistance(lastUpdateLocation, LatLng(location.latitude, location.longitude)))
@@ -99,7 +99,7 @@ class LocationService : Service() {
                                 else//다른방문 장소가 있는 경우
                                 {
                                     val lastVisitLocation: VisitData = visitDatabase.getLastVisitData()
-                                    val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSS")
+                                    val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")
                                     val lastVisitTime = LocalDateTime.parse(lastVisitLocation.endtime, formatter)
 
 
@@ -142,7 +142,7 @@ class LocationService : Service() {
                             val endtime = currentDateTime
                             val lastVisitLocation: VisitData = visitDatabase.getLastVisitData()
                             val formatter =
-                                DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSS")
+                                DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")
                             val lastVisitTime =
                                 LocalDateTime.parse(lastVisitLocation.datetime, formatter)
                             val minutesPassed = Duration.between(lastVisitTime, endtime).toMinutes().toInt()
