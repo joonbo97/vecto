@@ -1,21 +1,20 @@
-package com.example.vecto
+package com.example.vecto.editlocation
 
-import android.Manifest
 import android.app.DatePickerDialog
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.graphics.Color
-import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.widget.Toast
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.vecto.Actions
+import com.example.vecto.LocationService
+import com.example.vecto.R
 import com.example.vecto.data.Auth
 import com.example.vecto.data.LocationData
 import com.example.vecto.data.LocationDatabase
+import com.example.vecto.data.PathData
 import com.example.vecto.data.VisitData
 import com.example.vecto.data.VisitDatabase
 import com.example.vecto.databinding.ActivityEditLocationBinding
@@ -45,9 +44,12 @@ class EditLocationActivity : AppCompatActivity(), OnMapReadyCallback {
     private lateinit var locationDataList: List<LocationData>
     private lateinit var visitDataList: List<VisitData>
 
+    private lateinit var myLocationAdapter: MyLocationAdapter
+
+
+
     companion object {
         private const val LOCATION_PERMISSION_REQUEST_CODE = 1000
-        private const val BACKGROUND_PERMISSION_REQUEST_CODE = 2000
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -56,40 +58,7 @@ class EditLocationActivity : AppCompatActivity(), OnMapReadyCallback {
         binding = ActivityEditLocationBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        val permission: Array<String> = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.POST_NOTIFICATIONS)
-        } else {
-            TODO("VERSION.SDK_INT < Q")
-        }
-        //필요한 permission array
-
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
-            == PackageManager.PERMISSION_DENIED
-            || ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-            == PackageManager.PERMISSION_DENIED
-            || ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
-            == PackageManager.PERMISSION_DENIED){ //대략적 위치 권한, 정확한 위치 권한, 알림에 대한 권한에 대한 여부 확인
-            ActivityCompat.requestPermissions(this, permission, LOCATION_PERMISSION_REQUEST_CODE) //권한이 하나 라도 없으면 권한에 대한 허가 요청
-
-
-            /*백그라운드 위치 정보 권한은 따로 요청해야 하기에 다이얼로그를 통해 사용자에게 접근하도록 유도*/
-            if(ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_BACKGROUND_LOCATION) == PackageManager.PERMISSION_DENIED)
-            {
-                ActivityCompat.requestPermissions(this,
-                    arrayOf(Manifest.permission.ACCESS_BACKGROUND_LOCATION), BACKGROUND_PERMISSION_REQUEST_CODE)
-
-                Log.d("Check", "Background Check")
-            }//백그라운드 권한 REJECT
-            else
-            {
-                Log.d("Check", "Background Check 2")
-            }
-
-        }
-        else
-        {
-            initMap()
-        }
+        initMap()
 
         binding.StartServiceButton.setOnClickListener {
             val serviceIntent = Intent(this, LocationService::class.java)
@@ -133,17 +102,67 @@ class EditLocationActivity : AppCompatActivity(), OnMapReadyCallback {
                     Toast.makeText(this, "$selectedDate 방문한 장소가 있습니다.", Toast.LENGTH_SHORT).show()
 
 
+
+
                     Auth.pathPoints.clear()
                     deleteOverlay()
+
+
+
+
+                    myLocationAdapter = MyLocationAdapter(this)
+                    val locationRecyclerView = binding.LocationRecyclerView
+                    locationRecyclerView.adapter = myLocationAdapter
+                    locationRecyclerView.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
+
+
 
 
                     locationDataList = LocationDatabase(this).getAllLocationData().filter {
                         it.datetime.startsWith(selectedDate)
                     }//경로 검색
 
+
+
+                    val locationDataforPath = mutableListOf<LocationData>()
+                    var cnt = 1
+                    locationDataforPath.add(LocationData(visitDataList[0].datetime, visitDataList[0].lat, visitDataList[0].lng))
+
+                    visitDataList.forEach { visitData ->
+                        addCircleOverlay(visitData)
+                        addVisitMarker(visitData)
+
+                        myLocationAdapter.visitdata.add(visitData)
+                    }
+
                     locationDataList.forEach { locationData ->
                         Auth.pathPoints.add(LatLng(locationData.lat, locationData.lng))
-                    }//경로를 Auth에 저장
+                        //경로를 Auth에 저장
+
+
+                        //저장된 시각이 같으면 방문지점 도착경로 1 cycle 완료
+                        if(locationData.datetime == visitDataList[cnt].datetime)
+                        {
+                            locationDataforPath.add(locationData)
+                            myLocationAdapter.pathdata.add(PathData(locationDataforPath))
+
+                            locationDataforPath.clear()
+                            locationDataforPath.add(locationData)
+
+                            cnt++
+
+                            if(cnt == visitDataList.size)
+                                cnt--
+                        }
+                        else
+                        {
+                            locationDataforPath.add(locationData)
+                        }
+
+
+                    }
+
+                    myLocationAdapter.notifyDataSetChanged()
 
                     if(Auth.pathPoints.size > 1)
                     {
@@ -153,12 +172,7 @@ class EditLocationActivity : AppCompatActivity(), OnMapReadyCallback {
                         pathOverlay.map = naverMap
                     }//경로 그리기
 
-                    visitDataList.forEach { visitData ->
 
-                        addCircleOverlay(visitData)
-                        addVisitMarker(visitData)
-
-                    }
 
                 } else {
                     Toast.makeText(this, "$selectedDate 방문한 장소가 없습니다.", Toast.LENGTH_SHORT).show()
@@ -167,6 +181,9 @@ class EditLocationActivity : AppCompatActivity(), OnMapReadyCallback {
 
                 binding.TitleDate.visibility = View.VISIBLE
                 binding.TitleDate.text = selectedDate
+                binding.EditLayout.visibility = View.VISIBLE
+                binding.StartServiceButton.visibility = View.GONE
+                binding.StopServiceButton.visibility = View.GONE
             }, year, month, day).show()
         }
     }
@@ -253,6 +270,5 @@ class EditLocationActivity : AppCompatActivity(), OnMapReadyCallback {
 
         circleOverlays.add(circleOverlay)
     }
-
 
 }

@@ -56,7 +56,7 @@ class LocationService : Service() {
 
                             //위치 데이터 추가
                             val locationData = LocationData(currentDateTime.toString(), location.latitude, location.longitude)
-                            Log.d("LocationService", "CheckDistance에 위치해 있지만, 5분이 되지 않았습니다. \n Save Done = DateTime : $currentDateTime Lat: ${location.latitude}, Lng: ${location.longitude}\n " +
+                            Log.d("LocationService", "CheckDistance에 위치해 있지만, 5분이 되지 않았습니다. \nLastUpdateTime : $lastUpdateTime \nSave Done = DateTime : $currentDateTime Lat: ${location.latitude}, Lng: ${location.longitude}\n " +
                                     "accurancy : ${location.accuracy}")
                             locationDatabase.addLocationData(locationData)
                         }
@@ -77,7 +77,7 @@ class LocationService : Service() {
                                             lastUpdateTime.toString(),
                                             lastUpdateLocation.latitude,
                                             lastUpdateLocation.longitude,
-                                            0
+                                            0, ""
                                         )
                                     )
 

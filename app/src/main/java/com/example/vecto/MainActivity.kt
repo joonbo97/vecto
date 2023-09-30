@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.example.vecto.databinding.ActivityMainBinding
+import com.example.vecto.editlocation.EditLocationActivity
 import com.example.vecto.guide.GuideActivity
 
 

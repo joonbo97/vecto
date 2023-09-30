@@ -15,6 +15,7 @@ class VisitDatabase(context: Context) {
             put("lat", visitData.lat)
             put("lng", visitData.lng)
             put("staytime", visitData.staytime)
+            put("name", visitData.name)
         }
         db.insert("visit_data", null, values)
         db.close()
@@ -32,7 +33,8 @@ class VisitDatabase(context: Context) {
             val lat = cursor.getDouble(cursor.getColumnIndex("lat"))
             val lng = cursor.getDouble(cursor.getColumnIndex("lng"))
             val staytime = cursor.getInt(cursor.getColumnIndex("staytime"))
-            dataList.add(VisitData(datetime, endtime, lat, lng, staytime))
+            val name = cursor.getString(cursor.getColumnIndex("name"))
+            dataList.add(VisitData(datetime, endtime, lat, lng, staytime, name))
         }
 
         cursor.close()
@@ -58,9 +60,10 @@ class VisitDatabase(context: Context) {
         val lat = cursor.getDouble(cursor.getColumnIndex("lat"))
         val lng = cursor.getDouble(cursor.getColumnIndex("lng"))
         val staytime = cursor.getInt(cursor.getColumnIndex("staytime"))
+        val name = cursor.getString(cursor.getColumnIndex("name"))
         cursor.close()
 
-        return VisitData(datetime, endtime, lat, lng, staytime)
+        return VisitData(datetime, endtime, lat, lng, staytime, name)
     }
 
     //특정 시간의 데이터를 변경하는 작업
@@ -89,7 +92,8 @@ class VisitDatabase(context: Context) {
             val lat = cursor.getDouble(cursor.getColumnIndex("lat"))
             val lng = cursor.getDouble(cursor.getColumnIndex("lng"))
             val staytime = cursor.getInt(cursor.getColumnIndex("staytime"))
-            dataList.add(VisitData(datetime, endtime, lat, lng, staytime))
+            val name = cursor.getString(cursor.getColumnIndex("name"))
+            dataList.add(VisitData(datetime, endtime, lat, lng, staytime, name))
         }
 
         cursor.close()

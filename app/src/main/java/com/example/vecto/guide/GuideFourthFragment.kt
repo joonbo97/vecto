@@ -4,15 +4,13 @@ import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
-import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import com.example.vecto.EditLocationActivity
-import com.example.vecto.R
+import com.example.vecto.editlocation.EditLocationActivity
 import com.example.vecto.databinding.FragmentGuideFourthBinding
 
 class GuideFourthFragment : Fragment() {

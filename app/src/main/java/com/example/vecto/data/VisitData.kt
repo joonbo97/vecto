@@ -5,5 +5,6 @@ data class VisitData (
     val endtime: String,
     val lat: Double,
     val lng: Double,
-    val staytime: Int
+    val staytime: Int,
+    val name: String
 )

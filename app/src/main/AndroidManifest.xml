@@ -22,7 +22,7 @@
             android:name=".guide.GuideActivity"
             android:exported="false" />
         <activity
-            android:name=".EditLocationActivity"
+            android:name=".editlocation.EditLocationActivity"
             android:exported="false" />
 
         <service
