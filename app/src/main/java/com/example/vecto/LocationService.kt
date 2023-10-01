@@ -77,6 +77,8 @@ class LocationService : Service() {
                                             lastUpdateTime.toString(),
                                             lastUpdateLocation.latitude,
                                             lastUpdateLocation.longitude,
+                                            lastUpdateLocation.latitude,
+                                            lastUpdateLocation.longitude,
                                             0, ""
                                         )
                                     )
@@ -87,6 +89,8 @@ class LocationService : Service() {
                                         lastUpdateLocation.latitude,
                                         lastUpdateLocation.longitude
                                     )
+
+                                    locationDatabase.addLocationData(LocationData(lastUpdateTime.toString(),lastUpdateLocation.latitude, lastUpdateLocation.longitude))
 
                                     cnt = 1
                                     visitFlag = true

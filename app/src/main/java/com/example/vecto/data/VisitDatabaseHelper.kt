@@ -17,7 +17,7 @@ class VisitDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE
 
     companion object {
         private const val DATABASE_NAME = "visit_database"
-        private const val DATABASE_VERSION = 3
+        private const val DATABASE_VERSION = 4
 
         private const val CREATE_TABLE_QUERY = "CREATE TABLE IF NOT EXISTS visit_data (" +
                 "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
@@ -25,6 +25,8 @@ class VisitDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE
                 "endtime TEXT, " +
                 "lat REAL, " +
                 "lng REAL, " +
+                "lat_set REAL, " +
+                "lng_set REAL, " +
                 "staytime INTEGER, " +
                 "name TEXT" +
                 ")"

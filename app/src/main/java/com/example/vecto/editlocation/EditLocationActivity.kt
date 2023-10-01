@@ -3,8 +3,10 @@ package com.example.vecto.editlocation
 import android.app.DatePickerDialog
 import android.content.Intent
 import android.graphics.Color
+import android.graphics.PointF
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -19,6 +21,7 @@ import com.example.vecto.data.VisitData
 import com.example.vecto.data.VisitDatabase
 import com.example.vecto.databinding.ActivityEditLocationBinding
 import com.naver.maps.geometry.LatLng
+import com.naver.maps.map.CameraPosition
 import com.naver.maps.map.CameraUpdate
 import com.naver.maps.map.LocationTrackingMode
 import com.naver.maps.map.MapFragment
@@ -30,7 +33,7 @@ import com.naver.maps.map.overlay.PathOverlay
 import com.naver.maps.map.util.FusedLocationSource
 import java.util.Calendar
 
-class EditLocationActivity : AppCompatActivity(), OnMapReadyCallback {
+class EditLocationActivity : AppCompatActivity(), OnMapReadyCallback, MyLocationAdapter.OnItemClickListener {
     private lateinit var binding: ActivityEditLocationBinding
     private lateinit var mapView: MapFragment
     private lateinit var locationSource: FusedLocationSource // 위치를 반환하는 구현체
@@ -41,8 +44,8 @@ class EditLocationActivity : AppCompatActivity(), OnMapReadyCallback {
     //private val pathOverlays = mutableListOf<PathOverlay>()
     private val circleOverlays = mutableListOf<CircleOverlay>()
 
-    private lateinit var locationDataList: List<LocationData>
-    private lateinit var visitDataList: List<VisitData>
+    private lateinit var locationDataList: MutableList<LocationData>
+    private lateinit var visitDataList: MutableList<VisitData>
 
     private lateinit var myLocationAdapter: MyLocationAdapter
 
@@ -100,7 +103,7 @@ class EditLocationActivity : AppCompatActivity(), OnMapReadyCallback {
 
                 visitDataList = VisitDatabase(this).getAllVisitData().filter {
                     it.datetime.startsWith(selectedDate)
-                }
+                }.toMutableList()
 
                 if (visitDataList.isNotEmpty()) {
                     Toast.makeText(this, "$selectedDate 방문한 장소가 있습니다.", Toast.LENGTH_SHORT).show()
@@ -114,7 +117,7 @@ class EditLocationActivity : AppCompatActivity(), OnMapReadyCallback {
 
 
 
-                    myLocationAdapter = MyLocationAdapter(this)
+                    myLocationAdapter = MyLocationAdapter(this, this)
                     val locationRecyclerView = binding.LocationRecyclerView
                     locationRecyclerView.adapter = myLocationAdapter
                     locationRecyclerView.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
@@ -124,7 +127,7 @@ class EditLocationActivity : AppCompatActivity(), OnMapReadyCallback {
 
                     locationDataList = LocationDatabase(this).getAllLocationData().filter {
                         it.datetime.startsWith(selectedDate)
-                    }//경로 검색
+                    }.toMutableList()//경로 검색
 
 
 
@@ -144,25 +147,23 @@ class EditLocationActivity : AppCompatActivity(), OnMapReadyCallback {
                         //경로를 Auth에 저장
 
 
-                        //저장된 시각이 같으면 방문지점 도착경로 1 cycle 완료
-                        if(locationData.datetime == visitDataList[cnt].datetime)
-                        {
-                            locationDataforPath.add(locationData)
-                            myLocationAdapter.pathdata.add(PathData(locationDataforPath))
+                        Log.d("location", "vistdata size : ${visitDataList.size}")
+                        if(visitDataList.size > 1) { //저장된 시각이 같으면 방문지점 도착경로 1 cycle 완료
+                            if (locationData.datetime == visitDataList[cnt].datetime) {
+                                locationDataforPath.add(locationData)
+                                myLocationAdapter.pathdata.add(PathData(locationDataforPath))
 
-                            locationDataforPath.clear()
-                            locationDataforPath.add(locationData)
+                                locationDataforPath.clear()
+                                locationDataforPath.add(locationData)
 
-                            cnt++
+                                cnt++
 
-                            if(cnt == visitDataList.size)
-                                cnt--
+                                if (cnt == visitDataList.size)
+                                    cnt--
+                            } else {
+                                locationDataforPath.add(locationData)
+                            }
                         }
-                        else
-                        {
-                            locationDataforPath.add(locationData)
-                        }
-
 
                     }
 
@@ -208,15 +209,6 @@ class EditLocationActivity : AppCompatActivity(), OnMapReadyCallback {
         naverMap.locationTrackingMode = LocationTrackingMode.Follow
         naverMap.moveCamera(CameraUpdate.zoomTo(18.0))
 
-        naverMap.setOnSymbolClickListener { symbol ->
-            run {
-                Toast.makeText(this, symbol.caption, Toast.LENGTH_SHORT).show()
-                // 이벤트 소비, OnMapClick 이벤트는 발생하지 않음
-                symbol.position
-                true
-            }
-        }
-
         initOverlay()
     }
 
@@ -259,7 +251,12 @@ class EditLocationActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private fun addVisitMarker(visitData: VisitData){
         val visitMarker = Marker()
-        visitMarker.position = LatLng(visitData.lat, visitData.lng)
+        if(visitData.name.isNotEmpty()) {
+            visitMarker.position = LatLng(visitData.lat_set, visitData.lng_set)
+        }
+        else {
+            visitMarker.position = LatLng(visitData.lat, visitData.lng)
+        }
         visitMarker.map = naverMap
 
         visitMarkers.add(visitMarker)
@@ -269,10 +266,76 @@ class EditLocationActivity : AppCompatActivity(), OnMapReadyCallback {
         val circleOverlay = CircleOverlay()
         circleOverlay.center = LatLng(visitData.lat, visitData.lng)
         circleOverlay.radius = 50.0 // 반지름을 50m로 설정
-        circleOverlay.color = Color.argb(20, 255, 0, 0) // 원의 색상 설정
+
+        if(visitData.name.isEmpty()) {
+            circleOverlay.color = Color.argb(20, 255, 0, 0) // 원의 색상 설정
+        }
+        else {
+            circleOverlay.color = Color.argb(20, 0, 255, 0) // 원의 색상 설정
+        }
+
         circleOverlay.map = naverMap
 
         circleOverlays.add(circleOverlay)
+    }
+
+    override fun onItemClick(data: Any) {
+        deleteOverlay() //지도 clear
+
+        if (data is VisitData) {
+            addVisitMarker(data)//선택한 visitdata를 마커에 추가
+            addCircleOverlay(data)
+
+            val targetLatLng = LatLng(data.lat_set, data.lng_set)
+            val Offset = PointF(0.0f, (-350).toFloat())
+
+            naverMap.moveCamera(CameraUpdate.scrollTo(targetLatLng))
+            naverMap.moveCamera(CameraUpdate.scrollBy(Offset))
+
+
+
+
+
+
+            naverMap.setOnSymbolClickListener { symbol ->
+                run {
+                    val newVisitData = VisitData(data.datetime, data.endtime, data.lat, data.lng, symbol.position.latitude, symbol.position.longitude, data.staytime, symbol.caption)
+
+                    updateVisitData(data, newVisitData)
+
+                    deleteOverlay()
+                    addVisitMarker(newVisitData)//선택한 newVisitData를 마커에 추가
+                    addCircleOverlay(newVisitData)
+
+                    VisitDatabase(this).updateVisitData(data, newVisitData)
+
+
+                    Toast.makeText(this, "변경완료", Toast.LENGTH_SHORT).show()
+                    true
+                }
+            }
+
+
+
+            Toast.makeText(this, "방문했던 곳을 선택하세요.", Toast.LENGTH_SHORT).show()
+        } else if (data is PathData) {
+            Toast.makeText(this, "원하는 경로를 선택 하세요.", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+
+    //visitdata를 갱신하는 함수
+    private fun updateVisitData(oldVisitData: VisitData, newVisitData: VisitData){
+
+        for(i in myLocationAdapter.visitdata.indices){
+
+            if(myLocationAdapter.visitdata[i] == oldVisitData) {
+                myLocationAdapter.visitdata[i] = newVisitData
+                myLocationAdapter.notifyItemChanged(i * 2)
+                break
+            }
+        }
+
     }
 
 }

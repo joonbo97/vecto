@@ -4,7 +4,7 @@ import android.annotation.SuppressLint
 import android.content.ContentValues
 import android.content.Context
 
-class VisitDatabase(context: Context) {
+class VisitDatabase(private val context: Context) {
     private val dbHelper = VisitDatabaseHelper(context)
 
     fun addVisitData(visitData: VisitData) {
@@ -14,6 +14,8 @@ class VisitDatabase(context: Context) {
             put("endtime", visitData.endtime)
             put("lat", visitData.lat)
             put("lng", visitData.lng)
+            put("lat_set", visitData.lat_set)
+            put("lng_set", visitData.lng_set)
             put("staytime", visitData.staytime)
             put("name", visitData.name)
         }
@@ -32,9 +34,11 @@ class VisitDatabase(context: Context) {
             val endtime = cursor.getString(cursor.getColumnIndex("endtime"))
             val lat = cursor.getDouble(cursor.getColumnIndex("lat"))
             val lng = cursor.getDouble(cursor.getColumnIndex("lng"))
+            val lat_set = cursor.getDouble(cursor.getColumnIndex("lat_set"))
+            val lng_set = cursor.getDouble(cursor.getColumnIndex("lng_set"))
             val staytime = cursor.getInt(cursor.getColumnIndex("staytime"))
             val name = cursor.getString(cursor.getColumnIndex("name"))
-            dataList.add(VisitData(datetime, endtime, lat, lng, staytime, name))
+            dataList.add(VisitData(datetime, endtime, lat, lng, lat_set, lng_set, staytime, name))
         }
 
         cursor.close()
@@ -59,11 +63,13 @@ class VisitDatabase(context: Context) {
         val endtime = cursor.getString(cursor.getColumnIndex("endtime"))
         val lat = cursor.getDouble(cursor.getColumnIndex("lat"))
         val lng = cursor.getDouble(cursor.getColumnIndex("lng"))
+        val lat_set = cursor.getDouble(cursor.getColumnIndex("lat_set"))
+        val lng_set = cursor.getDouble(cursor.getColumnIndex("lng_set"))
         val staytime = cursor.getInt(cursor.getColumnIndex("staytime"))
         val name = cursor.getString(cursor.getColumnIndex("name"))
         cursor.close()
 
-        return VisitData(datetime, endtime, lat, lng, staytime, name)
+        return VisitData(datetime, endtime, lat, lng, lat_set, lng_set, staytime, name)
     }
 
     //특정 시간의 데이터를 변경하는 작업
@@ -80,23 +86,31 @@ class VisitDatabase(context: Context) {
     }
 
     @SuppressLint("Range")
-    fun getVisitDateData(date: String): MutableList<VisitData> {
+    fun updateVisitData(oldVisitData: VisitData, newVisitData: VisitData) {
         val db = dbHelper.writableDatabase
-        val cursor = db.rawQuery("SELECT * FROM visit_data WHERE datetime LIKE ?", arrayOf("$date%"))
-
-        val dataList = mutableListOf<VisitData>()
-
-        if (cursor.moveToFirst()) {
-            val datetime = cursor.getString(cursor.getColumnIndex("datetime"))
-            val endtime = cursor.getString(cursor.getColumnIndex("endtime"))
-            val lat = cursor.getDouble(cursor.getColumnIndex("lat"))
-            val lng = cursor.getDouble(cursor.getColumnIndex("lng"))
-            val staytime = cursor.getInt(cursor.getColumnIndex("staytime"))
-            val name = cursor.getString(cursor.getColumnIndex("name"))
-            dataList.add(VisitData(datetime, endtime, lat, lng, staytime, name))
+        val values = ContentValues().apply {
+            put("datetime", newVisitData.datetime)
+            put("endtime", newVisitData.endtime)
+            put("lat", newVisitData.lat)
+            put("lng", newVisitData.lng)
+            put("lat_set", newVisitData.lat_set)
+            put("lng_set", newVisitData.lng_set)
+            put("staytime", newVisitData.staytime)
+            put("name", newVisitData.name)
         }
+        val whereClause = "datetime = ?" // 조건을 설정하여 갱신할 데이터 선택
+        val whereArgs = arrayOf(oldVisitData.datetime, oldVisitData.endtime) // 조건에 사용할 값들
 
-        cursor.close()
-        return dataList
+        val locationdb = LocationDatabaseHelper(context).writableDatabase
+        val locationValues = ContentValues().apply {
+            put("datetime", newVisitData.datetime)
+            put("lat", newVisitData.lat_set) // VisitData의 lat_set을 사용
+            put("lng", newVisitData.lng_set) // VisitData의 lng_set을 사용
+        }
+        locationdb.update("location_data", locationValues, whereClause, whereArgs) // 데이터 갱신
+
+        db.update("visit_data", values, whereClause, whereArgs) // 데이터 갱신
+        db.close()
     }
+
 }
