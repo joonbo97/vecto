@@ -26,7 +26,7 @@ class VisitDatabase(private val context: Context) {
     @SuppressLint("Range")
     fun getAllVisitData(): MutableList<VisitData> {
         val db = dbHelper.readableDatabase
-        val cursor = db.rawQuery("SELECT * FROM visit_data", null)
+        val cursor = db.rawQuery("SELECT * FROM visit_data ORDER BY datetime ASC", null)
         val dataList = mutableListOf<VisitData>()
 
         while (cursor.moveToNext()) {
@@ -56,7 +56,7 @@ class VisitDatabase(private val context: Context) {
 
     @SuppressLint("Range")
     fun getLastVisitData(): VisitData {
-        val cursor = dbHelper.writableDatabase.rawQuery("SELECT * FROM visit_data ORDER BY id DESC LIMIT 1", null)
+        val cursor = dbHelper.writableDatabase.rawQuery("SELECT * FROM visit_data ORDER BY datetime DESC LIMIT 1", null)
 
         cursor.moveToFirst()
         val datetime = cursor.getString(cursor.getColumnIndex("datetime"))
@@ -99,7 +99,7 @@ class VisitDatabase(private val context: Context) {
             put("name", newVisitData.name)
         }
         val whereClause = "datetime = ?" // 조건을 설정하여 갱신할 데이터 선택
-        val whereArgs = arrayOf(oldVisitData.datetime, oldVisitData.endtime) // 조건에 사용할 값들
+        val whereArgs = arrayOf(oldVisitData.datetime) // 조건에 사용할 값들
 
         val locationdb = LocationDatabaseHelper(context).writableDatabase
         val locationValues = ContentValues().apply {
@@ -108,6 +108,7 @@ class VisitDatabase(private val context: Context) {
             put("lng", newVisitData.lng_set) // VisitData의 lng_set을 사용
         }
         locationdb.update("location_data", locationValues, whereClause, whereArgs) // 데이터 갱신
+        locationdb.close()
 
         db.update("visit_data", values, whereClause, whereArgs) // 데이터 갱신
         db.close()

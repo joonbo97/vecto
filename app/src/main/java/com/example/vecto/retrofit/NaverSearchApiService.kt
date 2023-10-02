@@ -6,7 +6,6 @@ import retrofit2.http.Headers
 import retrofit2.http.Query
 
 interface NaverSearchApiService {
-
     @Headers("X-Naver-Client-Id: m8NoMqHTJvHI0gLx5aNe", "X-Naver-Client-Secret: sy1Sb7aNf_")
     @GET("/v1/search/local.json")
     fun searchNearbyPlaces(

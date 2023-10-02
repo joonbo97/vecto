@@ -22,7 +22,7 @@ class LocationDatabase(context: Context) {
     @SuppressLint("Range")
     fun getAllLocationData(): MutableList<LocationData> {
         val db = dbHelper.readableDatabase
-        val cursor = db.rawQuery("SELECT * FROM location_data", null)
+        val cursor = db.rawQuery("SELECT * FROM location_data ORDER BY datetime ASC", null)
         val dataList = mutableListOf<LocationData>()
 
         while (cursor.moveToNext()) {
@@ -63,7 +63,7 @@ class LocationDatabase(context: Context) {
     @SuppressLint("Range")
     fun getLocationDateData(date: String): List<LocationData> {
         val db = dbHelper.writableDatabase
-        val cursor = db.rawQuery("SELECT * FROM location_data WHERE datetime LIKE ?", arrayOf("$date%"))
+        val cursor = db.rawQuery("SELECT * FROM location_data WHERE datetime LIKE ? ORDER BY datetime ASC", arrayOf("$date%"))
 
         val dataList = mutableListOf<LocationData>()
 
@@ -77,5 +77,13 @@ class LocationDatabase(context: Context) {
 
         cursor.close()
         return dataList
+    }
+
+    fun deleteLocationDataBetween(startDatetime: String, endDatetime: String) {
+        val db = dbHelper.writableDatabase
+        val whereClause = "datetime > ? AND datetime < ?"
+        val whereArgs = arrayOf(startDatetime, endDatetime)
+        db.delete("location_data", whereClause, whereArgs)
+        db.close()
     }
 }
