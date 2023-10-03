@@ -14,10 +14,6 @@ import com.example.vecto.data.VisitData
 
 @Suppress("IMPLICIT_CAST_TO_ANY")
 class MyLocationAdapter(private val context: Context, private val itemClickListener: OnItemClickListener): RecyclerView.Adapter<MyLocationAdapter.ViewHolder>(){
-    companion object{
-        const val VISIT = 1
-        const val LOCATION = 2
-    }
 
     var visitdata = mutableListOf<VisitData>()
     var pathdata = mutableListOf<PathData>()

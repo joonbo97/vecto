@@ -113,23 +113,45 @@ class EditLocationActivity : AppCompatActivity(), OnMapReadyCallback, MyLocation
                     0
                 )
 
+                val Start: LatLng = Auth.pathPoints.first()
+                val End:LatLng = Auth.pathPoints.last()
+                Auth.pathPoints.clear()
 
-                call.enqueue(object : Callback<TMapAPIService.RouteResponse> {
+
+                call.enqueue(object : Callback<TMapAPIService.GeoJsonResponse> {
                     override fun onResponse(
-                        call: Call<TMapAPIService.RouteResponse>,
-                        response: Response<TMapAPIService.RouteResponse>
+                        call: Call<TMapAPIService.GeoJsonResponse>,
+                        response: Response<TMapAPIService.GeoJsonResponse>
                     ) {
                         if (response.isSuccessful) {
+                            Log.d("Response", response.body().toString())
                             // 응답 성공
-                            response.body()?.features?.forEach { feature ->
-                                if (feature.geometry.type == "Point") {
-                                    val coordinates = feature.geometry.coordinates
-                                    val latitude = coordinates[1]
-                                    val longitude = coordinates[0]
+                            Auth.pathPoints.add(Start)
+                            val geoData = response.body()
+                            geoData?.features?.forEach { feature ->
+                                when (feature.geometry.type) {
+                                    "Point" -> {
+                                        val coordinate = feature.geometry.coordinates as List<Double>
+                                        val latLng = LatLng(coordinate[1], coordinate[0])
+                                        Auth.pathPoints.add(latLng)
+                                    }
+                                    "LineString" -> {
+                                        val coordinates = feature.geometry.coordinates as List<List<Double>>
+                                        coordinates.forEach { coordinate ->
+                                            val latLng = LatLng(coordinate[1], coordinate[0])
+                                            Auth.pathPoints.add(latLng)
+                                        }
 
-                                    val pathPoint = LatLng(latitude, longitude)
-                                    Auth.pathPoints.add(pathPoint)
+                                    }
                                 }
+                            }
+
+                            Auth.pathPoints.add(End)
+                            if(Auth.pathPoints.size > 1) {
+                                pathOverlay.coords = Auth.pathPoints
+                                pathOverlay.width = 20
+                                pathOverlay.color = Color.YELLOW
+                                pathOverlay.map = naverMap
                             }
 
                         } else {
@@ -137,8 +159,8 @@ class EditLocationActivity : AppCompatActivity(), OnMapReadyCallback, MyLocation
                         }
                     }
 
-                    override fun onFailure(call: Call<TMapAPIService.RouteResponse>, t: Throwable) {
-                        TODO("Not yet implemented")
+                    override fun onFailure(call: Call<TMapAPIService.GeoJsonResponse>, t: Throwable) {
+                        Log.e("Retrofit", t.message.toString())
                     }
                 })
 
@@ -212,6 +234,7 @@ class EditLocationActivity : AppCompatActivity(), OnMapReadyCallback, MyLocation
 
 
 
+                    //선택한 날짜의 모든 경로 데이터 locationDataList
                     locationDataList = LocationDatabase(this).getAllLocationData().filter {
                         it.datetime.startsWith(selectedDate)
                     }.toMutableList()//경로 검색
@@ -220,8 +243,11 @@ class EditLocationActivity : AppCompatActivity(), OnMapReadyCallback, MyLocation
 
                     val locationDataforPath = mutableListOf<LocationData>()
                     var cnt = 1
-                    locationDataforPath.add(LocationData(visitDataList[0].datetime, visitDataList[0].lat, visitDataList[0].lng))
 
+                    locationDataforPath.add(LocationData(visitDataList[0].datetime, visitDataList[0].lat, visitDataList[0].lng))
+                    //location 첫 좌표 넣어줌.
+
+                    //방문지 오버레이 세팅
                     visitDataList.forEach { visitData ->
                         addCircleOverlay(visitData)
                         addVisitMarker(visitData)
@@ -229,30 +255,37 @@ class EditLocationActivity : AppCompatActivity(), OnMapReadyCallback, MyLocation
                         myLocationAdapter.visitdata.add(visitData)
                     }
 
-                    locationDataList.forEach { locationData ->
+
+                    for (locationData in locationDataList){
                         Auth.pathPoints.add(LatLng(locationData.lat, locationData.lng))
                         //경로를 Auth에 저장
 
 
-                        Log.d("location", "vistdata size : ${visitDataList.size}")
+
                         if(visitDataList.size > 1) { //저장된 시각이 같으면 방문지점 도착경로 1 cycle 완료
                             if (locationData.datetime == visitDataList[cnt].datetime) {
+                                //다음 방문지점의 경로 좌표에 도달하면, 방문지점 좌표까지 추가해서, adapter에 넘겨주고, 비운후 방문지점 좌표 추가해서 시작
                                 locationDataforPath.add(locationData)
-                                myLocationAdapter.pathdata.add(PathData(locationDataforPath))
+                                val pathData = PathData(locationDataforPath.toMutableList())
+                                myLocationAdapter.pathdata.add(pathData)
 
                                 locationDataforPath.clear()
                                 locationDataforPath.add(locationData)
-
                                 cnt++
 
-                                if (cnt == visitDataList.size)
-                                    cnt--
+                                if (cnt == visitDataList.size) {
+                                    Log.d("location", "마지막 항목에 도달하여 종료합니다. 저장된 경로 수: ${myLocationAdapter.pathdata}")
+
+                                    break
+                                }
                             } else {
                                 locationDataforPath.add(locationData)
                             }
                         }
 
                     }
+
+
 
                     myLocationAdapter.notifyDataSetChanged()
 
@@ -433,19 +466,18 @@ class EditLocationActivity : AppCompatActivity(), OnMapReadyCallback, MyLocation
 
 
             Toast.makeText(this, "방문했던 곳을 선택하세요.", Toast.LENGTH_SHORT).show()
-        } else if (data is PathData) {
+        } else if (data is PathData) {//return mutableList<LocationData>
             //방문이 1곳일 경우는 생각할 필요 X.
             //1곳이면 경로가 X
 
-
             locationDataList.clear()
-            locationDataList = data.coordinates
+            locationDataList = data.coordinates.toMutableList()
 
             //지도에 알맞게 dp하기 위한 min/max
-            var minLat = 180.0
-            var maxLat = 0.0
+            var minLat = 90.0
+            var maxLat = -90.0
             var minLng = 180.0
-            var maxLng = 0.0
+            var maxLng = -180.0
 
             Auth.pathPoints.clear()
             data.coordinates.forEach { coordinates ->
@@ -455,14 +487,15 @@ class EditLocationActivity : AppCompatActivity(), OnMapReadyCallback, MyLocation
                     maxLat = coordinates.lat
                 if(minLng > coordinates.lng)
                     minLng = coordinates.lng
-                if(minLng < coordinates.lng)
-                    minLng = coordinates.lng
+                if(maxLng < coordinates.lng)
+                    maxLng = coordinates.lng
 
+                Log.d("Click", "저장된 경로 좌표 : ${coordinates.datetime}\n")
                 Auth.pathPoints.add(LatLng(coordinates.lat, coordinates.lng))
             }
 
             val bounds = LatLngBounds(LatLng(minLat, minLng), LatLng(maxLat, maxLng))
-            naverMap.moveCamera(CameraUpdate.fitBounds(bounds, 50))
+            naverMap.moveCamera(CameraUpdate.fitBounds(bounds, 300))
             val Offset = PointF(0.0f, (-350).toFloat())
             naverMap.moveCamera(CameraUpdate.scrollBy(Offset))
 
@@ -478,7 +511,7 @@ class EditLocationActivity : AppCompatActivity(), OnMapReadyCallback, MyLocation
             binding.RecommendCourseButton.visibility = View.VISIBLE
 
 
-            Toast.makeText(this, "원하는 경로를 선택 하세요.", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "${locationDataList.size}", Toast.LENGTH_SHORT).show()
         }
     }
 
