@@ -50,13 +50,15 @@ class EditLocationActivity : AppCompatActivity(), OnMapReadyCallback, MyLocation
 
     private val visitMarkers = mutableListOf<Marker>()
     lateinit var pathOverlay: PathOverlay
-    //private val pathOverlays = mutableListOf<PathOverlay>()
+    private val pathOverlays = mutableListOf<PathOverlay>()
     private val circleOverlays = mutableListOf<CircleOverlay>()
 
     private lateinit var locationDataList: MutableList<LocationData>
     private lateinit var visitDataList: MutableList<VisitData>
 
     private lateinit var myLocationAdapter: MyLocationAdapter
+
+    private var responsePathData = mutableListOf<LatLng>()
 
     lateinit var originalVisitData: VisitData
     var typeNumber = 0
@@ -97,15 +99,18 @@ class EditLocationActivity : AppCompatActivity(), OnMapReadyCallback, MyLocation
         binding.RecommendCourseButton.setOnClickListener{
             if(typeNumber == 2) {
 
+                val Start = LatLng(locationDataList.first().lat, locationDataList.first().lng)
+                val End = LatLng(locationDataList.last().lat, locationDataList.last().lng)
+
                 //TMap API를 통한 경로
                 val tMapAPIService = TMapAPIService.create()
                 val call = tMapAPIService.getRecommendedRoute(
                     1,
                     TMapAPIService.key(),
-                    Auth.pathPoints.first().latitude,
-                    Auth.pathPoints.first().longitude,
-                    Auth.pathPoints.last().latitude,
-                    Auth.pathPoints.last().longitude,
+                    Start.latitude,
+                    Start.longitude,
+                    End.latitude,
+                    End.longitude,
                     "WGS84GEO",
                     "WGS84GEO",
                     "출발지_이름",
@@ -113,10 +118,7 @@ class EditLocationActivity : AppCompatActivity(), OnMapReadyCallback, MyLocation
                     0
                 )
 
-                val Start: LatLng = Auth.pathPoints.first()
-                val End:LatLng = Auth.pathPoints.last()
-                Auth.pathPoints.clear()
-
+                responsePathData.clear()
 
                 call.enqueue(object : Callback<TMapAPIService.GeoJsonResponse> {
                     override fun onResponse(
@@ -126,33 +128,27 @@ class EditLocationActivity : AppCompatActivity(), OnMapReadyCallback, MyLocation
                         if (response.isSuccessful) {
                             Log.d("Response", response.body().toString())
                             // 응답 성공
-                            Auth.pathPoints.add(Start)
+                            responsePathData.add(Start)
                             val geoData = response.body()
                             geoData?.features?.forEach { feature ->
                                 when (feature.geometry.type) {
                                     "Point" -> {
                                         val coordinate = feature.geometry.coordinates as List<Double>
                                         val latLng = LatLng(coordinate[1], coordinate[0])
-                                        Auth.pathPoints.add(latLng)
+                                        responsePathData.add(latLng)
                                     }
                                     "LineString" -> {
                                         val coordinates = feature.geometry.coordinates as List<List<Double>>
                                         coordinates.forEach { coordinate ->
                                             val latLng = LatLng(coordinate[1], coordinate[0])
-                                            Auth.pathPoints.add(latLng)
+                                            responsePathData.add(latLng)
                                         }
 
                                     }
                                 }
                             }
-
-                            Auth.pathPoints.add(End)
-                            if(Auth.pathPoints.size > 1) {
-                                pathOverlay.coords = Auth.pathPoints
-                                pathOverlay.width = 20
-                                pathOverlay.color = Color.YELLOW
-                                pathOverlay.map = naverMap
-                            }
+                            responsePathData.add(End)
+                            addPathOverlay(responsePathData)
 
                         } else {
                             // 응답 실패
@@ -179,7 +175,7 @@ class EditLocationActivity : AppCompatActivity(), OnMapReadyCallback, MyLocation
                 val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")
                 val startTime = LocalDateTime.parse(locationDataList.first().datetime, formatter)
 
-                Auth.pathPoints.forEachIndexed { index, point ->
+                responsePathData.forEachIndexed { index, point ->
 
                     LocationDatabase(this).addLocationData(LocationData(startTime.plusSeconds(index.toLong() + 1).toString(), point.latitude, point.longitude))
                 }
@@ -217,14 +213,7 @@ class EditLocationActivity : AppCompatActivity(), OnMapReadyCallback, MyLocation
                 if (visitDataList.isNotEmpty()) {
                     Toast.makeText(this, "$selectedDate 방문한 장소가 있습니다.", Toast.LENGTH_SHORT).show()
 
-
-
-
-                    Auth.pathPoints.clear()
-                    deleteOverlay()
-
-
-
+                    deleteOverlay()//Overlay 삭제
 
                     myLocationAdapter = MyLocationAdapter(this, this)
                     val locationRecyclerView = binding.LocationRecyclerView
@@ -237,7 +226,10 @@ class EditLocationActivity : AppCompatActivity(), OnMapReadyCallback, MyLocation
                     //선택한 날짜의 모든 경로 데이터 locationDataList
                     locationDataList = LocationDatabase(this).getAllLocationData().filter {
                         it.datetime.startsWith(selectedDate)
+                        //TODO 방문지 시작부분 지우기
                     }.toMutableList()//경로 검색
+
+                    addPathOverlay(locationDataList)
 
 
 
@@ -257,10 +249,6 @@ class EditLocationActivity : AppCompatActivity(), OnMapReadyCallback, MyLocation
 
 
                     for (locationData in locationDataList){
-                        Auth.pathPoints.add(LatLng(locationData.lat, locationData.lng))
-                        //경로를 Auth에 저장
-
-
 
                         if(visitDataList.size > 1) { //저장된 시각이 같으면 방문지점 도착경로 1 cycle 완료
                             if (locationData.datetime == visitDataList[cnt].datetime) {
@@ -288,16 +276,6 @@ class EditLocationActivity : AppCompatActivity(), OnMapReadyCallback, MyLocation
 
 
                     myLocationAdapter.notifyDataSetChanged()
-
-                    if(Auth.pathPoints.size > 1)
-                    {
-                        pathOverlay.coords = Auth.pathPoints
-                        pathOverlay.width = 20
-                        pathOverlay.color = Color.YELLOW
-                        pathOverlay.map = naverMap
-                    }//경로 그리기
-
-
 
                 } else {
                     Toast.makeText(this, "$selectedDate 방문한 장소가 없습니다.", Toast.LENGTH_SHORT).show()
@@ -382,6 +360,9 @@ class EditLocationActivity : AppCompatActivity(), OnMapReadyCallback, MyLocation
     private fun deleteOverlay() {
         pathOverlay.map = null
 
+        pathOverlays.forEach{ it.map = null}
+        pathOverlays.clear()
+
         visitMarkers.forEach { it.map = null }
         visitMarkers.clear()
 
@@ -392,41 +373,74 @@ class EditLocationActivity : AppCompatActivity(), OnMapReadyCallback, MyLocation
     private fun initOverlay() {
         // SQLite에서 모든 위치 데이터 가져오기
         locationDataList = LocationDatabase(this).getAllLocationData()
-
-        Auth.pathPoints.clear()
-        locationDataList.forEach { locationData ->
-            Auth.pathPoints.add(LatLng(locationData.lat, locationData.lng))
-        }
-
-        pathOverlay = PathOverlay()
-
-        if(Auth.pathPoints.size > 1) {
-            pathOverlay.coords = Auth.pathPoints
-            pathOverlay.width = 20
-            pathOverlay.color = Color.YELLOW
-            pathOverlay.map = naverMap
-        }
+        addPathOverlay(locationDataList)
 
         visitDataList = VisitDatabase(this).getAllVisitData()
-
         visitDataList.forEach { visitData ->
-            // 원 그리기
-            addCircleOverlay(visitData)
-            addVisitMarker(visitData)
+            addCircleOverlay(visitData)//원 그리기
+            addVisitMarker(visitData)//마커 찍기
         }
+
     }
 
     private fun addVisitMarker(visitData: VisitData){
         val visitMarker = Marker()
+
         if(visitData.name.isNotEmpty()) {
             visitMarker.position = LatLng(visitData.lat_set, visitData.lng_set)
         }
         else {
             visitMarker.position = LatLng(visitData.lat, visitData.lng)
         }
+
         visitMarker.map = naverMap
 
         visitMarkers.add(visitMarker)
+    }
+
+    private fun addPathOverlay(pathPoints: MutableList<LocationData>){
+        val pathLatLng = mutableListOf<LatLng>()
+        //LocationData를 이용하여 PathOverlay를 만들기 위해 mutableList LatLng을 만듬
+
+        for(i in 0 until pathPoints.size - 1) {
+            pathLatLng.add(LatLng(pathPoints[i].lat, pathPoints[i].lng))
+        }
+
+        val pathOverlay = PathOverlay()
+
+        if(pathPoints.size > 1) {
+            pathOverlay.coords = pathLatLng
+            pathOverlay.width = 20
+            pathOverlay.color = Color.YELLOW
+            pathOverlay.map = naverMap
+        }
+
+        pathOverlays.add(pathOverlay)
+    }
+
+    private fun addPathOverlay(pathPoints: MutableList<LatLng>){
+        val pathOverlay = PathOverlay()
+
+        if(pathPoints.size > 1) {
+            pathOverlay.coords = pathPoints
+            pathOverlay.width = 20
+            pathOverlay.color = Color.YELLOW
+            pathOverlay.map = naverMap
+        }
+
+        pathOverlays.add(pathOverlay)
+    }
+
+    private fun moveCameraForPath(pathPoints: MutableList<LocationData>){
+        val minLat = pathPoints.minOf { it.lat }
+        val maxLat = pathPoints.maxOf { it.lat }
+        val minLng = pathPoints.minOf { it.lng }
+        val maxLng = pathPoints.maxOf { it.lng }
+
+        val bounds = LatLngBounds(LatLng(minLat, minLng), LatLng(maxLat, maxLng))
+        naverMap.moveCamera(CameraUpdate.fitBounds(bounds, 300))
+        val Offset = PointF(0.0f, (-350).toFloat())
+        naverMap.moveCamera(CameraUpdate.scrollBy(Offset))
     }
 
     private fun addCircleOverlay(visitData: VisitData){
@@ -457,6 +471,7 @@ class EditLocationActivity : AppCompatActivity(), OnMapReadyCallback, MyLocation
             val Offset = PointF(0.0f, (-350).toFloat())
 
             naverMap.moveCamera(CameraUpdate.scrollTo(targetLatLng))
+            naverMap.moveCamera(CameraUpdate.zoomTo(18.0))
             naverMap.moveCamera(CameraUpdate.scrollBy(Offset))
 
 
@@ -471,41 +486,11 @@ class EditLocationActivity : AppCompatActivity(), OnMapReadyCallback, MyLocation
             //1곳이면 경로가 X
 
             locationDataList.clear()
-            locationDataList = data.coordinates.toMutableList()
+            locationDataList = data.coordinates
 
-            //지도에 알맞게 dp하기 위한 min/max
-            var minLat = 90.0
-            var maxLat = -90.0
-            var minLng = 180.0
-            var maxLng = -180.0
+            addPathOverlay(data.coordinates)
+            moveCameraForPath(data.coordinates)
 
-            Auth.pathPoints.clear()
-            data.coordinates.forEach { coordinates ->
-                if(minLat > coordinates.lat)
-                    minLat = coordinates.lat
-                if(maxLat < coordinates.lat)
-                    maxLat = coordinates.lat
-                if(minLng > coordinates.lng)
-                    minLng = coordinates.lng
-                if(maxLng < coordinates.lng)
-                    maxLng = coordinates.lng
-
-                Log.d("Click", "저장된 경로 좌표 : ${coordinates.datetime}\n")
-                Auth.pathPoints.add(LatLng(coordinates.lat, coordinates.lng))
-            }
-
-            val bounds = LatLngBounds(LatLng(minLat, minLng), LatLng(maxLat, maxLng))
-            naverMap.moveCamera(CameraUpdate.fitBounds(bounds, 300))
-            val Offset = PointF(0.0f, (-350).toFloat())
-            naverMap.moveCamera(CameraUpdate.scrollBy(Offset))
-
-
-            if(Auth.pathPoints.size > 1) {
-                pathOverlay.coords = Auth.pathPoints
-                pathOverlay.width = 20
-                pathOverlay.color = Color.YELLOW
-                pathOverlay.map = naverMap
-            }
 
             typeNumber = 2
             binding.RecommendCourseButton.visibility = View.VISIBLE
