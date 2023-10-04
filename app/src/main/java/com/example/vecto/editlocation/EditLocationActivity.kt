@@ -43,17 +43,6 @@ import java.util.Calendar
 
 class EditLocationActivity : AppCompatActivity(), OnMapReadyCallback, MyLocationAdapter.OnItemClickListener {
     private lateinit var binding: ActivityEditLocationBinding
-    //Button Binding
-    private val startServiceButton = binding.StartServiceButton
-    private val stopServiceButton = binding.StopServiceButton
-    private val searchButton = binding.SearchButton
-    private val deleteButton = binding.DeleteButton
-    private val recommendCourseButton = binding.RecommendCourseButton
-    private val setRecommendCourseButton = binding.SetRecommendCourseButton
-    private val mergeButton = binding.MergeVisitButton
-    //----------
-    private val titleDate = binding.TitleDate
-    private val editLayout = binding.EditLayout
 
 
     //map설정 관련
@@ -86,6 +75,18 @@ class EditLocationActivity : AppCompatActivity(), OnMapReadyCallback, MyLocation
         binding = ActivityEditLocationBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        //Button Binding
+        val startServiceButton = binding.StartServiceButton
+        val stopServiceButton = binding.StopServiceButton
+        val searchButton = binding.SearchButton
+        val deleteButton = binding.DeleteButton
+        val recommendCourseButton = binding.RecommendCourseButton
+        val setRecommendCourseButton = binding.SetRecommendCourseButton
+        val mergeButton = binding.MergeVisitButton
+        //----------
+        val titleDate = binding.TitleDate
+        val editLayout = binding.EditLayout
+
         initMap()
 
 
@@ -109,6 +110,8 @@ class EditLocationActivity : AppCompatActivity(), OnMapReadyCallback, MyLocation
 
         recommendCourseButton.setOnClickListener{
             if(typeNumber == 2) {
+
+                deleteOverlay()
 
                 val Start = LatLng(locationDataList.first().lat, locationDataList.first().lng)
                 val End = LatLng(locationDataList.last().lat, locationDataList.last().lng)
@@ -228,7 +231,7 @@ class EditLocationActivity : AppCompatActivity(), OnMapReadyCallback, MyLocation
                     //선택한 날짜의 방문지의 처음과 끝까지의 경로
                     locationDataList = LocationDatabase(this).getBetweenLocationData(visitDataList.first().datetime, visitDataList.last().datetime)
 
-                    addPathOverlay(locationDataList)
+                    addPathOverlayForLoacation(locationDataList)
 
 
                     val locationDataforPath = mutableListOf<LocationData>()
@@ -289,6 +292,7 @@ class EditLocationActivity : AppCompatActivity(), OnMapReadyCallback, MyLocation
             if(typeNumber == 1)
             {
                 Toast.makeText(this, "선택한 장소와 합칠 장소를 선택해주세요. 현재 선택된 장소는 사라집니다.", Toast.LENGTH_SHORT).show()
+                visitDataList.clear()
                 visitDataList.add(originalVisitData)
                 addCircleOverlayForMerge(visitDataList[0])
 
@@ -367,15 +371,17 @@ class EditLocationActivity : AppCompatActivity(), OnMapReadyCallback, MyLocation
         if (data is VisitData) {
             if(typeNumber == 4)
             {
+
                 if(checkDistance(LatLng(data.lat, data.lng), LatLng(visitDataList[0].lat, visitDataList[0].lng), 100)) {
 
 
+                    mergeVisitData(data, visitDataList[0])
                     //삭제를 리사이클러뷰에 반영
                     myLocationAdapter.visitdata.remove(visitDataList[0])
                     myLocationAdapter.notifyItemRemoved(myLocationAdapter.visitdata.indexOf(visitDataList[0]))
 
                     typeNumber = 0
-                    mergeButton.visibility = View.GONE
+                    binding.MergeVisitButton.visibility = View.GONE
                 }
                 else
                 {
@@ -391,9 +397,9 @@ class EditLocationActivity : AppCompatActivity(), OnMapReadyCallback, MyLocation
                 originalVisitData = data
                 typeNumber = 1
 
-                recommendCourseButton.visibility = View.GONE
-                setRecommendCourseButton.visibility = View.GONE
-                mergeButton.visibility = View.VISIBLE
+                binding.RecommendCourseButton.visibility = View.GONE
+                binding.SetRecommendCourseButton.visibility = View.GONE
+                binding.MergeVisitButton.visibility = View.VISIBLE
 
 
                 Toast.makeText(this, "방문한 곳을 선택하세요.", Toast.LENGTH_SHORT).show()
@@ -401,17 +407,16 @@ class EditLocationActivity : AppCompatActivity(), OnMapReadyCallback, MyLocation
         } else if (data is PathData) {//return mutableList<LocationData>
             //방문이 1곳일 경우는 생각할 필요 X.
             //1곳이면 경로가 X
-
-            locationDataList.clear()
             locationDataList = data.coordinates
 
-            addPathOverlay(data.coordinates)
+            addPathOverlayForLoacation(data.coordinates)
             moveCameraForPath(data.coordinates)
 
 
             typeNumber = 2
-            recommendCourseButton.visibility = View.VISIBLE
-            setRecommendCourseButton.visibility = View.GONE
+            binding.RecommendCourseButton.visibility = View.VISIBLE
+            binding.SetRecommendCourseButton.visibility = View.GONE
+            binding.MergeVisitButton.visibility = View.GONE
         }
     }
 
@@ -476,7 +481,7 @@ class EditLocationActivity : AppCompatActivity(), OnMapReadyCallback, MyLocation
     private fun initOverlay() {
         // SQLite에서 모든 위치 데이터 가져오기
         locationDataList = LocationDatabase(this).getAllLocationData()
-        addPathOverlay(locationDataList)
+        addPathOverlayForLoacation(locationDataList)
 
         visitDataList = VisitDatabase(this).getAllVisitData()
         visitDataList.forEach { visitData ->
@@ -545,8 +550,7 @@ class EditLocationActivity : AppCompatActivity(), OnMapReadyCallback, MyLocation
 
         visitMarkers.add(visitMarker)
     }
-
-    private fun addPathOverlay(pathPoints: MutableList<LocationData>){
+    private fun addPathOverlayForLoacation(pathPoints: MutableList<LocationData>){
         val pathLatLng = mutableListOf<LatLng>()
         //LocationData를 이용하여 PathOverlay를 만들기 위해 mutableList LatLng을 만듬
 
@@ -556,7 +560,7 @@ class EditLocationActivity : AppCompatActivity(), OnMapReadyCallback, MyLocation
 
         val pathOverlay = PathOverlay()
 
-        if(pathPoints.size > 1) {
+        if(pathLatLng.size > 1) {
             pathOverlay.coords = pathLatLng
             pathOverlay.width = 20
             pathOverlay.color = Color.YELLOW
@@ -582,15 +586,18 @@ class EditLocationActivity : AppCompatActivity(), OnMapReadyCallback, MyLocation
     /*Camera 관련 함수*/
     /*____________________________________________________________________________________________*/
     private fun moveCameraForPath(pathPoints: MutableList<LocationData>){
-        val minLat = pathPoints.minOf { it.lat }
-        val maxLat = pathPoints.maxOf { it.lat }
-        val minLng = pathPoints.minOf { it.lng }
-        val maxLng = pathPoints.maxOf { it.lng }
+        if(pathPoints.isNotEmpty()) {
+            val minLat = pathPoints.minOf { it.lat }
+            val maxLat = pathPoints.maxOf { it.lat }
+            val minLng = pathPoints.minOf { it.lng }
+            val maxLng = pathPoints.maxOf { it.lng }
 
-        val bounds = LatLngBounds(LatLng(minLat, minLng), LatLng(maxLat, maxLng))
-        naverMap.moveCamera(CameraUpdate.fitBounds(bounds, 300))
-        val Offset = PointF(0.0f, (-350).toFloat())
-        naverMap.moveCamera(CameraUpdate.scrollBy(Offset))
+            val bounds = LatLngBounds(LatLng(minLat, minLng), LatLng(maxLat, maxLng))
+            naverMap.moveCamera(CameraUpdate.fitBounds(bounds, 300))
+            val Offset = PointF(0.0f, (-350).toFloat())
+            naverMap.moveCamera(CameraUpdate.scrollBy(Offset))
+
+        }
     }
 
     private fun moveCameraForVisit(visit: VisitData){
