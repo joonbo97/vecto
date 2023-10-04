@@ -43,6 +43,7 @@ import java.util.Calendar
 
 class EditLocationActivity : AppCompatActivity(), OnMapReadyCallback, MyLocationAdapter.OnItemClickListener {
     private lateinit var binding: ActivityEditLocationBinding
+    val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")
 
 
     //map설정 관련
@@ -181,7 +182,6 @@ class EditLocationActivity : AppCompatActivity(), OnMapReadyCallback, MyLocation
                 LocationDatabase(this).deleteLocationDataBetween(locationDataList.first().datetime, locationDataList.last().datetime)
 
                 //시작 시간은 시작 지점의 시간.
-                val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")
                 val startTime = LocalDateTime.parse(locationDataList.first().datetime, formatter)
 
                 responsePathData.forEachIndexed { index, point ->
@@ -438,22 +438,30 @@ class EditLocationActivity : AppCompatActivity(), OnMapReadyCallback, MyLocation
 
     //merging 기준으로, merged visit 을 합치는 함수
     private fun mergeVisitData(mergingVisitData: VisitData, mergedVisitData: VisitData): String{
-        val datetime =
-            if (mergingVisitData.datetime > mergedVisitData.datetime)
-                mergedVisitData.datetime
-            else mergingVisitData.datetime
+        val mergingDateTime = LocalDateTime.parse(mergingVisitData.datetime, formatter)
+        val mergedDateTime = LocalDateTime.parse(mergedVisitData.datetime, formatter)
 
-        val endtime =
-            if(mergingVisitData.endtime > mergedVisitData.endtime)
-                mergingVisitData.endtime
-            else mergedVisitData.endtime
 
-        val FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")
+        val datetime = if (mergingDateTime.isAfter(mergedDateTime)) {
+            mergedDateTime
+        } else {
+            mergingDateTime
+        }
+
+        val mergingEndTime = LocalDateTime.parse(mergingVisitData.endtime, formatter)
+        val mergedEndTime = LocalDateTime.parse(mergedVisitData.endtime, formatter)
+
+        val endtime = if (mergingEndTime.isAfter(mergedEndTime)) {
+            mergingEndTime
+        } else {
+            mergedEndTime
+        }
+
         val newVisitData = VisitData(
-            datetime, endtime,
+            datetime.format(formatter), endtime.format(formatter),
             mergingVisitData.lat, mergingVisitData.lng,
             mergingVisitData.lat_set, mergingVisitData.lng_set,
-            Duration.between(LocalDateTime.parse(datetime, FORMAT), LocalDateTime.parse(endtime, FORMAT)).toMinutes().toInt(),
+            Duration.between(datetime, endtime).toMinutes().toInt(),
             mergingVisitData.name
         )
 
