@@ -114,4 +114,12 @@ class VisitDatabase(private val context: Context) {
         db.close()
     }
 
+    @SuppressLint("Range")
+    fun deleteVisitData(datetime: String) {
+        val db = dbHelper.writableDatabase
+        val whereClause = "datetime = ?"
+        val whereArgs = arrayOf(datetime)
+        db.delete("visit_data", whereClause, whereArgs)
+        db.close()
+    }
 }

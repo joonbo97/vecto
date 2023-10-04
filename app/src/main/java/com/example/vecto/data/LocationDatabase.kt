@@ -60,30 +60,30 @@ class LocationDatabase(context: Context) {
         db.close()
     }
 
-    @SuppressLint("Range")
-    fun getLocationDateData(date: String): List<LocationData> {
-        val db = dbHelper.writableDatabase
-        val cursor = db.rawQuery("SELECT * FROM location_data WHERE datetime LIKE ? ORDER BY datetime ASC", arrayOf("$date%"))
-
-        val dataList = mutableListOf<LocationData>()
-
-        while (cursor.moveToNext()) {
-            val datetime = cursor.getString(cursor.getColumnIndex("datetime"))
-            val lat = cursor.getDouble(cursor.getColumnIndex("lat"))
-            val lng = cursor.getDouble(cursor.getColumnIndex("lng"))
-            val locationData = LocationData(datetime, lat, lng)
-            dataList.add(locationData)
-        }
-
-        cursor.close()
-        return dataList
-    }
-
     fun deleteLocationDataBetween(startDatetime: String, endDatetime: String) {
         val db = dbHelper.writableDatabase
         val whereClause = "datetime > ? AND datetime < ?"
         val whereArgs = arrayOf(startDatetime, endDatetime)
         db.delete("location_data", whereClause, whereArgs)
         db.close()
+    }
+
+    @SuppressLint("Range")
+    fun getBetweenLocationData(startDatetime: String, endDatetime: String): MutableList<LocationData> {
+        val db = dbHelper.readableDatabase
+        val cursor = db.rawQuery("SELECT * FROM location_data WHERE datetime BETWEEN ? AND ? ORDER BY datetime ASC", arrayOf(startDatetime, endDatetime))
+        val dataList = mutableListOf<LocationData>()
+
+        while (cursor.moveToNext()) {
+            val datetime = cursor.getString(cursor.getColumnIndex("datetime"))
+            val lat = cursor.getDouble(cursor.getColumnIndex("lat"))
+            val lng = cursor.getDouble(cursor.getColumnIndex("lng"))
+            dataList.add(LocationData(datetime, lat, lng))
+        }
+
+        cursor.close()
+        db.close()
+
+        return dataList
     }
 }

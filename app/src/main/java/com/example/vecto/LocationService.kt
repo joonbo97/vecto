@@ -31,6 +31,8 @@ class LocationService : Service() {
     private var lastUpdateTime: LocalDateTime? = LocalDateTime.now().withNano(0)
     private var lastUpdateLocation: LatLng = LatLng(0.0, 0.0)//center Lat, Lng
 
+    val FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")
+
     var cnt: Int = 1
     var visitFlag: Boolean = false
 
@@ -55,7 +57,8 @@ class LocationService : Service() {
                             lastUpdateLocation = LatLng(((lastUpdateLocation.latitude * (cnt-1) + location.latitude)/cnt), ((lastUpdateLocation.longitude * (cnt-1) + location.longitude) / cnt))
 
                             //위치 데이터 추가
-                            val locationData = LocationData(currentDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")), location.latitude, location.longitude)
+                            val locationData = LocationData(currentDateTime.format(FORMAT), location.latitude, location.longitude)
+
                             Log.d("LocationService", "CheckDistance에 위치해 있지만, 5분이 되지 않았습니다. \nLastUpdateTime : $lastUpdateTime \nSave Done = DateTime : $currentDateTime Lat: ${location.latitude}, Lng: ${location.longitude}\n " +
                                     "accurancy : ${location.accuracy}")
                             locationDatabase.addLocationData(locationData)
@@ -73,24 +76,20 @@ class LocationService : Service() {
                                     )
                                     visitDatabase.addVisitData(
                                         VisitData(
-                                            lastUpdateTime!!.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")),
-                                            lastUpdateTime!!.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")),
-                                            lastUpdateLocation.latitude,
-                                            lastUpdateLocation.longitude,
-                                            lastUpdateLocation.latitude,
-                                            lastUpdateLocation.longitude,
+                                            lastUpdateTime!!.format(FORMAT), lastUpdateTime!!.format(FORMAT),
+                                            lastUpdateLocation.latitude, lastUpdateLocation.longitude,
+                                            lastUpdateLocation.latitude, lastUpdateLocation.longitude,
                                             0, ""
                                         )
                                     )
 
                                     locationDatabase.deleteLocationDataAfter(lastUpdateTime!!)
                                     locationDatabase.updateLocationData(
-                                        lastUpdateTime!!.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")),
-                                        lastUpdateLocation.latitude,
-                                        lastUpdateLocation.longitude
+                                        lastUpdateTime!!.format(FORMAT),
+                                        lastUpdateLocation.latitude, lastUpdateLocation.longitude
                                     )
 
-                                    locationDatabase.addLocationData(LocationData(lastUpdateTime!!.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")),lastUpdateLocation.latitude, lastUpdateLocation.longitude))
+                                    locationDatabase.addLocationData(LocationData(lastUpdateTime!!.format(FORMAT),lastUpdateLocation.latitude, lastUpdateLocation.longitude))
 
                                     cnt = 1
                                     visitFlag = true
@@ -103,13 +102,11 @@ class LocationService : Service() {
                                 else//다른방문 장소가 있는 경우
                                 {
                                     val lastVisitLocation: VisitData = visitDatabase.getLastVisitData()
-                                    val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")
-                                    val lastVisitTime = LocalDateTime.parse(lastVisitLocation.endtime, formatter)
-
-
+                                    val lastVisitTime = LocalDateTime.parse(lastVisitLocation.endtime, FORMAT)
 
                                     //이전 방문이 종료된 시각과, 현재 방문이 확인된 시각을 비교
-                                    if(Duration.between(lastVisitTime, lastUpdateTime).toMinutes() > 10) //10분이 지났다면, 새로운 방문지로 기록
+                                    //20분이 지났다면, 새로운 방문지로 기록
+                                    if(Duration.between(lastVisitTime, lastUpdateTime).toMinutes() > 20)
                                     {
                                         saveNewVisit()
                                     }
@@ -145,14 +142,12 @@ class LocationService : Service() {
                         {
                             val endtime = currentDateTime
                             val lastVisitLocation: VisitData = visitDatabase.getLastVisitData()
-                            val formatter =
-                                DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")
                             val lastVisitTime =
-                                LocalDateTime.parse(lastVisitLocation.datetime, formatter)
+                                LocalDateTime.parse(lastVisitLocation.datetime, FORMAT)
                             val minutesPassed = Duration.between(lastVisitTime, endtime).toMinutes().toInt()
-                            Log.d("LocationService", "직전 방문 기간은 $minutesPassed 분입니다.")
-                            visitDatabase.updateVisitEndtimeData(lastVisitTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")), endtime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")), minutesPassed)
 
+                            Log.d("LocationService", "직전 방문 기간은 $minutesPassed 분입니다.")
+                            visitDatabase.updateVisitEndtimeData(lastVisitTime.format(FORMAT), endtime.format(FORMAT), minutesPassed)
                             visitFlag = false
                         }
 
@@ -163,9 +158,8 @@ class LocationService : Service() {
 
                         //위치 데이터 추가
                         val locationData = LocationData(
-                            currentDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")),
-                            location.latitude,
-                            location.longitude
+                            currentDateTime.format(FORMAT),
+                            location.latitude, location.longitude
                         )
                         Log.d(
                             "LocationService",
