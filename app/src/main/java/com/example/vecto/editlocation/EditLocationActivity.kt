@@ -232,6 +232,7 @@ class EditLocationActivity : AppCompatActivity(), OnMapReadyCallback, MyLocation
                     locationDataList = LocationDatabase(this).getBetweenLocationData(visitDataList.first().datetime, visitDataList.last().datetime)
 
                     addPathOverlayForLoacation(locationDataList)
+                    moveCameraForPath(locationDataList)
 
 
                     val locationDataforPath = mutableListOf<LocationData>()
