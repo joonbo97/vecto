@@ -438,6 +438,7 @@ class EditLocationActivity : AppCompatActivity(), OnMapReadyCallback, MyLocation
 
     //merging 기준으로, merged visit 을 합치는 함수
     private fun mergeVisitData(mergingVisitData: VisitData, mergedVisitData: VisitData): String{
+        //TODO merge에서 고려할 사항이 생각보다 많음. 따로 UI를 만들어서 제공하는게 나을 수도?
         val mergingDateTime = LocalDateTime.parse(mergingVisitData.datetime, formatter)
         val mergedDateTime = LocalDateTime.parse(mergedVisitData.datetime, formatter)
 
@@ -562,7 +563,7 @@ class EditLocationActivity : AppCompatActivity(), OnMapReadyCallback, MyLocation
         val pathLatLng = mutableListOf<LatLng>()
         //LocationData를 이용하여 PathOverlay를 만들기 위해 mutableList LatLng을 만듬
 
-        for(i in 0 until pathPoints.size - 1) {
+        for(i in 0 until pathPoints.size) {
             pathLatLng.add(LatLng(pathPoints[i].lat, pathPoints[i].lng))
         }
 

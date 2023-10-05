@@ -105,8 +105,8 @@ class LocationService : Service() {
                                     val lastVisitTime = LocalDateTime.parse(lastVisitLocation.endtime, FORMAT)
 
                                     //이전 방문이 종료된 시각과, 현재 방문이 확인된 시각을 비교
-                                    //20분이 지났다면, 새로운 방문지로 기록
-                                    if(Duration.between(lastVisitTime, lastUpdateTime).toMinutes() > 20)
+                                    //10분이 지났다면, 새로운 방문지로 기록
+                                    if(Duration.between(lastVisitTime, lastUpdateTime).toMinutes() > 10)
                                     {
                                         saveNewVisit()
                                     }
