@@ -12,8 +12,9 @@ import androidx.core.app.NotificationCompat
 
 object MapNotification {
     const val CHANNEL_ID = "foreground_service_channel"
+    const val CHANNEL_ID_VISIT = "foreground_service_visit_channel"
 
-    fun createNotification(context: Context) :Notification
+    fun createNotification(context: Context): Notification
     {
         val notificationIntent = Intent(context, MainActivity::class.java)
         notificationIntent.action = Actions.MAIN
@@ -32,10 +33,34 @@ object MapNotification {
             .build()
 
         val serviceChannel = NotificationChannel(CHANNEL_ID, "Channel 입니다", NotificationManager.IMPORTANCE_DEFAULT)
+        serviceChannel.setShowBadge(false)
 
         val manager = context.getSystemService(NotificationManager::class.java)
         manager?.createNotificationChannel(serviceChannel)
 
         return notification
     }
+
+    fun  createVisitNotification(context: Context): Notification
+    {
+        val notificationIntent = Intent(context, MainActivity::class.java)
+
+        val pendingIntent = PendingIntent.getActivity(context, 1, notificationIntent, PendingIntent.FLAG_IMMUTABLE or FLAG_UPDATE_CURRENT)
+
+        val notification = NotificationCompat.Builder(context, CHANNEL_ID_VISIT)
+            .setContentTitle("방문이 확인되었습니다.")
+            .setContentText("추후 방문지 설정을 완료해주세요.")
+            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setContentIntent(pendingIntent)
+            .setAutoCancel(true)  // 알림 클릭 시 알림을 자동으로 삭제합니다.
+            .build()
+
+        val visitChannel = NotificationChannel(CHANNEL_ID_VISIT, "방문 알림 채널", NotificationManager.IMPORTANCE_DEFAULT)
+
+        val manager = context.getSystemService(NotificationManager::class.java)
+        manager?.createNotificationChannel(visitChannel)
+
+        return notification
+    }
+
 }

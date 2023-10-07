@@ -10,6 +10,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.Toast
+import androidx.core.graphics.alpha
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.vecto.Actions
 import com.example.vecto.LocationService
@@ -31,6 +32,8 @@ import com.naver.maps.map.NaverMap
 import com.naver.maps.map.OnMapReadyCallback
 import com.naver.maps.map.overlay.CircleOverlay
 import com.naver.maps.map.overlay.Marker
+import com.naver.maps.map.overlay.Overlay
+import com.naver.maps.map.overlay.OverlayImage
 import com.naver.maps.map.overlay.PathOverlay
 import com.naver.maps.map.util.FusedLocationSource
 import retrofit2.Call
@@ -474,16 +477,8 @@ class EditLocationActivity : AppCompatActivity(), OnMapReadyCallback, MyLocation
         return mergedVisitData.datetime
     }
 
-    private fun checkDistance(centerLatLng: LatLng, currendLatLng: LatLng, checkDistance: Int): Boolean{
-        val centerLocation = Location("centerLatLng")
-        centerLocation.latitude = centerLatLng.latitude
-        centerLocation.longitude = centerLatLng.longitude
-
-        val currentLocation = Location("currendLatLng")
-        currentLocation.latitude = currendLatLng.latitude
-        currentLocation.longitude = currendLatLng.longitude
-
-        return centerLocation.distanceTo(currentLocation) <= checkDistance
+    private fun checkDistance(centerLatLng: LatLng, currentLatLng: LatLng, checkDistance: Int): Boolean{
+        return centerLatLng.distanceTo(currentLatLng) <= checkDistance.toDouble()
     }
 
     /*Overlay 관련 함수*/
@@ -575,6 +570,8 @@ class EditLocationActivity : AppCompatActivity(), OnMapReadyCallback, MyLocation
             pathOverlay.width = 20
             pathOverlay.color = Color.YELLOW
             pathOverlay.map = naverMap
+            pathOverlay.patternImage = OverlayImage.fromResource(R.drawable.pathoverlay_pattern)
+            pathOverlay.patternInterval = 50
         }
 
         pathOverlays.add(pathOverlay)
