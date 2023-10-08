@@ -3,26 +3,37 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/FirstFragment">
+    app:startDestination="@+id/SearchFragment">
 
     <fragment
-        android:id="@+id/FirstFragment"
-        android:name="com.example.vecto.FirstFragment"
-        android:label="@string/first_fragment_label"
-        tools:layout="@layout/fragment_first" >
+        android:id="@+id/SearchFragment"
+        android:name="com.example.vecto.ui_bottom.SearchFragment"
+        android:label="fragment_search"
+        tools:layout="@layout/fragment_search"/>
 
-        <action
-            android:id="@+id/action_FirstFragment_to_SecondFragment"
-            app:destination="@id/SecondFragment" />
-    </fragment>
     <fragment
-        android:id="@+id/SecondFragment"
-        android:name="com.example.vecto.SecondFragment"
-        android:label="@string/second_fragment_label"
-        tools:layout="@layout/fragment_second" >
+        android:id="@+id/WriteFragment"
+        android:name="com.example.vecto.ui_bottom.WriteFragment"
+        android:label="fragment_write"
+        tools:layout="@layout/fragment_write"/>
 
-        <action
-            android:id="@+id/action_SecondFragment_to_FirstFragment"
-            app:destination="@id/FirstFragment" />
-    </fragment>
+    <fragment
+        android:id="@+id/TodayCourseFragment"
+        android:name="com.example.vecto.ui_bottom.TodayCourseFragment"
+        android:label="fragment_write"
+        tools:layout="@layout/fragment_write"/>
+
+    <fragment
+        android:id="@+id/EditCourseFragment"
+        android:name="com.example.vecto.ui_bottom.EditCourseFragment"
+        android:label="fragment_edit_course"
+        tools:layout="@layout/fragment_edit_course"/>
+
+    <fragment
+        android:id="@+id/MypageFragment"
+        android:name="com.example.vecto.ui_bottom.MypageFragment"
+        android:label="fragment_mypage"
+        tools:layout="@layout/fragment_mypage"/>
+
+
 </navigation>

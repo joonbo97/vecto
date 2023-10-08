@@ -200,7 +200,7 @@ class LocationService : Service() {
         val channel = NotificationChannel(
             channelId,
             "Location Service Channel",
-            NotificationManager.IMPORTANCE_DEFAULT
+            NotificationManager.IMPORTANCE_HIGH
         )
         val notificationManager =
             getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
