@@ -4,25 +4,63 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    tools:context=".guide.GuideFourthFragment">
+    tools:context=".guide.GuideFourthFragment"
+    android:background="@color/white">
 
-    <TextView
-        android:id="@+id/textView"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:text="백그라운드에서 사용자의 위치를 수집하기위해 위치 권한을 항상 사용을 필요로 합니다."
-        app:layout_constraintBottom_toBottomOf="parent"
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/NextButton"
+        android:layout_width="240dp"
+        android:layout_height="48dp"
+        android:background="@drawable/guide_button"
+        android:fontFamily="@font/lineseedkr_bd"
+        android:text="@string/시작하기"
+        android:textColor="@color/white"
+        android:textSize="20sp"
+        app:backgroundTint="@null"
+        android:layout_marginTop="25dp"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/Guide_TextView" />
+
+    <ImageView
+        android:id="@+id/Guide_ImageView"
+        android:layout_width="234dp"
+        android:layout_height="156dp"
+        android:layout_marginTop="220dp"
+        android:src="@drawable/guide_image4"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <Button
-        android:id="@+id/NextButton"
+    <TextView
+        android:id="@+id/Guide_TitleTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="29dp"
-        android:layout_marginBottom="28dp"
-        android:text="시작하기"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        android:fontFamily="@font/lineseedkr_bd"
+        android:text="@string/GuideTitle4"
+        android:textColor="@color/black"
+        android:textSize="25sp"
+        android:layout_marginTop="25dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/Guide_ImageView" />
+
+    <TextView
+        android:id="@+id/Guide_TextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/lineseedkr_rg"
+        android:gravity="center"
+        android:lineSpacingExtra="5sp"
+        android:text="@string/GuideText4"
+        android:textColor="@color/black"
+        android:textSize="20sp"
+        android:layout_marginTop="15dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/Guide_TitleTextView" />
 </androidx.constraintlayout.widget.ConstraintLayout>

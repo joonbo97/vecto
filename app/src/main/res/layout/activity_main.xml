@@ -37,6 +37,7 @@
         android:layout_height="55dp"
         android:background="@drawable/bottomnav_background"
         app:labelVisibilityMode="unlabeled"
+        app:elevation="@null"
         app:itemIconSize="22dp"
         app:itemRippleColor="@null"
         app:layout_constraintBottom_toBottomOf="parent"
