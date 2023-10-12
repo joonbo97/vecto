@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".LoginActivity">
+
+    <ImageView
+        android:id="@+id/LoginLogo"
+        android:layout_width="107dp"
+        android:layout_height="107dp"
+        android:layout_marginTop="70dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/login_logo" />
+
+    <ImageView
+        android:id="@+id/LoginLogoText"
+        android:layout_width="109dp"
+        android:layout_height="24dp"
+        android:layout_marginTop="10dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/LoginLogo"
+        app:srcCompat="@drawable/login_text" />
+
+    <ImageView
+        android:id="@+id/LoginBoxID"
+        android:layout_width="280dp"
+        android:layout_height="48dp"
+        android:layout_marginTop="50dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/LoginLogoText"
+        app:srcCompat="@drawable/login_box" />
+
+    <ImageView
+        android:id="@+id/LoginBoxPW"
+        android:layout_width="280dp"
+        android:layout_height="48dp"
+        android:layout_marginTop="10dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/LoginBoxID"
+        app:srcCompat="@drawable/login_box" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/LoginButton"
+        android:layout_width="280dp"
+        android:layout_height="48dp"
+        android:layout_marginTop="10dp"
+        android:text="로그인"
+        android:background="@drawable/login_button"
+        android:fontFamily="@font/lineseedkr_bd"
+        android:textColor="@color/white"
+        android:textSize="20sp"
+        app:backgroundTint="@null"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/LoginBoxPW" />
+
+    <ImageView
+        android:id="@+id/LoginBar"
+        android:layout_width="289dp"
+        android:layout_height="22dp"
+        android:layout_marginTop="10dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/LoginButton"
+        app:srcCompat="@drawable/login_bar" />
+
+    <ImageView
+        android:id="@+id/LoginBoxKakao"
+        android:layout_width="280dp"
+        android:layout_height="48dp"
+        android:layout_marginTop="10dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/LoginBar"
+        app:srcCompat="@drawable/login_kakao" />
+
+    <TextView
+        android:id="@+id/LoginText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="18dp"
+        android:layout_marginTop="20dp"
+        android:fontFamily="@font/lineseedkr_rg"
+        android:text="@string/LoginText"
+        android:textColor="@color/black"
+        android:textSize="15sp"
+        app:layout_constraintStart_toStartOf="@+id/LoginBoxKakao"
+        app:layout_constraintTop_toBottomOf="@+id/LoginBoxKakao" />
+
+    <TextView
+        android:id="@+id/LoginTextForRegister"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="5dp"
+        android:layout_marginTop="20dp"
+        android:fontFamily="@font/lineseedkr_rg"
+        android:text="@string/LoginTextForRegister"
+        android:textColor="@color/vecto_theme_orange"
+        android:textSize="15sp"
+        app:layout_constraintStart_toEndOf="@+id/LoginText"
+        app:layout_constraintTop_toBottomOf="@+id/LoginBoxKakao" />
+
+    <EditText
+        android:id="@+id/editTextID"
+        android:layout_width="240dp"
+        android:layout_height="40dp"
+        android:background="@null"
+        android:ems="20"
+        android:hint="아이디"
+        android:inputType="text"
+        android:text=""
+        app:layout_constraintBottom_toBottomOf="@+id/LoginBoxID"
+        app:layout_constraintEnd_toEndOf="@+id/LoginBoxID"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="@+id/LoginBoxID"
+        app:layout_constraintTop_toTopOf="@+id/LoginBoxID"
+        app:layout_constraintVertical_bias="0.5" />
+
+    <EditText
+        android:id="@+id/editTextPassword"
+        android:layout_width="240dp"
+        android:layout_height="40dp"
+        android:background="@null"
+        android:hint="비밀번호"
+        android:ems="20"
+        android:inputType="textPassword"
+        app:layout_constraintBottom_toBottomOf="@+id/LoginBoxPW"
+        app:layout_constraintEnd_toEndOf="@+id/LoginBoxPW"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="@+id/LoginBoxPW"
+        app:layout_constraintTop_toTopOf="@+id/LoginBoxPW"
+        app:layout_constraintVertical_bias="0.5" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

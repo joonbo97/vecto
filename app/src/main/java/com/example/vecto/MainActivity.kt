@@ -12,6 +12,7 @@ import androidx.datastore.preferences.preferencesDataStore
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.findNavController
 import androidx.navigation.ui.setupWithNavController
+import com.example.vecto.data.Auth
 import com.example.vecto.databinding.ActivityMainBinding
 import com.example.vecto.editlocation.EditLocationActivity
 import com.example.vecto.guide.GuideActivity
@@ -50,6 +51,19 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
             }
+            else if(item.itemId == R.id.MypageFragment)
+            {
+                lifecycleScope.launch {
+                    if(!Auth.loginFlag.value!!)
+                    {
+                        goLogin()
+                    }
+                    else
+                    {
+                        //TODO 마이페이지
+                    }
+                }
+            }
             true
         }
     }
@@ -71,6 +85,11 @@ class MainActivity : AppCompatActivity() {
 
     private fun showGuide(){
         val intent = Intent(this, GuideActivity::class.java) //Guide 화면으로 이동
+        startActivity(intent)
+    }
+
+    private fun goLogin(){
+        val intent = Intent(this, LoginActivity::class.java) //Login 화면으로 이동
         startActivity(intent)
     }
 }

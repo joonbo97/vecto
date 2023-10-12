@@ -16,4 +16,6 @@
     <string name="GuideText3">앱에서 제공하는 알림을 위해\n알림 권한이 필요합니다.</string>
     <string name="GuideTitle4">위치 권한 항상 허용</string>
     <string name="GuideText4">백그라운드 위치 수집을 위해\n위치권한을 항상 허용하도록 권장합니다.</string>
+    <string name="LoginText">아직 회원이 아니신가요?</string>
+    <string name="LoginTextForRegister"><u>회원가입 하기</u></string>
 </resources>

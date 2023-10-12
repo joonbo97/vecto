@@ -12,5 +12,11 @@ object Auth {
         _coin.value = coinValue
     }
 
+    val loginFlag: MutableLiveData<Boolean> = MutableLiveData<Boolean>(false)
+    fun setLoginFlag(flag: Boolean) {
+        loginFlag.value = flag
+    }
+
+
     val pathPoints: MutableList<LatLng> = mutableListOf()
 }

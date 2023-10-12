@@ -9,7 +9,7 @@
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/NextButton"
-        android:layout_width="240dp"
+        android:layout_width="280dp"
         android:layout_height="48dp"
         android:background="@drawable/guide_button"
         android:fontFamily="@font/lineseedkr_bd"

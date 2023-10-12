@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".RegisterActivity">
+
+    <ImageView
+        android:id="@+id/RegisterLogo"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="70dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/login_logo" />
+
+    <ImageView
+        android:id="@+id/RegisterLogoText"
+        android:layout_width="50dp"
+        android:layout_height="12dp"
+        android:layout_marginTop="10dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/RegisterLogo"
+        app:srcCompat="@drawable/login_text" />
+
+    <ImageView
+        android:id="@+id/RegisterBoxID"
+        android:layout_width="280dp"
+        android:layout_height="48dp"
+        android:layout_marginTop="50dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/RegisterLogoText"
+        app:srcCompat="@drawable/login_box" />
+
+    <ImageView
+        android:id="@+id/RegisterBoxPW"
+        android:layout_width="280dp"
+        android:layout_height="48dp"
+        android:layout_marginTop="10dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/RegisterBoxID"
+        app:srcCompat="@drawable/login_box" />
+
+    <ImageView
+        android:id="@+id/RegisterBoxCheckPW"
+        android:layout_width="280dp"
+        android:layout_height="48dp"
+        android:layout_marginTop="10dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/RegisterBoxPW"
+        app:srcCompat="@drawable/login_box" />
+
+    <ImageView
+        android:id="@+id/RegisterBoxEmail"
+        android:layout_width="280dp"
+        android:layout_height="48dp"
+        android:layout_marginTop="10dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/RegisterBoxCheckPW"
+        app:srcCompat="@drawable/login_box" />
+
+    <ImageView
+        android:id="@+id/RegisterBoxEmailCode"
+        android:layout_width="280dp"
+        android:layout_height="48dp"
+        android:layout_marginTop="10dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/RegisterBoxEmail"
+        app:srcCompat="@drawable/login_box" />
+
+
+    <EditText
+        android:id="@+id/editTextID"
+        android:layout_width="240dp"
+        android:layout_height="40dp"
+        android:background="@null"
+        android:ems="20"
+        android:hint="아이디"
+        android:inputType="text"
+        android:text=""
+        app:layout_constraintBottom_toBottomOf="@+id/RegisterBoxID"
+        app:layout_constraintEnd_toEndOf="@+id/RegisterBoxID"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="@+id/RegisterBoxID"
+        app:layout_constraintTop_toTopOf="@+id/RegisterBoxID"
+        app:layout_constraintVertical_bias="0.5" />
+
+    <EditText
+        android:id="@+id/editTextPassword"
+        android:layout_width="240dp"
+        android:layout_height="40dp"
+        android:background="@null"
+        android:ems="20"
+        android:hint="비밀번호"
+        android:inputType="textPassword"
+        app:layout_constraintBottom_toBottomOf="@+id/RegisterBoxPW"
+        app:layout_constraintEnd_toEndOf="@+id/RegisterBoxPW"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="@+id/RegisterBoxPW"
+        app:layout_constraintTop_toTopOf="@+id/RegisterBoxPW"
+        app:layout_constraintVertical_bias="0.5" />
+
+    <EditText
+        android:id="@+id/editTextCheckPassword"
+        android:layout_width="240dp"
+        android:layout_height="40dp"
+        android:background="@null"
+        android:ems="20"
+        android:hint="비밀번호확인"
+        android:inputType="textPassword"
+        app:layout_constraintBottom_toBottomOf="@+id/RegisterBoxCheckPW"
+        app:layout_constraintEnd_toEndOf="@+id/RegisterBoxCheckPW"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="@+id/RegisterBoxPW"
+        app:layout_constraintTop_toTopOf="@+id/RegisterBoxCheckPW"
+        app:layout_constraintVertical_bias="0.5" />
+
+    <EditText
+        android:id="@+id/editTextEmail"
+        android:layout_width="240dp"
+        android:layout_height="40dp"
+        android:background="@null"
+        android:ems="20"
+        android:hint="이메일 입력"
+        android:inputType="textEmailAddress"
+        app:layout_constraintBottom_toBottomOf="@+id/RegisterBoxEmail"
+        app:layout_constraintEnd_toEndOf="@+id/RegisterBoxEmail"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="@+id/RegisterBoxEmail"
+        app:layout_constraintTop_toTopOf="@+id/RegisterBoxEmail"
+        app:layout_constraintVertical_bias="0.5" />
+
+    <EditText
+        android:id="@+id/editTextEmailCode"
+        android:layout_width="240dp"
+        android:layout_height="40dp"
+        android:background="@null"
+        android:ems="20"
+        android:hint="인증번호"
+        android:inputType="textEmailAddress"
+        app:layout_constraintBottom_toBottomOf="@+id/RegisterBoxEmailCode"
+        app:layout_constraintEnd_toEndOf="@+id/RegisterBoxEmailCode"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="@+id/RegisterBoxEmailCode"
+        app:layout_constraintTop_toTopOf="@+id/RegisterBoxEmailCode"
+        app:layout_constraintVertical_bias="0.5" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/RegesterIDCheck"
+        android:layout_width="85dp"
+        android:layout_height="33dp"
+        android:layout_marginEnd="6dp"
+        android:background="@drawable/register_minibox"
+        android:fontFamily="@font/lineseedkr_bd"
+        android:text="중복 확인"
+        android:textColor="@color/white"
+        android:textSize="11sp"
+        app:backgroundTint="@null"
+        app:layout_constraintBottom_toBottomOf="@+id/editTextID"
+        app:layout_constraintEnd_toEndOf="@+id/RegisterBoxID"
+        app:layout_constraintTop_toTopOf="@+id/editTextID"
+        app:layout_constraintVertical_bias="0.5" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/RegesterEmailCheck"
+        android:layout_width="85dp"
+        android:layout_height="33dp"
+        android:layout_marginEnd="6dp"
+        android:background="@drawable/register_minibox"
+        android:fontFamily="@font/lineseedkr_bd"
+        android:text="메일 발송"
+        android:textColor="@color/white"
+        android:textSize="11sp"
+        app:backgroundTint="@null"
+        app:layout_constraintBottom_toBottomOf="@+id/RegisterBoxEmail"
+        app:layout_constraintEnd_toEndOf="@+id/RegisterBoxEmail"
+        app:layout_constraintTop_toTopOf="@+id/RegisterBoxEmail"
+        app:layout_constraintVertical_bias="0.5" />
+
+    <ImageView
+        android:id="@+id/RegesterPWCheck"
+        android:layout_width="25dp"
+        android:layout_height="25dp"
+        android:layout_marginEnd="15dp"
+        app:layout_constraintBottom_toBottomOf="@+id/RegisterBoxCheckPW"
+        app:layout_constraintEnd_toEndOf="@+id/RegisterBoxCheckPW"
+        app:layout_constraintTop_toTopOf="@+id/RegisterBoxCheckPW"
+        app:layout_constraintVertical_bias="0.5"
+        app:srcCompat="@drawable/register_wrong" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/RegisterButton"
+        android:layout_width="280dp"
+        android:layout_height="48dp"
+        android:layout_marginTop="10dp"
+        android:text="가입하기"
+        android:background="@drawable/login_button"
+        android:fontFamily="@font/lineseedkr_bd"
+        android:textColor="@color/white"
+        android:textSize="20sp"
+        app:backgroundTint="@null"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/RegisterBoxEmailCode" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
