@@ -11,11 +11,12 @@ class LoginActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         binding = ActivityLoginBinding.inflate(layoutInflater)
-        setContentView(R.layout.activity_login)
+        setContentView(binding.root)
 
         binding.LoginTextForRegister.setOnClickListener {
             val intent = Intent(this, RegisterActivity::class.java) //Register 화면으로 이동
             startActivity(intent)
         }
+
     }
 }
