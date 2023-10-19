@@ -543,6 +543,7 @@ class EditLocationActivity : AppCompatActivity(), OnMapReadyCallback, MyLocation
 
     private fun addVisitMarker(visitData: VisitData){
         val visitMarker = Marker()
+        visitMarker.icon = OverlayImage.fromResource(R.drawable.marker_image)
 
         if(visitData.name.isNotEmpty()) {
             visitMarker.position = LatLng(visitData.lat_set, visitData.lng_set)
@@ -563,18 +564,7 @@ class EditLocationActivity : AppCompatActivity(), OnMapReadyCallback, MyLocation
             pathLatLng.add(LatLng(pathPoints[i].lat, pathPoints[i].lng))
         }
 
-        val pathOverlay = PathOverlay()
-
-        if(pathLatLng.size > 1) {
-            pathOverlay.coords = pathLatLng
-            pathOverlay.width = 20
-            pathOverlay.color = Color.YELLOW
-            pathOverlay.map = naverMap
-            pathOverlay.patternImage = OverlayImage.fromResource(R.drawable.pathoverlay_pattern)
-            pathOverlay.patternInterval = 50
-        }
-
-        pathOverlays.add(pathOverlay)
+        addPathOverlay(pathLatLng)
     }
 
     private fun addPathOverlay(pathPoints: MutableList<LatLng>){
@@ -583,11 +573,14 @@ class EditLocationActivity : AppCompatActivity(), OnMapReadyCallback, MyLocation
         if(pathPoints.size > 1) {
             pathOverlay.coords = pathPoints
             pathOverlay.width = 20
-            pathOverlay.color = Color.YELLOW
+            pathOverlay.color = getColor(R.color.vecto_pathcolor)
+            pathOverlay.patternImage = OverlayImage.fromResource(R.drawable.pathoverlay_pattern)
+            pathOverlay.patternInterval = 50
             pathOverlay.map = naverMap
+            pathOverlays.add(pathOverlay)
+
         }
 
-        pathOverlays.add(pathOverlay)
     }
 
     /*Camera 관련 함수*/

@@ -10,4 +10,6 @@
     <color name="vecto_main">#FFF2F6FF</color>
     <color name="vecto_theme_orange">#FFFD7156</color>
     <color name="vecto_theme_blue">#FF4696EB</color>
+    <color name="vecto_disable">#FF7C7E88</color>
+    <color name="vecto_pathcolor">#FF034077</color>
 </resources>

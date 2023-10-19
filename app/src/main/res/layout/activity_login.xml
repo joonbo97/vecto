@@ -32,7 +32,7 @@
 
     <ImageView
         android:id="@+id/LoginBoxID"
-        android:layout_width="280dp"
+        android:layout_width="320dp"
         android:layout_height="48dp"
         android:layout_marginTop="50dp"
         app:layout_constraintEnd_toEndOf="parent"
@@ -43,7 +43,7 @@
 
     <ImageView
         android:id="@+id/LoginBoxPW"
-        android:layout_width="280dp"
+        android:layout_width="320dp"
         android:layout_height="48dp"
         android:layout_marginTop="10dp"
         app:layout_constraintEnd_toEndOf="parent"
@@ -54,7 +54,7 @@
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/LoginButton"
-        android:layout_width="280dp"
+        android:layout_width="320dp"
         android:layout_height="48dp"
         android:layout_marginTop="10dp"
         android:text="로그인"
@@ -70,8 +70,8 @@
 
     <ImageView
         android:id="@+id/LoginBar"
-        android:layout_width="289dp"
-        android:layout_height="22dp"
+        android:layout_width="340dp"
+        android:layout_height="26dp"
         android:layout_marginTop="10dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
@@ -81,7 +81,7 @@
 
     <ImageView
         android:id="@+id/LoginBoxKakao"
-        android:layout_width="280dp"
+        android:layout_width="320dp"
         android:layout_height="48dp"
         android:layout_marginTop="10dp"
         app:layout_constraintEnd_toEndOf="parent"
@@ -94,7 +94,7 @@
         android:id="@+id/LoginText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="18dp"
+        android:layout_marginStart="38dp"
         android:layout_marginTop="20dp"
         android:fontFamily="@font/lineseedkr_rg"
         android:text="@string/LoginText"
@@ -118,7 +118,7 @@
 
     <EditText
         android:id="@+id/editTextID"
-        android:layout_width="240dp"
+        android:layout_width="280dp"
         android:layout_height="40dp"
         android:background="@null"
         android:ems="20"
@@ -134,7 +134,7 @@
 
     <EditText
         android:id="@+id/editTextPassword"
-        android:layout_width="240dp"
+        android:layout_width="280dp"
         android:layout_height="40dp"
         android:background="@null"
         android:hint="비밀번호"
