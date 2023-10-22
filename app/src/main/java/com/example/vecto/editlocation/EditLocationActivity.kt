@@ -198,8 +198,6 @@ class EditLocationActivity : AppCompatActivity(), OnMapReadyCallback, MyLocation
         }
 
         searchButton.setOnClickListener {
-            //Toast.makeText(this, "공유하고싶은 방문날짜를 선택해주세요.", Toast.LENGTH_SHORT).show()
-
             val calendar = Calendar.getInstance()
             val year = calendar.get(Calendar.YEAR)
             val month = calendar.get(Calendar.MONTH)

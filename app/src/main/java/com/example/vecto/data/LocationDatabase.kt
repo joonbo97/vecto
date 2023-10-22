@@ -3,6 +3,7 @@ package com.example.vecto.data
 import android.annotation.SuppressLint
 import android.content.ContentValues
 import android.content.Context
+import java.time.LocalDate
 import java.time.LocalDateTime
 
 class LocationDatabase(context: Context) {
@@ -71,6 +72,32 @@ class LocationDatabase(context: Context) {
     @SuppressLint("Range")
     fun getBetweenLocationData(startDatetime: String, endDatetime: String): MutableList<LocationData> {
         val db = dbHelper.readableDatabase
+        val cursor = db.rawQuery("SELECT * FROM location_data WHERE datetime BETWEEN ? AND ? ORDER BY datetime ASC", arrayOf(startDatetime, endDatetime))
+        val dataList = mutableListOf<LocationData>()
+
+        while (cursor.moveToNext()) {
+            val datetime = cursor.getString(cursor.getColumnIndex("datetime"))
+            val lat = cursor.getDouble(cursor.getColumnIndex("lat"))
+            val lng = cursor.getDouble(cursor.getColumnIndex("lng"))
+            dataList.add(LocationData(datetime, lat, lng))
+        }
+
+        cursor.close()
+        db.close()
+
+        return dataList
+    }
+
+    @SuppressLint("Range")
+    fun getTodayLocationData(): MutableList<LocationData> {
+        val db = dbHelper.readableDatabase
+
+        // 오늘 날짜를 YYYY-MM-DD 형식으로 가져옵니다.
+        val todayDate = LocalDate.now().toString()
+
+        val startDatetime = "${todayDate}T00:00:00"
+        val endDatetime = "${todayDate}T23:59:59"
+
         val cursor = db.rawQuery("SELECT * FROM location_data WHERE datetime BETWEEN ? AND ? ORDER BY datetime ASC", arrayOf(startDatetime, endDatetime))
         val dataList = mutableListOf<LocationData>()
 

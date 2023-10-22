@@ -29,19 +29,19 @@ class MainActivity : AppCompatActivity() {
 
         val dataStore = applicationContext.myDataStore // Utilizing the DataStore instance here.
 
-
+        /*
         binding.EditMapBtn.setOnClickListener{
             val intent = Intent(this, EditLocationActivity::class.java) //EditLocation 화면으로 이동
             //intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             startActivity(intent)
         }
 
+         */
+
         val navView = binding.navView
         val navController = findNavController(R.id.nav_host_fragment_activity_main)
         navView.setupWithNavController(navController)
         navView.itemIconTintList = null
-
-
 
     }
 }

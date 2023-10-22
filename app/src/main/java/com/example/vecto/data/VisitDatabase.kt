@@ -3,6 +3,7 @@ package com.example.vecto.data
 import android.annotation.SuppressLint
 import android.content.ContentValues
 import android.content.Context
+import java.time.LocalDate
 
 class VisitDatabase(private val context: Context) {
     private val dbHelper = VisitDatabaseHelper(context)
@@ -122,4 +123,36 @@ class VisitDatabase(private val context: Context) {
         db.delete("visit_data", whereClause, whereArgs)
         db.close()
     }
+
+    @SuppressLint("Range")
+    fun getTodayVisitData(): MutableList<VisitData> {
+        val db = dbHelper.readableDatabase
+
+        // 오늘 날짜를 YYYY-MM-DD 형식으로 가져옵니다.
+        val todayDate = LocalDate.now().toString()
+
+        val startDatetime = "${todayDate}T00:00:00"
+        val endDatetime = "${todayDate}T23:59:59"
+
+        val cursor = db.rawQuery("SELECT * FROM visit_data WHERE datetime BETWEEN ? AND ? ORDER BY datetime ASC", arrayOf(startDatetime, endDatetime))
+        val dataList = mutableListOf<VisitData>()
+
+        while (cursor.moveToNext()) {
+            val datetime = cursor.getString(cursor.getColumnIndex("datetime"))
+            val endtime = cursor.getString(cursor.getColumnIndex("endtime"))
+            val lat = cursor.getDouble(cursor.getColumnIndex("lat"))
+            val lng = cursor.getDouble(cursor.getColumnIndex("lng"))
+            val lat_set = cursor.getDouble(cursor.getColumnIndex("lat_set"))
+            val lng_set = cursor.getDouble(cursor.getColumnIndex("lng_set"))
+            val staytime = cursor.getInt(cursor.getColumnIndex("staytime"))
+            val name = cursor.getString(cursor.getColumnIndex("name"))
+            dataList.add(VisitData(datetime, endtime, lat, lng, lat_set, lng_set, staytime, name))
+        }
+
+        cursor.close()
+        db.close()
+
+        return dataList
+    }
+
 }

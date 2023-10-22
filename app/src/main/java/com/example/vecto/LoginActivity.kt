@@ -4,6 +4,7 @@ import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.widget.Toast
 import com.example.vecto.databinding.ActivityLoginBinding
 import com.kakao.sdk.auth.AuthApiClient
 import com.kakao.sdk.auth.model.OAuthToken
@@ -67,6 +68,7 @@ class LoginActivity : AppCompatActivity() {
                                         } else if (user != null) {
                                             Log.e("TAG", "사용자 정보 요청 성공 : $user")
 
+                                            Toast.makeText(this, user.kakaoAccount?.email, Toast.LENGTH_LONG).show()
                                             /*binding.txtNickName.text = user.kakaoAccount?.profile?.nickname
                                             binding.txtAge.text = user.kakaoAccount?.ageRange.toString()
                                             binding.txtEmail.text = user.kakaoAccount?.email*/

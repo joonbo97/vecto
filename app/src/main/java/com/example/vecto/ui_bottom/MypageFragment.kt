@@ -9,18 +9,22 @@ import android.view.ViewGroup
 import com.example.vecto.LoginActivity
 import com.example.vecto.R
 import com.example.vecto.data.Auth
+import com.example.vecto.databinding.FragmentMypageBinding
 
 class MypageFragment : Fragment() {
+    lateinit var binding: FragmentMypageBinding
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
+        binding = FragmentMypageBinding.inflate(inflater, container, false)
+
         if(!Auth.loginFlag.value!!){
             goLogin()
         }
 
-        return inflater.inflate(R.layout.fragment_mypage, container, false)
+        return binding.root
     }
 
     private fun goLogin(){
