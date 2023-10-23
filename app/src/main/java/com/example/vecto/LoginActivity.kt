@@ -1,11 +1,14 @@
 package com.example.vecto
 
+import android.content.Context
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
 import com.example.vecto.databinding.ActivityLoginBinding
+import com.example.vecto.retrofit.TMapAPIService
+import com.example.vecto.retrofit.VectoService
 import com.kakao.sdk.auth.AuthApiClient
 import com.kakao.sdk.auth.model.OAuthToken
 import com.kakao.sdk.common.KakaoSdk
@@ -14,6 +17,11 @@ import com.kakao.sdk.common.model.ClientErrorCause
 import com.kakao.sdk.common.model.KakaoSdkError
 import com.kakao.sdk.common.util.Utility
 import com.kakao.sdk.user.UserApiClient
+import com.naver.maps.geometry.LatLng
+import okhttp3.ResponseBody
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 class LoginActivity : AppCompatActivity() {
     private lateinit var binding: ActivityLoginBinding
@@ -68,10 +76,9 @@ class LoginActivity : AppCompatActivity() {
                                         } else if (user != null) {
                                             Log.e("TAG", "사용자 정보 요청 성공 : $user")
 
-                                            Toast.makeText(this, user.kakaoAccount?.email, Toast.LENGTH_LONG).show()
-                                            /*binding.txtNickName.text = user.kakaoAccount?.profile?.nickname
-                                            binding.txtAge.text = user.kakaoAccount?.ageRange.toString()
-                                            binding.txtEmail.text = user.kakaoAccount?.email*/
+
+                                            //user.id 를 통해 고유 Unique한 데이터 획득 가능
+                                            sendLoginRequest(VectoService.LoginRequest(user.id.toString(), null, getTokenFromSharedPref(this).toString()))
                                         }
                                     }
                                 }
@@ -96,4 +103,32 @@ class LoginActivity : AppCompatActivity() {
             Log.e("TAG", "로그인 성공 ${token.accessToken}")
         }
     }
+
+    private fun sendLoginRequest(loginRequest: VectoService.LoginRequest){
+        val vectoService = VectoService.create()
+        val call = vectoService.loginUser(loginRequest)
+
+        call.enqueue(object : Callback<ResponseBody>{
+            override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
+                if (response.isSuccessful) {
+                    // 로그인 성공
+                } else {
+                    // 서버 에러 처리
+                }
+            }
+
+            override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
+                // 네트워크 등 기타 에러 처리
+            }
+
+        })
+
+    }
+
+
+    fun getTokenFromSharedPref(context: Context): String? {
+        val sharedPreferences = context.getSharedPreferences("fcm_pref", Context.MODE_PRIVATE)
+        return sharedPreferences.getString("fcm_token", null)
+    }
+
 }

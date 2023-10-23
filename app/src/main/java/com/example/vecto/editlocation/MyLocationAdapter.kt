@@ -20,8 +20,7 @@ class MyLocationAdapter(private val context: Context, private val itemClickListe
 
 
     inner class ViewHolder(view: View): RecyclerView.ViewHolder(view), View.OnClickListener{
-        val imageView: ImageView = view.findViewById(R.id.LoacationImageView)
-        val textView: TextView = view.findViewById(R.id.LoacationTextView)
+        val imageView: ImageView = view.findViewById(R.id.VisitImageView)
 
         init{
             view.setOnClickListener(this)
@@ -34,12 +33,10 @@ class MyLocationAdapter(private val context: Context, private val itemClickListe
                 if(item.name.isNotEmpty())
                 {
                     imageView.setImageResource(R.drawable.location_visit_first_green)
-                    textView.text = item.name
                 }
                 else
                 {
                     imageView.setImageResource(R.drawable.location_visit_first_red)
-                    textView.text = "방문지"
                 }
             }
             else if(adapterPosition == visitdata.size + pathdata.size - 1)
@@ -47,12 +44,10 @@ class MyLocationAdapter(private val context: Context, private val itemClickListe
                 if(item.name.isNotEmpty())
                 {
                     imageView.setImageResource(R.drawable.location_visit_last_green)
-                    textView.text = item.name
                 }
                 else
                 {
                     imageView.setImageResource(R.drawable.location_visit_last_red)
-                    textView.text = "방문지"
 
                 }
             }
@@ -61,14 +56,11 @@ class MyLocationAdapter(private val context: Context, private val itemClickListe
                 if(item.name.isNotEmpty())
                 {
                     imageView.setImageResource(R.drawable.location_visit_middle_green)
-                    textView.text = item.name
 
                 }
                 else
                 {
                     imageView.setImageResource(R.drawable.location_visit_middle_red)
-                    textView.text = "방문지"
-
                 }
             }
         }
@@ -77,7 +69,6 @@ class MyLocationAdapter(private val context: Context, private val itemClickListe
         fun bindlocation(item: PathData)
         {
             imageView.setImageResource(R.drawable.location_location)
-            textView.text = "경로"
         }
 
         override fun onClick(p0: View?) {
@@ -119,9 +110,5 @@ class MyLocationAdapter(private val context: Context, private val itemClickListe
         fun onItemClick(data: Any)
     }
 
-    /*fun removeData(position :Int)
-    {
-        data.removeAt(position)
-        notifyItemRemoved(position)
-    }*/
+
 }

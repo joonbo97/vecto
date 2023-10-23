@@ -27,6 +27,17 @@ interface TMapAPIService {
         @Query("searchOption") searchOption: Int
     ): Call<GeoJsonResponse>
 
+    @GET("pois/search/around?")
+    fun searchNearbyPOI(
+        @Query("version") version: Int,
+        @Query("categories") categories: String,
+        @Query("appKey") appKey: String,
+        @Query("page") page: Int,
+        @Query("radius") radius: Int,
+        @Query("count") count: Int,
+        @Query("centerLat") centerLat: Double,
+        @Query("centerLon") centerLon: Double
+        ): Call<POIResponse>
 
 
     companion object {
@@ -49,6 +60,25 @@ interface TMapAPIService {
     data class Feature(val type: String, val geometry: Geometry, val properties: Properties)
     data class GeoJsonResponse(val type: String, val features: List<Feature>)
 
+    data class POIResponse(
+        val searchPoiInfo: SearchPoiInfo
+    )
+
+    data class SearchPoiInfo(
+        @SerializedName("totalCount") val totalCount: Int,
+        @SerializedName("count") val count: Int,
+        val pois: Pois
+    )
+
+    data class Pois(
+        val poi: List<Poi>
+    )
+
+    data class Poi(
+        val name: String,
+        val frontLat: Double,
+        val frontLon: Double
+    )
 }
 
 

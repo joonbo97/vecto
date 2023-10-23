@@ -78,13 +78,17 @@ class TodayCourseFragment : Fragment(), OnMapReadyCallback {
         binding = FragmentTodayCourseBinding.inflate(inflater, container, false)
 
         lifecycleScope.launch {
+
             if(!isGuideFlag()){
                 showGuide()
                 saveGuideFlag(true)
             }
+            else
+            {
+                initMap()
+            }
         }
 
-        initMap()
         val smallButton = binding.ButtonSmall
         val largeButton = binding.ButtonLarge
         var serviceFlag = isServiceRunning(LocationService::class.java)
