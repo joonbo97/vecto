@@ -4,14 +4,19 @@ import android.content.res.ColorStateList
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.CountDownTimer
+import android.util.Log
 import android.view.View
 import android.widget.EditText
 import android.widget.ImageView
+import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.core.widget.addTextChangedListener
-import androidx.core.widget.doAfterTextChanged
 import com.example.vecto.databinding.ActivityRegisterBinding
+import com.example.vecto.retrofit.VectoService
 import com.google.android.material.button.MaterialButton
+import retrofit2.Callback
+import retrofit2.Call
+import retrofit2.Response
 
 class RegisterActivity : AppCompatActivity() {
     private lateinit var binding: ActivityRegisterBinding
@@ -39,7 +44,9 @@ class RegisterActivity : AppCompatActivity() {
 
         emailSendButton = binding.RegesterEmailCheck
         emailSendButton.setOnClickListener {
-            startEmailTimer()
+            if(checkEmail()) {
+                startEmailTimer()
+            }
         }
 
         editTextID = binding.editTextID
@@ -65,7 +72,61 @@ class RegisterActivity : AppCompatActivity() {
             }
         }
 
+        editTextID.onFocusChangeListener = View.OnFocusChangeListener { _, hasFocus ->
+            if (!hasFocus) {
+                checkID()
+            }
+        }
 
+        editTextPW.onFocusChangeListener = View.OnFocusChangeListener { _, hasFocus ->
+            if (!hasFocus) {
+                checkPW()
+            }
+        }
+
+        editTextNickname.onFocusChangeListener = View.OnFocusChangeListener { _, hasFocus ->
+            if (!hasFocus) {
+                checkNickname()
+            }
+        }
+
+
+        binding.RegesterIDCheck.setOnClickListener {
+            if(checkID())
+            {
+                isIdExist(binding.editTextID.toString())
+            }
+        }
+
+        binding.RegisterButton.setOnClickListener {
+            //TODO check 수행 후 회원가입 요청
+        }
+
+
+    }
+
+    private fun isIdExist(id: String){
+        val vectoService = VectoService.create()
+
+        val call = vectoService.idCheck(VectoService.IdCheckRequest(id))
+        call.enqueue(object : Callback<VectoService.VectoResponse>{
+            override fun onResponse(call: Call<VectoService.VectoResponse>, response: Response<VectoService.VectoResponse>) {
+                if(response.isSuccessful){
+                    Log.d("ID_CHECK", "성공: ${response.body()}}")
+                    response.body()?.status
+                    response.body()?.code
+                    response.body()?.message
+                    response.body()?.token
+                }
+                else{
+                    Log.d("ID_CHECK", "성공했으나 서버 오류 ${response.errorBody()?.string()}")
+                }
+            }
+
+            override fun onFailure(call: Call<VectoService.VectoResponse>, t: Throwable) {
+                Log.d("ID_CHECK", "실패")
+            }
+        })
     }
 
     private fun checkPWImage(){
@@ -76,6 +137,9 @@ class RegisterActivity : AppCompatActivity() {
     }
 
     private fun checkEmailImage(){
+
+
+
         //if(인증코드 일치)
         {
             emailCheckImage
@@ -105,8 +169,71 @@ class RegisterActivity : AppCompatActivity() {
                 emailSendButton.backgroundTintList = null
             }
         }.start()
-
-
     }
 
+    private fun checkID(): Boolean{
+        if(editTextID.text.isEmpty()) {
+            Toast.makeText(this, "아이디 항목이 비어있습니다.", Toast.LENGTH_SHORT).show()
+            return false
+        }
+
+        val input = editTextID.text.toString()
+        val idPattern = Regex("^[a-zA-Z0-9]{4,20}$")
+
+        return if(!idPattern.matches(input)){
+            Toast.makeText(this, "영어와 숫자로만 이루어진 4~20글자 아이디를 입력해주세요.", Toast.LENGTH_SHORT).show()
+            false
+        } else
+            true
+    }
+
+    private fun checkPW(): Boolean{
+        val passwordPattern = Regex("^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@#$%^&+=!]).{8,20}$")
+        val input = editTextPW.text.toString()
+
+        if (input.isEmpty()) {
+            Toast.makeText(this, "비밀번호 항목이 비어있습니다.", Toast.LENGTH_SHORT).show()
+            return false
+        }
+
+        if (!passwordPattern.matches(input)) {
+            Toast.makeText(this, "영어, 숫자, 특수문자(@#$%^&+=!)를 포함한 8~20글자 비밀번호를 입력해주세요.", Toast.LENGTH_SHORT).show()
+            return false
+        }
+
+        return true
+    }
+
+    private fun checkNickname(): Boolean{
+        val input = editTextNickname.text.toString()
+
+        if (input.isEmpty()) {
+            Toast.makeText(this, "닉네임 항목이 비어있습니다.", Toast.LENGTH_SHORT).show()
+            return false
+        }
+
+        if (input.length > 10) {
+            Toast.makeText(this, "닉네임은 10글자 이하여야 합니다.", Toast.LENGTH_SHORT).show()
+            return false
+        }
+
+        return true
+    }
+
+    private fun checkEmail():Boolean{
+        val input = editTextEmail.text.toString()
+        val emailRegex = Regex("[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,4}")
+
+        if(input.isEmpty()) {
+            Toast.makeText(this, "이메일 항목이 비어있습니다.", Toast.LENGTH_SHORT).show()
+            return false
+        }
+
+        if(!emailRegex.matches(input)) {
+            Toast.makeText(this, "이메일 형식에 맞지 않습니다.", Toast.LENGTH_SHORT).show()
+            return false
+        }
+
+        return true
+    }
 }

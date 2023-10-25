@@ -53,6 +53,10 @@ interface TMapAPIService {
         fun key(): String{
             return "7E3Vznne0r3bGkN2cbh8M1lXpvNbZEvYaRGyr8by"
         }
+
+        fun key2(): String{
+            return "AIzaSyB5FqF8vybQ7NJYtXn-cmn1-mU8ITtKSA4"
+        }
     }
 
     data class Geometry(val type: String, val coordinates: Any)

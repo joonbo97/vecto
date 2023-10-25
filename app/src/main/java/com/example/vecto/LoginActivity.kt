@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
+import com.example.vecto.data.Auth
 import com.example.vecto.databinding.ActivityLoginBinding
 import com.example.vecto.retrofit.TMapAPIService
 import com.example.vecto.retrofit.VectoService
@@ -25,6 +26,8 @@ import retrofit2.Response
 
 class LoginActivity : AppCompatActivity() {
     private lateinit var binding: ActivityLoginBinding
+    private lateinit var nickname: String
+    private lateinit var fcmtoken: String
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -35,6 +38,8 @@ class LoginActivity : AppCompatActivity() {
             val intent = Intent(this, RegisterActivity::class.java) //Register 화면으로 이동
             startActivity(intent)
         }
+
+
 
         KakaoSdk.init(this, "1ad70f21b84b4b2472d7b036d0fc40ce")
         binding.LoginBoxKakao.setOnClickListener {
@@ -76,9 +81,10 @@ class LoginActivity : AppCompatActivity() {
                                         } else if (user != null) {
                                             Log.e("TAG", "사용자 정보 요청 성공 : $user")
 
-
+                                            nickname = user.kakaoAccount?.profile?.nickname.toString()
+                                            fcmtoken = getTokenFromSharedPref(this).toString()
                                             //user.id 를 통해 고유 Unique한 데이터 획득 가능
-                                            sendLoginRequest(VectoService.LoginRequest(user.id.toString(), null, getTokenFromSharedPref(this).toString()))
+                                            sendLoginRequest(VectoService.LoginRequest(user.id.toString(), null, fcmtoken))
                                         }
                                     }
                                 }
@@ -106,23 +112,78 @@ class LoginActivity : AppCompatActivity() {
 
     private fun sendLoginRequest(loginRequest: VectoService.LoginRequest){
         val vectoService = VectoService.create()
-        val call = vectoService.loginUser(loginRequest)
 
-        call.enqueue(object : Callback<ResponseBody>{
-            override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
+        val call = vectoService.loginUser(loginRequest)
+        call.enqueue(object : Callback<VectoService.VectoResponse>{
+            override fun onResponse(call: Call<VectoService.VectoResponse>, response: Response<VectoService.VectoResponse>) {
                 if (response.isSuccessful) {
                     // 로그인 성공
+                    Log.d("VectoLogin", "로그인 성공 : " + response.message())
+                    Auth.token = response.body()!!.token
+                    getUserInfo(response.body()!!.token)
                 } else {
                     // 서버 에러 처리
+                    Log.d("VectoLogin", "로그인 실패 : " + response.errorBody()?.string())
+
+                    if(response.code() == 401){
+                        //kakao일 때, 로그인에 실패하면 회원가입까지 자동으로 완료.
+                        sendRegisterRequest(VectoService.RegisterRequest(loginRequest.userId, null, "kakao", nickname, null))
+                        Log.d("FCMTOKEN", fcmtoken)
+                    }
                 }
             }
 
-            override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
+            override fun onFailure(call: Call<VectoService.VectoResponse>, t: Throwable) {
                 // 네트워크 등 기타 에러 처리
             }
+        })
+    }
 
+    private fun getUserInfo(token: String) {
+        val vectoService = VectoService.create()
+
+        val call = vectoService.getUserInfo("Bearer $token")
+        call.enqueue(object : Callback<VectoService.UserInfoResponse>{
+            override fun onResponse(call: Call<VectoService.UserInfoResponse>, response: Response<VectoService.UserInfoResponse>) {
+                if (response.isSuccessful) {
+                    //가입 성공
+                    Log.d("VectoRegister", "정보 조회 성공 : " + response.message())
+                    Auth.setLoginFlag(true)
+                    finish()
+                } else {
+                    // 서버 에러 처리
+                    Log.d("VectoRegister", "정보 조회 실패 : " + response.errorBody()?.string())
+                }
+            }
+
+            override fun onFailure(call: Call<VectoService.UserInfoResponse>, t: Throwable) {
+                Log.d("VectoRegister", "정보 조회 실패 : " + t.message)
+            }
         })
 
+    }
+
+    private fun sendRegisterRequest(registerRequest: VectoService.RegisterRequest){
+        val vectoService = VectoService.create()
+
+        val call = vectoService.registerUser(registerRequest)
+        call.enqueue(object : Callback<VectoService.VectoResponse>{
+            override fun onResponse(call: Call<VectoService.VectoResponse>, response: Response<VectoService.VectoResponse>) {
+                if (response.isSuccessful) {
+                    //가입 성공
+                    Log.d("VectoRegister", "회원가입 성공 : " + response.message())
+
+                    sendLoginRequest(VectoService.LoginRequest(registerRequest.userId, null, fcmtoken))
+                } else {
+                    // 서버 에러 처리
+                    Log.d("VectoRegister", "회원가입 실패 : " + response.errorBody()?.string())
+                }
+            }
+
+            override fun onFailure(call: Call<VectoService.VectoResponse>, t: Throwable) {
+                // 네트워크 등 기타 에러 처리
+            }
+        })
     }
 
 

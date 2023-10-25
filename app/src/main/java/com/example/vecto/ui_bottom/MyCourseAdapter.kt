@@ -102,6 +102,10 @@ class MyCourseAdapter(private val context: Context, private val itemClickListene
 
     inner class PathViewHolder(view: View): RecyclerView.ViewHolder(view), View.OnClickListener{
 
+        init{
+            view.setOnClickListener(this)
+        }
+
         fun bindlocation(item: PathData)
         {
 
@@ -173,6 +177,8 @@ class MyCourseAdapter(private val context: Context, private val itemClickListene
 
         val hours = minutes / 60
         val remainingMinutes = minutes % 60
+        if(hours == 0)
+            return "${remainingMinutes}분"
         return "${hours}시간 ${remainingMinutes}분"
     }
 

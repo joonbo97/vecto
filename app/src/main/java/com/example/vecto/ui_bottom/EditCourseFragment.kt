@@ -21,6 +21,8 @@ import com.example.vecto.data.PathData
 import com.example.vecto.data.VisitData
 import com.example.vecto.data.VisitDatabase
 import com.example.vecto.databinding.FragmentEditCourseBinding
+import com.example.vecto.retrofit.GooglePlacesApi
+import com.example.vecto.retrofit.GooglePlacesApi.Companion.key
 import com.example.vecto.retrofit.TMapAPIService
 import com.naver.maps.geometry.LatLng
 import com.naver.maps.geometry.LatLngBounds
@@ -38,6 +40,7 @@ import java.util.Locale
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+
 
 class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnItemClickListener {
     lateinit var binding: FragmentEditCourseBinding
@@ -79,6 +82,7 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
 
         binding.SearchButtonImage.setOnClickListener {
             getPlace(1)
+            //getPlace2()
         }
 
         return binding.root
@@ -146,7 +150,10 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
 
     private fun addVisitMarker(visitData: VisitData){
         val visitMarker = Marker()
-        visitMarker.icon = OverlayImage.fromResource(R.drawable.marker_image)
+        if(visitData.name.isNotEmpty())
+            visitMarker.icon = OverlayImage.fromResource(R.drawable.marker_image)
+        else
+            visitMarker.icon = OverlayImage.fromResource(R.drawable.marker_image_off)
 
         if(visitData.name.isNotEmpty()) {
             visitMarker.position = LatLng(visitData.lat_set, visitData.lng_set)
@@ -225,7 +232,7 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
             val maxLng = pathPoints.maxOf { it.lng }
 
             val bounds = LatLngBounds(LatLng(minLat, minLng), LatLng(maxLat, maxLng))
-            naverMap.moveCamera(CameraUpdate.fitBounds(bounds, 300))
+            naverMap.moveCamera(CameraUpdate.fitBounds(bounds, 350))
             val Offset = PointF(0.0f, (-350).toFloat())
             naverMap.moveCamera(CameraUpdate.scrollBy(Offset))
 
@@ -412,4 +419,43 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
 
     }
 
+    private fun getPlace2(){
+        val googlePlacesApi = GooglePlacesApi.create()
+
+        val call = googlePlacesApi.getNearbyPlaces("${selectedVisitData.lat},${selectedVisitData.lng}", 1000, key())
+        call.enqueue(object : Callback<GooglePlacesApi.PlacesResponse> {
+            override fun onResponse(call: Call<GooglePlacesApi.PlacesResponse>, response: Response<GooglePlacesApi.PlacesResponse>) {
+                if(response.isSuccessful) {
+                    Log.d("POI", response.message())
+                    val places = response.body()?.results
+                    places?.forEach {
+                        val name = it.name
+                        val lat = it.geometry.location.lat
+                        val lng = it.geometry.location.lng
+
+                        addPlaceMarker(
+                            TMapAPIService.Poi(
+                                it.name,
+                                it.geometry.location.lat,
+                                it.geometry.location.lng
+                            )
+                        )
+                    }
+                } else {
+                    Log.d("POI실패2", response.message())
+
+                }
+            }
+
+            override fun onFailure(call: Call<GooglePlacesApi.PlacesResponse>, t: Throwable) {
+                Log.d("POI실패", t.message.toString())
+
+            }
+        })
+
+    }
+
+    private fun checkDistance(centerLatLng: LatLng, currentLatLng: LatLng, checkDistance: Int): Boolean{
+        return centerLatLng.distanceTo(currentLatLng) <= checkDistance.toDouble()
+    }
 }

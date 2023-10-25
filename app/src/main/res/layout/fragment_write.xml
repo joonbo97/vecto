@@ -96,11 +96,11 @@
                 android:id="@+id/LocationIconText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
                 android:fontFamily="@font/lineseedkr_bd"
                 android:text="내 경로를 불러오세요"
                 android:textColor="@color/vecto_alphagray"
                 android:textSize="11sp"
-                android:layout_marginTop="10dp"
                 app:layout_constraintEnd_toEndOf="@+id/LocationBoxImage"
                 app:layout_constraintHorizontal_bias="0.5"
                 app:layout_constraintStart_toStartOf="@+id/LocationBoxImage"
@@ -129,28 +129,106 @@
                 app:layout_constraintStart_toStartOf="@+id/LocationBoxImage"
                 app:layout_constraintTop_toBottomOf="@id/WriteTitle2" />
 
+
+            <ImageView
+                android:id="@+id/UcropImage9"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                app:layout_constraintBottom_toBottomOf="@+id/UcropImage8"
+                app:layout_constraintStart_toEndOf="@+id/UcropImage8"
+                app:layout_constraintTop_toBottomOf="@+id/UcropImage4" />
+
+            <ImageView
+                android:id="@+id/UcropImage8"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                app:layout_constraintBottom_toBottomOf="@+id/UcropImage7"
+                app:layout_constraintStart_toEndOf="@+id/UcropImage7" />
+
+            <ImageView
+                android:id="@+id/UcropImage7"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                app:layout_constraintBottom_toBottomOf="@+id/UcropImage6"
+                app:layout_constraintStart_toEndOf="@+id/UcropImage6"
+                app:layout_constraintTop_toBottomOf="@+id/UcropImage2" />
+
+            <ImageView
+                android:id="@+id/UcropImage6"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                app:layout_constraintBottom_toBottomOf="@+id/UcropImage5"
+                app:layout_constraintStart_toEndOf="@+id/UcropImage5"
+                app:layout_constraintTop_toBottomOf="@+id/UcropImage1" />
+
+            <ImageView
+                android:id="@+id/UcropImage5"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_marginStart="10dp"
+                app:layout_constraintBottom_toBottomOf="@+id/PhotoBoxImage"
+                app:layout_constraintStart_toEndOf="@+id/PhotoBoxImage"
+                app:layout_constraintTop_toBottomOf="@+id/UcropImage0" />
+
+            <ImageView
+                android:id="@+id/UcropImage4"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                app:layout_constraintStart_toEndOf="@+id/UcropImage3"
+                app:layout_constraintTop_toTopOf="@+id/UcropImage3" />
+
+            <ImageView
+                android:id="@+id/UcropImage3"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                app:layout_constraintBottom_toTopOf="@+id/UcropImage8"
+                app:layout_constraintStart_toEndOf="@+id/UcropImage2"
+                app:layout_constraintTop_toTopOf="@+id/UcropImage2" />
+
+            <ImageView
+                android:id="@+id/UcropImage2"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                app:layout_constraintStart_toEndOf="@+id/UcropImage1"
+                app:layout_constraintTop_toTopOf="@+id/UcropImage1" />
+
+            <ImageView
+                android:id="@+id/UcropImage1"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                app:layout_constraintStart_toEndOf="@+id/UcropImage0"
+                app:layout_constraintTop_toTopOf="@+id/UcropImage0" />
+
+            <ImageView
+                android:id="@+id/UcropImage0"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_marginStart="10dp"
+                app:layout_constraintStart_toEndOf="@+id/PhotoBoxImage"
+                app:layout_constraintTop_toTopOf="@+id/PhotoBoxImage" />
+
             <ImageView
                 android:id="@+id/PhotoIconImage"
                 android:layout_width="20dp"
                 android:layout_height="20dp"
-                android:src="@drawable/photo_icon"
                 android:layout_marginBottom="20dp"
+                android:src="@drawable/photo_icon"
                 app:layout_constraintBottom_toBottomOf="@+id/PhotoBoxImage"
                 app:layout_constraintEnd_toEndOf="@+id/PhotoBoxImage"
                 app:layout_constraintHorizontal_bias="0.5"
                 app:layout_constraintStart_toStartOf="@+id/PhotoBoxImage"
                 app:layout_constraintTop_toTopOf="@+id/PhotoBoxImage"
-                app:layout_constraintVertical_bias="0.5"/>
+                app:layout_constraintVertical_bias="0.5" />
 
             <TextView
                 android:id="@+id/PhotoIconText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
                 android:fontFamily="@font/lineseedkr_bd"
                 android:text="0/10"
                 android:textColor="@color/vecto_alphagray"
                 android:textSize="11sp"
-                android:layout_marginTop="10dp"
                 app:layout_constraintEnd_toEndOf="@+id/PhotoBoxImage"
                 app:layout_constraintHorizontal_bias="0.5"
                 app:layout_constraintStart_toStartOf="@+id/PhotoBoxImage"
@@ -184,9 +262,9 @@
                 android:layout_height="40dp"
                 android:background="@null"
                 android:hint="제목을 입력하세요."
-                android:textColorHint="@color/vecto_alphagray"
                 android:inputType="text"
                 android:text=""
+                android:textColorHint="@color/vecto_alphagray"
                 app:layout_constraintBottom_toBottomOf="@+id/TitleBoxImage"
                 app:layout_constraintEnd_toEndOf="@+id/TitleBoxImage"
                 app:layout_constraintHorizontal_bias="0.5"
@@ -221,13 +299,13 @@
                 android:id="@+id/EditContent"
                 android:layout_width="330dp"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="7dp"
                 android:background="@null"
                 android:hint="내용을 입력하세요."
                 android:inputType="textMultiLine|text"
-                android:text=""
                 android:maxLines="8"
+                android:text=""
                 android:textColorHint="@color/vecto_alphagray"
-                android:layout_marginTop="7dp"
                 app:layout_constraintEnd_toEndOf="@+id/ContentBoxImage"
                 app:layout_constraintHorizontal_bias="0.5"
                 app:layout_constraintStart_toStartOf="@+id/ContentBoxImage"
@@ -235,13 +313,13 @@
 
 
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/LoginButton"
+                android:id="@+id/WriteDoneButton"
                 android:layout_width="360dp"
                 android:layout_height="54dp"
                 android:layout_marginTop="30dp"
-                android:text="작성완료"
                 android:background="@drawable/login_button"
                 android:fontFamily="@font/lineseedkr_bd"
+                android:text="작성완료"
                 android:textColor="@color/white"
                 android:textSize="20sp"
                 app:backgroundTint="@null"
@@ -249,6 +327,19 @@
                 app:layout_constraintHorizontal_bias="0.5"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/ContentBoxImage" />
+
+            <androidx.fragment.app.FragmentContainerView
+                android:id="@+id/naver_map_Write"
+                android:name="com.naver.maps.map.MapFragment"
+                android:layout_width="340dp"
+                android:layout_height="220dp"
+                android:visibility="invisible"
+                app:layout_constraintBottom_toBottomOf="@+id/LocationBoxImage"
+                app:layout_constraintStart_toStartOf="@+id/LocationBoxImage"
+                app:layout_constraintHorizontal_bias="0.5"
+                app:layout_constraintEnd_toEndOf="@+id/LocationBoxImage"
+                app:layout_constraintTop_toTopOf="@+id/LocationBoxImage"
+                app:layout_constraintVertical_bias="0.5" />
         </androidx.constraintlayout.widget.ConstraintLayout>
     </ScrollView>
 

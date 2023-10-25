@@ -65,6 +65,10 @@
                     android:scheme="kakao1ad70f21b84b4b2472d7b036d0fc40ce" />
             </intent-filter>
         </activity>
+        <activity
+            android:name="com.yalantis.ucrop.UCropActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar"/>
     </application>
 
 </manifest>

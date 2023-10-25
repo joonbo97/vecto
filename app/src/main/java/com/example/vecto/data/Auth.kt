@@ -5,6 +5,8 @@ import androidx.lifecycle.MutableLiveData
 import com.naver.maps.geometry.LatLng
 
 object Auth {
+    var token: String = ""
+
     private val _coin: MutableLiveData<Int> = MutableLiveData(0)
     val coin: LiveData<Int> = _coin
 
