@@ -8,6 +8,7 @@ import android.graphics.Color
 import android.graphics.PointF
 import android.net.Uri
 import android.os.Bundle
+import android.provider.MediaStore
 import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -15,6 +16,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageView
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -58,6 +60,8 @@ import java.util.Locale
 class WriteFragment : Fragment(), OnMapReadyCallback {
     private lateinit var binding: FragmentWriteBinding
 
+    private lateinit var myimageAdapter: MyimageAdapter
+
     private lateinit var mapView: MapFragment
     private lateinit var naverMap: NaverMap
 
@@ -78,8 +82,15 @@ class WriteFragment : Fragment(), OnMapReadyCallback {
 
     private val galleryLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
-            val selectedImageUri = result.data?.data
-            startCrop(selectedImageUri!!)
+            val selectedImages = result.data?.clipData
+
+            if (selectedImages != null) {
+                // 순차적으로 UCrop 실행
+                for (i in 0 until selectedImages.itemCount) {
+                    val imageUri = selectedImages.getItemAt(i).uri
+                    startCrop(imageUri)
+                }
+            }
         }
     }
 
@@ -88,6 +99,11 @@ class WriteFragment : Fragment(), OnMapReadyCallback {
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentWriteBinding.inflate(inflater, container, false)
+
+        myimageAdapter = MyimageAdapter(requireContext())
+        val writeRecyclerView = binding.WriteRecyclerView
+        writeRecyclerView.adapter = myimageAdapter
+        writeRecyclerView.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
 
         imageViews = listOf(binding.UcropImage0, binding.UcropImage1, binding.UcropImage2, binding.UcropImage3, binding.UcropImage4, binding.UcropImage5, binding.UcropImage6
                 ,binding.UcropImage7, binding.UcropImage8, binding.UcropImage9)
@@ -125,7 +141,8 @@ class WriteFragment : Fragment(), OnMapReadyCallback {
 
     private fun openGallery() {
         val intent = Intent(Intent.ACTION_PICK)
-        intent.type = "image/*"
+        intent.setDataAndType(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, "image/*")
+        intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
         galleryLauncher.launch(intent)
     }
 
@@ -136,7 +153,21 @@ class WriteFragment : Fragment(), OnMapReadyCallback {
             .withOptions(uCropOptions())
             .withAspectRatio(1f, 1f) // 1:1 비율로 자르기
             .getIntent(requireContext())
+        //uCropIntent.start(requireContext() as Activity)
         cropResultLauncher.launch(uCropIntent)
+    }
+
+    // UCrop 결과 처리
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if (requestCode == UCrop.REQUEST_CROP && resultCode == Activity.RESULT_OK) {
+            val resultUri = UCrop.getOutput(data!!)
+            addImage(resultUri!!)
+        } else if (resultCode == UCrop.RESULT_ERROR) {
+            val cropError = UCrop.getError(data!!)
+            Toast.makeText(requireContext(), "Crop failed: $cropError", Toast.LENGTH_LONG).show()
+        }
     }
 
 
@@ -156,8 +187,16 @@ class WriteFragment : Fragment(), OnMapReadyCallback {
 
     private val cropResultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
-            val croppedImageUri = UCrop.getOutput(result.data!!)
-            addImage(croppedImageUri!!)
+            val selectedImages = result.data?.clipData
+            if (selectedImages != null) {
+                for (i in 0 until selectedImages.itemCount) {
+                    val selectedImageUri = selectedImages.getItemAt(i).uri
+                    startCrop(selectedImageUri) // 각 이미지를 UCrop으로 전달
+                }
+            } else if (result.data?.data != null) {
+                val imageUri = result.data?.data
+                startCrop(imageUri!!) // 이미지를 UCrop으로 전달
+            }
         } else if (result.resultCode == UCrop.RESULT_ERROR) {
             val cropError = UCrop.getError(result.data!!)
             Log.e("UCrop", "Crop error: $cropError")
@@ -166,7 +205,11 @@ class WriteFragment : Fragment(), OnMapReadyCallback {
 
 
 
+
+
+
     private fun addImage(newImageUri: Uri) {
+        Log.d("IMAGE", "이미지 추가")
         imageCnt++
         // 이미지를 오른쪽으로 밀어냄
         for (i in imageViews.size - 2 downTo 0) {
@@ -178,9 +221,11 @@ class WriteFragment : Fragment(), OnMapReadyCallback {
 
         imageUri.add(newImageUri)
 
+        myimageAdapter.imageUri.add(newImageUri)
+        myimageAdapter.notifyDataSetChanged()
+
         // 가장 앞쪽의 ImageView에 새 이미지를 셋팅
-        imageViews[0].setImageURI(newImageUri)
-        binding.PhotoIconText.text = "$imageCnt/10"
+        binding.PhotoIconText.text = "${myimageAdapter.itemCount}/10"
     }
 
     override fun onMapReady(naverMap: NaverMap) {
