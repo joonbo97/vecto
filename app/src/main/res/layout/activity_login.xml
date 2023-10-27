@@ -133,7 +133,7 @@
         app:layout_constraintVertical_bias="0.5" />
 
     <EditText
-        android:id="@+id/editTextPassword"
+        android:id="@+id/editTextPW"
         android:layout_width="280dp"
         android:layout_height="40dp"
         android:background="@null"

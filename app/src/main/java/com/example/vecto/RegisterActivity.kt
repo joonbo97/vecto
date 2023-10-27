@@ -14,6 +14,7 @@ import androidx.core.widget.addTextChangedListener
 import com.example.vecto.databinding.ActivityRegisterBinding
 import com.example.vecto.retrofit.VectoService
 import com.google.android.material.button.MaterialButton
+import okhttp3.ResponseBody
 import retrofit2.Callback
 import retrofit2.Call
 import retrofit2.Response
@@ -99,10 +100,35 @@ class RegisterActivity : AppCompatActivity() {
         }
 
         binding.RegisterButton.setOnClickListener {
-            //TODO check 수행 후 회원가입 요청
+            registerRequest(VectoService.RegisterRequest(
+                editTextID.text.toString(), editTextPW.text.toString(), "vecto",
+                editTextNickname.text.toString(), editTextEmail.text.toString(), editTextEmailCode.text.toString().toInt()
+                ))
         }
 
 
+    }
+
+    private fun registerRequest(registerRequest: VectoService.RegisterRequest) {
+        val vectoService = VectoService.create()
+
+        val call = vectoService.registerUser(registerRequest)
+        call.enqueue(object : Callback<VectoService.VectoResponse>{
+            override fun onResponse(call: Call<VectoService.VectoResponse>, response: Response<VectoService.VectoResponse>) {
+                if(response.isSuccessful){
+                    Log.d("REGISTER", "성공: ${response.body()}}")
+                    Toast.makeText(this@RegisterActivity, "회원가입 성공 로그인을 진행해주세요.", Toast.LENGTH_SHORT).show()
+                    finish()
+                }
+                else{
+                    Log.d("REGISTER", "성공했으나 서버 오류 ${response.errorBody()?.string()}")
+                }
+            }
+
+            override fun onFailure(call: Call<VectoService.VectoResponse>, t: Throwable) {
+                Log.d("REGISTER", "실패")
+            }
+        })
     }
 
     private fun isIdExist(id: String){
@@ -138,20 +164,17 @@ class RegisterActivity : AppCompatActivity() {
 
     private fun checkEmailImage(){
 
-
-
         //if(인증코드 일치)
         {
             emailCheckImage
         }
-
 
     }
 
 
     private fun startEmailTimer(){
 
-        //TODO 메일 전송 요청
+        sendMail(editTextEmail.text.toString())
 
         emailSendButton.isEnabled = false
         emailSendButton.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(this, R.color.vecto_disable))
@@ -169,6 +192,27 @@ class RegisterActivity : AppCompatActivity() {
                 emailSendButton.backgroundTintList = null
             }
         }.start()
+    }
+
+    private fun sendMail(email: String) {
+        val vectoService = VectoService.create()
+
+        val call = vectoService.sendMail(VectoService.MailRequest(email))
+        call.enqueue(object : Callback<ResponseBody>{
+            override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
+                if(response.isSuccessful){
+                    Log.d("SEND_Email", "성공: ${response.body()}}")
+                    Toast.makeText(this@RegisterActivity, "메일 발송에 성공했습니다.", Toast.LENGTH_SHORT).show()
+                }
+                else{
+                    Log.d("SEND_Email", "성공했으나 서버 오류 ${response.errorBody()?.string()}")
+                }
+            }
+
+            override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
+                Log.d("SEND_Email", "실패 ${t.message}")
+            }
+        })
     }
 
     private fun checkID(): Boolean{

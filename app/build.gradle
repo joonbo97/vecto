@@ -77,6 +77,4 @@ dependencies {
 
     //이미지 처리를 위한 라이브러리
     implementation 'com.github.yalantis:ucrop:2.2.7'
-
-    implementation 'com.amazonaws:aws-android-sdk-s3:'
 }

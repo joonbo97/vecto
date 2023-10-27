@@ -46,10 +46,24 @@ interface VectoService {
     ): Call<String>
 
     @Multipart
-    @POST("upload/image")
+    @POST("upload/profile")
     fun uploadImage(
+        @Header("Authorization")
+        authorization: String,
         @Part image: MultipartBody.Part
     ): Call<String>
+
+    @Multipart
+    @POST("upload/feed")
+    fun uploadImages(
+        @Header("Authorization") authorization: String,
+        @Part images: List<MultipartBody.Part>
+    ): Call<List<String>>
+
+    @POST("mail")
+    fun sendMail(
+        @Body request: MailRequest
+    ): Call<ResponseBody>
 
 
     companion object {
@@ -63,6 +77,10 @@ interface VectoService {
         }
     }
 
+    data class MailRequest(
+        val email: String
+    )
+
     data class LoginRequest (
         val userId: String,
         val userPw: String? = null,
@@ -74,7 +92,8 @@ interface VectoService {
         val userPw: String?,
         val provider: String,
         val nickName: String,
-        val email: String?
+        val email: String?,
+        val code: Int?
     )
 
     data class IdCheckRequest(

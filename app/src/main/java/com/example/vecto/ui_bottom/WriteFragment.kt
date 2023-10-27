@@ -40,6 +40,11 @@ import com.naver.maps.map.overlay.Marker
 import com.naver.maps.map.overlay.OverlayImage
 import com.naver.maps.map.overlay.PathOverlay
 import com.yalantis.ucrop.UCrop
+import okhttp3.MediaType
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody
+import okhttp3.RequestBody.Companion.asRequestBody
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -69,6 +74,8 @@ class WriteFragment : Fragment(), OnMapReadyCallback {
     private lateinit var imageViews: List<ImageView>
     private var imageCnt = 0
 
+    private var imageUri = mutableListOf<Uri>()
+
     private val galleryLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
             val selectedImageUri = result.data?.data
@@ -96,7 +103,9 @@ class WriteFragment : Fragment(), OnMapReadyCallback {
         binding.WriteDoneButton.setOnClickListener {
             //TODO 형식 확인. 이름, 경로
 
-            uploadPost(VectoService.PostData(binding.EditTitle.text.toString(), binding.EditContent.text.toString(), LocalDateTime.now().withNano(0).toString(), null, locationDataList, visitDataList))
+
+
+            uploadImageToServer(VectoService.PostData(binding.EditTitle.text.toString(), binding.EditContent.text.toString(), LocalDateTime.now().withNano(0).toString(), null, locationDataList, visitDataList))
         }
 
         return binding.root
@@ -166,6 +175,8 @@ class WriteFragment : Fragment(), OnMapReadyCallback {
                 imageViews[i + 1].setImageDrawable(currentDrawable)
             }
         }
+
+        imageUri.add(newImageUri)
 
         // 가장 앞쪽의 ImageView에 새 이미지를 셋팅
         imageViews[0].setImageURI(newImageUri)
@@ -408,10 +419,64 @@ class WriteFragment : Fragment(), OnMapReadyCallback {
             }
 
             override fun onFailure(call: Call<String>, t: Throwable) {
-                Log.d("ID_CHECK", "실패")
+                Log.d("UPLOAD", "실패")
             }
 
         })
     }
 
+    private fun uploadImageToServer(writeData: VectoService.PostData) {
+        val imageParts: MutableList<MultipartBody.Part> = mutableListOf()
+
+        if (imageUri.isNotEmpty()) {
+            for (uri in imageUri) {
+                val file = File(uri.path!!)
+                val requestFile = file.asRequestBody("image/*".toMediaTypeOrNull())
+                val imagePart = MultipartBody.Part.createFormData("images", file.name, requestFile)
+                imageParts.add(imagePart)
+            }
+
+            val vectoService = VectoService.create()
+            val call = vectoService.uploadImages("Bearer ${Auth.token}", imageParts)
+            call.enqueue(object : Callback<List<String>> {
+                override fun onResponse(
+                    call: Call<List<String>>,
+                    response: Response<List<String>>
+                ) {
+                    if (response.isSuccessful) {
+                        Log.d("UPLOAD_IMAGE", "성공: ${response.body()}")
+                        val imageUrls = response.body()
+
+                        /*imageUrls?.let {
+                            for (url in it) {
+
+                            }
+                        }*/
+
+                        uploadPost(
+                            VectoService.PostData(
+                                writeData.title,
+                                writeData.content,
+                                writeData.uploadtime,
+                                imageUrls?.toMutableList(),
+                                writeData.location,
+                                writeData.visit
+                            )
+                        )
+                    } else {
+                        Log.d("UPLOAD_IMAGE", "성공했으나 서버 오류 ${response.errorBody()?.string()}")
+                    }
+                }
+
+                override fun onFailure(call: Call<List<String>>, t: Throwable) {
+                    // 네트워크 오류 또는 기타 문제가 발생했을 때의 처리 코드를 여기에 작성하세요.
+                    Log.d("UPLOAD_IMAGE", "실패")
+                }
+            })
+        }
+        else
+        {
+            uploadPost(writeData)
+        }
+    }
 }

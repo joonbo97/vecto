@@ -39,6 +39,13 @@ class LoginActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
+        binding.LoginButton.setOnClickListener {
+            val userid = binding.editTextID.text.toString()
+            val userpw = binding.editTextPW.text.toString()
+
+            fcmtoken = getTokenFromSharedPref(this).toString()
+            sendLoginRequest(VectoService.LoginRequest(userid, userpw, fcmtoken))
+        }
 
 
         KakaoSdk.init(this, "1ad70f21b84b4b2472d7b036d0fc40ce")
@@ -127,7 +134,7 @@ class LoginActivity : AppCompatActivity() {
 
                     if(response.code() == 401){
                         //kakao일 때, 로그인에 실패하면 회원가입까지 자동으로 완료.
-                        sendRegisterRequest(VectoService.RegisterRequest(loginRequest.userId, null, "kakao", nickname, null))
+                        sendRegisterRequest(VectoService.RegisterRequest(loginRequest.userId, null, "kakao", nickname, null, null))
                         Log.d("FCMTOKEN", fcmtoken)
                     }
                 }
