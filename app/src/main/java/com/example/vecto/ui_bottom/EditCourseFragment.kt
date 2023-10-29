@@ -2,6 +2,7 @@ package com.example.vecto.ui_bottom
 
 import android.annotation.SuppressLint
 import android.app.DatePickerDialog
+import android.content.res.Resources
 import android.graphics.Color
 import android.graphics.PointF
 import android.os.Bundle
@@ -11,6 +12,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.vecto.R
@@ -31,6 +33,7 @@ import com.naver.maps.map.MapFragment
 import com.naver.maps.map.NaverMap
 import com.naver.maps.map.OnMapReadyCallback
 import com.naver.maps.map.overlay.CircleOverlay
+import com.naver.maps.map.overlay.GroundOverlay
 import com.naver.maps.map.overlay.Marker
 import com.naver.maps.map.overlay.OverlayImage
 import com.naver.maps.map.overlay.PathOverlay
@@ -60,6 +63,9 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
     private val visitMarkers = mutableListOf<Marker>()
     private val pathOverlays = mutableListOf<PathOverlay>()
     private val circleOverlays = mutableListOf<CircleOverlay>()
+
+    private val buttonMarkers = mutableListOf<Marker>()
+
 
     //UI관련
     private lateinit var DateText: TextView
@@ -101,6 +107,21 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
         this.naverMap = naverMap
         naverMap.moveCamera(CameraUpdate.zoomTo(18.0))
         naverMap.uiSettings.isZoomControlEnabled = false
+
+
+        naverMap.addOnCameraChangeListener { _, _ ->
+            if(visitMarkers.isNotEmpty() && buttonMarkers.isNotEmpty()) {
+                val baseMarker = visitMarkers[0]
+                val buttonMarker1 = buttonMarkers[0]
+                val buttonMarker2 = buttonMarkers[1]
+                val buttonMarker3 = buttonMarkers[2]
+
+                adjustMarkerDistanceFromBaseMarker1(naverMap, baseMarker.position, buttonMarker1)
+                adjustMarkerDistanceFromBaseMarker2(naverMap, baseMarker.position, buttonMarker2)
+                adjustMarkerDistanceFromBaseMarker3(naverMap, baseMarker.position, buttonMarker3)
+            }
+        }
+
 
         setVistiLoaction()
     }
@@ -167,6 +188,8 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
         visitMarkers.add(visitMarker)
     }
 
+
+
     private fun addPlaceMarker(poi: TMapAPIService.Poi){
         val visitMarker = Marker()
 
@@ -220,7 +243,116 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
 
         circleOverlays.forEach{ it.map = null }
         circleOverlays.clear()
+
+        buttonMarkers.forEach{ it.map = null }
+        buttonMarkers.clear()
     }
+
+
+    /*지도의 버튼 관련 함수*/
+    private fun addButtonMarker(visitData: VisitData) {
+        addVisitMarker(visitData)
+
+        val buttonMarker1 = Marker().apply {
+            icon = OverlayImage.fromResource(R.drawable.marker_delete_button) // 여기에 버튼 이미지 리소스를 지정해야 합니다.
+            position = LatLng(visitData.lat, visitData.lng)
+            map = naverMap
+        }
+
+        val buttonMarker2 = Marker().apply {
+            icon = OverlayImage.fromResource(R.drawable.marker_edit_button) // 여기에 버튼 이미지 리소스를 지정해야 합니다.
+            position = LatLng(visitData.lat, visitData.lng)
+            map = naverMap
+        }
+
+        val buttonMarker3 = Marker().apply {
+            icon = OverlayImage.fromResource(R.drawable.marker_search_button) // 여기에 버튼 이미지 리소스를 지정해야 합니다.
+            position = LatLng(visitData.lat, visitData.lng)
+            map = naverMap
+        }
+
+        buttonMarkers.add(buttonMarker1)
+        buttonMarkers.add(buttonMarker2)
+        buttonMarkers.add(buttonMarker3)
+
+        buttonMarker1.setOnClickListener {
+            Toast.makeText(context, "ASD", Toast.LENGTH_SHORT).show()
+            true
+        }
+
+        buttonMarker2.setOnClickListener {
+            Toast.makeText(context, "ASD", Toast.LENGTH_SHORT).show()
+            true
+        }
+
+        buttonMarker3.setOnClickListener {
+            Toast.makeText(context, "ASD", Toast.LENGTH_SHORT).show()
+            true
+        }
+
+        adjustMarkerDistanceFromBaseMarker1(naverMap, LatLng(visitData.lat, visitData.lng), buttonMarker1)
+        adjustMarkerDistanceFromBaseMarker2(naverMap, LatLng(visitData.lat, visitData.lng), buttonMarker2)
+        adjustMarkerDistanceFromBaseMarker3(naverMap, LatLng(visitData.lat, visitData.lng), buttonMarker3)
+    }
+
+    fun adjustMarkerDistanceFromBaseMarker3(naverMap: NaverMap, position: LatLng, buttonMarker: Marker) {
+        val baseZoom = 15.0
+        val scaleFactor = Math.pow(2.0, naverMap.cameraPosition.zoom - baseZoom)
+
+        val baseMarkerPosition = position
+        val density = Resources.getSystem().displayMetrics.density
+        val distanceInMeters = 33 * density / scaleFactor
+        val offsetInMeters = 10 * density / scaleFactor
+        val offsetInDegreesLat = offsetInMeters / 111000
+        val distanceFromBaseMarkerInDegreesLat = distanceInMeters / 111000  // 1 degree latitude is approximately 111000 meters
+        val distanceFromBaseMarkerInDegreesLon = distanceInMeters / (Math.cos(Math.toRadians(baseMarkerPosition.latitude)) * 111000)  // Adjusting for longitude based on latitude
+
+        val newPosition = LatLng(
+            baseMarkerPosition.latitude + distanceFromBaseMarkerInDegreesLat - offsetInDegreesLat,
+            baseMarkerPosition.longitude + distanceFromBaseMarkerInDegreesLon
+        )
+        buttonMarker.position = newPosition
+    }
+
+
+    fun adjustMarkerDistanceFromBaseMarker2(naverMap: NaverMap, position: LatLng, buttonMarker: Marker) {
+        val baseZoom = 15.0
+        val scaleFactor = Math.pow(2.0, naverMap.cameraPosition.zoom - baseZoom)
+
+        val baseMarkerPosition = position
+        val density = Resources.getSystem().displayMetrics.density
+        val distanceInMeters = 38 * density / scaleFactor
+        val distanceFromBaseMarkerInDegrees = distanceInMeters / 111000  // 1 degree is approximately 111000 meters
+
+        val newPosition = LatLng(baseMarkerPosition.latitude + distanceFromBaseMarkerInDegrees, baseMarkerPosition.longitude)
+        buttonMarker.position = newPosition
+    }
+
+    fun adjustMarkerDistanceFromBaseMarker1(naverMap: NaverMap, position: LatLng, buttonMarker: Marker) {
+        val baseZoom = 15.0
+        val scaleFactor = Math.pow(2.0, naverMap.cameraPosition.zoom - baseZoom)
+
+        val baseMarkerPosition = position
+        val density = Resources.getSystem().displayMetrics.density
+        val distanceInMeters = 33 * density / scaleFactor
+        val offsetInMeters = 10 * density / scaleFactor
+        val offsetInDegreesLat = offsetInMeters / 111000
+        val distanceFromBaseMarkerInDegreesLat = distanceInMeters / 111000  // 1 degree latitude is approximately 111000 meters
+        val distanceFromBaseMarkerInDegreesLon = distanceInMeters / (Math.cos(Math.toRadians(baseMarkerPosition.latitude)) * 111000)  // Adjusting for longitude based on latitude
+
+        val newPosition = LatLng(
+            baseMarkerPosition.latitude + distanceFromBaseMarkerInDegreesLat - offsetInDegreesLat,
+            baseMarkerPosition.longitude - distanceFromBaseMarkerInDegreesLon  // 경도를 감소시켜 왼쪽으로 이동
+        )
+        buttonMarker.position = newPosition
+    }
+
+
+
+
+
+
+
 
     /*Camera 관련 함수*/
     /*____________________________________________________________________________________________*/
@@ -296,6 +428,10 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
                 val locationRecyclerView = binding.LocationRecyclerView
                 locationRecyclerView.adapter = myCourseAdapter
                 locationRecyclerView.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
+                while (locationRecyclerView.itemDecorationCount > 0) {
+                    locationRecyclerView.removeItemDecorationAt(0)
+                }
+                locationRecyclerView.itemAnimator = null
                 locationRecyclerView.addItemDecoration(VerticalOverlapItemDecoration(42))
 
                 //선택한 날짜의 방문지의 처음과 끝까지의 경로
@@ -355,7 +491,8 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
         deleteOverlay()
 
         if (data is VisitData){
-            addVisitMarker(data)//선택한 visitdata를 마커에 추가
+            //addVisitMarker(data)//선택한 visitdata를 마커에 추가
+            addButtonMarker(data)
             addCircleOverlay(data)
 
             moveCameraForVisit(data)

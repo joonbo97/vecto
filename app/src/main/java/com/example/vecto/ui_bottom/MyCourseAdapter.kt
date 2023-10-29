@@ -17,12 +17,15 @@ import java.lang.IllegalArgumentException
 class MyCourseAdapter(private val context: Context, private val itemClickListener: OnItemClickListener): RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     var visitdata = mutableListOf<VisitData>()
     var pathdata = mutableListOf<PathData>()
+    private var selectedPosition = -1
 
 
     inner class VisitViewHolder(view: View): RecyclerView.ViewHolder(view), View.OnClickListener{
         val imageView: ImageView = view.findViewById(R.id.VisitImageView)
         val title: TextView = view.findViewById(R.id.VisitTitleText)
         val time: TextView = view.findViewById(R.id.VisitTimeText)
+
+        val boximageView: ImageView = view.findViewById(R.id.VisitDiscriptionBoxImage)
 
         init{
             view.setOnClickListener(this)
@@ -85,16 +88,34 @@ class MyCourseAdapter(private val context: Context, private val itemClickListene
                     time.text = getStayTime(item.staytime)
                 }
             }
+
+            if (adapterPosition == selectedPosition) {
+                boximageView.setImageResource(R.drawable.course_visitbox_selet)
+            } else {
+                // 나머지 아이템은 기본 이미지로 설정
+                boximageView.setImageResource(R.drawable.course_visitbox)
+            }
         }
 
         override fun onClick(p0: View?) {
             val position = adapterPosition
             if (position != RecyclerView.NO_POSITION) {
+
+                // 선택된 위치 업데이트
+                val prevSelectedPosition = selectedPosition
+                selectedPosition = position
+
+
+                notifyItemChanged(prevSelectedPosition)
+                notifyItemChanged(selectedPosition)
+
                 val item =
                     if (position % 2 == 0)
                         visitdata[position / 2]
                     else
                         pathdata[position / 2]
+
+
                 itemClickListener.onItemClick(item)
             }
         }
@@ -102,18 +123,34 @@ class MyCourseAdapter(private val context: Context, private val itemClickListene
 
     inner class PathViewHolder(view: View): RecyclerView.ViewHolder(view), View.OnClickListener{
 
+        val locationView: ImageView = view.findViewById(R.id.PathImageView)
+
         init{
             view.setOnClickListener(this)
         }
 
         fun bindlocation(item: PathData)
         {
-
+            if (adapterPosition == selectedPosition) {
+                locationView.setImageResource(R.drawable.course_location_select)
+            } else {
+                // 나머지 아이템은 기본 이미지로 설정
+                locationView.setImageResource(R.drawable.course_location)
+            }
         }
 
         override fun onClick(p0: View?) {
             val position = adapterPosition
             if (position != RecyclerView.NO_POSITION) {
+                // 선택된 위치 업데이트
+                val prevSelectedPosition = selectedPosition
+                selectedPosition = position
+
+                // 이전에 강조된 visitdata의 항목과 현재 선택된 pathdata의 항목을 갱신
+                notifyItemChanged(prevSelectedPosition)
+                notifyItemChanged(selectedPosition)
+
+
                 val item =
                     if (position % 2 == 0)
                         visitdata[position / 2]

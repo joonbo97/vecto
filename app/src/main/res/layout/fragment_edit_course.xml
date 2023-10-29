@@ -23,9 +23,10 @@
             android:id="@+id/CalendarLargeBoxImage"
             android:layout_width="249dp"
             android:layout_height="45dp"
-            android:layout_marginStart="25dp"
             android:layout_marginTop="37dp"
             android:src="@drawable/calender_largebox"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
@@ -77,6 +78,7 @@
             android:layout_marginTop="37dp"
             android:layout_marginEnd="25dp"
             android:src="@drawable/search_smallbox"
+            android:visibility="gone"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
@@ -86,103 +88,23 @@
         android:id="@+id/EditLayout"
         android:layout_width="match_parent"
         android:layout_height="350dp"
-        android:background="@color/white"
+        android:background="@drawable/edit_background"
         android:clickable="true"
         android:focusable="true"
+        android:elevation="10dp"
         app:layout_constraintBottom_toBottomOf="@+id/naver_map_Edit"
         tools:layout_editor_absoluteX="0dp">
-
-
-        <ImageView
-            android:id="@+id/TitleImage"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
-            android:layout_marginStart="20dp"
-            android:layout_marginTop="20dp"
-            android:src="@drawable/ic_editcourse_off"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:tint="@color/vecto_pathcolor" />
-
-        <TextView
-            android:id="@+id/TitleText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="10dp"
-            android:layout_marginTop="20dp"
-            android:fontFamily="@font/lineseedkr_bd"
-            android:text="경로 설정 하기"
-            android:textColor="@color/vecto_pathcolor"
-            android:textSize="20sp"
-            app:layout_constraintStart_toEndOf="@+id/TitleImage"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <ImageView
-            android:id="@+id/DeleteButton"
-            android:layout_width="93dp"
-            android:layout_height="45dp"
-            android:layout_marginTop="10dp"
-            android:layout_marginEnd="15dp"
-            android:src="@drawable/delete_button"
-            app:layout_constraintEnd_toStartOf="@+id/MergeButton"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <TextView
-            android:id="@+id/DeleteButtonText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="2dp"
-            android:fontFamily="@font/lineseedkr_bd"
-            android:text="지우기"
-            android:textColor="@color/white"
-            android:textSize="15sp"
-            app:layout_constraintBottom_toBottomOf="@+id/DeleteButton"
-            app:layout_constraintEnd_toEndOf="@+id/DeleteButton"
-            app:layout_constraintStart_toStartOf="@+id/DeleteButton"
-            app:layout_constraintTop_toTopOf="@+id/DeleteButton"
-            app:layout_constraintVertical_bias="0.5" />
-
-        <ImageView
-            android:id="@+id/MergeButton"
-            android:layout_width="93dp"
-            android:layout_height="45dp"
-            android:layout_marginTop="10dp"
-            android:layout_marginEnd="20dp"
-            android:src="@drawable/merge_button"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <TextView
-            android:id="@+id/MergeButtonText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="2dp"
-            android:fontFamily="@font/lineseedkr_bd"
-            android:text="합치기"
-            android:textColor="@color/white"
-            android:textSize="15sp"
-            app:layout_constraintBottom_toBottomOf="@+id/MergeButton"
-            app:layout_constraintEnd_toEndOf="@+id/MergeButton"
-            app:layout_constraintStart_toStartOf="@+id/MergeButton"
-            app:layout_constraintTop_toTopOf="@+id/MergeButton"
-            app:layout_constraintVertical_bias="0.5" />
-
-        <androidx.constraintlayout.widget.Guideline
-            android:id="@+id/guideline"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            app:layout_constraintGuide_begin="80dp" />
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/LocationRecyclerView"
             android:layout_width="400dp"
-            android:layout_height="200dp"
+            android:layout_height="285dp"
+            android:layout_marginTop="10dp"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="@+id/guideline" />
+            app:layout_constraintTop_toTopOf="@+id/EditLayout" />
 
 
     </androidx.constraintlayout.widget.ConstraintLayout>

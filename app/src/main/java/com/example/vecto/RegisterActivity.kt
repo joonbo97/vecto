@@ -113,8 +113,8 @@ class RegisterActivity : AppCompatActivity() {
         val vectoService = VectoService.create()
 
         val call = vectoService.registerUser(registerRequest)
-        call.enqueue(object : Callback<VectoService.VectoResponse>{
-            override fun onResponse(call: Call<VectoService.VectoResponse>, response: Response<VectoService.VectoResponse>) {
+        call.enqueue(object : Callback<VectoService.VectoResponse<String>>{
+            override fun onResponse(call: Call<VectoService.VectoResponse<String>>, response: Response<VectoService.VectoResponse<String>>) {
                 if(response.isSuccessful){
                     Log.d("REGISTER", "성공: ${response.body()}}")
                     Toast.makeText(this@RegisterActivity, "회원가입 성공 로그인을 진행해주세요.", Toast.LENGTH_SHORT).show()
@@ -125,7 +125,7 @@ class RegisterActivity : AppCompatActivity() {
                 }
             }
 
-            override fun onFailure(call: Call<VectoService.VectoResponse>, t: Throwable) {
+            override fun onFailure(call: Call<VectoService.VectoResponse<String>>, t: Throwable) {
                 Log.d("REGISTER", "실패")
             }
         })
@@ -135,21 +135,21 @@ class RegisterActivity : AppCompatActivity() {
         val vectoService = VectoService.create()
 
         val call = vectoService.idCheck(VectoService.IdCheckRequest(id))
-        call.enqueue(object : Callback<VectoService.VectoResponse>{
-            override fun onResponse(call: Call<VectoService.VectoResponse>, response: Response<VectoService.VectoResponse>) {
+        call.enqueue(object : Callback<VectoService.VectoResponse<Unit>>{
+            override fun onResponse(call: Call<VectoService.VectoResponse<Unit>>, response: Response<VectoService.VectoResponse<Unit>>) {
                 if(response.isSuccessful){
                     Log.d("ID_CHECK", "성공: ${response.body()}}")
                     response.body()?.status
                     response.body()?.code
                     response.body()?.message
-                    response.body()?.token
+                    response.body()?.result
                 }
                 else{
                     Log.d("ID_CHECK", "성공했으나 서버 오류 ${response.errorBody()?.string()}")
                 }
             }
 
-            override fun onFailure(call: Call<VectoService.VectoResponse>, t: Throwable) {
+            override fun onFailure(call: Call<VectoService.VectoResponse<Unit>>, t: Throwable) {
                 Log.d("ID_CHECK", "실패")
             }
         })
@@ -198,8 +198,8 @@ class RegisterActivity : AppCompatActivity() {
         val vectoService = VectoService.create()
 
         val call = vectoService.sendMail(VectoService.MailRequest(email))
-        call.enqueue(object : Callback<ResponseBody>{
-            override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
+        call.enqueue(object : Callback<VectoService.VectoResponse<Unit>>{
+            override fun onResponse(call: Call<VectoService.VectoResponse<Unit>>, response: Response<VectoService.VectoResponse<Unit>>) {
                 if(response.isSuccessful){
                     Log.d("SEND_Email", "성공: ${response.body()}}")
                     Toast.makeText(this@RegisterActivity, "메일 발송에 성공했습니다.", Toast.LENGTH_SHORT).show()
@@ -209,7 +209,7 @@ class RegisterActivity : AppCompatActivity() {
                 }
             }
 
-            override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
+            override fun onFailure(call: Call<VectoService.VectoResponse<Unit>>, t: Throwable) {
                 Log.d("SEND_Email", "실패 ${t.message}")
             }
         })

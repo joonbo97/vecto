@@ -15,4 +15,6 @@
     <color name="vecto_transparenct">#B3FFFFFF</color>
     <color name="vecto_gray">#FF5C7697</color>
     <color name="vecto_alphagray">#FFBAC2D9</color>
+    <color name="vecto_likecolor">#FFFF4B78</color>
+    <color name="vecto_commentcolor">#FF4B82FF</color>
 </resources>

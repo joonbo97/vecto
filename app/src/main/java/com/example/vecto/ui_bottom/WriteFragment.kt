@@ -17,6 +17,7 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.Toast
+import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -36,6 +37,7 @@ import com.naver.maps.geometry.LatLngBounds
 import com.naver.maps.map.CameraUpdate
 import com.naver.maps.map.MapFragment
 import com.naver.maps.map.NaverMap
+import com.naver.maps.map.NaverMapOptions
 import com.naver.maps.map.OnMapReadyCallback
 import com.naver.maps.map.overlay.CircleOverlay
 import com.naver.maps.map.overlay.Marker
@@ -65,6 +67,9 @@ class WriteFragment : Fragment(), OnMapReadyCallback {
     private lateinit var mapView: MapFragment
     private lateinit var naverMap: NaverMap
 
+    lateinit var cropResultLauncher: ActivityResultLauncher<Intent>
+    lateinit var galleryResultLauncher: ActivityResultLauncher<Intent>
+
     private lateinit var locationDataList: MutableList<LocationData>
     private lateinit var visitDataList: MutableList<VisitData>
     private lateinit var selectedVisitData: VisitData
@@ -75,24 +80,9 @@ class WriteFragment : Fragment(), OnMapReadyCallback {
     private val pathOverlays = mutableListOf<PathOverlay>()
     private val circleOverlays = mutableListOf<CircleOverlay>()
 
-    private lateinit var imageViews: List<ImageView>
     private var imageCnt = 0
 
     private var imageUri = mutableListOf<Uri>()
-
-    private val galleryLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        if (result.resultCode == Activity.RESULT_OK) {
-            val selectedImages = result.data?.clipData
-
-            if (selectedImages != null) {
-                // 순차적으로 UCrop 실행
-                for (i in 0 until selectedImages.itemCount) {
-                    val imageUri = selectedImages.getItemAt(i).uri
-                    startCrop(imageUri)
-                }
-            }
-        }
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -101,12 +91,17 @@ class WriteFragment : Fragment(), OnMapReadyCallback {
         binding = FragmentWriteBinding.inflate(inflater, container, false)
 
         myimageAdapter = MyimageAdapter(requireContext())
+        myimageAdapter.setOnItemRemovedListener(object : MyimageAdapter.OnItemRemovedListener {
+            override fun onItemRemoved() {
+                binding.PhotoIconText.text = "${myimageAdapter.itemCount}/10"
+
+                imageUri = myimageAdapter.imageUri
+            }
+        })
         val writeRecyclerView = binding.WriteRecyclerView
+        writeRecyclerView.addItemDecoration(SpacesItemDecoration(resources.getDimensionPixelSize(R.dimen.image_margin)))
         writeRecyclerView.adapter = myimageAdapter
         writeRecyclerView.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
-
-        imageViews = listOf(binding.UcropImage0, binding.UcropImage1, binding.UcropImage2, binding.UcropImage3, binding.UcropImage4, binding.UcropImage5, binding.UcropImage6
-                ,binding.UcropImage7, binding.UcropImage8, binding.UcropImage9)
 
         binding.PhotoBoxImage.setOnClickListener {
             openGallery()
@@ -143,7 +138,7 @@ class WriteFragment : Fragment(), OnMapReadyCallback {
         val intent = Intent(Intent.ACTION_PICK)
         intent.setDataAndType(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, "image/*")
         intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
-        galleryLauncher.launch(intent)
+        galleryResultLauncher.launch(intent) // 갤러리 결과를 galleryResultLauncher로 받음
     }
 
     private fun startCrop(sourceUri: Uri) {
@@ -153,23 +148,69 @@ class WriteFragment : Fragment(), OnMapReadyCallback {
             .withOptions(uCropOptions())
             .withAspectRatio(1f, 1f) // 1:1 비율로 자르기
             .getIntent(requireContext())
-        //uCropIntent.start(requireContext() as Activity)
         cropResultLauncher.launch(uCropIntent)
     }
 
-    // UCrop 결과 처리
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
+    @SuppressLint("NotifyDataSetChanged")
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
-        if (requestCode == UCrop.REQUEST_CROP && resultCode == Activity.RESULT_OK) {
-            val resultUri = UCrop.getOutput(data!!)
-            addImage(resultUri!!)
-        } else if (resultCode == UCrop.RESULT_ERROR) {
-            val cropError = UCrop.getError(data!!)
-            Toast.makeText(requireContext(), "Crop failed: $cropError", Toast.LENGTH_LONG).show()
+        galleryResultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                val selectedImages = result.data?.clipData
+
+                val totalImage =
+                    if (selectedImages != null)
+                        myimageAdapter.itemCount + selectedImages.itemCount
+                    else
+                        myimageAdapter.itemCount + 1
+
+                if (totalImage > 10) {
+                    Toast.makeText(requireContext(), "최대 10개의 이미지만 선택 가능합니다.", Toast.LENGTH_LONG).show()
+                    return@registerForActivityResult
+                }
+
+
+                if (selectedImages != null) {
+                    for (i in 0 until selectedImages.itemCount) {
+                        val selectedImageUri = selectedImages.getItemAt(selectedImages.itemCount - 1 - i).uri
+                        startCrop(selectedImageUri) // 각 이미지를 UCrop으로 전달
+                    }
+                } else if (result.data?.data != null) {
+                    val imageUri = result.data?.data
+                    startCrop(imageUri!!) // 이미지를 UCrop으로 전달
+                }
+            }
+        }
+
+        cropResultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+
+
+                val resultUri = UCrop.getOutput(result.data!!)
+                addImage(resultUri!!)
+                myimageAdapter.notifyDataSetChanged()
+            } else if (result.resultCode == UCrop.RESULT_ERROR) {
+                val cropError = UCrop.getError(result.data!!)
+                Log.e("UCrop", "Crop error: $cropError")
+            }
         }
     }
 
+
+    private fun addImage(newImageUri: Uri) {
+        if (myimageAdapter.itemCount >= 10) {
+            Toast.makeText(requireContext(), "최대 10개의 이미지만 추가 가능합니다.", Toast.LENGTH_LONG).show()
+            return
+        }
+
+        imageUri.add(newImageUri)
+
+        myimageAdapter.imageUri.add(newImageUri)
+
+        // 가장 앞쪽의 ImageView에 새 이미지를 셋팅
+        binding.PhotoIconText.text = "${myimageAdapter.itemCount}/10"
+    }
 
     private fun uCropOptions(): UCrop.Options {
         val options = UCrop.Options()
@@ -185,49 +226,6 @@ class WriteFragment : Fragment(), OnMapReadyCallback {
         return options
     }
 
-    private val cropResultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        if (result.resultCode == Activity.RESULT_OK) {
-            val selectedImages = result.data?.clipData
-            if (selectedImages != null) {
-                for (i in 0 until selectedImages.itemCount) {
-                    val selectedImageUri = selectedImages.getItemAt(i).uri
-                    startCrop(selectedImageUri) // 각 이미지를 UCrop으로 전달
-                }
-            } else if (result.data?.data != null) {
-                val imageUri = result.data?.data
-                startCrop(imageUri!!) // 이미지를 UCrop으로 전달
-            }
-        } else if (result.resultCode == UCrop.RESULT_ERROR) {
-            val cropError = UCrop.getError(result.data!!)
-            Log.e("UCrop", "Crop error: $cropError")
-        }
-    }
-
-
-
-
-
-
-    private fun addImage(newImageUri: Uri) {
-        Log.d("IMAGE", "이미지 추가")
-        imageCnt++
-        // 이미지를 오른쪽으로 밀어냄
-        for (i in imageViews.size - 2 downTo 0) {
-            val currentDrawable = imageViews[i].drawable
-            if (currentDrawable != null) {
-                imageViews[i + 1].setImageDrawable(currentDrawable)
-            }
-        }
-
-        imageUri.add(newImageUri)
-
-        myimageAdapter.imageUri.add(newImageUri)
-        myimageAdapter.notifyDataSetChanged()
-
-        // 가장 앞쪽의 ImageView에 새 이미지를 셋팅
-        binding.PhotoIconText.text = "${myimageAdapter.itemCount}/10"
-    }
-
     override fun onMapReady(naverMap: NaverMap) {
         this.naverMap = naverMap
         naverMap.moveCamera(CameraUpdate.zoomTo(18.0))
@@ -236,7 +234,7 @@ class WriteFragment : Fragment(), OnMapReadyCallback {
         naverMap.uiSettings.isScaleBarEnabled = false
         naverMap.uiSettings.isLogoClickEnabled = false
         naverMap.uiSettings.isTiltGesturesEnabled = false
-        naverMap.locationOverlay.isVisible = false
+        naverMap.uiSettings.isZoomGesturesEnabled = false
 
         showDatePickerDialog()
     }
@@ -452,8 +450,8 @@ class WriteFragment : Fragment(), OnMapReadyCallback {
         val vectoService = VectoService.create()
 
         val call = vectoService.addPost("Bearer ${Auth.token}", writeData)
-        call.enqueue(object : Callback<String>{
-            override fun onResponse(call: Call<String>, response: Response<String>) {
+        call.enqueue(object : Callback<VectoService.VectoResponse<Unit>>{
+            override fun onResponse(call: Call<VectoService.VectoResponse<Unit>>, response: Response<VectoService.VectoResponse<Unit>>) {
                 if(response.isSuccessful){
                     Log.d("UPLOAD", "성공: ${response.body()}")
                     response.body()
@@ -463,8 +461,8 @@ class WriteFragment : Fragment(), OnMapReadyCallback {
                 }
             }
 
-            override fun onFailure(call: Call<String>, t: Throwable) {
-                Log.d("UPLOAD", "실패")
+            override fun onFailure(call: Call<VectoService.VectoResponse<Unit>>, t: Throwable) {
+                Log.d("UPLOAD", "실패 ${t.message.toString()}" )
             }
 
         })
@@ -483,10 +481,10 @@ class WriteFragment : Fragment(), OnMapReadyCallback {
 
             val vectoService = VectoService.create()
             val call = vectoService.uploadImages("Bearer ${Auth.token}", imageParts)
-            call.enqueue(object : Callback<List<String>> {
+            call.enqueue(object : Callback<VectoService.VectoResponse<List<String>>> {
                 override fun onResponse(
-                    call: Call<List<String>>,
-                    response: Response<List<String>>
+                    call: Call<VectoService.VectoResponse<List<String>>>,
+                    response: Response<VectoService.VectoResponse<List<String>>>
                 ) {
                     if (response.isSuccessful) {
                         Log.d("UPLOAD_IMAGE", "성공: ${response.body()}")
@@ -503,7 +501,7 @@ class WriteFragment : Fragment(), OnMapReadyCallback {
                                 writeData.title,
                                 writeData.content,
                                 writeData.uploadtime,
-                                imageUrls?.toMutableList(),
+                                imageUrls?.result?.toMutableList(),
                                 writeData.location,
                                 writeData.visit
                             )
@@ -513,7 +511,7 @@ class WriteFragment : Fragment(), OnMapReadyCallback {
                     }
                 }
 
-                override fun onFailure(call: Call<List<String>>, t: Throwable) {
+                override fun onFailure(call: Call<VectoService.VectoResponse<List<String>>>, t: Throwable) {
                     // 네트워크 오류 또는 기타 문제가 발생했을 때의 처리 코드를 여기에 작성하세요.
                     Log.d("UPLOAD_IMAGE", "실패")
                 }
