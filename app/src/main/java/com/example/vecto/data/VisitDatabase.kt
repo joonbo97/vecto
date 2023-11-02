@@ -125,6 +125,15 @@ class VisitDatabase(private val context: Context) {
     }
 
     @SuppressLint("Range")
+    fun deleteVisitDataForEndtime(endtime: String) {
+        val db = dbHelper.writableDatabase
+        val whereClause = "endtime = ?"
+        val whereArgs = arrayOf(endtime)
+        db.delete("visit_data", whereClause, whereArgs)
+        db.close()
+    }
+
+    @SuppressLint("Range")
     fun getTodayVisitData(): MutableList<VisitData> {
         val db = dbHelper.readableDatabase
 

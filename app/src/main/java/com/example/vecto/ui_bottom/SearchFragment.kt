@@ -6,7 +6,10 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.bumptech.glide.Glide
+import com.example.vecto.R
 import com.example.vecto.data.Auth
 import com.example.vecto.databinding.FragmentSearchBinding
 import com.example.vecto.retrofit.VectoService
@@ -19,6 +22,8 @@ class SearchFragment : Fragment(){
     private lateinit var binding: FragmentSearchBinding
     private lateinit var mysearchpostAdapter: MysearchpostAdapter
 
+    private lateinit var userNicknameText: TextView
+
     private var pageNo = 0
 
     override fun onCreateView(
@@ -27,12 +32,20 @@ class SearchFragment : Fragment(){
     ): View {
         binding = FragmentSearchBinding.inflate(inflater, container, false)
 
+        userNicknameText = binding.UserNameText
+
         mysearchpostAdapter = MysearchpostAdapter(requireContext())
         val searchRecyclerView = binding.SearchRecyclerView
         searchRecyclerView.adapter = mysearchpostAdapter
         searchRecyclerView.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
 
         getPostList()
+
+        Auth._nickName.observe(viewLifecycleOwner) { nickname ->
+            if (Auth.loginFlag.value!!) {
+                userNicknameText.text = Auth._nickName.value
+            }
+        }
 
         return binding.root
     }
@@ -76,18 +89,29 @@ class SearchFragment : Fragment(){
     private fun getPostInfo(feedid: Int) {
         val vectoService = VectoService.create()
 
-        val call = vectoService.getFeedInfo(feedid)
+        val call: Call<VectoService.VectoResponse<VectoService.PostResponse>>
+
+        if(Auth.loginFlag.value == true)
+        {
+            call = vectoService.getFeedInfo("Bearer ${Auth.token}", feedid)
+        }
+        else
+        {
+            call = vectoService.getFeedInfo(feedid)
+        }
+
         call.enqueue(object : Callback<VectoService.VectoResponse<VectoService.PostResponse>> {
             override fun onResponse(call: Call<VectoService.VectoResponse<VectoService.PostResponse>>, response: Response<VectoService.VectoResponse<VectoService.PostResponse>>) {
                 if(response.isSuccessful){
                     Log.d("POSTINFO", "성공: ${response.body()}")
 
                     val result = response.body()!!.result
+
                     mysearchpostAdapter.feedInfo.add(result!!)
+                    mysearchpostAdapter.feedID.add(feedid)
                     Log.d("POSTINFO", "저장된 Post 크기: ${mysearchpostAdapter.feedInfo.size}")
+
                     mysearchpostAdapter.notifyDataSetChanged()
-
-
                 }
                 else{
                     Log.d("POSTINFO", "성공했으나 서버 오류 ${response.errorBody()?.string()}")

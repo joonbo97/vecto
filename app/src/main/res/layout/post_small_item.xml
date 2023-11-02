@@ -2,20 +2,24 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="360dp"
-    android:layout_height="380dp">
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingStart="10dp"
+    android:paddingTop="10dp"
+    android:paddingEnd="10dp"
+    android:paddingBottom="10dp">
 
     <ImageView
         android:id="@+id/ImageItemBox"
-        android:layout_width="360dp"
-        android:layout_height="360dp"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
         android:background="@drawable/post_small_box"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintDimensionRatio="1:1"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintHorizontal_bias="0.516"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.5" />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <ImageView
         android:id="@+id/ProfileImage"
@@ -57,9 +61,9 @@
         android:id="@+id/FollowButton"
         android:layout_width="74dp"
         android:layout_height="33dp"
+        android:layout_marginTop="24dp"
         android:layout_marginEnd="14dp"
         android:src="@drawable/follow_button"
-        android:layout_marginTop="24dp"
         app:layout_constraintEnd_toEndOf="@+id/ImageItemBox"
         app:layout_constraintTop_toTopOf="@+id/ImageItemBox" />
 
@@ -79,31 +83,42 @@
         app:layout_constraintTop_toTopOf="@+id/FollowButton"
         app:layout_constraintVertical_bias="0.5" />
 
-    <com.naver.maps.map.MapView
-        android:id="@+id/naver_map_Small"
-        android:layout_width="166dp"
-        android:layout_height="166dp"
+    <ImageView
+        android:id="@+id/MapImageSmall"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="20dp"
         android:layout_marginTop="84dp"
+        android:src="@drawable/empty_image"
+        app:layout_constraintDimensionRatio="1:1"
         app:layout_constraintEnd_toStartOf="@+id/Image"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/ImageItemBox" />
 
-    <com.naver.maps.map.MapView
-        android:id="@+id/naver_map_Large"
-        android:layout_width="332dp"
-        android:layout_height="166dp"
+    <ImageView
+        android:id="@+id/MapImageLarge"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="20dp"
         android:layout_marginTop="84dp"
+        android:layout_marginEnd="20dp"
+        android:src="@drawable/empty_image"
         android:visibility="gone"
-        app:layout_constraintEnd_toEndOf="@+id/ImageItemBox"
+        app:layout_constraintDimensionRatio="2:1"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="@+id/ImageItemBox"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/ImageItemBox" />
 
     <ImageView
         android:id="@+id/Image"
-        android:layout_width="166dp"
-        android:layout_height="166dp"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
         android:layout_marginTop="84dp"
+        android:layout_marginEnd="20dp"
         android:src="@drawable/empty_image"
+        app:layout_constraintDimensionRatio="1:1"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/guideline2"
         app:layout_constraintTop_toTopOf="@+id/ImageItemBox" />
 
@@ -112,13 +127,14 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="10dp"
-        android:layout_marginBottom="78dp"
         android:fontFamily="@font/lineseedkr_bd"
         android:text="제목입니다"
         android:textColor="@color/black"
-        android:textSize="15sp"
-        app:layout_constraintBottom_toBottomOf="@+id/ImageItemBox"
-        app:layout_constraintStart_toStartOf="@+id/LikeImage" />
+        android:textSize="18sp"
+        app:layout_constraintBottom_toTopOf="@+id/LikeImage"
+        app:layout_constraintStart_toStartOf="@+id/LikeImage"
+        app:layout_constraintTop_toBottomOf="@id/MapImageSmall"
+        app:layout_constraintVertical_bias="0.3" />
 
     <TextView
         android:id="@+id/TotalTimeText"
@@ -133,64 +149,58 @@
         app:layout_constraintStart_toStartOf="@+id/TitleText"
         app:layout_constraintTop_toBottomOf="@+id/TitleText" />
 
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/guideline"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        app:layout_constraintGuide_begin="323dp" />
 
     <ImageView
         android:id="@+id/LikeImage"
-        android:layout_width="20dp"
-        android:layout_height="20dp"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
         android:layout_marginStart="16dp"
+        android:padding="5dp"
         android:src="@drawable/post_like_off"
-        app:layout_constraintBottom_toBottomOf="@+id/ImageItemBox"
         app:layout_constraintStart_toStartOf="@+id/ImageItemBox"
-        app:layout_constraintTop_toTopOf="@+id/guideline"
-        app:layout_constraintVertical_bias="0.5" />
+        app:layout_constraintBottom_toBottomOf="@+id/ImageItemBox"
+        app:layout_constraintTop_toTopOf="@id/MapImageSmall"
+        app:layout_constraintVertical_bias="0.95" />
 
     <TextView
         android:id="@+id/LikeCountText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="7dp"
-        android:layout_marginTop="2dp"
         android:fontFamily="@font/lineseedkr_bd"
         android:text="0"
         android:textColor="@color/vecto_likecolor"
         android:textSize="15sp"
-        app:layout_constraintBottom_toBottomOf="@+id/ImageItemBox"
         app:layout_constraintStart_toEndOf="@+id/LikeImage"
-        app:layout_constraintTop_toTopOf="@+id/guideline"
-        app:layout_constraintVertical_bias="0.5" />
+        app:layout_constraintBottom_toBottomOf="@+id/ImageItemBox"
+        app:layout_constraintTop_toTopOf="@id/MapImageSmall"
+        app:layout_constraintVertical_bias="0.932" />
 
     <ImageView
         android:id="@+id/CommentImage"
-        android:layout_width="20dp"
-        android:layout_height="20dp"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:padding="5dp"
         android:layout_marginStart="90dp"
         android:src="@drawable/post_comment"
-        app:layout_constraintBottom_toBottomOf="@+id/ImageItemBox"
         app:layout_constraintStart_toStartOf="@+id/ImageItemBox"
-        app:layout_constraintTop_toTopOf="@+id/guideline"
-        app:layout_constraintVertical_bias="0.5" />
+        app:layout_constraintBottom_toBottomOf="@+id/ImageItemBox"
+        app:layout_constraintTop_toTopOf="@id/MapImageSmall"
+        app:layout_constraintVertical_bias="0.95" />
 
     <TextView
         android:id="@+id/CommentCountText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="7dp"
-        android:layout_marginTop="2dp"
         android:fontFamily="@font/lineseedkr_bd"
         android:text="0"
         android:textColor="@color/vecto_commentcolor"
         android:textSize="15sp"
-        app:layout_constraintBottom_toBottomOf="@+id/ImageItemBox"
         app:layout_constraintStart_toEndOf="@+id/CommentImage"
-        app:layout_constraintTop_toTopOf="@+id/guideline"
-        app:layout_constraintVertical_bias="0.5" />
+        app:layout_constraintBottom_toBottomOf="@+id/ImageItemBox"
+        app:layout_constraintTop_toTopOf="@id/MapImageSmall"
+        app:layout_constraintVertical_bias="0.932" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline2"

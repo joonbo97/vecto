@@ -10,6 +10,8 @@ import com.example.vecto.data.Auth
 import com.example.vecto.databinding.ActivityLoginBinding
 import com.example.vecto.retrofit.TMapAPIService
 import com.example.vecto.retrofit.VectoService
+import com.google.firebase.messaging.FirebaseMessaging
+import com.google.firebase.messaging.FirebaseMessagingService
 import com.kakao.sdk.auth.AuthApiClient
 import com.kakao.sdk.auth.model.OAuthToken
 import com.kakao.sdk.common.KakaoSdk
@@ -34,6 +36,19 @@ class LoginActivity : AppCompatActivity() {
         binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                val token = task.result
+                Log.i("FCM Token", token)
+                val sharedPreferences = getSharedPreferences("fcm_pref", Context.MODE_PRIVATE)
+                sharedPreferences.edit().putString("fcm_token", token).apply()
+            } else {
+                Log.w("FCM Token", "Fetching FCM registration token failed", task.exception)
+            }
+        }
+
+
+
         binding.LoginTextForRegister.setOnClickListener {
             val intent = Intent(this, RegisterActivity::class.java) //Register 화면으로 이동
             startActivity(intent)
@@ -52,6 +67,11 @@ class LoginActivity : AppCompatActivity() {
 
 
         binding.LoginBoxKakao.setOnClickListener {
+            val keyHash = Utility.getKeyHash(this)
+            Log.d("keyHash", "$keyHash")
+
+
+
             // 카카오톡 설치 확인
             if (UserApiClient.instance.isKakaoTalkLoginAvailable(this)) {
                 // 카카오톡 로그인
@@ -77,7 +97,7 @@ class LoginActivity : AppCompatActivity() {
                                 if (e != null) {
                                     if (e is KakaoSdkError && e.isInvalidTokenError()) {
 
-                                        //로그인 필요
+                                        //로그인 필요1
 
                                     }
                                     else {
@@ -121,6 +141,8 @@ class LoginActivity : AppCompatActivity() {
     }
 
     private fun sendLoginRequest(loginRequest: VectoService.LoginRequest){
+        Log.d("LOGIN 요청", loginRequest.toString())
+
         val vectoService = VectoService.create()
 
         val call = vectoService.loginUser(loginRequest)
@@ -141,6 +163,7 @@ class LoginActivity : AppCompatActivity() {
                         Log.d("FCMTOKEN", fcmtoken)
                     }
                 }
+
             }
 
             override fun onFailure(call: Call<VectoService.VectoResponse<String>>, t: Throwable) {
@@ -157,16 +180,15 @@ class LoginActivity : AppCompatActivity() {
             override fun onResponse(call: Call<VectoService.VectoResponse<VectoService.UserInfoResponse>>, response: Response<VectoService.VectoResponse<VectoService.UserInfoResponse>>) {
                 if (response.isSuccessful) {
                     //로그인 성공
-                    Log.d("VectoLogin", "정보 조회 성공 : " + response.message())
+
                     Auth.setLoginFlag(true)
 
-                    val body = response.body()
+                    val body = response.body()?.result
                     if(body != null)
                     {
-                        //Auth.setUserData()
-                        //TODO User Data 넣기
+                        Auth.setUserData(body.provider, body.userId, body.profileUrl, body.nickName, body.email)
                     }
-
+                    Log.d("VectoLogin", "정보 조회 성공 : $body")
                     finish()
                 } else {
                     // 서버 에러 처리

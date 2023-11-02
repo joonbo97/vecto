@@ -25,14 +25,11 @@ object Auth {
 
     var provider = ""
 
-    private val _userId: MutableLiveData<String> = MutableLiveData("")
-    val userId: LiveData<String> = _userId
+    val _userId: MutableLiveData<String> = MutableLiveData("")
 
-    private val _profileImage: MutableLiveData<String?> = MutableLiveData(null)
-    val profileImage: LiveData<String?> = _profileImage
+    val _profileImage: MutableLiveData<String?> = MutableLiveData(null)
 
-    private val _nickName: MutableLiveData<String> = MutableLiveData("")
-    val nickName: LiveData<String> = _nickName
+    val _nickName: MutableLiveData<String> = MutableLiveData("")
 
     var email: String? = ""
 

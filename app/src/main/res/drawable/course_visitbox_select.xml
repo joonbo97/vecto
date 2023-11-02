@@ -7,5 +7,5 @@
       android:pathData="M40,2.5L760,2.5A37.5,37.5 0,0 1,797.5 40L797.5,140A37.5,37.5 0,0 1,760 177.5L40,177.5A37.5,37.5 0,0 1,2.5 140L2.5,40A37.5,37.5 0,0 1,40 2.5z"
       android:strokeWidth="5"
       android:fillColor="#F2F6FF"
-      android:strokeColor="#FF4B78"/>
+      android:strokeColor="@color/vecto_theme_orange"/>
 </vector>

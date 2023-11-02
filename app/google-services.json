@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "598878819894",
-    "project_id": "vecto-400414",
-    "storage_bucket": "vecto-400414.appspot.com"
+    "project_number": "459306109150",
+    "project_id": "vecto-fc688",
+    "storage_bucket": "vecto-fc688.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:598878819894:android:b87ae5f6757e5a356f6a97",
+        "mobilesdk_app_id": "1:459306109150:android:61261ebecd0fda6ab21a4f",
         "android_client_info": {
           "package_name": "com.example.vecto"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyB5FqF8vybQ7NJYtXn-cmn1-mU8ITtKSA4"
+          "current_key": "AIzaSyDwngOfyEgfF7Ci_rMhKcs2D0loLmVdIbA"
         }
       ],
       "services": {

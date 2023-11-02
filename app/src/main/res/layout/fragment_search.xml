@@ -22,7 +22,7 @@
             android:fontFamily="@font/lineseedkr_bd"
             android:text="게스트"
             android:textColor="@color/white"
-            android:textSize="22sp"
+            android:textSize="25sp"
             app:layout_constraintBottom_toTopOf="@+id/TitleText"
             app:layout_constraintStart_toStartOf="parent" />
 
@@ -34,7 +34,7 @@
             android:fontFamily="@font/lineseedkr_rg"
             android:text="님"
             android:textColor="@color/white"
-            android:textSize="22sp"
+            android:textSize="25sp"
             app:layout_constraintBottom_toTopOf="@+id/TitleText"
             app:layout_constraintStart_toEndOf="@id/UserNameText" />
 
@@ -55,7 +55,7 @@
             android:id="@+id/SearchBoxImage"
             android:layout_width="360dp"
             android:layout_height="50dp"
-            android:layout_marginBottom="20dp"
+            android:layout_marginBottom="10dp"
             android:src="@drawable/search_box"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
@@ -87,7 +87,7 @@
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/SearchRecyclerView"
-        android:layout_width="360dp"
+        android:layout_width="match_parent"
         android:layout_height="640dp"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         app:layout_constraintEnd_toEndOf="parent"

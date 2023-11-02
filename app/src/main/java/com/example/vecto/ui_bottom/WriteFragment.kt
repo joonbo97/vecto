@@ -3,64 +3,70 @@ package com.example.vecto.ui_bottom
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.DatePickerDialog
+import android.content.Context
 import android.content.Intent
-import android.graphics.Color
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.PointF
 import android.net.Uri
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.provider.MediaStore
 import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
+import androidx.fragment.app.FragmentContainerView
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.vecto.MainActivity
 import com.example.vecto.R
-import com.example.vecto.VerticalOverlapItemDecoration
 import com.example.vecto.data.Auth
 import com.example.vecto.data.LocationData
 import com.example.vecto.data.LocationDatabase
-import com.example.vecto.data.PathData
 import com.example.vecto.data.VisitData
 import com.example.vecto.data.VisitDatabase
 import com.example.vecto.databinding.FragmentWriteBinding
-import com.example.vecto.retrofit.TMapAPIService
 import com.example.vecto.retrofit.VectoService
 import com.naver.maps.geometry.LatLng
 import com.naver.maps.geometry.LatLngBounds
 import com.naver.maps.map.CameraUpdate
 import com.naver.maps.map.MapFragment
 import com.naver.maps.map.NaverMap
-import com.naver.maps.map.NaverMapOptions
 import com.naver.maps.map.OnMapReadyCallback
 import com.naver.maps.map.overlay.CircleOverlay
 import com.naver.maps.map.overlay.Marker
 import com.naver.maps.map.overlay.OverlayImage
 import com.naver.maps.map.overlay.PathOverlay
 import com.yalantis.ucrop.UCrop
-import okhttp3.MediaType
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
-import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.asRequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import java.io.ByteArrayOutputStream
 import java.io.File
+import java.io.FileOutputStream
+import java.io.OutputStream
 import java.text.SimpleDateFormat
-import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.Calendar
 import java.util.Locale
 
 class WriteFragment : Fragment(), OnMapReadyCallback {
     private lateinit var binding: FragmentWriteBinding
+    private lateinit var mapImage: ImageView
+    private lateinit var mapFragmentContainerView: FragmentContainerView
+
+    private var mapSnapshot = mutableListOf<Bitmap>()
 
     private lateinit var myimageAdapter: MyimageAdapter
 
@@ -90,6 +96,9 @@ class WriteFragment : Fragment(), OnMapReadyCallback {
     ): View {
         binding = FragmentWriteBinding.inflate(inflater, container, false)
 
+        mapImage = binding.MapImage
+        mapFragmentContainerView = binding.naverMapWrite
+
         myimageAdapter = MyimageAdapter(requireContext())
         myimageAdapter.setOnItemRemovedListener(object : MyimageAdapter.OnItemRemovedListener {
             override fun onItemRemoved() {
@@ -114,9 +123,9 @@ class WriteFragment : Fragment(), OnMapReadyCallback {
         binding.WriteDoneButton.setOnClickListener {
             //TODO 형식 확인. 이름, 경로
 
-
-
-            uploadImageToServer(VectoService.PostData(binding.EditTitle.text.toString(), binding.EditContent.text.toString(), LocalDateTime.now().withNano(0).toString(), null, locationDataList, visitDataList))
+            binding.progressBar.visibility = View.VISIBLE
+            binding.constraintProgress.visibility = View.VISIBLE
+            takeSnapForMap(VectoService.PostData(binding.EditTitle.text.toString(), binding.EditContent.text.toString(), LocalDateTime.now().withNano(0).toString(), null, locationDataList, visitDataList, null))
         }
 
         return binding.root
@@ -204,12 +213,39 @@ class WriteFragment : Fragment(), OnMapReadyCallback {
             return
         }
 
-        imageUri.add(newImageUri)
+        // 이미지 압축
+        val compressedBytes = compressImage(newImageUri)
+        val compressedUri = saveCompressedImage(compressedBytes)
 
-        myimageAdapter.imageUri.add(newImageUri)
+        imageUri.add(compressedUri)
+        myimageAdapter.imageUri.add(compressedUri)
+
 
         // 가장 앞쪽의 ImageView에 새 이미지를 셋팅
         binding.PhotoIconText.text = "${myimageAdapter.itemCount}/10"
+    }
+
+
+    private fun saveCompressedImage(compressedBytes: ByteArray): Uri {
+        val filename = "compressed_${System.currentTimeMillis()}.jpeg"
+        val file = File(requireContext().cacheDir, filename)
+        file.outputStream().use { it.write(compressedBytes) }
+        return Uri.fromFile(file)
+    }
+
+    private fun compressImage(uri: Uri): ByteArray {
+        val outStream = ByteArrayOutputStream()
+        val inputStream = requireContext().contentResolver.openInputStream(uri)
+
+        if (inputStream == null) {
+            Log.e("ImageError", "Failed to open InputStream for the provided Uri: $uri")
+            return byteArrayOf()  // empty array
+        }
+
+        val original = BitmapFactory.decodeStream(inputStream)
+        original?.compress(Bitmap.CompressFormat.JPEG, 50, outStream)
+
+        return outStream.toByteArray()
     }
 
     private fun uCropOptions(): UCrop.Options {
@@ -238,6 +274,7 @@ class WriteFragment : Fragment(), OnMapReadyCallback {
 
         showDatePickerDialog()
     }
+
 
     @SuppressLint("NotifyDataSetChanged")
     private fun showDatePickerDialog(){
@@ -276,16 +313,18 @@ class WriteFragment : Fragment(), OnMapReadyCallback {
 
             if(visitDataList.isNotEmpty()){
                 //방문 장소가 있을 경우
-                binding.naverMapWrite.visibility = View.VISIBLE
+                mapFragmentContainerView.visibility = View.VISIBLE
                 deleteOverlay()
 
                 //선택한 날짜의 방문지의 처음과 끝까지의 경로
                 locationDataList = LocationDatabase(requireContext()).getBetweenLocationData(visitDataList.first().datetime, visitDataList.last().datetime)
 
                 addPathOverlayForLoacation(locationDataList)
-                moveCameraForPath(locationDataList)
 
-
+                if(visitDataList.size == 1)
+                    moveCameraForVisit(visitDataList[0])
+                else
+                    moveCameraForPath(locationDataList)
                 val locationDataforPath = mutableListOf<LocationData>()
 
                 //location 첫 좌표 넣어줌.
@@ -302,18 +341,6 @@ class WriteFragment : Fragment(), OnMapReadyCallback {
 
         }, year, month, day).show()
     }
-
-
-
-
-
-
-
-
-
-
-
-
 
     private fun addPathOverlayForLoacation(pathPoints: MutableList<LocationData>){
         val pathLatLng = mutableListOf<LatLng>()
@@ -358,70 +385,19 @@ class WriteFragment : Fragment(), OnMapReadyCallback {
         visitMarkers.add(visitMarker)
     }
 
-    private fun addPlaceMarker(poi: TMapAPIService.Poi){
-        val visitMarker = Marker()
-
-        visitMarker.position = LatLng(poi.frontLat, poi.frontLon)
-        visitMarker.subCaptionText = poi.name
-        visitMarker.map = naverMap
-
-        visitMarkers.add(visitMarker)
-    }
-
-    private fun addCircleOverlay(visitData: VisitData){
-        val circleOverlay = CircleOverlay()
-        circleOverlay.center = LatLng(visitData.lat, visitData.lng)
-        circleOverlay.radius = 50.0 // 반지름을 50m로 설정
-
-        if(visitData.name.isEmpty()) {
-            circleOverlay.color = Color.argb(20, 255, 0, 0) // 원의 색상 설정
-        }
-        else {
-            circleOverlay.color = Color.argb(20, 0, 255, 0) // 원의 색상 설정
-        }
-
-        circleOverlay.map = naverMap
-
-        circleOverlays.add(circleOverlay)
-    }
-
-    private fun addCircleOverlayForMerge(visitData: VisitData){
-        val circleOverlay = CircleOverlay()
-        circleOverlay.center = LatLng(visitData.lat, visitData.lng)
-        circleOverlay.radius = 100.0 // 반지름을 50m로 설정
-
-        if(visitData.name.isEmpty()) {
-            circleOverlay.color = Color.argb(20, 255, 255, 0) // 원의 색상 설정
-        }
-        else {
-            circleOverlay.color = Color.argb(20, 255, 255, 0) // 원의 색상 설정
-        }
-
-        circleOverlay.map = naverMap
-
-        circleOverlays.add(circleOverlay)
-    }
-
     private fun deleteOverlay() {
         pathOverlays.forEach{ it.map = null}
         pathOverlays.clear()
 
         visitMarkers.forEach { it.map = null }
         visitMarkers.clear()
-
-        circleOverlays.forEach{ it.map = null }
-        circleOverlays.clear()
     }
-
-
-
     private fun getPreviousDate(selectedDate: String): String {
         val selectedDateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
         val selectedDateObj = selectedDateFormat.parse(selectedDate)
         val calendar = Calendar.getInstance()
         calendar.time = selectedDateObj!!
         calendar.add(Calendar.DAY_OF_MONTH, -1)
-
 
         return selectedDateFormat.format(calendar.time)
     }
@@ -450,18 +426,25 @@ class WriteFragment : Fragment(), OnMapReadyCallback {
         val vectoService = VectoService.create()
 
         val call = vectoService.addPost("Bearer ${Auth.token}", writeData)
-        call.enqueue(object : Callback<VectoService.VectoResponse<Unit>>{
-            override fun onResponse(call: Call<VectoService.VectoResponse<Unit>>, response: Response<VectoService.VectoResponse<Unit>>) {
+        call.enqueue(object : Callback<VectoService.VectoResponse<Int>>{
+            override fun onResponse(call: Call<VectoService.VectoResponse<Int>>, response: Response<VectoService.VectoResponse<Int>>) {
                 if(response.isSuccessful){
                     Log.d("UPLOAD", "성공: ${response.body()}")
                     response.body()
+                    binding.progressBar.visibility = View.GONE
+                    binding.constraintProgress.visibility = View.GONE
+                    binding.EditContent.setText("")
+                    binding.EditTitle.setText("")
+                    (activity as? MainActivity)?.binding?.navView?.selectedItemId = R.id.SearchFragment
+
                 }
                 else{
                     Log.d("UPLOAD", "성공했으나 서버 오류 ${response.errorBody()?.string()}")
+                    Log.d("UPLOAD", "MAP Image Size :${writeData.mapimage?.size}}")
                 }
             }
 
-            override fun onFailure(call: Call<VectoService.VectoResponse<Unit>>, t: Throwable) {
+            override fun onFailure(call: Call<VectoService.VectoResponse<Int>>, t: Throwable) {
                 Log.d("UPLOAD", "실패 ${t.message.toString()}" )
             }
 
@@ -471,47 +454,32 @@ class WriteFragment : Fragment(), OnMapReadyCallback {
     private fun uploadImageToServer(writeData: VectoService.PostData) {
         val imageParts: MutableList<MultipartBody.Part> = mutableListOf()
 
-        if (imageUri.isNotEmpty()) {
+        if (imageUri.isNotEmpty()) {//업로드 할 이미지가 있으면
             for (uri in imageUri) {
                 val file = File(uri.path!!)
                 val requestFile = file.asRequestBody("image/*".toMediaTypeOrNull())
-                val imagePart = MultipartBody.Part.createFormData("images", file.name, requestFile)
+                val imagePart = MultipartBody.Part.createFormData("image", file.name, requestFile)
                 imageParts.add(imagePart)
             }
 
             val vectoService = VectoService.create()
             val call = vectoService.uploadImages("Bearer ${Auth.token}", imageParts)
-            call.enqueue(object : Callback<VectoService.VectoResponse<List<String>>> {
+            call.enqueue(object : Callback<VectoService.VectoResponse<VectoService.ImageResponse>> {
                 override fun onResponse(
-                    call: Call<VectoService.VectoResponse<List<String>>>,
-                    response: Response<VectoService.VectoResponse<List<String>>>
+                    call: Call<VectoService.VectoResponse<VectoService.ImageResponse>>,
+                    response: Response<VectoService.VectoResponse<VectoService.ImageResponse>>
                 ) {
                     if (response.isSuccessful) {
                         Log.d("UPLOAD_IMAGE", "성공: ${response.body()}")
                         val imageUrls = response.body()
 
-                        /*imageUrls?.let {
-                            for (url in it) {
-
-                            }
-                        }*/
-
-                        uploadPost(
-                            VectoService.PostData(
-                                writeData.title,
-                                writeData.content,
-                                writeData.uploadtime,
-                                imageUrls?.result?.toMutableList(),
-                                writeData.location,
-                                writeData.visit
-                            )
-                        )
+                        uploadPost(writeData.copy(image = imageUrls?.result?.url?.toMutableList()))
                     } else {
                         Log.d("UPLOAD_IMAGE", "성공했으나 서버 오류 ${response.errorBody()?.string()}")
                     }
                 }
 
-                override fun onFailure(call: Call<VectoService.VectoResponse<List<String>>>, t: Throwable) {
+                override fun onFailure(call: Call<VectoService.VectoResponse<VectoService.ImageResponse>>, t: Throwable) {
                     // 네트워크 오류 또는 기타 문제가 발생했을 때의 처리 코드를 여기에 작성하세요.
                     Log.d("UPLOAD_IMAGE", "실패")
                 }
@@ -521,5 +489,110 @@ class WriteFragment : Fragment(), OnMapReadyCallback {
         {
             uploadPost(writeData)
         }
+    }
+
+    private fun changelayout(w: Int, h: Int){
+        val params = mapFragmentContainerView.layoutParams
+
+        val density = resources.displayMetrics.density
+        val width = (w * density)
+        val height = (h * density)
+
+        params.width = width.toInt() // 원하는 가로길이
+        params.height = height.toInt() // 원하는 세로 길이
+
+        mapFragmentContainerView.layoutParams = params
+    }
+
+    private fun takeSnapForMap(writeData: VectoService.PostData){
+        mapImage.visibility = View.INVISIBLE
+        mapFragmentContainerView.visibility = View.VISIBLE
+
+        mapSnapshot.clear()
+
+
+        changelayout(340, 340)
+        if(visitDataList.size == 1)
+            moveCameraForVisit(visitDataList[0])
+        else
+            moveCameraForPath(locationDataList)
+
+        Handler(Looper.getMainLooper()).postDelayed({
+            naverMap.takeSnapshot {
+                mapSnapshot.add(it)
+            }
+        }, 900)
+
+        Handler(Looper.getMainLooper()).postDelayed({
+            changelayout(340, 170)
+        }, 1000)
+
+        Handler(Looper.getMainLooper()).postDelayed({
+            if(visitDataList.size == 1)
+                moveCameraForVisit(visitDataList[0])
+            else
+                moveCameraForPath(locationDataList)
+        }, 1100)
+
+        Handler(Looper.getMainLooper()).postDelayed({
+            naverMap.takeSnapshot {
+                mapSnapshot.add(it)
+            }
+        }, 2000)
+
+        Handler(Looper.getMainLooper()).postDelayed({
+            mapImage.visibility = View.INVISIBLE
+            mapFragmentContainerView.visibility = View.INVISIBLE
+
+            uploadMapImage(writeData)
+        }, 2200)
+
+
+    }
+
+    private fun uploadMapImage(writeData: VectoService.PostData) {
+        val vectoService = VectoService.create()
+
+        val imageParts = mutableListOf<MultipartBody.Part>()
+        for (bitmap in mapSnapshot) {
+            val byteArrayOutputStream = ByteArrayOutputStream()
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream)
+            val byteArray = byteArrayOutputStream.toByteArray()
+            val body = byteArray.toRequestBody("image/jpeg".toMediaTypeOrNull(), 0)
+
+            val part = MultipartBody.Part.createFormData("image", "mapImage.jpg", body)
+            imageParts.add(part)
+        }
+
+        val call = vectoService.uploadImages("Bearer ${Auth.token}",imageParts)
+        call.enqueue(object : Callback<VectoService.VectoResponse<VectoService.ImageResponse>>{
+            override fun onResponse(call: Call<VectoService.VectoResponse<VectoService.ImageResponse>>, response: Response<VectoService.VectoResponse<VectoService.ImageResponse>>) {
+                if(response.isSuccessful){
+                    Log.d("UPLOADMAP", "성공: ${response.body()}")
+
+                    writeData.mapimage = mutableListOf()
+                    response.body()?.result?.url?.let {
+                        writeData.mapimage?.addAll(it)
+                    }
+                    Log.d("UPLOADMAP","SAVE MAP URL : ${writeData.mapimage?.size}")
+                    uploadImageToServer(writeData)
+                }
+                else{
+                    Log.d("UPLOADMAP", "성공했으나 서버 오류 ${response.errorBody()?.string()}")
+                }
+            }
+
+            override fun onFailure(call: Call<VectoService.VectoResponse<VectoService.ImageResponse>>, t: Throwable) {
+                Log.d("UPLOADMAP", "실패 ${t.message.toString()}" )
+            }
+
+        })
+    }
+
+    private fun moveCameraForVisit(visit: VisitData){
+        val targetLatLng = LatLng(visit.lat_set, visit.lng_set)
+
+        naverMap.moveCamera(CameraUpdate.scrollTo(targetLatLng))
+        naverMap.moveCamera(CameraUpdate.zoomTo(18.0))
     }
 }

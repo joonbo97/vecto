@@ -7,6 +7,7 @@ import retrofit2.Call
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.Multipart
@@ -42,7 +43,7 @@ interface VectoService {
     fun addPost(
         @Header("Authorization") authorization: String,
         @Body request: PostData
-    ): Call<VectoResponse<Unit>>
+    ): Call<VectoResponse<Int>>
 
     @Multipart
     @POST("upload/profile")
@@ -50,14 +51,14 @@ interface VectoService {
         @Header("Authorization")
         authorization: String,
         @Part image: MultipartBody.Part
-    ): Call<VectoResponse<Unit>>
+    ): Call<VectoResponse<String>>
 
     @Multipart
     @POST("upload/feed")
     fun uploadImages(
         @Header("Authorization") authorization: String,
         @Part images: List<MultipartBody.Part>
-    ): Call<VectoResponse<List<String>>>
+    ): Call<VectoResponse<ImageResponse>>
 
     @POST("mail")
     fun sendMail(
@@ -73,6 +74,25 @@ interface VectoService {
     fun getFeedInfo(
         @Path("feedId") feedId: Int
     ): Call<VectoResponse<PostResponse>>
+
+    @POST("feed/{feedId}")
+    fun getFeedInfo(
+        @Header("Authorization") authorization: String,
+        @Path("feedId") feedId: Int
+    ): Call<VectoResponse<PostResponse>>
+
+    @POST("feed/{feedId}/likes")
+    fun sendLike(
+        @Header("Authorization") authorization: String,
+        @Path("feedId") feedId: Int,
+    ): Call<VectoResponse<Unit>>
+
+
+    @DELETE("feed/{feedId}/likes")
+    fun cancelLike(
+        @Header("Authorization") authorization: String,
+        @Path("feedId") feedId: Int,
+    ): Call<VectoResponse<Unit>>
 
 
     companion object {
@@ -120,16 +140,21 @@ interface VectoService {
         val provider: String,
         val nickName: String,
         val email: String?,
-        val profile: String?
+        val profileUrl: String?
+    )
+
+    data class ImageResponse(
+        val url: List<String>
     )
 
     data class PostData(
         val title: String, //제목
         val content: String?, //내용
         val uploadtime: String, //게시 시간
-        val image: MutableList<String>?, //이미지
+        var image: MutableList<String>?, //이미지
         val location: MutableList<LocationData>, //경로 정보
-        val visit: MutableList<VisitData> //방문지 정보
+        val visit: MutableList<VisitData>, //방문지 정보
+        var mapimage: MutableList<String>?
     )
 
     data class PostResponse(
@@ -139,10 +164,12 @@ interface VectoService {
         val image: List<String>,
         val location: List<LocationData>,
         val visit: List<VisitData>,
-        val likecount: Int,
+        var likeCount: Int,
         val commentCount: Int,
         val nickName: String,
         val userProfile: String?,
-        val userId: String
+        val userId: String,
+        val mapImage: List<String>,
+        var likeFlag: Boolean
     )
 }

@@ -8,33 +8,63 @@
 
     <ImageView
         android:id="@+id/DialogImage"
-        android:layout_width="160dp"
-        android:layout_height="120dp"
+        android:layout_width="150dp"
+        android:layout_height="100dp"
         android:layout_marginTop="30dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/dialog_start_image" />
+        app:srcCompat="@drawable/edit_dialog_image" />
 
     <TextView
         android:id="@+id/Guide_TextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:fontFamily="@font/lineseedkr_rg"
-        android:textStyle="bold"
-        android:text="벡토와 함께\n위치 수집을 시작할까요?"
-        android:lineSpacingExtra="4sp"
         android:gravity="center"
+        android:lineSpacingExtra="4sp"
+        android:text="방문한 장소명을\n입력하세요."
         android:textColor="@color/black"
         android:textSize="15sp"
+        android:textStyle="bold"
         app:layout_constraintBottom_toTopOf="@+id/ButtonImage"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/DialogImage"
-        app:layout_constraintVertical_bias="0.5" />
+        app:layout_constraintVertical_bias="0.15" />
 
+    <ImageView
+        android:id="@+id/EditVisitBox"
+        android:layout_width="270dp"
+        android:layout_height="42dp"
+        app:layout_constraintBottom_toTopOf="@+id/ButtonImage"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/Guide_TextView"
+        app:layout_constraintVertical_bias="0.4"
+        app:srcCompat="@drawable/edit_visit_box" />
+
+    <EditText
+        android:id="@+id/EdittextVisit"
+        android:layout_width="250dp"
+        android:layout_height="40dp"
+        android:background="@null"
+        android:ems="20"
+        android:hint="방문한 장소 이름"
+        android:textColorHint="@color/vecto_gray"
+        android:textColor="@color/black"
+        android:textSize="15sp"
+        android:inputType="text"
+        android:text=""
+        app:layout_constraintBottom_toBottomOf="@+id/EditVisitBox"
+        app:layout_constraintEnd_toEndOf="@+id/EditVisitBox"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="@+id/EditVisitBox"
+        app:layout_constraintTop_toTopOf="@+id/EditVisitBox"
+        app:layout_constraintVertical_bias="0.5" />
 
     <ImageView
         android:id="@+id/ButtonImage"
@@ -51,7 +81,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:fontFamily="@font/lineseedkr_bd"
-        android:text="시작하기"
+        android:text="확인"
         android:textColor="@color/white"
         android:textSize="20sp"
         app:layout_constraintBottom_toBottomOf="@+id/ButtonImage"

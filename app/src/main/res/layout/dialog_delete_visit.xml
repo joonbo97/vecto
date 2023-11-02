@@ -1,21 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="300dp"
     android:layout_height="300dp"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="@drawable/dialog_background">
 
     <ImageView
         android:id="@+id/DialogImage"
-        android:layout_width="160dp"
+        android:layout_width="179dp"
         android:layout_height="120dp"
         android:layout_marginTop="45dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/dialog_end_image" />
+        app:srcCompat="@drawable/delete_dialog_image" />
 
     <TextView
         android:id="@+id/Guide_TextView"
@@ -23,7 +22,7 @@
         android:layout_height="wrap_content"
         android:fontFamily="@font/lineseedkr_rg"
         android:textStyle="bold"
-        android:text="벡토와 함께한\n위치 수집을 종료할까요?"
+        android:text="해당 장소를 삭제할까요?\n(삭제된 방문지는 복구되지 않아요)"
         android:lineSpacingExtra="4sp"
         android:gravity="center"
         android:textColor="@color/black"
@@ -82,4 +81,5 @@
         app:layout_constraintStart_toStartOf="@+id/NOButtonImage"
         app:layout_constraintTop_toTopOf="@+id/NOButtonImage"
         app:layout_constraintVertical_bias="0.5" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -35,5 +35,29 @@
         android:label="fragment_mypage"
         tools:layout="@layout/fragment_mypage"/>
 
+    <fragment
+        android:id="@+id/MypageSettingFragment"
+        android:name="com.example.vecto.ui_bottom.MypageSettingFragment"
+        android:label="fragment_mypage_setting"
+        tools:layout="@layout/fragment_mypage_setting"/>
+
+    <fragment
+        android:id="@+id/MypagePostFragment"
+        android:name="com.example.vecto.ui_bottom.MypagePostFragment"
+        android:label="fragment_mypage_post"
+        tools:layout="@layout/fragment_mypage_post"/>
+
+    <fragment
+        android:id="@+id/MypageLikepostFragment"
+        android:name="com.example.vecto.ui_bottom.MypageLikepostFragment"
+        android:label="fragment_mypage_likepost"
+        tools:layout="@layout/fragment_mypage_likepost"/>
+
+    <fragment
+        android:id="@+id/MypageInquiryFragment"
+        android:name="com.example.vecto.ui_bottom.MypageInquiryFragment"
+        android:label="fragment_mypage_inquiry"
+        tools:layout="@layout/fragment_mypage_inquiry"/>
+
 
 </navigation>

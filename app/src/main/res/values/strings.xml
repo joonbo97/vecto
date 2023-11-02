@@ -19,4 +19,6 @@
     <string name="LoginText">아직 회원이 아니신가요?</string>
     <string name="LoginTextForRegister"><u>회원가입 하기</u></string>
     <string name="APIFailToastMessage">인터넷이 불안정합니다. 잠시후 다시 시도해주세요.</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

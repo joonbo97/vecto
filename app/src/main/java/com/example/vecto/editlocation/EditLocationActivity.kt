@@ -225,7 +225,7 @@ class EditLocationActivity : AppCompatActivity(), OnMapReadyCallback, MyLocation
                     deleteOverlay()//Overlay 삭제
 
                     myLocationAdapter = MyLocationAdapter(this, this)
-                    val locationRecyclerView = binding.LocationRecyclerView
+                    val locationRecyclerView = binding.LocationRecyclerView2
                     locationRecyclerView.adapter = myLocationAdapter
                     locationRecyclerView.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
 

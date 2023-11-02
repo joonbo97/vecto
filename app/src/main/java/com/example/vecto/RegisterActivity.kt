@@ -146,11 +146,14 @@ class RegisterActivity : AppCompatActivity() {
                 }
                 else{
                     Log.d("ID_CHECK", "성공했으나 서버 오류 ${response.errorBody()?.string()}")
+                    if(response.code() == 400)
+                        Toast.makeText(this@RegisterActivity, "중복된 아이디가 있습니다.", Toast.LENGTH_SHORT).show()
                 }
             }
 
             override fun onFailure(call: Call<VectoService.VectoResponse<Unit>>, t: Throwable) {
                 Log.d("ID_CHECK", "실패")
+
             }
         })
     }

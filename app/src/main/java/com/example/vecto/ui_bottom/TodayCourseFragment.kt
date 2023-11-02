@@ -1,8 +1,10 @@
 package com.example.vecto.ui_bottom
 
+import android.Manifest
 import android.app.ActivityManager
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -11,6 +13,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.core.content.ContextCompat
 import androidx.core.content.ContextCompat.getColor
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
@@ -79,7 +82,10 @@ class TodayCourseFragment : Fragment(), OnMapReadyCallback {
 
         lifecycleScope.launch {
 
-            if(!isGuideFlag()){
+            if(!isGuideFlag() ||
+                ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_DENIED ||
+                ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_DENIED ||
+                ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_DENIED){
                 showGuide()
                 saveGuideFlag(true)
             }

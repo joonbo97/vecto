@@ -1,14 +1,219 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/vecto_main"
     tools:context=".ui_bottom.MypageFragment">
 
-    <!-- TODO: Update blank fragment layout -->
-    <TextView
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/constraintLayout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="5" />
+        android:layout_height="170dp"
+        android:background="@color/vecto_theme_orange"
+        app:layout_constraintTop_toTopOf="parent">
 
-</FrameLayout>
+        <ImageView
+            android:id="@+id/AlarmIconImage"
+            android:layout_width="25dp"
+            android:layout_height="25dp"
+            android:layout_marginTop="40dp"
+            android:layout_marginEnd="20dp"
+            android:src="@drawable/alarmoff_icon"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ImageView
+            android:id="@+id/ProfileImage"
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:layout_marginStart="20dp"
+            android:layout_marginBottom="20dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:srcCompat="@drawable/profile_basic" />
+
+        <ImageView
+            android:id="@+id/ProfileEditIcon"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:src="@drawable/edit_profile_image_icon"
+            app:layout_constraintBottom_toBottomOf="@+id/ProfileImage"
+            app:layout_constraintEnd_toEndOf="@+id/ProfileImage" />
+
+        <TextView
+            android:id="@+id/UserNameText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_marginBottom="40dp"
+            android:fontFamily="@font/lineseedkr_bd"
+            android:text="게스트"
+            android:textColor="@color/white"
+            android:textSize="25sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/ProfileImage" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <ImageView
+        android:id="@+id/MypageMenu1"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="15dp"
+        android:layout_marginEnd="10dp"
+        android:layout_marginBottom="15dp"
+        android:src="@drawable/mypage_menubox"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/constraintLayout" />
+
+    <TextView
+        android:id="@+id/menuText1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="30dp"
+        android:fontFamily="@font/lineseedkr_bd"
+        android:text="내 정보 설정"
+        android:textColor="@color/black"
+        android:textSize="15sp"
+        app:layout_constraintBottom_toBottomOf="@+id/MypageMenu1"
+        app:layout_constraintStart_toStartOf="@+id/MypageMenu1"
+        app:layout_constraintTop_toTopOf="@+id/MypageMenu1"
+        app:layout_constraintVertical_bias="0.53" />
+
+
+    <ImageView
+        android:id="@+id/mypageImage1"
+        android:layout_width="15dp"
+        android:layout_height="15dp"
+        android:src="@drawable/edit_profile_intro_image"
+        android:layout_marginEnd="30dp"
+        app:layout_constraintBottom_toBottomOf="@+id/MypageMenu1"
+        app:layout_constraintEnd_toEndOf="@+id/MypageMenu1"
+        app:layout_constraintTop_toTopOf="@+id/MypageMenu1"
+        app:layout_constraintVertical_bias="0.5" />
+
+    <ImageView
+        android:id="@+id/MypageMenu2"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="15dp"
+        android:layout_marginEnd="10dp"
+        android:layout_marginBottom="15dp"
+        android:src="@drawable/mypage_menubox"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/MypageMenu1" />
+
+    <TextView
+        android:id="@+id/menuText2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="30dp"
+        android:fontFamily="@font/lineseedkr_bd"
+        android:text="내 게시글"
+        android:textColor="@color/black"
+        android:textSize="15sp"
+        app:layout_constraintBottom_toBottomOf="@+id/MypageMenu2"
+        app:layout_constraintStart_toStartOf="@+id/MypageMenu2"
+        app:layout_constraintTop_toTopOf="@+id/MypageMenu2"
+        app:layout_constraintVertical_bias="0.53" />
+
+
+    <ImageView
+        android:id="@+id/mypageImage2"
+        android:layout_width="15dp"
+        android:layout_height="15dp"
+        android:src="@drawable/edit_profile_intro_image"
+        android:layout_marginEnd="30dp"
+        app:layout_constraintBottom_toBottomOf="@+id/MypageMenu2"
+        app:layout_constraintEnd_toEndOf="@+id/MypageMenu2"
+        app:layout_constraintTop_toTopOf="@+id/MypageMenu2"
+        app:layout_constraintVertical_bias="0.5" />
+
+    <ImageView
+        android:id="@+id/MypageMenu3"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="15dp"
+        android:layout_marginEnd="10dp"
+        android:layout_marginBottom="15dp"
+        android:src="@drawable/mypage_menubox"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/MypageMenu2" />
+
+    <TextView
+        android:id="@+id/menuText3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="30dp"
+        android:fontFamily="@font/lineseedkr_bd"
+        android:text="좋아요 한 목록"
+        android:textColor="@color/black"
+        android:textSize="15sp"
+        app:layout_constraintBottom_toBottomOf="@+id/MypageMenu3"
+        app:layout_constraintStart_toStartOf="@+id/MypageMenu3"
+        app:layout_constraintTop_toTopOf="@+id/MypageMenu3"
+        app:layout_constraintVertical_bias="0.53" />
+
+
+    <ImageView
+        android:id="@+id/mypageImage3"
+        android:layout_width="15dp"
+        android:layout_height="15dp"
+        android:src="@drawable/edit_profile_intro_image"
+        android:layout_marginEnd="30dp"
+        app:layout_constraintBottom_toBottomOf="@+id/MypageMenu3"
+        app:layout_constraintEnd_toEndOf="@+id/MypageMenu3"
+        app:layout_constraintTop_toTopOf="@+id/MypageMenu3"
+        app:layout_constraintVertical_bias="0.5" />
+
+    <ImageView
+        android:id="@+id/MypageMenu4"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="15dp"
+        android:layout_marginEnd="10dp"
+        android:layout_marginBottom="15dp"
+        android:src="@drawable/mypage_menubox"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/MypageMenu3" />
+
+
+    <TextView
+        android:id="@+id/menuText4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="30dp"
+        android:fontFamily="@font/lineseedkr_bd"
+        android:text="문의하기"
+        android:textColor="@color/black"
+        android:textSize="15sp"
+        app:layout_constraintBottom_toBottomOf="@+id/MypageMenu4"
+        app:layout_constraintStart_toStartOf="@+id/MypageMenu4"
+        app:layout_constraintTop_toTopOf="@+id/MypageMenu4"
+        app:layout_constraintVertical_bias="0.53" />
+
+
+    <ImageView
+        android:id="@+id/mypageImage4"
+        android:layout_width="15dp"
+        android:layout_height="15dp"
+        android:src="@drawable/edit_profile_intro_image"
+        android:layout_marginEnd="30dp"
+        app:layout_constraintBottom_toBottomOf="@+id/MypageMenu4"
+        app:layout_constraintEnd_toEndOf="@+id/MypageMenu4"
+        app:layout_constraintTop_toTopOf="@+id/MypageMenu4"
+        app:layout_constraintVertical_bias="0.5" />
+</androidx.constraintlayout.widget.ConstraintLayout>

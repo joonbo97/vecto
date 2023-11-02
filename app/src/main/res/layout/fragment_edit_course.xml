@@ -14,6 +14,7 @@
         android:layout_height="match_parent" />
 
     <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/Top_Layout"
         android:layout_width="match_parent"
         android:layout_height="90dp"
         android:background="@color/vecto_transparenct"
@@ -83,6 +84,93 @@
             app:layout_constraintTop_toTopOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <ImageView
+        android:id="@+id/editCourseButton"
+        android:layout_width="120dp"
+        android:layout_height="30dp"
+        android:layout_marginTop="10dp"
+        android:visibility="invisible"
+        android:src="@drawable/edit_course_button_init"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/Top_Layout" />
+
+    <TextView
+        android:id="@+id/textInitButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/lineseedkr_bd"
+        android:text="추천 경로 설정"
+        android:textColor="@color/white"
+        android:textSize="13sp"
+        android:layout_marginTop="1dp"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toBottomOf="@+id/editCourseButton"
+        app:layout_constraintEnd_toEndOf="@+id/editCourseButton"
+        app:layout_constraintStart_toStartOf="@+id/editCourseButton"
+        app:layout_constraintTop_toTopOf="@+id/editCourseButton"
+        app:layout_constraintVertical_bias="0.5" />
+
+    <ImageView
+        android:id="@+id/editCourseButtonNO"
+        android:layout_width="54dp"
+        android:layout_height="30dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginEnd="66dp"
+        android:visibility="invisible"
+        android:src="@drawable/edit_course_button_no"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/Top_Layout" />
+
+    <TextView
+        android:id="@+id/textNoButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/lineseedkr_bd"
+        android:text="취소"
+        android:textColor="@color/white"
+        android:textSize="13sp"
+        android:layout_marginTop="1dp"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toBottomOf="@+id/editCourseButtonNO"
+        app:layout_constraintEnd_toEndOf="@+id/editCourseButtonNO"
+        app:layout_constraintStart_toStartOf="@+id/editCourseButtonNO"
+        app:layout_constraintTop_toTopOf="@+id/editCourseButtonNO"
+        app:layout_constraintVertical_bias="0.5" />
+
+    <ImageView
+        android:id="@+id/editCourseButtonOK"
+        android:layout_width="54dp"
+        android:layout_height="30dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginStart="66dp"
+        android:visibility="invisible"
+        android:src="@drawable/edit_course_button_ok"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/Top_Layout" />
+
+    <TextView
+        android:id="@+id/textOkButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/lineseedkr_bd"
+        android:text="적용"
+        android:textColor="@color/white"
+        android:textSize="13sp"
+        android:layout_marginTop="1dp"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toBottomOf="@+id/editCourseButtonOK"
+        app:layout_constraintEnd_toEndOf="@+id/editCourseButtonOK"
+        app:layout_constraintStart_toStartOf="@+id/editCourseButtonOK"
+        app:layout_constraintTop_toTopOf="@+id/editCourseButtonOK"
+        app:layout_constraintVertical_bias="0.5" />
+
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/EditLayout"

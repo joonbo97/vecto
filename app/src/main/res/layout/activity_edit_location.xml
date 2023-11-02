@@ -67,7 +67,7 @@
             app:layout_constraintTop_toTopOf="parent" />
 
         <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/LocationRecyclerView"
+            android:id="@+id/LocationRecyclerView2"
             android:layout_width="match_parent"
             android:layout_height="50dp"
             android:layout_marginTop="75dp"
