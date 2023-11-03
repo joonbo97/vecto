@@ -18,8 +18,8 @@
             android:id="@+id/AlarmIconImage"
             android:layout_width="25dp"
             android:layout_height="25dp"
-            android:layout_marginTop="40dp"
-            android:layout_marginEnd="20dp"
+            android:layout_marginTop="68dp"
+            android:layout_marginEnd="25dp"
             android:src="@drawable/alarmoff_icon"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />

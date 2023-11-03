@@ -10,6 +10,10 @@ object Auth {
         loginFlag.value = flag
     }
 
+    val showFlag: MutableLiveData<Boolean> = MutableLiveData<Boolean>(false)//확인 안한게 있으면 true
+    fun setShowFlag(flag: Boolean){
+        showFlag.value = flag
+    }
 
 
 

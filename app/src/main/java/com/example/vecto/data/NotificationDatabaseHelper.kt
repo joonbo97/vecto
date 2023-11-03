@@ -4,8 +4,7 @@ import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 
-class LocationDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
-
+class NotificationDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
     override fun onCreate(db: SQLiteDatabase) {
         db.execSQL(CREATE_TABLE_QUERY)
     }
@@ -14,19 +13,18 @@ class LocationDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATAB
         db.execSQL(DROP_TABLE_QUERY)
         onCreate(db)
     }
+    companion object{
+        private const val DATABASE_NAME = "notification_database"
+        private const val DATABASE_VERSION = 6
 
-    companion object {
-        private const val DATABASE_NAME = "location_database"
-        private const val DATABASE_VERSION = 4
-
-        private const val CREATE_TABLE_QUERY = "CREATE TABLE IF NOT EXISTS location_data (" +
+        private const val CREATE_TABLE_QUERY = "CREATE TABLE IF NOT EXISTS notification_data (" +
                 "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 "datetime TEXT, " +
-                "lat REAL, " +
-                "lng REAL, " +
+                "feedID INTEGER, " +
+                "text TEXT, " +
                 "showFlag INTEGER" +
                 ")"
 
-        private const val DROP_TABLE_QUERY = "DROP TABLE IF EXISTS location_data"
+        private const val DROP_TABLE_QUERY = "DROP TABLE IF EXISTS notification_data"
     }
 }

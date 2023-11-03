@@ -76,9 +76,9 @@
         android:text="0"
         android:textColor="@color/black"
         android:textSize="11sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.921"
-        app:layout_constraintStart_toEndOf="@+id/ProfileImage"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintEnd_toEndOf="@+id/CommentLikeImage"
+        app:layout_constraintStart_toStartOf="@+id/CommentLikeImage"
         app:layout_constraintTop_toBottomOf="@+id/CommentLikeImage" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

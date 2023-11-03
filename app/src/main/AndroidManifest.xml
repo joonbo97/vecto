@@ -20,11 +20,14 @@
         android:theme="@style/Theme.Vecto"
         tools:targetApi="31">
         <activity
+            android:name=".NotificationActivity"
+            android:exported="false" />
+        <activity
             android:name=".CommentActivity"
             android:exported="false"
             android:label="@string/title_activity_comment"
-            android:windowSoftInputMode="adjustPan"
-            android:theme="@style/Theme.Vecto" />
+            android:theme="@style/Theme.Vecto"
+            android:windowSoftInputMode="adjustPan" />
         <activity
             android:name=".RegisterActivity"
             android:exported="false"

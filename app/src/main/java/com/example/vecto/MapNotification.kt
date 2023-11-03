@@ -28,11 +28,10 @@ object MapNotification {
             .setContentInfo("Info 입니다")
             .setSmallIcon(R.drawable.ic_launcher_foreground)
             .setOngoing(true)//사라지지 않는 알림으로 만들기
-            //.addAction()
             .setContentIntent(pendingIntent)
             .build()
 
-        val serviceChannel = NotificationChannel(CHANNEL_ID, "Channel 입니다", NotificationManager.IMPORTANCE_DEFAULT)
+        val serviceChannel = NotificationChannel(CHANNEL_ID, "백그라운드 경로 알림", NotificationManager.IMPORTANCE_DEFAULT)
         serviceChannel.setShowBadge(false)
 
         val manager = context.getSystemService(NotificationManager::class.java)

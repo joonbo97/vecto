@@ -1,6 +1,8 @@
 package com.example.vecto.ui_bottom
 
+import android.content.Intent
 import android.os.Bundle
+import android.provider.AlarmClock
 import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -9,6 +11,8 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
+import com.example.vecto.LoginActivity
+import com.example.vecto.NotificationActivity
 import com.example.vecto.R
 import com.example.vecto.data.Auth
 import com.example.vecto.databinding.FragmentSearchBinding
@@ -45,6 +49,22 @@ class SearchFragment : Fragment(){
             if (Auth.loginFlag.value!!) {
                 userNicknameText.text = Auth._nickName.value
             }
+        }
+
+        Auth.showFlag.observe(viewLifecycleOwner) { showFlag ->
+            if(Auth.showFlag.value == true)//확인 안한 알림이 있을 경우
+            {
+                binding.AlarmIconImage.setImageResource(R.drawable.alarmon_icon)
+            }
+            else//확인 안한 알림이 없을 경우
+            {
+                binding.AlarmIconImage.setImageResource(R.drawable.alarmoff_icon)
+            }
+        }
+
+        binding.AlarmIconImage.setOnClickListener {
+            val intent = Intent(context, NotificationActivity::class.java)
+            startActivity(intent)
         }
 
         return binding.root

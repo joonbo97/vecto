@@ -6,8 +6,11 @@ import android.content.Context
 import android.os.Build
 import android.util.Log
 import androidx.core.app.NotificationCompat
+import com.example.vecto.data.NotificationData
+import com.example.vecto.data.NotificationDatabase
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
+import java.time.LocalDateTime
 
 class MyFirebaseMessagingService:  FirebaseMessagingService(){
     private val CHANNEL_ID = "vecto"
@@ -38,6 +41,11 @@ class MyFirebaseMessagingService:  FirebaseMessagingService(){
 
         if (title != null && body != null) {
             // 알림 제목과 내용이 있을 경우, 알림 표시
+            val currentDateTime = LocalDateTime.now().withNano(0).toString()
+
+            val notificationDB = NotificationDatabase(this)
+            notificationDB.addNotificationData(NotificationData(currentDateTime, feedId!!.toInt(), body, 0))
+
             showNotification(title, body)
         } else {
             // 알림 제목이나 내용이 없을 경우, 로그 출력

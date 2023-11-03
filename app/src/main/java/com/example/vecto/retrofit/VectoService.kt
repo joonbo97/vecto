@@ -99,6 +99,12 @@ interface VectoService {
         @Path("feedId") feedId: Int
     ): Call<VectoResponse<CommentListResponse>>
 
+    @POST("feed/comment")
+    fun sendComment(
+        @Header("Authorization") authorization: String,
+        @Body request: CommentRequest
+    ): Call<VectoResponse<String>>
+
 
     companion object {
         fun create(): VectoService {
@@ -187,5 +193,10 @@ interface VectoService {
         val content: String,
         val timeDifference: String,
         val profileUrl: String?
+    )
+
+    data class CommentRequest(
+        val feedId: Int,
+        val content: String
     )
 }

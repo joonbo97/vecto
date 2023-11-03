@@ -21,6 +21,7 @@ import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import com.bumptech.glide.Glide
 import com.example.vecto.LoginActivity
+import com.example.vecto.NotificationActivity
 import com.example.vecto.R
 import com.example.vecto.data.Auth
 import com.example.vecto.databinding.FragmentMypageBinding
@@ -70,6 +71,22 @@ class MypageFragment : Fragment() {
 
         Auth._nickName.observe(viewLifecycleOwner) {
             binding.UserNameText.text = Auth._nickName.value
+        }
+
+        Auth.showFlag.observe(viewLifecycleOwner) { showFlag ->
+            if(Auth.showFlag.value == true)//확인 안한 알림이 있을 경우
+            {
+                binding.AlarmIconImage.setImageResource(R.drawable.alarmon_icon)
+            }
+            else//확인 안한 알림이 없을 경우
+            {
+                binding.AlarmIconImage.setImageResource(R.drawable.alarmoff_icon)
+            }
+        }
+
+        binding.AlarmIconImage.setOnClickListener {
+            val intent = Intent(context, NotificationActivity::class.java)
+            startActivity(intent)
         }
 
         profileImageView.setOnClickListener {

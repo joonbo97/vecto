@@ -196,18 +196,7 @@ class LocationService : Service() {
     }
 
     private fun startForegroundService() {
-        val channelId = "foreground_service_channel"
-        val channel = NotificationChannel(
-            channelId,
-            "Location Service Channel",
-            NotificationManager.IMPORTANCE_HIGH
-        )
-        val notificationManager =
-            getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        notificationManager.createNotificationChannel(channel)
-
         val notification = MapNotification.createNotification(this)
-
         startForeground(NOTIFICATION_ID, notification)
     }
 
