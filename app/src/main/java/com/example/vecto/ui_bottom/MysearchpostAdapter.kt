@@ -1,6 +1,7 @@
 package com.example.vecto.ui_bottom
 
 import android.content.Context
+import android.content.Intent
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -11,10 +12,13 @@ import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.ContextCompat
+import androidx.core.content.ContextCompat.startActivity
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.example.vecto.CommentActivity
 import com.example.vecto.MainActivity
 import com.example.vecto.R
+import com.example.vecto.RegisterActivity
 import com.example.vecto.data.Auth
 import com.example.vecto.data.LocationData
 import com.example.vecto.data.VisitData
@@ -100,6 +104,8 @@ class MysearchpostAdapter(private val context: Context) : RecyclerView.Adapter<M
                     .circleCrop()
                     .into(profileImage)
             }
+            else
+                profileImage.setImageResource(R.drawable.profile_basic)
 
             nicknameText.text = feed.nickName
             posttimeText.text = feed.timeDifference
@@ -184,7 +190,17 @@ class MysearchpostAdapter(private val context: Context) : RecyclerView.Adapter<M
             }
 
             commentIcon.setOnClickListener {
-                //TODO Comment 터치시 댓글창 열어주기
+
+                val intent = Intent(context, CommentActivity::class.java)
+                intent.putExtra("feedID", feedID[adapterPosition])
+                context.startActivity(intent)
+            }
+
+            commentCount.setOnClickListener {
+
+                val intent = Intent(context, CommentActivity::class.java)
+                intent.putExtra("feedID", feedID[adapterPosition])
+                context.startActivity(intent)
             }
 
             val FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")

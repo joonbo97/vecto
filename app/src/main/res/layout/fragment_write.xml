@@ -22,7 +22,7 @@
             android:fontFamily="@font/lineseedkr_bd"
             android:text="글쓰기"
             android:textColor="@color/white"
-            android:textSize="18sp"
+            android:textSize="20sp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"

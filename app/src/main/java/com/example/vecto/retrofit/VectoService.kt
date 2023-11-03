@@ -94,6 +94,11 @@ interface VectoService {
         @Path("feedId") feedId: Int,
     ): Call<VectoResponse<Unit>>
 
+    @GET("feed/{feedId}/comments")
+    fun getComment(
+        @Path("feedId") feedId: Int
+    ): Call<VectoResponse<CommentListResponse>>
+
 
     companion object {
         fun create(): VectoService {
@@ -171,5 +176,16 @@ interface VectoService {
         val userId: String,
         val mapImage: List<String>,
         var likeFlag: Boolean
+    )
+
+    data class CommentListResponse(
+        val comments: List<CommentResponse>
+    )
+
+    data class CommentResponse(
+        val nickName: String,
+        val content: String,
+        val timeDifference: String,
+        val profileUrl: String?
     )
 }

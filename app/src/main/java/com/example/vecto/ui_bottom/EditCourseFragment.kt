@@ -61,7 +61,11 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
     private lateinit var visitDataList: MutableList<VisitData>
     private lateinit var selectedVisitData: VisitData
 
+    private var responsePathData = mutableListOf<LatLng>()
+
     private lateinit var myCourseAdapter: MyCourseAdapter
+
+    private var path_position: Int = 0
 
     //overlay 관련
     private val visitMarkers = mutableListOf<Marker>()
@@ -100,17 +104,108 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
         binding.editCourseButton.setOnClickListener {
             setButtonVisibility(0, false)
             setButtonVisibility(1, true)
+
+
+            for(i in 0 until pathOverlays.size) {
+                pathOverlays[i].color = Color.argb(255, 186, 198, 213)
+                pathOverlays[i].outlineColor = Color.argb(255, 186, 198, 213)
+            }
+
+            val Start = LatLng(locationDataList.first().lat, locationDataList.first().lng)
+            val End = LatLng(locationDataList.last().lat, locationDataList.last().lng)
+
+            //TMap API를 통한 경로
+            val tMapAPIService = TMapAPIService.create()
+            val call = tMapAPIService.getRecommendedRoute(
+                1, TMapAPIService.key(),
+                Start.latitude, Start.longitude,
+                End.latitude, End.longitude,
+                "WGS84GEO", "WGS84GEO",
+                "출발지_이름", "도착지_이름",
+                0
+            )
+
+            responsePathData.clear()
+
+            call.enqueue(object : Callback<TMapAPIService.GeoJsonResponse> {
+                override fun onResponse(
+                    call: Call<TMapAPIService.GeoJsonResponse>,
+                    response: Response<TMapAPIService.GeoJsonResponse>
+                ) {
+                    if (response.isSuccessful) {
+                        Log.d("Response", response.body().toString())
+                        // 응답 성공
+                        responsePathData.add(Start)
+                        val geoData = response.body()
+                        geoData?.features?.forEach { feature ->
+                            when (feature.geometry.type) {
+                                "Point" -> {
+                                    val coordinate = feature.geometry.coordinates as List<Double>
+                                    val latLng = LatLng(coordinate[1], coordinate[0])
+                                    responsePathData.add(latLng)
+                                }
+                                "LineString" -> {
+                                    val coordinates = feature.geometry.coordinates as List<List<Double>>
+                                    coordinates.forEach { coordinate ->
+                                        val latLng = LatLng(coordinate[1], coordinate[0])
+                                        responsePathData.add(latLng)
+                                    }
+
+                                }
+                            }
+                        }
+                        responsePathData.add(End)
+                        addPathOverlay(responsePathData)
+
+                    } else {
+                        Toast.makeText(requireContext(), "경로 불러오기에 실패해였습니다.", Toast.LENGTH_SHORT).show()
+                    }
+                }
+
+                override fun onFailure(call: Call<TMapAPIService.GeoJsonResponse>, t: Throwable) {
+                    Log.e("Retrofit", t.message.toString())
+                    Toast.makeText(requireContext(), getString(R.string.APIFailToastMessage), Toast.LENGTH_SHORT).show()
+                }
+            })
         }
 
         binding.editCourseButtonNO.setOnClickListener {
-            //TODO 바뀌었던 경로 원래대로 돌려주기
+            deleteOverlay()
+            addPathOverlayForLoacation(locationDataList)
+
+            Toast.makeText(requireContext(), "경로 변경이 취소되었습니다.", Toast.LENGTH_SHORT).show()
 
             setButtonVisibility(0, true)
             setButtonVisibility(1, false)
         }
 
         binding.editCourseButtonOK.setOnClickListener {
-            //TODO 경로 바뀌고 추천 받기
+            val startTime = LocalDateTime.parse(locationDataList.first().datetime, DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"))
+
+            //시작과 끝을 제외한 기존 경로 삭제
+            LocationDatabase(requireContext()).deleteLocationDataBetween(locationDataList.first().datetime, locationDataList.last().datetime)
+
+            myCourseAdapter.pathdata[path_position].coordinates.clear()
+
+            //시작 시간은 시작 지점의 시간.
+
+            responsePathData.forEachIndexed { index, point ->
+                LocationDatabase(requireContext()).addLocationData(LocationData(startTime.plusSeconds(index.toLong() + 1).format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")), point.latitude, point.longitude))
+                myCourseAdapter.pathdata[path_position].coordinates.add(LocationData(startTime.plusSeconds(index.toLong() + 1).format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")), point.latitude, point.longitude))
+            }
+
+            myCourseAdapter.pathdata[path_position].coordinates.add(0, locationDataList.first())
+            myCourseAdapter.pathdata[path_position].coordinates.add(locationDataList.last())
+
+            myCourseAdapter.notifyItemChanged(path_position)
+            deleteOverlay()
+            addPathOverlayForLoacation(myCourseAdapter.pathdata[path_position].coordinates)
+
+
+            Toast.makeText(requireContext(), "해당 경로 변경이 완료되었습니다.", Toast.LENGTH_SHORT).show()
+
+            setButtonVisibility(0, true)
+            setButtonVisibility(1, false)
         }
 
         return binding.root
@@ -184,6 +279,7 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
             pathOverlay.coords = pathPoints
             pathOverlay.width = 20
             pathOverlay.color = ContextCompat.getColor(requireContext(), R.color.vecto_pathcolor)
+            pathOverlay.outlineColor = ContextCompat.getColor(requireContext(), R.color.vecto_pathcolor)
             pathOverlay.patternImage = OverlayImage.fromResource(R.drawable.pathoverlay_pattern)
             pathOverlay.patternInterval = 50
             pathOverlay.map = naverMap
@@ -232,23 +328,6 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
         }
         else {
             circleOverlay.color = Color.argb(20, 0, 255, 0) // 원의 색상 설정
-        }
-
-        circleOverlay.map = naverMap
-
-        circleOverlays.add(circleOverlay)
-    }
-
-    private fun addCircleOverlayForMerge(visitData: VisitData){
-        val circleOverlay = CircleOverlay()
-        circleOverlay.center = LatLng(visitData.lat, visitData.lng)
-        circleOverlay.radius = 100.0 // 반지름을 50m로 설정
-
-        if(visitData.name.isEmpty()) {
-            circleOverlay.color = Color.argb(20, 255, 255, 0) // 원의 색상 설정
-        }
-        else {
-            circleOverlay.color = Color.argb(20, 255, 255, 0) // 원의 색상 설정
         }
 
         circleOverlay.map = naverMap
@@ -653,6 +732,7 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
         }
         else if(data is PathData)
         {
+            path_position = position
             setButtonVisibility(0, true)
             setButtonVisibility(1, false)
 
