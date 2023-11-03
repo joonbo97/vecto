@@ -140,33 +140,38 @@ class MysearchpostAdapter(private val context: Context) : RecyclerView.Adapter<M
             likeCount.text = feed.likeCount.toString()
             commentCount.text = feed.commentCount.toString()
 
-            fun clickLikeAction(){
-                if (feed.likeFlag) {
-                    likeIcon.setImageResource(R.drawable.post_like_off)
+            fun clickLikeAction() {
+                if(Auth.loginFlag.value == true) {
+                    if (feed.likeFlag) {
+                        likeIcon.setImageResource(R.drawable.post_like_off)
 
-                    cancelLike(feedID[adapterPosition])
-                    feed.likeFlag = false
+                        cancelLike(feedID[adapterPosition])
+                        feed.likeFlag = false
 
-                    feed.likeCount--
-                    likeCount.text = feed.likeCount.toString()
-                } else {
-                    likeIcon.setImageResource(R.drawable.post_like_on)
-                    val anim = AnimationUtils.loadAnimation(context, R.anim.like_anim)
+                        feed.likeCount--
+                        likeCount.text = feed.likeCount.toString()
+                    } else {
+                        likeIcon.setImageResource(R.drawable.post_like_on)
+                        val anim = AnimationUtils.loadAnimation(context, R.anim.like_anim)
 
-                    anim.setAnimationListener(object : Animation.AnimationListener {
-                        override fun onAnimationStart(animation: Animation?) {}
+                        anim.setAnimationListener(object : Animation.AnimationListener {
+                            override fun onAnimationStart(animation: Animation?) {}
 
-                        override fun onAnimationEnd(animation: Animation?) {
-                            feed.likeCount++
-                            likeCount.text = feed.likeCount.toString()
-                        }
+                            override fun onAnimationEnd(animation: Animation?) {
+                                feed.likeCount++
+                                likeCount.text = feed.likeCount.toString()
+                            }
 
-                        override fun onAnimationRepeat(animation: Animation?) {}
-                    })
+                            override fun onAnimationRepeat(animation: Animation?) {}
+                        })
 
-                    likeIcon.startAnimation(anim)
-                    sendLike(feedID[adapterPosition])
-                    feed.likeFlag = true
+                        likeIcon.startAnimation(anim)
+                        sendLike(feedID[adapterPosition])
+                        feed.likeFlag = true
+                    }
+                }
+                else {
+                    Toast.makeText(context, "로그인이 필요합니다.", Toast.LENGTH_SHORT).show()
                 }
             }
 

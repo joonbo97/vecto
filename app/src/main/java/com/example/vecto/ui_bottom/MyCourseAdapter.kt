@@ -51,10 +51,12 @@ class MyCourseAdapter(private val context: Context, private val itemClickListene
                 {
                     if(visitdata.size == 1) {
                         imageView.setImageResource(R.drawable.course_visit_only_off)
+                        title.text = "정확한 장소를 설정하세요."
                         time.text = getStayTime(item.staytime)
                     }
                     else {
                         imageView.setImageResource(R.drawable.course_visit_top_off)
+                        title.text = "정확한 장소를 설정하세요."
                         time.text = getStayTime(item.staytime)
                     }
                 }
@@ -70,6 +72,7 @@ class MyCourseAdapter(private val context: Context, private val itemClickListene
                 else
                 {
                     imageView.setImageResource(R.drawable.course_visit_bottom_off)
+                    title.text = "정확한 장소를 설정하세요."
                     time.text = getStayTime(item.staytime)
                 }
             }
@@ -84,6 +87,7 @@ class MyCourseAdapter(private val context: Context, private val itemClickListene
                 else
                 {
                     imageView.setImageResource(R.drawable.course_visit_middle_off)
+                    title.text = "정확한 장소를 설정하세요."
                     time.text = getStayTime(item.staytime)
                 }
             }

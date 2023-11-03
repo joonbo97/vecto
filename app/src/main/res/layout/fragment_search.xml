@@ -53,8 +53,10 @@
 
         <ImageView
             android:id="@+id/SearchBoxImage"
-            android:layout_width="360dp"
+            android:layout_width="match_parent"
             android:layout_height="50dp"
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="20dp"
             android:layout_marginBottom="10dp"
             android:src="@drawable/search_box"
             app:layout_constraintBottom_toBottomOf="parent"

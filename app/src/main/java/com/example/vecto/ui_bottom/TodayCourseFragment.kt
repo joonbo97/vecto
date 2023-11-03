@@ -8,10 +8,12 @@ import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.ViewTreeObserver
 import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.core.content.ContextCompat.getColor
@@ -95,23 +97,48 @@ class TodayCourseFragment : Fragment(), OnMapReadyCallback {
             }
         }
 
+        return binding.root
+    }
+
+    var moveValue: Float = 0.0f
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
         val smallButton = binding.ButtonSmall
         val largeButton = binding.ButtonLarge
         var serviceFlag = isServiceRunning(LocationService::class.java)
-        if(!serviceFlag)
-        {
-            smallButton.animate().translationXBy(450f).duration = 0
-            binding.TextForLargeRight.visibility = View.INVISIBLE
-            binding.TextForLargeLeft.visibility = View.VISIBLE
-            smallButton.text = "위치 수집 종료"
+        var onlyFlag: Boolean = false
+
+
+        val layoutListener = ViewTreeObserver.OnGlobalLayoutListener {
+            // 버튼의 크기 정보를 여기에서 가져옵니다.
+            if(onlyFlag == false) {
+                moveValue = largeButton.width.toFloat() - smallButton.width.toFloat() - 50f
+                Log.d("TEST", "movevalue : $moveValue")
+                Log.d("TEST", "largeButton : ${largeButton.width.toFloat()}")
+                Log.d("TEST", "smallButton : ${smallButton.width.toFloat()}")
+
+                if (!serviceFlag) {
+                    smallButton.animate().translationXBy(moveValue).duration = 0
+                    binding.TextForLargeRight.visibility = View.INVISIBLE
+                    binding.TextForLargeLeft.visibility = View.VISIBLE
+                    smallButton.text = "위치 수집 종료"
+                }
+
+                onlyFlag = true
+            }
         }
 
+        // ViewTreeObserver를 등록합니다.
+        smallButton.viewTreeObserver.addOnGlobalLayoutListener(layoutListener)
+        largeButton.viewTreeObserver.addOnGlobalLayoutListener(layoutListener)
+
         largeButton.setOnClickListener {
-            if(serviceFlag) {
+            if (serviceFlag) {
                 val endServiceDialog = EndServiceDialog(requireContext())
                 endServiceDialog.showDialog()
                 endServiceDialog.onOkButtonClickListener = {
-                    smallButton.animate().translationXBy(450f).duration = 500
+                    smallButton.animate().translationXBy(moveValue).duration = 500
                     binding.TextForLargeRight.visibility = View.INVISIBLE
                     binding.TextForLargeLeft.visibility = View.VISIBLE
 
@@ -122,12 +149,11 @@ class TodayCourseFragment : Fragment(), OnMapReadyCallback {
                     serviceIntent.action = Actions.STOP_FOREGROUND
                     requireActivity().startService(serviceIntent)
                 }
-            }
-            else {
+            } else {
                 val startServiceDialog = StartServiceDialog(requireContext())
                 startServiceDialog.showDialog()
                 startServiceDialog.onOkButtonClickListener = {
-                    smallButton.animate().translationXBy(-450f).duration = 500
+                    smallButton.animate().translationXBy(-moveValue).duration = 500
                     binding.TextForLargeRight.visibility = View.VISIBLE
                     binding.TextForLargeLeft.visibility = View.INVISIBLE
 
@@ -138,7 +164,6 @@ class TodayCourseFragment : Fragment(), OnMapReadyCallback {
                     serviceIntent.action = Actions.START_FOREGROUND
                     requireActivity().startService(serviceIntent)
                 }
-
             }
 
             smallButton.isEnabled = false
@@ -150,7 +175,6 @@ class TodayCourseFragment : Fragment(), OnMapReadyCallback {
             }, 1000)
         }
 
-        return binding.root
     }
 
     private fun setVistiLoaction() {

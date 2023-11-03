@@ -15,6 +15,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.vecto.LocationService
 import com.example.vecto.R
 import com.example.vecto.VerticalOverlapItemDecoration
 import com.example.vecto.data.LocationData
@@ -81,9 +82,11 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
 
 
         DateText = binding.TextForLargeRight
-        showDatePickerDialog()
+
 
         initMap()
+        showDatePickerDialog()
+
 
         binding.CalendarLargeBoxImage.setOnClickListener {
             showDatePickerDialog()
@@ -272,19 +275,19 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
     private fun addButtonMarker(visitData: VisitData, p: Int) {
 
         val buttonMarker1 = Marker().apply {
-            icon = OverlayImage.fromResource(R.drawable.marker_delete_button) // 여기에 버튼 이미지 리소스를 지정해야 합니다.
+            icon = OverlayImage.fromResource(R.drawable.marker_delete_button)
             position = LatLng(visitData.lat, visitData.lng)
             map = naverMap
         }
 
         val buttonMarker2 = Marker().apply {
-            icon = OverlayImage.fromResource(R.drawable.marker_edit_button) // 여기에 버튼 이미지 리소스를 지정해야 합니다.
+            icon = OverlayImage.fromResource(R.drawable.marker_edit_button)
             position = LatLng(visitData.lat, visitData.lng)
             map = naverMap
         }
 
         val buttonMarker3 = Marker().apply {
-            icon = OverlayImage.fromResource(R.drawable.marker_search_button) // 여기에 버튼 이미지 리소스를 지정해야 합니다.
+            icon = OverlayImage.fromResource(R.drawable.marker_search_button)
             position = LatLng(visitData.lat, visitData.lng)
             map = naverMap
         }
@@ -591,6 +594,7 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
             }
 
             DateText.text = selectedDate
+            naverMap.onSymbolClickListener = null
 
             /*RecyclerView Adapter 설정*/
             myCourseAdapter = MyCourseAdapter(requireContext(), this)
@@ -616,6 +620,29 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
             setButtonVisibility(0, false)
             setButtonVisibility(1, false)
 
+            naverMap.setOnSymbolClickListener { symbol ->
+                if(checkDistance(LatLng(data.lat, data.lng), symbol.position,
+                        LocationService.CHECKDISTANCE
+                    )) {
+                    val newVisitData = data.copy(name = symbol.caption, lat_set = symbol.position.latitude, lng_set = symbol.position.longitude)
+
+
+                    deleteOverlay()
+                    addVisitMarker(newVisitData)//선택한 newVisitData를 마커에 추가
+                    addCircleOverlay(newVisitData)
+
+
+                    VisitDatabase(requireContext()).updateVisitData(data, newVisitData)
+                    updateVisitData(data, newVisitData)
+
+                    Toast.makeText(context, "변경완료", Toast.LENGTH_SHORT).show()
+                }
+                else
+                {
+                    Toast.makeText(context, "허용범위 외부의 장소입니다.", Toast.LENGTH_SHORT).show()
+                }
+                true
+            }
 
             addVisitMarker(data)
             addButtonMarker(data, position)
@@ -629,10 +656,24 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
             setButtonVisibility(0, true)
             setButtonVisibility(1, false)
 
+            naverMap.onSymbolClickListener = null
+
             locationDataList = data.coordinates
 
             addPathOverlayForLoacation(data.coordinates)
             moveCameraForPath(data.coordinates)
+        }
+    }
+
+    private fun updateVisitData(oldVisitData: VisitData, newVisitData: VisitData){
+
+        for(i in myCourseAdapter.visitdata.indices){
+
+            if(myCourseAdapter.visitdata[i] == oldVisitData) {
+                myCourseAdapter.visitdata[i] = newVisitData
+                myCourseAdapter.notifyItemChanged(i * 2)
+                break
+            }
         }
     }
 
