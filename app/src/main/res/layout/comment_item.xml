@@ -6,10 +6,23 @@
     android:layout_height="wrap_content">
 
     <ImageView
+        android:id="@+id/CommentMenuImage"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:src="@drawable/comment_menu"
+        android:layout_marginTop="20dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/ProfileImage"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.5" />
+
+    <ImageView
         android:id="@+id/ProfileImage"
         android:layout_width="50dp"
         android:layout_height="50dp"
-        android:layout_marginStart="20dp"
+        android:layout_marginStart="30dp"
         android:layout_marginTop="20dp"
         android:src="@drawable/profile_basic"
         app:layout_constraintStart_toStartOf="parent"
@@ -46,9 +59,9 @@
         android:id="@+id/CommentText"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
         android:layout_marginTop="54dp"
         android:fontFamily="@font/lineseedkr_rg"
-        android:layout_marginStart="10dp"
         android:text="내용입니다."
         android:textColor="@color/black"
         android:textSize="15sp"
@@ -76,8 +89,8 @@
         android:text="0"
         android:textColor="@color/black"
         android:textSize="11sp"
-        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintEnd_toEndOf="@+id/CommentLikeImage"
+        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="@+id/CommentLikeImage"
         app:layout_constraintTop_toBottomOf="@+id/CommentLikeImage" />
 

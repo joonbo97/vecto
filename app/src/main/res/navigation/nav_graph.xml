@@ -42,6 +42,12 @@
         tools:layout="@layout/fragment_mypage_setting"/>
 
     <fragment
+        android:id="@+id/MypageSettingkakaoFragment"
+        android:name="com.example.vecto.ui_bottom.MypageSettingkakaoFragment"
+        android:label="fragment_mypage_settingkakao"
+        tools:layout="@layout/fragment_mypage_settingkakao"/>
+
+    <fragment
         android:id="@+id/MypagePostFragment"
         android:name="com.example.vecto.ui_bottom.MypagePostFragment"
         android:label="fragment_mypage_post"
@@ -58,6 +64,4 @@
         android:name="com.example.vecto.ui_bottom.MypageInquiryFragment"
         android:label="fragment_mypage_inquiry"
         tools:layout="@layout/fragment_mypage_inquiry"/>
-
-
 </navigation>

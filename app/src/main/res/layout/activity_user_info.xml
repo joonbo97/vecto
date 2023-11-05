@@ -1,0 +1,242 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".UserInfoActivity"
+    android:background="@color/vecto_main">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/constraintLayout"
+        android:layout_width="match_parent"
+        android:layout_height="230dp"
+        android:background="@color/vecto_theme_orange"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageView
+            android:id="@+id/ProfileImage"
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="60dp"
+            android:layout_marginBottom="20dp"
+            app:layout_constraintBottom_toBottomOf="@+id/guideline"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/profile_basic" />
+
+        <ImageView
+            android:id="@+id/FollowButton"
+            android:layout_width="80dp"
+            android:layout_height="30dp"
+            android:layout_marginTop="5dp"
+            android:src="@drawable/userinfo_follow_button"
+            app:layout_constraintStart_toStartOf="@+id/UserNameText"
+            app:layout_constraintTop_toBottomOf="@+id/UserNameText" />
+
+        <TextView
+            android:id="@+id/FollowButtonText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/lineseedkr_bd"
+            android:text="팔로우"
+            android:textColor="@color/white"
+            android:layout_marginTop="2dp"
+            android:textSize="15sp"
+            app:layout_constraintBottom_toBottomOf="@+id/FollowButton"
+            app:layout_constraintEnd_toEndOf="@+id/FollowButton"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="@+id/FollowButton"
+            app:layout_constraintTop_toTopOf="@+id/FollowButton"
+            app:layout_constraintVertical_bias="0.5"  />
+
+        <TextView
+            android:id="@+id/UserNameText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_marginBottom="55dp"
+            android:fontFamily="@font/lineseedkr_bd"
+            android:text="게스트"
+            android:textColor="@color/white"
+            android:textSize="25sp"
+            app:layout_constraintBottom_toBottomOf="@+id/guideline"
+            app:layout_constraintStart_toEndOf="@+id/ProfileImage" />
+
+
+        <ImageView
+            android:id="@+id/MenuIcon"
+            android:layout_width="45dp"
+            android:layout_height="45dp"
+            android:padding="10dp"
+            android:layout_marginTop="45dp"
+            android:layout_marginEnd="20dp"
+            android:src="@drawable/user_menu"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guideline"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            app:layout_constraintGuide_begin="150dp" />
+
+        <ImageView
+            android:id="@+id/BoxImage1"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginStart="25dp"
+            android:layout_marginTop="160dp"
+            android:layout_marginEnd="5dp"
+            android:layout_marginBottom="10dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="@id/guideline1"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/userinfo_box" />
+
+        <TextView
+            android:id="@+id/BoxText1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/lineseedkr_rg"
+            android:text="게시글"
+            android:textColor="@color/white"
+            android:textSize="12sp"
+            android:layout_marginBottom="30dp"
+            app:layout_constraintBottom_toBottomOf="@+id/BoxImage1"
+            app:layout_constraintEnd_toEndOf="@+id/BoxImage1"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="@+id/BoxImage1"
+            app:layout_constraintTop_toTopOf="@+id/BoxImage1"
+            app:layout_constraintVertical_bias="0.5" />
+
+        <TextView
+            android:id="@+id/PostCountText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/lineseedkr_bd"
+            android:text="3"
+            android:layout_marginTop="15dp"
+            android:textColor="@color/white"
+            android:textSize="20sp"
+            app:layout_constraintBottom_toBottomOf="@+id/BoxImage1"
+            app:layout_constraintEnd_toEndOf="@+id/BoxImage1"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="@+id/BoxImage1"
+            app:layout_constraintTop_toTopOf="@+id/BoxImage1"
+            app:layout_constraintVertical_bias="0.5" />
+
+        <ImageView
+            android:id="@+id/BoxImage2"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginStart="15dp"
+            android:layout_marginTop="160dp"
+            android:layout_marginEnd="15dp"
+            android:layout_marginBottom="10dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="@id/guideline2"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="@id/guideline1"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/userinfo_box" />
+
+        <TextView
+            android:id="@+id/BoxText2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/lineseedkr_rg"
+            android:text="팔로워"
+            android:textColor="@color/white"
+            android:textSize="12sp"
+            android:layout_marginBottom="30dp"
+            app:layout_constraintBottom_toBottomOf="@+id/BoxImage2"
+            app:layout_constraintEnd_toEndOf="@+id/BoxImage2"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="@+id/BoxImage2"
+            app:layout_constraintTop_toTopOf="@+id/BoxImage2"
+            app:layout_constraintVertical_bias="0.5" />
+
+        <TextView
+            android:id="@+id/FollowerCount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/lineseedkr_bd"
+            android:text="327"
+            android:layout_marginTop="15dp"
+            android:textColor="@color/white"
+            android:textSize="20sp"
+            app:layout_constraintBottom_toBottomOf="@+id/BoxImage2"
+            app:layout_constraintEnd_toEndOf="@+id/BoxImage2"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="@+id/BoxImage2"
+            app:layout_constraintTop_toTopOf="@+id/BoxImage2"
+            app:layout_constraintVertical_bias="0.5" />
+
+        <ImageView
+            android:id="@+id/BoxImage3"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginStart="5dp"
+            android:layout_marginTop="160dp"
+            android:layout_marginEnd="25dp"
+            android:layout_marginBottom="10dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="@id/guideline2"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/userinfo_box" />
+
+        <TextView
+            android:id="@+id/BoxText3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/lineseedkr_rg"
+            android:text="팔로잉"
+            android:textColor="@color/white"
+            android:textSize="12sp"
+            android:layout_marginBottom="30dp"
+            app:layout_constraintBottom_toBottomOf="@+id/BoxImage3"
+            app:layout_constraintEnd_toEndOf="@+id/BoxImage3"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="@+id/BoxImage3"
+            app:layout_constraintTop_toTopOf="@+id/BoxImage3"
+            app:layout_constraintVertical_bias="0.5" />
+
+        <TextView
+            android:id="@+id/FollowingCount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/lineseedkr_bd"
+            android:text="45"
+            android:layout_marginTop="15dp"
+            android:textColor="@color/white"
+            android:textSize="20sp"
+            app:layout_constraintBottom_toBottomOf="@+id/BoxImage3"
+            app:layout_constraintEnd_toEndOf="@+id/BoxImage3"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="@+id/BoxImage3"
+            app:layout_constraintTop_toTopOf="@+id/BoxImage3"
+            app:layout_constraintVertical_bias="0.5" />
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guideline1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_percent="0.33" />
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guideline2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_percent="0.66" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

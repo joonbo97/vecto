@@ -10,7 +10,7 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/constraintLayout"
         android:layout_width="match_parent"
-        android:layout_height="170dp"
+        android:layout_height="150dp"
         android:background="@color/vecto_theme_orange"
         app:layout_constraintTop_toTopOf="parent">
 
@@ -18,8 +18,8 @@
             android:id="@+id/AlarmIconImage"
             android:layout_width="25dp"
             android:layout_height="25dp"
-            android:layout_marginTop="68dp"
-            android:layout_marginEnd="25dp"
+            android:layout_marginTop="55dp"
+            android:layout_marginEnd="30dp"
             android:src="@drawable/alarmoff_icon"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />

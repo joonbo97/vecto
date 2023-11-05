@@ -1,5 +1,6 @@
 package com.example.vecto
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
@@ -8,6 +9,8 @@ import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.vecto.data.Auth
 import com.example.vecto.databinding.ActivityCommentBinding
+import com.example.vecto.dialog.LoginRequestDialog
+import com.example.vecto.dialog.StartServiceDialog
 import com.example.vecto.retrofit.VectoService
 import retrofit2.Call
 import retrofit2.Callback
@@ -36,6 +39,17 @@ class CommentActivity : AppCompatActivity() {
 
 
         binding.CommentButton.setOnClickListener {
+            if(Auth.loginFlag.value == false)
+            {
+                val loginRequestDialog = LoginRequestDialog(this)
+                loginRequestDialog.showDialog()
+                loginRequestDialog.onOkButtonClickListener = {
+                    val intent = Intent(this, LoginActivity::class.java)
+                    this.startActivity(intent)
+                }
+                return@setOnClickListener
+            }
+
             if(binding.EditContent.text.isEmpty())
                 Toast.makeText(this, "댓글을 작성해주세요.", Toast.LENGTH_SHORT).show()
             else
@@ -77,10 +91,18 @@ class CommentActivity : AppCompatActivity() {
     }
 
     private fun loadComment(feedid: Int) {
-
         val vectoService = VectoService.create()
 
-        val call = vectoService.getComment(feedid)
+        val call: Call<VectoService.VectoResponse<VectoService.CommentListResponse>>
+
+        if(Auth.loginFlag.value == true)
+        {
+            call = vectoService.getComment("Bearer ${Auth.token}", feedid)
+        }
+        else
+        {
+            call = vectoService.getComment(feedid)
+        }
         call.enqueue(object : Callback<VectoService.VectoResponse<VectoService.CommentListResponse>> {
             override fun onResponse(call: Call<VectoService.VectoResponse<VectoService.CommentListResponse>>, response: Response<VectoService.VectoResponse<VectoService.CommentListResponse>>) {
                 if(response.isSuccessful){

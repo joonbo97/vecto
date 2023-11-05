@@ -101,7 +101,10 @@ class MypageFragment : Fragment() {
             // 클릭 이벤트 처리
 
             val navController = findNavController()
-            navController.navigate(R.id.MypageSettingFragment)
+            if(Auth.provider == "vecto")
+                navController.navigate(R.id.MypageSettingFragment)
+            else
+                navController.navigate(R.id.MypageSettingkakaoFragment)
         }
 
 

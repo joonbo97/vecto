@@ -26,7 +26,7 @@ class SearchFragment : Fragment(){
     private lateinit var binding: FragmentSearchBinding
     private lateinit var mysearchpostAdapter: MysearchpostAdapter
 
-    private lateinit var userNicknameText: TextView
+    //private lateinit var userNicknameText: TextView
 
     private var pageNo = 0
 
@@ -36,7 +36,7 @@ class SearchFragment : Fragment(){
     ): View {
         binding = FragmentSearchBinding.inflate(inflater, container, false)
 
-        userNicknameText = binding.UserNameText
+        //userNicknameText = binding.UserNameText
 
         mysearchpostAdapter = MysearchpostAdapter(requireContext())
         val searchRecyclerView = binding.SearchRecyclerView
@@ -45,11 +45,11 @@ class SearchFragment : Fragment(){
 
         getPostList()
 
-        Auth._nickName.observe(viewLifecycleOwner) { nickname ->
+        /*Auth._nickName.observe(viewLifecycleOwner) { nickname ->
             if (Auth.loginFlag.value!!) {
                 userNicknameText.text = Auth._nickName.value
             }
-        }
+        }*/
 
         Auth.showFlag.observe(viewLifecycleOwner) { showFlag ->
             if(Auth.showFlag.value == true)//확인 안한 알림이 있을 경우

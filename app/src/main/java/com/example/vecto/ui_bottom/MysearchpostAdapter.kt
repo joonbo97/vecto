@@ -19,6 +19,7 @@ import com.example.vecto.CommentActivity
 import com.example.vecto.MainActivity
 import com.example.vecto.R
 import com.example.vecto.RegisterActivity
+import com.example.vecto.UserInfoActivity
 import com.example.vecto.data.Auth
 import com.example.vecto.data.LocationData
 import com.example.vecto.data.VisitData
@@ -159,13 +160,13 @@ class MysearchpostAdapter(private val context: Context) : RecyclerView.Adapter<M
                     } else {
                         likeIcon.setImageResource(R.drawable.post_like_on)
                         val anim = AnimationUtils.loadAnimation(context, R.anim.like_anim)
+                        feed.likeCount++
+                        likeCount.text = feed.likeCount.toString()
 
                         anim.setAnimationListener(object : Animation.AnimationListener {
                             override fun onAnimationStart(animation: Animation?) {}
 
                             override fun onAnimationEnd(animation: Animation?) {
-                                feed.likeCount++
-                                likeCount.text = feed.likeCount.toString()
                             }
 
                             override fun onAnimationRepeat(animation: Animation?) {}
@@ -181,6 +182,12 @@ class MysearchpostAdapter(private val context: Context) : RecyclerView.Adapter<M
                 }
             }
 
+            profileImage.setOnClickListener {
+                val intent = Intent(context, UserInfoActivity::class.java)
+                intent.putExtra("userId", feedInfo[adapterPosition].userId)
+                context.startActivity(intent)
+            }
+
             likeIcon.setOnClickListener {
                 clickLikeAction()
             }
@@ -190,14 +197,12 @@ class MysearchpostAdapter(private val context: Context) : RecyclerView.Adapter<M
             }
 
             commentIcon.setOnClickListener {
-
                 val intent = Intent(context, CommentActivity::class.java)
                 intent.putExtra("feedID", feedID[adapterPosition])
                 context.startActivity(intent)
             }
 
             commentCount.setOnClickListener {
-
                 val intent = Intent(context, CommentActivity::class.java)
                 intent.putExtra("feedID", feedID[adapterPosition])
                 context.startActivity(intent)

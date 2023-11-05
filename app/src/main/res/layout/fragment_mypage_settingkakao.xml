@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:context=".ui_bottom.MypageSettingkakaoFragment">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/constraintLayout"
+        android:layout_width="match_parent"
+        android:layout_height="150dp"
+        android:background="@color/vecto_theme_orange"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageView
+            android:id="@+id/ProfileImage"
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:layout_marginStart="20dp"
+            android:layout_marginBottom="20dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:srcCompat="@drawable/profile_basic" />
+
+        <ImageView
+            android:id="@+id/ProfileEditIcon"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:src="@drawable/edit_profile_image_icon"
+            app:layout_constraintBottom_toBottomOf="@+id/ProfileImage"
+            app:layout_constraintEnd_toEndOf="@+id/ProfileImage" />
+
+        <TextView
+            android:id="@+id/UserNameText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_marginBottom="40dp"
+            android:fontFamily="@font/lineseedkr_bd"
+            android:text="게스트"
+            android:textColor="@color/white"
+            android:textSize="25sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/ProfileImage" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <TextView
+        android:id="@+id/emailTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/lineseedkr_bd"
+        android:text="이메일"
+        android:textColor="@color/vecto_gray"
+        android:textSize="18sp"
+        android:layout_marginStart="10dp"
+        android:layout_marginBottom="7dp"
+        app:layout_constraintBottom_toTopOf="@+id/emailBox"
+        app:layout_constraintStart_toStartOf="@+id/emailBox" />
+
+    <ImageView
+        android:id="@+id/emailBox"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_marginTop="50dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
+        android:src="@drawable/mypage_emailkakao_box"
+        app:layout_constraintTop_toBottomOf="@+id/constraintLayout"
+        tools:layout_editor_absoluteX="0dp" />
+
+    <TextView
+        android:id="@+id/emailText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/lineseedkr_rg"
+        android:text="카카오계정 로그인"
+        android:textColor="@color/vecto_gray"
+        android:textSize="18sp"
+        android:layout_marginStart="20dp"
+        app:layout_constraintBottom_toBottomOf="@+id/emailBox"
+        app:layout_constraintStart_toStartOf="@+id/emailBox"
+        app:layout_constraintTop_toTopOf="@+id/emailBox"
+        app:layout_constraintVertical_bias="0.5" />
+
+    <ImageView
+        android:id="@+id/emailLockImage"
+        android:layout_width="22dp"
+        android:layout_height="22dp"
+        android:src="@drawable/lock_icon"
+        android:layout_marginEnd="20dp"
+        app:layout_constraintBottom_toBottomOf="@+id/emailBox"
+        app:layout_constraintEnd_toEndOf="@+id/emailBox"
+        app:layout_constraintTop_toTopOf="@+id/emailBox"
+        app:layout_constraintVertical_bias="0.4" />
+
+    <TextView
+        android:id="@+id/nicknameTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/lineseedkr_bd"
+        android:text="닉네임(10자이하)"
+        android:textColor="@color/vecto_gray"
+        android:textSize="18sp"
+        android:layout_marginStart="10dp"
+        android:layout_marginBottom="7dp"
+        app:layout_constraintBottom_toTopOf="@+id/nicknameBox"
+        app:layout_constraintStart_toStartOf="@+id/nicknameBox" />
+
+    <ImageView
+        android:id="@+id/nicknameBox"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_marginTop="50dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
+        android:src="@drawable/mypage_item_box"
+        app:layout_constraintTop_toBottomOf="@+id/emailBox"
+        tools:layout_editor_absoluteX="0dp" />
+
+    <EditText
+        android:id="@+id/editTextNickname"
+        android:layout_width="0dp"
+        android:layout_height="40dp"
+        android:background="@null"
+        android:ems="20"
+        android:inputType="text"
+        android:text=""
+        android:layout_marginStart="20dp"
+        app:layout_constraintBottom_toBottomOf="@+id/nicknameBox"
+        app:layout_constraintEnd_toEndOf="@+id/nicknameBox"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="@+id/nicknameBox"
+        app:layout_constraintTop_toTopOf="@+id/nicknameBox"
+        app:layout_constraintVertical_bias="0.5" />
+
+
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/WriteDoneButton"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginBottom="70dp"
+        android:background="@drawable/login_button"
+        android:fontFamily="@font/lineseedkr_bd"
+        android:text="작성완료"
+        android:textColor="@color/white"
+        android:textSize="20sp"
+        app:backgroundTint="@null"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintDimensionRatio="20:3"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

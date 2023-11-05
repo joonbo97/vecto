@@ -26,7 +26,7 @@ object MapNotification {
             .setContentTitle("위치정보를 수집중입니다.")
             .setContentText("백그라운드에서 작업을 수행중입니다.")
             .setContentInfo("Info 입니다")
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setSmallIcon(R.drawable.notification_icon)
             .setOngoing(true)//사라지지 않는 알림으로 만들기
             .setContentIntent(pendingIntent)
             .build()
@@ -49,7 +49,7 @@ object MapNotification {
         val notification = NotificationCompat.Builder(context, CHANNEL_ID_VISIT)
             .setContentTitle("방문이 확인되었습니다.")
             .setContentText("추후 방문지 설정을 완료해주세요.")
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setSmallIcon(R.drawable.notification_icon)
             .setContentIntent(pendingIntent)
             .setAutoCancel(true)  // 알림 클릭 시 알림을 자동으로 삭제합니다.
             .build()

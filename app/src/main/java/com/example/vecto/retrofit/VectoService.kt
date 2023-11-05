@@ -11,6 +11,7 @@ import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.Multipart
+import retrofit2.http.PATCH
 import retrofit2.http.POST
 import retrofit2.http.Part
 import retrofit2.http.Path
@@ -38,6 +39,12 @@ interface VectoService {
         @Header("Authorization")
         authorization: String
     ): Call<VectoResponse<UserInfoResponse>>
+
+    @PATCH("user")
+    fun updateUser(
+        @Header("Authorization") authorization: String,
+        @Body userData: UserUpdateData
+    ): Call<VectoResponse<String>>
 
     @POST("feed")
     fun addPost(
@@ -99,11 +106,32 @@ interface VectoService {
         @Path("feedId") feedId: Int
     ): Call<VectoResponse<CommentListResponse>>
 
+    @POST("feed/{feedId}/comments")
+    fun getComment(
+        @Header("Authorization") authorization: String,
+        @Path("feedId") feedId: Int
+    ): Call<VectoResponse<CommentListResponse>>
+
     @POST("feed/comment")
     fun sendComment(
         @Header("Authorization") authorization: String,
         @Body request: CommentRequest
     ): Call<VectoResponse<String>>
+
+    @POST("comment/{commentId}/likes")
+    fun sendCommentLike(
+        @Header("Authorization") authorization: String,
+        @Path("commentId") commentId: Int,
+    ): Call<VectoResponse<Unit>>
+
+
+    @DELETE("comment/{commentId}/likes")
+    fun cancelCommentLike(
+        @Header("Authorization") authorization: String,
+        @Path("commentId") commentId: Int,
+    ): Call<VectoResponse<Unit>>
+
+
 
 
     companion object {
@@ -189,14 +217,24 @@ interface VectoService {
     )
 
     data class CommentResponse(
+        val commentId: Int,
         val nickName: String,
         val content: String,
         val timeDifference: String,
-        val profileUrl: String?
+        val profileUrl: String?,
+        var commentCount: Int,
+        var likeFlag: Boolean
     )
 
     data class CommentRequest(
         val feedId: Int,
         val content: String
+    )
+
+    data class UserUpdateData(
+        val userId: String?,
+        val userPw: String?,
+        val provider: String,
+        val nickName: String?,
     )
 }

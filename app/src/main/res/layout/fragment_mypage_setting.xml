@@ -4,21 +4,304 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/white"
+    android:background="@color/vecto_main"
     tools:context=".ui_bottom.MypageSettingFragment">
 
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/constraintLayout"
+        android:layout_width="match_parent"
+        android:layout_height="150dp"
+        android:background="@color/vecto_theme_orange"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageView
+            android:id="@+id/ProfileImage"
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:layout_marginStart="20dp"
+            android:layout_marginBottom="20dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:srcCompat="@drawable/profile_basic" />
+
+        <ImageView
+            android:id="@+id/ProfileEditIcon"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:src="@drawable/edit_profile_image_icon"
+            app:layout_constraintBottom_toBottomOf="@+id/ProfileImage"
+            app:layout_constraintEnd_toEndOf="@+id/ProfileImage" />
+
+        <TextView
+            android:id="@+id/UserNameText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_marginBottom="40dp"
+            android:fontFamily="@font/lineseedkr_bd"
+            android:text="게스트"
+            android:textColor="@color/white"
+            android:textSize="25sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/ProfileImage" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
     <TextView
+        android:id="@+id/emailTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/hello_blank_fragment"
-        android:textColor="@color/black"
-        android:textStyle="bold"
-        android:textSize="50sp"
+        android:fontFamily="@font/lineseedkr_bd"
+        android:text="이메일"
+        android:textColor="@color/vecto_gray"
+        android:textSize="18sp"
+        android:layout_marginStart="10dp"
+        android:layout_marginBottom="7dp"
+        app:layout_constraintBottom_toTopOf="@+id/emailBox"
+        app:layout_constraintStart_toStartOf="@+id/emailBox" />
+
+    <ImageView
+        android:id="@+id/emailBox"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_marginTop="50dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
+        android:src="@drawable/mypage_email_box"
+        app:layout_constraintTop_toBottomOf="@+id/constraintLayout"
+        tools:layout_editor_absoluteX="0dp" />
+
+    <TextView
+        android:id="@+id/emailText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/lineseedkr_rg"
+        android:text="example@vec-to.net"
+        android:textColor="@color/vecto_gray"
+        android:textSize="18sp"
+        android:layout_marginStart="20dp"
+        app:layout_constraintBottom_toBottomOf="@+id/emailBox"
+        app:layout_constraintStart_toStartOf="@+id/emailBox"
+        app:layout_constraintTop_toTopOf="@+id/emailBox"
+        app:layout_constraintVertical_bias="0.5" />
+
+    <ImageView
+        android:id="@+id/emailLockImage"
+        android:layout_width="22dp"
+        android:layout_height="22dp"
+        android:src="@drawable/lock_icon"
+        android:layout_marginEnd="20dp"
+        app:layout_constraintBottom_toBottomOf="@+id/emailBox"
+        app:layout_constraintEnd_toEndOf="@+id/emailBox"
+        app:layout_constraintTop_toTopOf="@+id/emailBox"
+        app:layout_constraintVertical_bias="0.4" />
+
+
+    <TextView
+        android:id="@+id/idTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/lineseedkr_bd"
+        android:text="아이디(영어, 숫자 4~20자)"
+        android:textColor="@color/vecto_gray"
+        android:textSize="18sp"
+        android:layout_marginStart="10dp"
+        android:layout_marginBottom="7dp"
+        app:layout_constraintBottom_toTopOf="@+id/idBox"
+        app:layout_constraintStart_toStartOf="@+id/idBox" />
+
+    <ImageView
+        android:id="@+id/idBox"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_marginTop="50dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
+        android:src="@drawable/mypage_item_box"
+        app:layout_constraintTop_toBottomOf="@+id/emailBox"
+        tools:layout_editor_absoluteX="0dp" />
+
+    <EditText
+        android:id="@+id/editTextID"
+        android:layout_width="0dp"
+        android:layout_height="40dp"
+        android:background="@null"
+        android:ems="20"
+        android:inputType="text"
+        android:text=""
+        android:layout_marginStart="20dp"
+        app:layout_constraintBottom_toBottomOf="@+id/idBox"
+        app:layout_constraintEnd_toStartOf="@+id/idCheckButton"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="@+id/idBox"
+        app:layout_constraintTop_toTopOf="@+id/idBox"
+        app:layout_constraintVertical_bias="0.5" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/idCheckButton"
+        android:layout_width="86dp"
+        android:layout_height="35dp"
+        android:layout_marginEnd="6dp"
+        android:background="@drawable/register_minibox"
+        android:fontFamily="@font/lineseedkr_bd"
+        android:text="중복 확인"
+        android:textColor="@color/white"
+        android:textSize="11sp"
+        app:backgroundTint="@null"
+        app:layout_constraintBottom_toBottomOf="@+id/idBox"
+        app:layout_constraintEnd_toEndOf="@+id/idBox"
+        app:layout_constraintTop_toTopOf="@+id/idBox"
+        app:layout_constraintVertical_bias="0.5" />
+
+    <TextView
+        android:id="@+id/nicknameTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/lineseedkr_bd"
+        android:text="닉네임(10자이하)"
+        android:textColor="@color/vecto_gray"
+        android:textSize="18sp"
+        android:layout_marginStart="10dp"
+        android:layout_marginBottom="7dp"
+        app:layout_constraintBottom_toTopOf="@+id/nicknameBox"
+        app:layout_constraintStart_toStartOf="@+id/nicknameBox" />
+
+    <ImageView
+        android:id="@+id/nicknameBox"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_marginTop="50dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
+        android:src="@drawable/mypage_item_box"
+        app:layout_constraintTop_toBottomOf="@+id/idBox"
+        tools:layout_editor_absoluteX="0dp" />
+
+    <EditText
+        android:id="@+id/editTextNickname"
+        android:layout_width="0dp"
+        android:layout_height="40dp"
+        android:background="@null"
+        android:ems="20"
+        android:inputType="text"
+        android:text=""
+        android:layout_marginStart="20dp"
+        app:layout_constraintBottom_toBottomOf="@+id/nicknameBox"
+        app:layout_constraintEnd_toEndOf="@+id/nicknameBox"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="@+id/nicknameBox"
+        app:layout_constraintTop_toTopOf="@+id/nicknameBox"
+        app:layout_constraintVertical_bias="0.5" />
+
+    <TextView
+        android:id="@+id/pwTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/lineseedkr_bd"
+        android:text="비밀번호(영어, 숫자, 특수문자 포함 8~20자)"
+        android:textColor="@color/vecto_gray"
+        android:textSize="18sp"
+        android:layout_marginStart="10dp"
+        android:layout_marginBottom="7dp"
+        app:layout_constraintBottom_toTopOf="@+id/pwBox"
+        app:layout_constraintStart_toStartOf="@+id/pwBox" />
+
+    <ImageView
+        android:id="@+id/pwBox"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_marginTop="50dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
+        android:src="@drawable/mypage_item_box"
+        app:layout_constraintTop_toBottomOf="@+id/nicknameBox"
+        tools:layout_editor_absoluteX="0dp" />
+
+    <EditText
+        android:id="@+id/editTextPW"
+        android:layout_width="0dp"
+        android:layout_height="40dp"
+        android:background="@null"
+        android:hint="비밀번호"
+        android:ems="20"
+        android:inputType="textPassword"
+        android:layout_marginStart="20dp"
+        app:layout_constraintBottom_toBottomOf="@+id/pwBox"
+        app:layout_constraintEnd_toEndOf="@+id/pwBox"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="@+id/pwBox"
+        app:layout_constraintTop_toTopOf="@+id/pwBox"
+        app:layout_constraintVertical_bias="0.5" />
+
+    <TextView
+        android:id="@+id/pwcheckTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/lineseedkr_bd"
+        android:text="비밀번호 확인"
+        android:textColor="@color/vecto_gray"
+        android:textSize="18sp"
+        android:layout_marginStart="10dp"
+        android:layout_marginBottom="7dp"
+        app:layout_constraintBottom_toTopOf="@+id/pwcheckBox"
+        app:layout_constraintStart_toStartOf="@+id/pwcheckBox" />
+
+    <ImageView
+        android:id="@+id/pwcheckBox"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_marginTop="50dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
+        android:src="@drawable/mypage_item_box"
+        app:layout_constraintTop_toBottomOf="@+id/pwBox"
+        tools:layout_editor_absoluteX="0dp" />
+
+    <EditText
+        android:id="@+id/editTextCheckPW"
+        android:layout_width="0dp"
+        android:layout_height="40dp"
+        android:background="@null"
+        android:ems="20"
+        android:hint="비밀번호확인"
+        android:textSize="15sp"
+        android:inputType="textPassword"
+        app:layout_constraintBottom_toBottomOf="@+id/pwcheckBox"
+        app:layout_constraintEnd_toStartOf="@+id/pwCheckImage"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="@+id/pwcheckBox"
+        app:layout_constraintTop_toTopOf="@+id/pwcheckBox"
+        app:layout_constraintVertical_bias="0.5" />
+
+    <ImageView
+        android:id="@+id/pwCheckImage"
+        android:layout_width="25dp"
+        android:layout_height="25dp"
+        android:layout_marginEnd="15dp"
+        app:layout_constraintBottom_toBottomOf="@+id/pwcheckBox"
+        app:layout_constraintEnd_toEndOf="@+id/pwcheckBox"
+        app:layout_constraintTop_toTopOf="@+id/pwcheckBox"
+        android:visibility="invisible"
+        app:layout_constraintVertical_bias="0.5"
+        app:srcCompat="@drawable/register_wrong" />
+
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/WriteDoneButton"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginBottom="70dp"
+        android:background="@drawable/login_button"
+        android:fontFamily="@font/lineseedkr_bd"
+        android:text="작성완료"
+        android:textColor="@color/white"
+        android:textSize="20sp"
+        app:backgroundTint="@null"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintDimensionRatio="20:3"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.5" />
+        app:layout_constraintStart_toStartOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
