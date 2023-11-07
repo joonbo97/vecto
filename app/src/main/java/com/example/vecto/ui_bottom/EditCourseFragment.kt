@@ -89,11 +89,11 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
 
 
         initMap()
-        showDatePickerDialog()
+        //showDatePickerDialog(null)
 
 
         binding.CalendarLargeBoxImage.setOnClickListener {
-            showDatePickerDialog()
+            showDatePickerDialog(null)
         }
 
         binding.SearchButtonImage.setOnClickListener {
@@ -241,6 +241,9 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
 
 
         setVistiLoaction()
+
+        val selectedDate = arguments?.getString("selectedDateKey")
+        showDatePickerDialog(selectedDate)
     }
 
     private fun setVistiLoaction() {
@@ -651,44 +654,65 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
     }
 
     @SuppressLint("NotifyDataSetChanged")
-    private fun showDatePickerDialog(){
+    private fun showDatePickerDialog(date: String?) {
         setButtonVisibility(0, false)
         setButtonVisibility(1, false)
 
-        val calendar = Calendar.getInstance()
-        val year = calendar.get(Calendar.YEAR)
-        val month = calendar.get(Calendar.MONTH)
-        val day = calendar.get(Calendar.DAY_OF_MONTH)
+        if (date == null) {
+            val calendar = Calendar.getInstance()
+            val year = calendar.get(Calendar.YEAR)
+            val month = calendar.get(Calendar.MONTH)
+            val day = calendar.get(Calendar.DAY_OF_MONTH)
 
-        DatePickerDialog(requireContext(), { _, selectedYear, selectedMonth, selectedDay ->
+            DatePickerDialog(requireContext(), { _, selectedYear, selectedMonth, selectedDay ->
 
-            val selectedDate = if((selectedMonth > 8) && (selectedDay > 9)) {
-                "$selectedYear-${selectedMonth + 1}-$selectedDay"
-            } else if(selectedMonth > 8) {
-                "$selectedYear-${selectedMonth + 1}-0$selectedDay"
-            } else if(selectedDay > 9) {
-                "$selectedYear-0${selectedMonth + 1}-$selectedDay"
-            } else{
-                "$selectedYear-0${selectedMonth + 1}-0$selectedDay"
-            }
+                val selectedDate = if ((selectedMonth > 8) && (selectedDay > 9)) {
+                    "$selectedYear-${selectedMonth + 1}-$selectedDay"
+                } else if (selectedMonth > 8) {
+                    "$selectedYear-${selectedMonth + 1}-0$selectedDay"
+                } else if (selectedDay > 9) {
+                    "$selectedYear-0${selectedMonth + 1}-$selectedDay"
+                } else {
+                    "$selectedYear-0${selectedMonth + 1}-0$selectedDay"
+                }
 
-            DateText.text = selectedDate
-            naverMap.onSymbolClickListener = null
+                DateText.text = selectedDate
+                naverMap.onSymbolClickListener = null
+
+                /*RecyclerView Adapter 설정*/
+                myCourseAdapter = MyCourseAdapter(requireContext(), this)
+                val locationRecyclerView = binding.LocationRecyclerView
+                locationRecyclerView.adapter = myCourseAdapter
+                locationRecyclerView.layoutManager =
+                    LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
+                while (locationRecyclerView.itemDecorationCount > 0) {
+                    locationRecyclerView.removeItemDecorationAt(0)
+                }
+                //locationRecyclerView.itemAnimator = null
+                locationRecyclerView.addItemDecoration(VerticalOverlapItemDecoration(42))
+
+                setRecyclerView(selectedDate)
+
+            }, year, month, day).show()
+        }
+        else
+        {
+            DateText.text = date
 
             /*RecyclerView Adapter 설정*/
             myCourseAdapter = MyCourseAdapter(requireContext(), this)
             val locationRecyclerView = binding.LocationRecyclerView
             locationRecyclerView.adapter = myCourseAdapter
-            locationRecyclerView.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
+            locationRecyclerView.layoutManager =
+                LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
             while (locationRecyclerView.itemDecorationCount > 0) {
                 locationRecyclerView.removeItemDecorationAt(0)
             }
             //locationRecyclerView.itemAnimator = null
             locationRecyclerView.addItemDecoration(VerticalOverlapItemDecoration(42))
 
-            setRecyclerView(selectedDate)
-
-        }, year, month, day).show()
+            setRecyclerView(date)
+        }
     }
 
     override fun onItemClick(data: Any, position: Int) {

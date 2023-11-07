@@ -12,18 +12,17 @@ import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.ContextCompat
-import androidx.core.content.ContextCompat.startActivity
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.vecto.CommentActivity
-import com.example.vecto.MainActivity
+import com.example.vecto.LoginActivity
+import com.example.vecto.PostDetailActivity
 import com.example.vecto.R
-import com.example.vecto.RegisterActivity
 import com.example.vecto.UserInfoActivity
 import com.example.vecto.data.Auth
-import com.example.vecto.data.LocationData
-import com.example.vecto.data.VisitData
+import com.example.vecto.dialog.LoginRequestDialog
 import com.example.vecto.retrofit.VectoService
+import com.google.gson.Gson
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -35,8 +34,6 @@ class MysearchpostAdapter(private val context: Context) : RecyclerView.Adapter<M
 {
     val feedInfo = mutableListOf<VectoService.PostResponse>()
     val feedID = mutableListOf<Int>()
-    lateinit var visitdata: List<VisitData>
-    lateinit var locationdata: List<LocationData>
 
     inner class ViewHolder(view: View): RecyclerView.ViewHolder(view) {
 
@@ -56,7 +53,11 @@ class MysearchpostAdapter(private val context: Context) : RecyclerView.Adapter<M
         private val likeCount: TextView = view.findViewById(R.id.LikeCountText)
         private val likeIcon: ImageView = view.findViewById(R.id.LikeImage)
         private val commentCount: TextView = view.findViewById(R.id.CommentCountText)
-        private val commentIcon: ImageView = view.findViewById(R.id.CommentImage)
+
+
+        private val likeTouch: ImageView = view.findViewById(R.id.LikeTouchImage)
+        private val commentTouch: ImageView = view.findViewById(R.id.CommentTouchImage)
+
 
         private val mapSmall: ImageView = view.findViewById(R.id.MapImageSmall)
         private val mapLarge: ImageView = view.findViewById(R.id.MapImageLarge)
@@ -112,17 +113,13 @@ class MysearchpostAdapter(private val context: Context) : RecyclerView.Adapter<M
             posttimeText.text = feed.timeDifference
 
 
-            followButton.setOnClickListener {
-                followButton.isEnabled = false
-
-                if(!followFlag)
+            fun setFollowButton(flag: Boolean){
+                if(flag)
                 {
                     followButton.setImageResource(R.drawable.following_button)
                     followText.text = "팔로잉"
                     followText.setTextColor(ContextCompat.getColor(context, R.color.white))
                     followFlag = true
-
-                    Toast.makeText(context, "${feed.nickName}님을 팔로우하기 시작했습니다.", Toast.LENGTH_SHORT).show()
                 }
                 else
                 {
@@ -130,8 +127,113 @@ class MysearchpostAdapter(private val context: Context) : RecyclerView.Adapter<M
                     followText.text = "팔로우"
                     followText.setTextColor(ContextCompat.getColor(context, R.color.vecto_theme_orange))
                     followFlag = false
+                }
+            }
 
-                    Toast.makeText(context, "${feed.nickName}님 팔로우를 취소하였습니다.", Toast.LENGTH_SHORT).show()
+            fun isfollow(userId: String) {
+                val vectoService = VectoService.create()
+
+                val call = vectoService.getFollow("Bearer ${Auth.token}", userId)
+                call.enqueue(object : Callback<VectoService.VectoResponse<Unit>> {
+                    override fun onResponse(call: Call<VectoService.VectoResponse<Unit>>, response: Response<VectoService.VectoResponse<Unit>>) {
+                        if (response.isSuccessful) {
+                            if(response.body()!!.code == "S027")
+                                setFollowButton(true)
+                            else
+                                setFollowButton(false)
+
+                            Log.d("GETFOLLOW", "팔로우 정보 조회 성공 : ${response.body()?.result}")
+                        } else {
+                            // 서버 에러 처리
+                            Log.d("GETFOLLOW", "정보 조회 실패 : " + response.errorBody()?.string())
+                        }
+                    }
+
+                    override fun onFailure(call: Call<VectoService.VectoResponse<Unit>>, t: Throwable) {
+                        setFollowButton(false)
+                        Log.d("GETFOLLOW", "팔로우 정보 조회 실패 : " + t.message)
+                        Toast.makeText(context, R.string.APIFailToastMessage, Toast.LENGTH_SHORT).show()
+                    }
+                })
+            }
+            fun deleteFollow(userId: String) {
+                val vectoService = VectoService.create()
+
+                val call = vectoService.deleteFollow("Bearer ${Auth.token}", userId)
+                call.enqueue(object : Callback<VectoService.VectoResponse<Unit>> {
+                    override fun onResponse(call: Call<VectoService.VectoResponse<Unit>>, response: Response<VectoService.VectoResponse<Unit>>) {
+                        if (response.isSuccessful) {
+                            if(response.body()!!.code == "S024") {
+                                Toast.makeText(context, "${feed.nickName}님 팔로우를 취소하였습니다.", Toast.LENGTH_SHORT).show()
+                            }
+                            else if(response.body()!!.code == "S026"){
+                                Toast.makeText(context, "이미 ${feed.nickName}님 팔로우를 취소하였습니다.", Toast.LENGTH_SHORT).show()
+                            }
+                            followButton.setImageResource(R.drawable.follow_button)
+                            followText.text = "팔로우"
+                            followText.setTextColor(ContextCompat.getColor(context, R.color.vecto_theme_orange))
+                            followFlag = false
+
+                            Log.d("POSTFOLLOWCACEL", "팔로우 해제 성공 : ${response.body()}")
+                        } else {
+                            // 서버 에러 처리
+                            Log.d("POSTFOLLOWCACEL", "팔로우 해제 실패 : " + response.errorBody()?.string())
+                            Toast.makeText(context, "팔로우 요청에 실패했습니다. 잠시후 다시 시도해주세요.", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+
+                    override fun onFailure(call: Call<VectoService.VectoResponse<Unit>>, t: Throwable) {
+                        setFollowButton(false)
+                        Log.d("POSTFOLLOWCACEL", "팔로우 해제 실패 : " + t.message)
+                        Toast.makeText(context, R.string.APIFailToastMessage, Toast.LENGTH_SHORT).show()
+                    }
+                })
+            }
+            fun requestFollow(userId: String) {
+                val vectoService = VectoService.create()
+
+                val call = vectoService.sendFollow("Bearer ${Auth.token}", userId)
+                call.enqueue(object : Callback<VectoService.VectoResponse<Unit>> {
+                    override fun onResponse(call: Call<VectoService.VectoResponse<Unit>>, response: Response<VectoService.VectoResponse<Unit>>) {
+                        if (response.isSuccessful) {
+                            if(response.body()!!.code == "S023") {
+                                Toast.makeText(context, "${feed.nickName}님을 팔로우하기 시작했습니다.", Toast.LENGTH_SHORT).show()
+                            }
+                            else if(response.body()!!.code == "S025") {
+                                Toast.makeText(context, "이미 ${feed.nickName}님을 팔로우 중입니다.", Toast.LENGTH_SHORT).show()
+                            }
+
+                            followButton.setImageResource(R.drawable.following_button)
+                            followText.text = "팔로잉"
+                            followText.setTextColor(ContextCompat.getColor(context, R.color.white))
+                            followFlag = true
+                            Log.d("POSTFOLLOW", "팔로우 요청 성공 : ${response.body()?.result}")
+                        } else {
+                            // 서버 에러 처리
+                            Log.d("POSTFOLLOW", "팔로우 요청 실패 : " + response.errorBody()?.string())
+                            Toast.makeText(context, "팔로우 요청에 실패했습니다. 잠시후 다시 시도해주세요.", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+
+                    override fun onFailure(call: Call<VectoService.VectoResponse<Unit>>, t: Throwable) {
+                        setFollowButton(false)
+                        Log.d("POSTFOLLOW", "팔로우 요청 실패 : " + t.message)
+                        Toast.makeText(context, R.string.APIFailToastMessage, Toast.LENGTH_SHORT).show()
+                    }
+                })
+            }
+
+            isfollow(feed.userId)
+
+            followButton.setOnClickListener {
+                followButton.isEnabled = false
+                if(!followFlag)
+                {
+                    requestFollow(feed.userId)
+                }
+                else
+                {
+                    deleteFollow(feed.userId)
                 }
 
                 followButton.postDelayed({
@@ -178,7 +280,12 @@ class MysearchpostAdapter(private val context: Context) : RecyclerView.Adapter<M
                     }
                 }
                 else {
-                    Toast.makeText(context, "로그인이 필요합니다.", Toast.LENGTH_SHORT).show()
+                    val loginRequestDialog = LoginRequestDialog(context)
+                    loginRequestDialog.showDialog()
+                    loginRequestDialog.onOkButtonClickListener = {
+                        val intent = Intent(context, LoginActivity::class.java)
+                        context.startActivity(intent)
+                    }
                 }
             }
 
@@ -188,25 +295,22 @@ class MysearchpostAdapter(private val context: Context) : RecyclerView.Adapter<M
                 context.startActivity(intent)
             }
 
-            likeIcon.setOnClickListener {
+            nicknameText.setOnClickListener {
+                val intent = Intent(context, UserInfoActivity::class.java)
+                intent.putExtra("userId", feedInfo[adapterPosition].userId)
+                context.startActivity(intent)
+            }
+
+            likeTouch.setOnClickListener {
                 clickLikeAction()
             }
 
-            likeCount.setOnClickListener {
-                clickLikeAction()
-            }
-
-            commentIcon.setOnClickListener {
+            commentTouch.setOnClickListener {
                 val intent = Intent(context, CommentActivity::class.java)
                 intent.putExtra("feedID", feedID[adapterPosition])
                 context.startActivity(intent)
             }
 
-            commentCount.setOnClickListener {
-                val intent = Intent(context, CommentActivity::class.java)
-                intent.putExtra("feedID", feedID[adapterPosition])
-                context.startActivity(intent)
-            }
 
             val FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")
 
@@ -222,9 +326,20 @@ class MysearchpostAdapter(private val context: Context) : RecyclerView.Adapter<M
             else{
                 courseTime.text = "약 ${minutesPassed/60}시간 코스"
             }
+
+            itemView.setOnClickListener {
+                val intent = Intent(context, PostDetailActivity::class.java).apply {
+                    putExtra("feedInfoListJson", Gson().toJson(feedInfo))
+                    putExtra("feedIDListJson", Gson().toJson(feedID))
+                }
+                context.startActivity(intent)
+            }
+
         }
 
     }
+
+
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MysearchpostAdapter.ViewHolder {
         val view = LayoutInflater.from(context).inflate(R.layout.post_small_item, parent, false)
@@ -281,5 +396,4 @@ class MysearchpostAdapter(private val context: Context) : RecyclerView.Adapter<M
 
         })
     }
-
 }

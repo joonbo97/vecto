@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:paddingStart="10dp"
+    android:paddingTop="10dp"
+    android:paddingEnd="10dp"
+    android:paddingBottom="10dp">
+
+    <ImageView
+        android:id="@+id/ImageItemBox"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@drawable/post_small_box"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintDimensionRatio="1:1"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.516"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/ProfileImage"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="20dp"
+        android:src="@drawable/profile_basic"
+        app:layout_constraintStart_toStartOf="@+id/ImageItemBox"
+        app:layout_constraintTop_toTopOf="@+id/ImageItemBox" />
+
+    <TextView
+        android:id="@+id/NicknameText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="25dp"
+        android:fontFamily="@font/lineseedkr_bd"
+        android:text="닉네임"
+        android:textColor="@color/black"
+        android:textSize="17sp"
+        app:layout_constraintStart_toEndOf="@+id/ProfileImage"
+        app:layout_constraintTop_toTopOf="@+id/ImageItemBox" />
+
+    <TextView
+        android:id="@+id/PostTimeText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:alpha="0.7"
+        android:fontFamily="@font/lineseedkr_rg"
+        android:text="17시간 전"
+        android:textColor="@color/black"
+        android:textSize="12sp"
+        app:layout_constraintStart_toStartOf="@+id/NicknameText"
+        app:layout_constraintTop_toBottomOf="@+id/NicknameText" />
+
+    <ImageView
+        android:id="@+id/PostMenuImage"
+        android:padding="15dp"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:src="@drawable/post_menu"
+        android:layout_marginTop="10dp"
+        app:layout_constraintEnd_toEndOf="@+id/ImageItemBox"
+        app:layout_constraintTop_toTopOf="@+id/ImageItemBox" />
+
+    <ImageView
+        android:id="@+id/MapImageSmall"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="84dp"
+        android:src="@drawable/empty_image"
+        app:layout_constraintDimensionRatio="1:1"
+        app:layout_constraintEnd_toStartOf="@+id/Image"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/ImageItemBox" />
+
+    <ImageView
+        android:id="@+id/MapImageLarge"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="84dp"
+        android:layout_marginEnd="20dp"
+        android:src="@drawable/empty_image"
+        android:visibility="gone"
+        app:layout_constraintDimensionRatio="2:1"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/ImageItemBox" />
+
+    <ImageView
+        android:id="@+id/Image"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="84dp"
+        android:layout_marginEnd="20dp"
+        android:src="@drawable/empty_image"
+        app:layout_constraintDimensionRatio="1:1"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/guideline2"
+        app:layout_constraintTop_toTopOf="@+id/ImageItemBox" />
+
+    <TextView
+        android:id="@+id/TitleText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:fontFamily="@font/lineseedkr_bd"
+        android:text="제목입니다"
+        android:textColor="@color/black"
+        android:textSize="18sp"
+        app:layout_constraintBottom_toTopOf="@+id/LikeImage"
+        app:layout_constraintStart_toStartOf="@+id/LikeImage"
+        app:layout_constraintTop_toBottomOf="@id/MapImageSmall"
+        app:layout_constraintVertical_bias="0.3" />
+
+    <TextView
+        android:id="@+id/TotalTimeText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:alpha="0.7"
+        android:fontFamily="@font/lineseedkr_rg"
+        android:text="코스 소요 시간 5시간"
+        android:textColor="@color/black"
+        android:textSize="12sp"
+        app:layout_constraintStart_toStartOf="@+id/TitleText"
+        app:layout_constraintTop_toBottomOf="@+id/TitleText" />
+
+
+    <ImageView
+        android:id="@+id/LikeTouchImage"
+        android:layout_width="70dp"
+        android:layout_height="30dp"
+        android:layout_marginStart="16dp"
+        android:padding="5dp"
+        app:layout_constraintStart_toStartOf="@+id/ImageItemBox"
+        app:layout_constraintBottom_toBottomOf="@+id/ImageItemBox"
+        app:layout_constraintTop_toTopOf="@id/MapImageSmall"
+        app:layout_constraintVertical_bias="0.95" />
+
+    <ImageView
+        android:id="@+id/LikeImage"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_marginStart="16dp"
+        android:padding="5dp"
+        android:src="@drawable/post_like_off"
+        app:layout_constraintStart_toStartOf="@+id/ImageItemBox"
+        app:layout_constraintBottom_toBottomOf="@+id/ImageItemBox"
+        app:layout_constraintTop_toTopOf="@id/MapImageSmall"
+        app:layout_constraintVertical_bias="0.95" />
+
+    <TextView
+        android:id="@+id/LikeCountText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="7dp"
+        android:fontFamily="@font/lineseedkr_bd"
+        android:text="0"
+        android:textColor="@color/vecto_likecolor"
+        android:textSize="15sp"
+        app:layout_constraintStart_toEndOf="@+id/LikeImage"
+        app:layout_constraintBottom_toBottomOf="@+id/ImageItemBox"
+        app:layout_constraintTop_toTopOf="@id/MapImageSmall"
+        app:layout_constraintVertical_bias="0.932" />
+
+    <ImageView
+        android:id="@+id/CommentTouchImage"
+        android:layout_width="70dp"
+        android:layout_height="30dp"
+        android:padding="5dp"
+        android:layout_marginStart="90dp"
+        app:layout_constraintStart_toStartOf="@+id/ImageItemBox"
+        app:layout_constraintBottom_toBottomOf="@+id/ImageItemBox"
+        app:layout_constraintTop_toTopOf="@id/MapImageSmall"
+        app:layout_constraintVertical_bias="0.95" />
+
+    <ImageView
+        android:id="@+id/CommentImage"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:padding="5dp"
+        android:layout_marginStart="90dp"
+        android:src="@drawable/post_comment"
+        app:layout_constraintStart_toStartOf="@+id/ImageItemBox"
+        app:layout_constraintBottom_toBottomOf="@+id/ImageItemBox"
+        app:layout_constraintTop_toTopOf="@id/MapImageSmall"
+        app:layout_constraintVertical_bias="0.95" />
+
+    <TextView
+        android:id="@+id/CommentCountText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="7dp"
+        android:fontFamily="@font/lineseedkr_bd"
+        android:text="0"
+        android:textColor="@color/vecto_commentcolor"
+        android:textSize="15sp"
+        app:layout_constraintStart_toEndOf="@+id/CommentImage"
+        app:layout_constraintBottom_toBottomOf="@+id/ImageItemBox"
+        app:layout_constraintTop_toTopOf="@id/MapImageSmall"
+        app:layout_constraintVertical_bias="0.932" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.5" />
+</androidx.constraintlayout.widget.ConstraintLayout>

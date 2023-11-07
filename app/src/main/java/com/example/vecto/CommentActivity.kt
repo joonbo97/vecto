@@ -10,7 +10,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.vecto.data.Auth
 import com.example.vecto.databinding.ActivityCommentBinding
 import com.example.vecto.dialog.LoginRequestDialog
-import com.example.vecto.dialog.StartServiceDialog
 import com.example.vecto.retrofit.VectoService
 import retrofit2.Call
 import retrofit2.Callback

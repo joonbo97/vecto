@@ -1,6 +1,7 @@
 package com.example.vecto
 
 import android.content.Context
+import android.content.Intent
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -13,6 +14,8 @@ import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.vecto.data.Auth
+import com.example.vecto.dialog.EditDeletePopupWindow
+import com.example.vecto.dialog.LoginRequestDialog
 import com.example.vecto.retrofit.VectoService
 import retrofit2.Call
 import retrofit2.Callback
@@ -30,6 +33,8 @@ class MyCommentAdapter(private val context: Context): RecyclerView.Adapter<MyCom
         val timeText: TextView = view.findViewById(R.id.CommentTimeText)
         val commentText: TextView = view.findViewById(R.id.CommentText)
         val likeCount: TextView = view.findViewById(R.id.CommentLikeCountText)
+
+        val menu: ImageView = view.findViewById(R.id.CommentMenuImage)
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
@@ -48,6 +53,11 @@ class MyCommentAdapter(private val context: Context): RecyclerView.Adapter<MyCom
                 .error(R.drawable.profile_basic) // 에러 발생 시 표시될 이미지
                 .circleCrop()
                 .into(holder.profileImage)
+        }
+        holder.profileImage.setOnClickListener {
+            val intent = Intent(context, UserInfoActivity::class.java)
+            intent.putExtra("userId", commentInfo[position].userId)
+            context.startActivity(intent)
         }
 
         /*댓글 닉네임 설정*/
@@ -95,7 +105,12 @@ class MyCommentAdapter(private val context: Context): RecyclerView.Adapter<MyCom
                 }
             }
             else {
-                Toast.makeText(context, "로그인이 필요합니다.", Toast.LENGTH_SHORT).show()
+                val loginRequestDialog = LoginRequestDialog(context)
+                loginRequestDialog.showDialog()
+                loginRequestDialog.onOkButtonClickListener = {
+                    val intent = Intent(context, LoginActivity::class.java)
+                    context.startActivity(intent)
+                }
             }
         }
 
@@ -109,7 +124,47 @@ class MyCommentAdapter(private val context: Context): RecyclerView.Adapter<MyCom
 
 
 
+        holder.menu.setOnClickListener {
+            val editDeletePopupWindow = EditDeletePopupWindow(context,
+                editListener = {
+                    //TODO 댓글 수정
+                },
+                deleteListener = {
+                    deleteComment(commentInfo[position].commentId, position)
+                })
 
+            // 앵커 뷰를 기준으로 팝업 윈도우 표시
+            editDeletePopupWindow.showPopupWindow(holder.menu)
+        }
+    }
+
+    private fun deleteComment(commentId: Int, position: Int) {
+
+        val vectoService = VectoService.create()
+        Log.d("COMMENTDELETE", commentId.toString())
+
+        val call = vectoService.deleteComment("Bearer ${Auth.token}", commentId)
+        call.enqueue(object : Callback<VectoService.VectoResponse<Unit>>{
+            override fun onResponse(call: Call<VectoService.VectoResponse<Unit>>, response: Response<VectoService.VectoResponse<Unit>>) {
+                if(response.isSuccessful){
+                    Log.d("COMMENTDELETE", "성공: ${response.body()}")
+                    Toast.makeText(context, "댓글이 삭제되었습니다.", Toast.LENGTH_SHORT).show()
+                    commentInfo.removeAt(position)
+                    notifyDataSetChanged()
+                }
+                else{
+                    Log.d("COMMENTDELETE", "성공했으나 서버 오류 ${response.errorBody()?.string()}")
+                    Toast.makeText(context, "댓글 삭제에 실패하였습니다. 잠시후 시도해주세요.", Toast.LENGTH_SHORT).show()
+
+                }
+            }
+
+            override fun onFailure(call: Call<VectoService.VectoResponse<Unit>>, t: Throwable) {
+                Log.d("COMMENTDELETE", "실패 ${t.message.toString()}" )
+                Toast.makeText(context, R.string.APIFailToastMessage, Toast.LENGTH_SHORT).show()
+            }
+
+        })
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyCommentAdapter.ViewHolder {

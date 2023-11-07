@@ -152,7 +152,7 @@ class LoginActivity : AppCompatActivity() {
                     // 로그인 성공
                     Log.d("VectoLogin", "로그인 성공 : " + response.message())
                     Auth.token = response.body()!!.result.toString()
-                    getUserInfo(response.body()!!.result.toString())
+                    getUserInfo(loginRequest.userId)
                 } else {
                     // 로그인 실패
                     Log.d("VectoLogin", "로그인 실패 : " + response.errorBody()?.string())
@@ -172,10 +172,10 @@ class LoginActivity : AppCompatActivity() {
         })
     }
 
-    private fun getUserInfo(token: String) {
+    private fun getUserInfo(userId: String) {
         val vectoService = VectoService.create()
 
-        val call = vectoService.getUserInfo("Bearer $token")
+        val call = vectoService.getUserInfo(userId)
         call.enqueue(object : Callback<VectoService.VectoResponse<VectoService.UserInfoResponse>>{
             override fun onResponse(call: Call<VectoService.VectoResponse<VectoService.UserInfoResponse>>, response: Response<VectoService.VectoResponse<VectoService.UserInfoResponse>>) {
                 if (response.isSuccessful) {

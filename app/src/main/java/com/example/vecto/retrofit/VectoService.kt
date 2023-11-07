@@ -2,6 +2,7 @@ package com.example.vecto.retrofit
 
 import com.example.vecto.data.LocationData
 import com.example.vecto.data.VisitData
+import com.example.vecto.data.VisitDataForWite
 import okhttp3.MultipartBody
 import retrofit2.Call
 import retrofit2.Retrofit
@@ -36,8 +37,7 @@ interface VectoService {
 
     @GET("user")
     fun getUserInfo(
-        @Header("Authorization")
-        authorization: String
+        @Query("userId") userId: String
     ): Call<VectoResponse<UserInfoResponse>>
 
     @PATCH("user")
@@ -49,7 +49,7 @@ interface VectoService {
     @POST("feed")
     fun addPost(
         @Header("Authorization") authorization: String,
-        @Body request: PostData
+        @Body request: PostDataForUpload
     ): Call<VectoResponse<Int>>
 
     @Multipart
@@ -72,9 +72,27 @@ interface VectoService {
         @Body request: MailRequest
     ): Call<VectoResponse<Unit>>
 
+    @GET("feed")
+    fun getUserPost(
+        @Query("userId") userId: String,
+        @Query("page") page: Int
+    ): Call<VectoResponse<List<Int>>>
+
+    @GET("feed/likes")
+    fun getUserLikePost(
+        @Query("userId") userId: String,
+        @Query("page") page: Int
+    ): Call<VectoResponse<List<Int>>>
+
     @GET("feed/feedList")
     fun getFeedList(
         @Query("page") page: Int
+    ): Call<VectoResponse<List<Int>>>
+
+    @GET("feed/feeds/search")
+    fun getSearchFeedList(
+        @Query("page") page: Int,
+        @Query("q") q: String
     ): Call<VectoResponse<List<Int>>>
 
     @GET("feed/{feedId}")
@@ -121,15 +139,45 @@ interface VectoService {
     @POST("comment/{commentId}/likes")
     fun sendCommentLike(
         @Header("Authorization") authorization: String,
-        @Path("commentId") commentId: Int,
+        @Path("commentId") commentId: Int
     ): Call<VectoResponse<Unit>>
 
 
     @DELETE("comment/{commentId}/likes")
     fun cancelCommentLike(
         @Header("Authorization") authorization: String,
-        @Path("commentId") commentId: Int,
+        @Path("commentId") commentId: Int
     ): Call<VectoResponse<Unit>>
+
+    @DELETE("feed/comment")
+    fun deleteComment(
+        @Header("Authorization") authorization: String,
+        @Query("commentId") commentId: Int
+    ): Call<VectoResponse<Unit>>
+
+    @GET("follow/{userId}")//팔로우 여부 반환 code: S027이면 이미 팔로우 S028이면 안한 상태
+    fun getFollow(
+        @Header("Authorization") authorization: String,
+        @Path("userId") userId: String
+    ):Call<VectoResponse<Unit>>
+
+    @POST("follow/{userId}")//팔로우 등록 S023이면 등록 성공
+    fun sendFollow(
+        @Header("Authorization") authorization: String,
+        @Path("userId") userId: String
+    ):Call<VectoResponse<Unit>>
+
+    @DELETE("follow/{userId}")
+    fun deleteFollow(
+        @Header("Authorization") authorization: String,
+        @Path("userId") userId: String
+    ):Call<VectoResponse<Unit>>
+
+    @DELETE("feed/{feedId}")
+    fun deleteFeed(
+        @Header("Authorization") authorization: String,
+        @Path("feedId") feedId: Int
+    ):Call<VectoResponse<Unit>>
 
 
 
@@ -179,7 +227,10 @@ interface VectoService {
         val provider: String,
         val nickName: String,
         val email: String?,
-        val profileUrl: String?
+        val profileUrl: String?,
+        val feedCount: Int,
+        val followerCount: Int,
+        val followingCount: Int
     )
 
     data class ImageResponse(
@@ -193,6 +244,16 @@ interface VectoService {
         var image: MutableList<String>?, //이미지
         val location: MutableList<LocationData>, //경로 정보
         val visit: MutableList<VisitData>, //방문지 정보
+        var mapimage: MutableList<String>?
+    )
+
+    data class PostDataForUpload(
+        val title: String, //제목
+        val content: String?, //내용
+        val uploadtime: String, //게시 시간
+        var image: MutableList<String>?, //이미지
+        val location: MutableList<LocationData>, //경로 정보
+        val visit: MutableList<VisitDataForWite>, //방문지 정보
         var mapimage: MutableList<String>?
     )
 
@@ -219,6 +280,7 @@ interface VectoService {
     data class CommentResponse(
         val commentId: Int,
         val nickName: String,
+        val userId: String,
         val content: String,
         val timeDifference: String,
         val profileUrl: String?,

@@ -19,12 +19,6 @@ android {
         vectorDrawables.useSupportLibrary = true
     }
 
-    buildTypes {
-        release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-        }
-    }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
@@ -34,6 +28,22 @@ android {
     }
     buildFeatures {
         viewBinding true
+    }
+
+    signingConfigs {
+        release {
+            storeFile file('C:\\Users\\s_joonbo97\\AndroidStudioProjects\\vecto\\app\\vecto.jks') // 키스토어 파일의 경로
+            storePassword 'tlawnsqh123'
+            keyAlias 'vecto'
+            keyPassword 'tlawnsqh123'
+        }
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
+        }
     }
 }
 
@@ -79,5 +89,11 @@ dependencies {
     implementation 'com.github.yalantis:ucrop:2.2.7'
 
     implementation 'com.github.bumptech.glide:glide:4.12.0' // 이미지로딩 라이브러리
+
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2'
+
+    implementation 'me.relex:circleindicator:2.1.6'
+
+    implementation 'androidx.cardview:cardview:1.0.0'
 
 }

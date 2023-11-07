@@ -37,14 +37,16 @@ class MyFirebaseMessagingService:  FirebaseMessagingService(){
         val body = data["body"]
         val feedId = data["feedId"]
 
-        //Message received: {feedId=8, body=정아님께서 회원님의 게시글에 댓글을 달았습니다., title=vecto}
 
         if (title != null && body != null) {
             // 알림 제목과 내용이 있을 경우, 알림 표시
             val currentDateTime = LocalDateTime.now().withNano(0).toString()
 
             val notificationDB = NotificationDatabase(this)
-            notificationDB.addNotificationData(NotificationData(currentDateTime, feedId!!.toInt(), body, 0))
+            if(feedId != null)
+                notificationDB.addNotificationData(NotificationData(currentDateTime, feedId.toInt(), body, 0))
+            else
+                notificationDB.addNotificationData(NotificationData(currentDateTime, -1, body, 0))
 
             showNotification(title, body)
         } else {

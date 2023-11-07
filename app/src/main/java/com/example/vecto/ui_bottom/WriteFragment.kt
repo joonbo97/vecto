@@ -23,16 +23,24 @@ import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
+import androidx.core.os.bundleOf
 import androidx.fragment.app.FragmentContainerView
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.vecto.LoginActivity
 import com.example.vecto.MainActivity
 import com.example.vecto.R
 import com.example.vecto.data.Auth
 import com.example.vecto.data.LocationData
 import com.example.vecto.data.LocationDatabase
 import com.example.vecto.data.VisitData
+import com.example.vecto.data.VisitDataForWite
 import com.example.vecto.data.VisitDatabase
 import com.example.vecto.databinding.FragmentWriteBinding
+import com.example.vecto.dialog.LoginRequestDialog
+import com.example.vecto.dialog.WriteBottomDialog
+import com.example.vecto.dialog.WriteNameEmptyDialog
+import com.example.vecto.retrofit.NaverSearchApiService
 import com.example.vecto.retrofit.VectoService
 import com.naver.maps.geometry.LatLng
 import com.naver.maps.geometry.LatLngBounds
@@ -49,6 +57,7 @@ import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
+import okhttp3.ResponseBody
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -78,6 +87,9 @@ class WriteFragment : Fragment(), OnMapReadyCallback {
 
     private lateinit var locationDataList: MutableList<LocationData>
     private lateinit var visitDataList: MutableList<VisitData>
+
+    private var visitDataForWriteList = mutableListOf<VisitDataForWite>()
+
     private lateinit var selectedVisitData: VisitData
     private lateinit var selectedPathData: MutableList<LocationData>
 
@@ -89,6 +101,9 @@ class WriteFragment : Fragment(), OnMapReadyCallback {
     private var imageCnt = 0
 
     private var imageUri = mutableListOf<Uri>()
+
+    var address = mutableListOf<String>()
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -121,11 +136,38 @@ class WriteFragment : Fragment(), OnMapReadyCallback {
         }
 
         binding.WriteDoneButton.setOnClickListener {
-            //TODO 형식 확인. 이름, 경로
+            if(Auth.loginFlag.value == false)
+            {
+                val loginRequestDialog = LoginRequestDialog(requireContext())
+                loginRequestDialog.showDialog()
+                loginRequestDialog.onOkButtonClickListener = {
+                    val intent = Intent(requireContext(), LoginActivity::class.java)
+                    this.startActivity(intent)
+                }
 
-            binding.progressBar.visibility = View.VISIBLE
-            binding.constraintProgress.visibility = View.VISIBLE
-            takeSnapForMap(VectoService.PostData(binding.EditTitle.text.toString(), binding.EditContent.text.toString(), LocalDateTime.now().withNano(0).toString(), null, locationDataList, visitDataList, null))
+                return@setOnClickListener
+            }
+
+            if (binding.EditTitle.text.isEmpty())
+                Toast.makeText(requireContext(), "제목을 입력해주세요.", Toast.LENGTH_SHORT).show()
+            else if (visitDataList.size == 0)
+                Toast.makeText(requireContext(), "경로를 선택해주세요.", Toast.LENGTH_SHORT).show()
+            else {
+                binding.progressBar.visibility = View.VISIBLE
+                binding.constraintProgress.visibility = View.VISIBLE
+                takeSnapForMap(
+                    VectoService.PostData(
+                        binding.EditTitle.text.toString(),
+                        binding.EditContent.text.toString(),
+                        LocalDateTime.now().withNano(0).toString(),
+                        null,
+                        locationDataList,
+                        visitDataList,
+                        null
+                    )
+                )
+            }
+
         }
 
         return binding.root
@@ -180,6 +222,7 @@ class WriteFragment : Fragment(), OnMapReadyCallback {
                 }
 
 
+                Log.d("ASDASD1", selectedImages?.itemCount.toString())
                 if (selectedImages != null) {
                     for (i in 0 until selectedImages.itemCount) {
                         val selectedImageUri = selectedImages.getItemAt(selectedImages.itemCount - 1 - i).uri
@@ -194,8 +237,7 @@ class WriteFragment : Fragment(), OnMapReadyCallback {
 
         cropResultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == Activity.RESULT_OK) {
-
-
+                Log.d("ASDASD2", "FINISH")
                 val resultUri = UCrop.getOutput(result.data!!)
                 addImage(resultUri!!)
                 myimageAdapter.notifyDataSetChanged()
@@ -208,17 +250,16 @@ class WriteFragment : Fragment(), OnMapReadyCallback {
 
 
     private fun addImage(newImageUri: Uri) {
-        if (myimageAdapter.itemCount >= 10) {
+        Log.d("ASDASD2", "ADDIMAGE 호출")
+
+        if (myimageAdapter.itemCount > 10) {
             Toast.makeText(requireContext(), "최대 10개의 이미지만 추가 가능합니다.", Toast.LENGTH_LONG).show()
             return
         }
 
         // 이미지 압축
         val compressedBytes = compressImage(newImageUri)
-        val compressedUri = saveCompressedImage(compressedBytes)
-
-        imageUri.add(compressedUri)
-        myimageAdapter.imageUri.add(compressedUri)
+        saveCompressedImage(compressedBytes)
 
 
         // 가장 앞쪽의 ImageView에 새 이미지를 셋팅
@@ -226,11 +267,13 @@ class WriteFragment : Fragment(), OnMapReadyCallback {
     }
 
 
-    private fun saveCompressedImage(compressedBytes: ByteArray): Uri {
+    private fun saveCompressedImage(compressedBytes: ByteArray) {
         val filename = "compressed_${System.currentTimeMillis()}.jpeg"
         val file = File(requireContext().cacheDir, filename)
         file.outputStream().use { it.write(compressedBytes) }
-        return Uri.fromFile(file)
+
+        imageUri.add(Uri.fromFile(file))
+        myimageAdapter.imageUri.add(Uri.fromFile(file))
     }
 
     private fun compressImage(uri: Uri): ByteArray {
@@ -243,7 +286,7 @@ class WriteFragment : Fragment(), OnMapReadyCallback {
         }
 
         val original = BitmapFactory.decodeStream(inputStream)
-        original?.compress(Bitmap.CompressFormat.JPEG, 50, outStream)
+        original?.compress(Bitmap.CompressFormat.JPEG, 10, outStream)
 
         return outStream.toByteArray()
     }
@@ -313,26 +356,8 @@ class WriteFragment : Fragment(), OnMapReadyCallback {
 
             if(visitDataList.isNotEmpty()){
                 //방문 장소가 있을 경우
-                mapFragmentContainerView.visibility = View.VISIBLE
-                deleteOverlay()
 
-                //선택한 날짜의 방문지의 처음과 끝까지의 경로
-                locationDataList = LocationDatabase(requireContext()).getBetweenLocationData(visitDataList.first().datetime, visitDataList.last().datetime)
-
-                addPathOverlayForLoacation(locationDataList)
-
-                if(visitDataList.size == 1)
-                    moveCameraForVisit(visitDataList[0])
-                else
-                    moveCameraForPath(locationDataList)
-                val locationDataforPath = mutableListOf<LocationData>()
-
-                //location 첫 좌표 넣어줌.
-                locationDataforPath.add(LocationData(visitDataList[0].datetime, visitDataList[0].lat_set, visitDataList[0].lng_set))
-
-                for (visitdatalist in visitDataList){
-                    addVisitMarker(visitdatalist)
-                }
+                selectVisit(selectedDate)
             }
             else{
                 //방문 장소 없을 경우
@@ -341,6 +366,103 @@ class WriteFragment : Fragment(), OnMapReadyCallback {
 
         }, year, month, day).show()
     }
+
+    private fun selectVisit(selectedDate: String) = //특정 날짜에 해당하는 방문지를 선택하는 함수
+        if(visitDataList.any{ it.name.isEmpty() })//이름항목이 하나라도 비어있을 경우
+        {
+            val writeNameEmptyDialog = WriteNameEmptyDialog(requireContext())
+            writeNameEmptyDialog.showDialog()
+            writeNameEmptyDialog.onOkButtonClickListener = {
+                val navController = findNavController()
+                val bundle = bundleOf("selectedDateKey" to selectedDate)
+                navController.navigate(R.id.EditCourseFragment, bundle)
+            }
+        }
+        else//완성된 경우
+        {
+            val writeBottomDialog = WriteBottomDialog(requireContext())
+            writeBottomDialog.showDialog(visitDataList) { selectedItems -> //구간을 선택함 (모든 정보 완료)
+
+                mapFragmentContainerView.visibility = View.VISIBLE
+                deleteOverlay()
+
+                //선택한 날짜의 방문지의 처음과 끝까지의 경로
+                locationDataList = LocationDatabase(requireContext()).getBetweenLocationData(selectedItems.first().datetime, selectedItems.last().datetime)
+
+                addPathOverlayForLoacation(locationDataList)
+
+                if(selectedItems.size == 1)
+                    moveCameraForVisit(selectedItems[0])
+                else
+                    moveCameraForPath(locationDataList)
+                val locationDataforPath = mutableListOf<LocationData>()
+
+                //location 첫 좌표 넣어줌.
+                locationDataforPath.add(LocationData(selectedItems[0].datetime, selectedItems[0].lat_set, selectedItems[0].lng_set))
+
+                for (visitdatalist in selectedItems){
+                    addVisitMarker(visitdatalist)
+                }
+
+                visitDataList = selectedItems.toMutableList()
+
+
+                //TODO address 추가
+                address.clear()
+                for(i in 0 until visitDataList.size)
+                {
+                    val naverSearchApiService = NaverSearchApiService.create()
+                    val call = naverSearchApiService.reverseGeocode("${visitDataList[i].lng_set},${visitDataList[i].lat_set}", "legalcode", "json")
+                    call.enqueue(object : Callback<NaverSearchApiService.ReverseGeocodeResponse> {
+                        override fun onResponse(call: Call<NaverSearchApiService.ReverseGeocodeResponse>, response: Response<NaverSearchApiService.ReverseGeocodeResponse>) {
+                            if (response.isSuccessful) {
+                                if(response.body()?.results != null) {
+
+                                    Log.d("legalcode", response.body()!!.results[0].toString())
+
+                                    //response.body()!!.results[0].region?.area1?.name?.isEmpty()
+                                    address.add("")
+
+                                    if(response.body()!!.results[0].region?.area1?.name?.isEmpty() == false){
+                                        address[i] += response.body()!!.results[0].region?.area1?.name.toString()
+                                        if(response.body()!!.results[0].region?.area2?.name?.isEmpty() == false){
+                                            address[i] += (" " + response.body()!!.results[0].region?.area2?.name)
+                                            if(response.body()!!.results[0].region?.area3?.name?.isEmpty() == false)
+                                                address[i] += (" " + response.body()!!.results[0].region?.area3?.name)
+                                        }
+                                    }
+
+                                    visitDataForWriteList.clear()
+
+                                    visitDataForWriteList.add(VisitDataForWite(
+                                        visitDataList[i].datetime,
+                                        visitDataList[i].endtime,
+                                        visitDataList[i].lat,
+                                        visitDataList[i].lng,
+                                        visitDataList[i].lat_set,
+                                        visitDataList[i].lng_set,
+                                        visitDataList[i].staytime,
+                                        visitDataList[i].name,
+                                        address[i]
+                                    ))
+
+                                }
+
+                                Log.d("NAVERAPI", "성공: ${response.body()}")
+                            } else {
+                                Log.d("NAVERAPI", "성공했으나 서버 오류: ${response.errorBody()?.string()}")
+                            }
+                        }
+
+                        override fun onFailure(call: Call<NaverSearchApiService.ReverseGeocodeResponse>, t: Throwable) {
+
+                        }
+
+                    })
+
+                }
+            }
+        }
 
     private fun addPathOverlayForLoacation(pathPoints: MutableList<LocationData>){
         val pathLatLng = mutableListOf<LatLng>()
@@ -418,14 +540,18 @@ class WriteFragment : Fragment(), OnMapReadyCallback {
         }
     }
 
-    private fun uploadImage(){
-        //TODO
-    }
-
     private fun uploadPost(writeData: VectoService.PostData) {
         val vectoService = VectoService.create()
 
-        val call = vectoService.addPost("Bearer ${Auth.token}", writeData)
+        val call = vectoService.addPost("Bearer ${Auth.token}", VectoService.PostDataForUpload(
+            writeData.title,
+            writeData.content,
+            writeData.uploadtime,
+            writeData.image,
+            writeData.location,
+            visitDataForWriteList,
+            writeData.mapimage
+        ))
         call.enqueue(object : Callback<VectoService.VectoResponse<Int>>{
             override fun onResponse(call: Call<VectoService.VectoResponse<Int>>, response: Response<VectoService.VectoResponse<Int>>) {
                 if(response.isSuccessful){
@@ -475,7 +601,11 @@ class WriteFragment : Fragment(), OnMapReadyCallback {
 
                         uploadPost(writeData.copy(image = imageUrls?.result?.url?.toMutableList()))
                     } else {
+                        Toast.makeText(requireContext(), "이미지의 크기를 줄여주세요.", Toast.LENGTH_SHORT).show()
                         Log.d("UPLOAD_IMAGE", "성공했으나 서버 오류 ${response.errorBody()?.string()}")
+
+                        binding.progressBar.visibility = View.GONE
+                        binding.constraintProgress.visibility = View.GONE
                     }
                 }
 

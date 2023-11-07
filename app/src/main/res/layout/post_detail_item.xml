@@ -1,0 +1,289 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <TextView
+        android:id="@+id/TitleText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="25dp"
+        android:layout_marginTop="25dp"
+        android:fontFamily="@font/lineseedkr_bd"
+        android:text="제목"
+        android:textColor="@color/black"
+        android:textSize="25sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/TotalTimeText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:alpha="0.7"
+        android:fontFamily="@font/lineseedkr_rg"
+        android:text="코스 소요 시간 5시간"
+        android:textColor="@color/black"
+        android:textSize="12sp"
+        app:layout_constraintStart_toStartOf="@+id/TitleText"
+        app:layout_constraintTop_toBottomOf="@+id/TitleText" />
+
+    <TextView
+        android:id="@+id/DotTetxt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:alpha="0.7"
+        android:fontFamily="@font/lineseedkr_rg"
+        android:text=" · "
+        android:textColor="@color/black"
+        android:textSize="12sp"
+        app:layout_constraintBottom_toBottomOf="@+id/TotalTimeText"
+        app:layout_constraintStart_toEndOf="@+id/TotalTimeText"
+        app:layout_constraintTop_toTopOf="@+id/TotalTimeText" />
+
+
+    <TextView
+        android:id="@+id/PostTimeText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:alpha="0.7"
+        android:fontFamily="@font/lineseedkr_rg"
+        android:text="17시간 전"
+        android:textColor="@color/black"
+        android:textSize="12sp"
+        app:layout_constraintBottom_toBottomOf="@+id/DotTetxt"
+        app:layout_constraintStart_toEndOf="@+id/DotTetxt"
+        app:layout_constraintTop_toTopOf="@+id/DotTetxt" />
+
+
+
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/PostDetailRecyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="100dp"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/view_pager"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginStart="25dp"
+        android:layout_marginEnd="25dp"
+        android:layout_marginTop="20dp"
+        app:layout_constraintDimensionRatio="1:1"
+        app:layout_constraintTop_toBottomOf="@+id/PostDetailRecyclerView">
+
+
+    </androidx.viewpager2.widget.ViewPager2>
+
+    <me.relex.circleindicator.CircleIndicator3
+        android:id="@+id/indicator"
+        android:layout_width="match_parent"
+        android:layout_height="20dp"
+        app:ci_animator="@animator/scale_with_alpha"
+        app:ci_drawable="@drawable/black_radius"
+        app:ci_drawable_unselected="@drawable/gray_radius"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/view_pager" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.5" />
+
+    <TextView
+        android:id="@+id/ContentText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="25dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="25dp"
+        android:fontFamily="@font/lineseedkr_rg"
+        android:text=""
+        android:textColor="@color/black"
+        android:textSize="15sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/indicator" />
+
+    <ImageView
+        android:id="@+id/LikeBox"
+        android:layout_width="0dp"
+        android:layout_height="60dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginTop="20dp"
+        android:src="@drawable/course_number_box"
+        app:layout_constraintEnd_toEndOf="@+id/guideline"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/ContentText"
+        app:layout_constraintVertical_bias="0.5" />
+
+    <ImageView
+        android:id="@+id/LikeImage"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_marginStart="20dp"
+        android:src="@drawable/post_like_off"
+        app:layout_constraintBottom_toBottomOf="@+id/LikeBox"
+        app:layout_constraintStart_toStartOf="@+id/LikeBox"
+        app:layout_constraintTop_toTopOf="@+id/LikeBox"
+        app:layout_constraintVertical_bias="0.5" />
+
+    <TextView
+        android:id="@+id/LikeCount"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="20dp"
+        android:fontFamily="@font/lineseedkr_bd"
+        android:text="30"
+        android:textColor="@color/vecto_likecolor"
+        android:textSize="20sp"
+        app:layout_constraintBottom_toBottomOf="@+id/LikeBox"
+        app:layout_constraintEnd_toEndOf="@+id/LikeBox"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/LikeImage"
+        app:layout_constraintTop_toTopOf="@+id/LikeBox"
+        app:layout_constraintVertical_bias="0.4" />
+
+    <TextView
+        android:id="@+id/LikeText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="20dp"
+        android:fontFamily="@font/lineseedkr_rg"
+        android:text="좋아요"
+        android:textColor="@color/vecto_gray"
+        android:textSize="11sp"
+        app:layout_constraintEnd_toEndOf="@+id/LikeBox"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/LikeImage"
+        app:layout_constraintTop_toBottomOf="@+id/LikeCount" />
+
+    <ImageView
+        android:id="@+id/CommentBox"
+        android:layout_width="0dp"
+        android:layout_height="60dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginTop="20dp"
+        android:src="@drawable/course_number_box"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/guideline"
+        app:layout_constraintTop_toBottomOf="@id/ContentText"
+        app:layout_constraintVertical_bias="0.5" />
+
+    <ImageView
+        android:id="@+id/CommentImage"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_marginStart="20dp"
+        android:src="@drawable/post_comment"
+        app:layout_constraintBottom_toBottomOf="@+id/CommentBox"
+        app:layout_constraintStart_toStartOf="@+id/CommentBox"
+        app:layout_constraintTop_toTopOf="@+id/CommentBox"
+        app:layout_constraintVertical_bias="0.5" />
+
+    <TextView
+        android:id="@+id/CommentCount"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="20dp"
+        android:fontFamily="@font/lineseedkr_bd"
+        android:text="30"
+        android:textColor="@color/vecto_commentcolor"
+        android:textSize="20sp"
+        app:layout_constraintBottom_toBottomOf="@+id/CommentBox"
+        app:layout_constraintEnd_toEndOf="@+id/CommentBox"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/CommentImage"
+        app:layout_constraintTop_toTopOf="@+id/CommentBox"
+        app:layout_constraintVertical_bias="0.4" />
+
+    <TextView
+        android:id="@+id/CommentText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="20dp"
+        android:fontFamily="@font/lineseedkr_rg"
+        android:text="댓글"
+        android:textColor="@color/vecto_gray"
+        android:textSize="11sp"
+        app:layout_constraintEnd_toEndOf="@+id/CommentBox"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/CommentImage"
+        app:layout_constraintTop_toBottomOf="@+id/CommentCount" />
+
+    <ImageView
+        android:id="@+id/UserBox"
+        android:layout_width="match_parent"
+        android:layout_height="120dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginBottom="40dp"
+        android:src="@drawable/detailuserbox"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/CommentBox"
+        app:layout_constraintVertical_bias="0.5" />
+
+    <ImageView
+        android:id="@+id/ProfileImage"
+        android:layout_width="70dp"
+        android:layout_height="70dp"
+        android:layout_marginStart="20dp"
+        app:layout_constraintBottom_toBottomOf="@+id/UserBox"
+        app:layout_constraintStart_toStartOf="@+id/UserBox"
+        app:layout_constraintTop_toTopOf="@+id/UserBox"
+        app:layout_constraintVertical_bias="0.5"
+        app:srcCompat="@drawable/profile_basic" />
+
+    <ImageView
+        android:id="@+id/FollowButton"
+        android:layout_width="80dp"
+        android:layout_height="30dp"
+        android:layout_marginTop="10dp"
+        android:src="@drawable/detail_follow_button"
+        app:layout_constraintStart_toStartOf="@+id/UserNameText"
+        app:layout_constraintTop_toBottomOf="@+id/UserNameText" />
+
+    <TextView
+        android:id="@+id/FollowButtonText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
+        android:fontFamily="@font/lineseedkr_bd"
+        android:text="팔로우"
+        android:textColor="@color/white"
+        android:textSize="15sp"
+        app:layout_constraintBottom_toBottomOf="@+id/FollowButton"
+        app:layout_constraintEnd_toEndOf="@+id/FollowButton"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="@+id/FollowButton"
+        app:layout_constraintTop_toTopOf="@+id/FollowButton"
+        app:layout_constraintVertical_bias="0.5" />
+
+    <TextView
+        android:id="@+id/UserNameText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/lineseedkr_bd"
+        android:text="게스트"
+        android:textColor="@color/white"
+        android:textSize="25sp"
+        android:layout_marginTop="30dp"
+        android:layout_marginStart="20dp"
+        app:layout_constraintStart_toEndOf="@+id/ProfileImage"
+        app:layout_constraintTop_toTopOf="@+id/UserBox" />
+</androidx.constraintlayout.widget.ConstraintLayout>

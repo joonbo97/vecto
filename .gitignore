@@ -15,3 +15,5 @@
 local.properties
 /.idea/deploymentTargetDropDown.xml
 /.idea/kotlinc.xml
+/keystore/
+/app/vecto.jks
