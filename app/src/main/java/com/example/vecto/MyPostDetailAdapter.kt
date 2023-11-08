@@ -137,6 +137,10 @@ class MyPostDetailAdapter(private val context: Context): RecyclerView.Adapter<My
 
         /*좋아요 설정*/
         holder.likeCount.text = feedInfo[position].likeCount.toString()
+        if(feedInfo[position].likeFlag)
+            holder.likeImage.setImageResource(R.drawable.post_like_on)
+        else
+            holder.likeImage.setImageResource(R.drawable.post_like_off)
 
         holder.likeBox.setOnClickListener {
             if(Auth.loginFlag.value == true) {

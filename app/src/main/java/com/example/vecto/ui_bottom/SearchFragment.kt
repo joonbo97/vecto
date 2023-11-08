@@ -79,6 +79,13 @@ class SearchFragment : Fragment(){
         var query: String
         binding.SearchIconImage.setOnClickListener {
             pageNo = 0
+            cnt = 0
+            mysearchpostAdapter = MysearchpostAdapter(requireContext())
+            binding.SearchRecyclerView.adapter = mysearchpostAdapter
+
+            binding.NoneImage.visibility = View.GONE
+            binding.NoneText.visibility = View.GONE
+
             mysearchpostAdapter.feedID.clear()
             mysearchpostAdapter.feedInfo.clear()
             query = binding.editTextID.text.toString()
@@ -158,6 +165,13 @@ class SearchFragment : Fragment(){
 
                     if(response.body()?.result?.isEmpty() == true)
                     {
+                        if(pageNo == 0)//검색결과가 없을 경우
+                        {
+                            binding.SearchRecyclerView.adapter = null
+                            binding.NoneImage.visibility = View.VISIBLE
+                            binding.NoneText.visibility = View.VISIBLE
+                        }
+
                         pageNo = -1
                     }
                     else

@@ -72,6 +72,9 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
     private val pathOverlays = mutableListOf<PathOverlay>()
     private val circleOverlays = mutableListOf<CircleOverlay>()
 
+    private val placeMarkers = mutableListOf<Marker>()
+
+
     private val buttonMarkers = mutableListOf<Marker>()
 
 
@@ -94,11 +97,6 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
 
         binding.CalendarLargeBoxImage.setOnClickListener {
             showDatePickerDialog(null)
-        }
-
-        binding.SearchButtonImage.setOnClickListener {
-            getPlace(1)
-            //getPlace2()
         }
 
         binding.editCourseButton.setOnClickListener {
@@ -314,11 +312,12 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
     private fun addPlaceMarker(poi: TMapAPIService.Poi){
         val visitMarker = Marker()
 
+        visitMarker.icon = OverlayImage.fromResource(R.drawable.place_marker)
         visitMarker.position = LatLng(poi.frontLat, poi.frontLon)
-        visitMarker.subCaptionText = poi.name
+        visitMarker.captionText = poi.name
         visitMarker.map = naverMap
 
-        visitMarkers.add(visitMarker)
+        placeMarkers.add(visitMarker)
     }
 
     private fun addCircleOverlay(visitData: VisitData){
@@ -350,6 +349,9 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
 
         buttonMarkers.forEach{ it.map = null }
         buttonMarkers.clear()
+
+        placeMarkers.forEach{ it.map = null }
+        placeMarkers.clear()
     }
 
 
@@ -409,7 +411,8 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
         }
 
         buttonMarker3.setOnClickListener {
-            Toast.makeText(context, "ASD", Toast.LENGTH_SHORT).show()
+            getPlace(1)
+
             true
         }
 
@@ -877,8 +880,9 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
     /*주변 정보 얻는 함수*/
     private fun getPlace(page: Int){
         val tMapAPIService = TMapAPIService.create()
+        Log.d("POI Name", "START")
 
-        val call = tMapAPIService.searchNearbyPOI(1, "식당;카페;편의점;병원;음식점;지하철;마트;백화점;대학교;기숙사;공원;아파트;오피스텔;빌라", TMapAPIService.key(), page, 1,200 , selectedVisitData.lat, selectedVisitData.lng)
+        val call = tMapAPIService.searchNearbyPOI(1, getString(R.string.tmapcategory), TMapAPIService.key(), page, 1,200 , selectedVisitData.lat, selectedVisitData.lng)
         call.enqueue(object : Callback<TMapAPIService.POIResponse> {
             override fun onResponse(call: Call<TMapAPIService.POIResponse>, response: Response<TMapAPIService.POIResponse>) {
                 if (response.isSuccessful) {
@@ -886,16 +890,25 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
                     val totalCount = response.body()?.searchPoiInfo?.totalCount ?: 0
                     val countPerPage = response.body()?.searchPoiInfo?.count ?: 1
 
-                    pois?.forEach { poi ->
-                        Log.d("POI Name", poi.name)
-                        Log.d("POI Latitude", poi.frontLat.toString())
-                        Log.d("POI Longitude", poi.frontLon.toString())
-                        addPlaceMarker(poi)
-                    }
-naverMap.takeSnapshot {  }
-                    // 현재 페이지의 결과가 마지막이 아닌 경우 다음 페이지 요청
-                    if (totalCount > page * countPerPage) {
-                        getPlace(page + 1)
+                    if(pois != null) {
+                        for (poi in pois) {
+                            if(checkDistance(
+                                LatLng(selectedVisitData.lat, selectedVisitData.lng),
+                                LatLng(poi.frontLat, poi.frontLon),
+                                300
+                            ))
+                                break
+
+
+                            Log.d("POI Name", poi.name)
+                            Log.d("POI Latitude", poi.frontLat.toString())
+                            Log.d("POI Longitude", poi.frontLon.toString())
+                            addPlaceMarker(poi)
+                        }
+                        // 현재 페이지의 결과가 마지막이 아닌 경우 다음 페이지 요청
+                        if (totalCount > page * countPerPage) {
+                            getPlace(page + 1)
+                        }
                     }
 
                 } else {

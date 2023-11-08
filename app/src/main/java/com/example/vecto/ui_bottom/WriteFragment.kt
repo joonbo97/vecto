@@ -90,19 +90,15 @@ class WriteFragment : Fragment(), OnMapReadyCallback {
 
     private var visitDataForWriteList = mutableListOf<VisitDataForWite>()
 
-    private lateinit var selectedVisitData: VisitData
-    private lateinit var selectedPathData: MutableList<LocationData>
-
     //overlay 관련
     private val visitMarkers = mutableListOf<Marker>()
     private val pathOverlays = mutableListOf<PathOverlay>()
-    private val circleOverlays = mutableListOf<CircleOverlay>()
 
     private var imageCnt = 0
 
     private var imageUri = mutableListOf<Uri>()
 
-    var address = mutableListOf<String>()
+    lateinit var address: MutableList<String>
 
 
     override fun onCreateView(
@@ -407,8 +403,7 @@ class WriteFragment : Fragment(), OnMapReadyCallback {
                 visitDataList = selectedItems.toMutableList()
 
 
-                //TODO address 추가
-                address.clear()
+                address = MutableList(visitDataList.size) {""}
                 for(i in 0 until visitDataList.size)
                 {
                     val naverSearchApiService = NaverSearchApiService.create()
