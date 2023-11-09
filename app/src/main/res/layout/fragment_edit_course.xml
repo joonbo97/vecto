@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".ui_bottom.EditCourseFragment">
 
     <androidx.fragment.app.FragmentContainerView
@@ -72,17 +71,6 @@
             app:layout_constraintVertical_bias="0.5" />
 
 
-        <ImageView
-            android:id="@+id/SearchButtonImage"
-            android:layout_width="81dp"
-            android:layout_height="45dp"
-            android:layout_marginTop="37dp"
-            android:layout_marginEnd="25dp"
-            android:src="@drawable/search_smallbox"
-            android:visibility="gone"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <ImageView
@@ -90,8 +78,8 @@
         android:layout_width="120dp"
         android:layout_height="30dp"
         android:layout_marginTop="10dp"
-        android:visibility="invisible"
         android:src="@drawable/edit_course_button_init"
+        android:visibility="invisible"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
@@ -101,11 +89,11 @@
         android:id="@+id/textInitButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="1dp"
         android:fontFamily="@font/lineseedkr_bd"
         android:text="추천 경로 설정"
         android:textColor="@color/white"
         android:textSize="13sp"
-        android:layout_marginTop="1dp"
         android:visibility="invisible"
         app:layout_constraintBottom_toBottomOf="@+id/editCourseButton"
         app:layout_constraintEnd_toEndOf="@+id/editCourseButton"
@@ -119,8 +107,8 @@
         android:layout_height="30dp"
         android:layout_marginTop="10dp"
         android:layout_marginEnd="66dp"
-        android:visibility="invisible"
         android:src="@drawable/edit_course_button_no"
+        android:visibility="invisible"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
@@ -130,11 +118,11 @@
         android:id="@+id/textNoButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="1dp"
         android:fontFamily="@font/lineseedkr_bd"
         android:text="취소"
         android:textColor="@color/white"
         android:textSize="13sp"
-        android:layout_marginTop="1dp"
         android:visibility="invisible"
         app:layout_constraintBottom_toBottomOf="@+id/editCourseButtonNO"
         app:layout_constraintEnd_toEndOf="@+id/editCourseButtonNO"
@@ -146,10 +134,10 @@
         android:id="@+id/editCourseButtonOK"
         android:layout_width="54dp"
         android:layout_height="30dp"
-        android:layout_marginTop="10dp"
         android:layout_marginStart="66dp"
-        android:visibility="invisible"
+        android:layout_marginTop="10dp"
         android:src="@drawable/edit_course_button_ok"
+        android:visibility="invisible"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
@@ -159,11 +147,11 @@
         android:id="@+id/textOkButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="1dp"
         android:fontFamily="@font/lineseedkr_bd"
         android:text="적용"
         android:textColor="@color/white"
         android:textSize="13sp"
-        android:layout_marginTop="1dp"
         android:visibility="invisible"
         app:layout_constraintBottom_toBottomOf="@+id/editCourseButtonOK"
         app:layout_constraintEnd_toEndOf="@+id/editCourseButtonOK"
@@ -178,8 +166,8 @@
         android:layout_height="350dp"
         android:background="@drawable/edit_background"
         android:clickable="true"
-        android:focusable="true"
         android:elevation="10dp"
+        android:focusable="true"
         app:layout_constraintBottom_toBottomOf="@+id/naver_map_Edit"
         tools:layout_editor_absoluteX="0dp">
 
@@ -196,6 +184,18 @@
 
 
     </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <ImageView
+        android:id="@+id/RefreshButton"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:padding="7dp"
+        android:layout_marginTop="15dp"
+        android:layout_marginEnd="15dp"
+        android:src="@drawable/refresh_orange"
+        android:visibility="visible"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/Top_Layout" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

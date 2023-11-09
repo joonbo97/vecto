@@ -265,6 +265,7 @@
         android:hint="비밀번호확인"
         android:textSize="15sp"
         android:inputType="textPassword"
+        android:layout_marginStart="20dp"
         app:layout_constraintBottom_toBottomOf="@+id/pwcheckBox"
         app:layout_constraintEnd_toStartOf="@+id/pwCheckImage"
         app:layout_constraintHorizontal_bias="0.5"

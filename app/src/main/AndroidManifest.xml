@@ -26,9 +26,6 @@
             android:name=".UserInfoActivity"
             android:exported="false" />
         <activity
-            android:name=".data.SplashActivity"
-            android:exported="false" />
-        <activity
             android:name=".NotificationActivity"
             android:exported="false" />
         <activity

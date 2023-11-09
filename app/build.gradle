@@ -5,11 +5,11 @@ plugins {
 }
 
 android {
-    namespace 'com.example.vecto'
+    namespace 'com.vecto_example.vecto'
     compileSdk 34
 
     defaultConfig {
-        applicationId "com.example.vecto"
+        applicationId "com.vecto_example.vecto"
         minSdk 28
         targetSdk 34
         versionCode 1
@@ -95,5 +95,7 @@ dependencies {
     implementation 'me.relex:circleindicator:2.1.6'
 
     implementation 'androidx.cardview:cardview:1.0.0'
+
+    implementation 'io.github.ParkSangGwon:tedclustering-naver:1.0.2'
 
 }
