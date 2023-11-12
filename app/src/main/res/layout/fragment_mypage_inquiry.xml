@@ -1,14 +1,176 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/vecto_main"
     tools:context=".ui_bottom.MypageInquiryFragment">
 
-    <!-- TODO: Update blank fragment layout -->
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="@string/hello_blank_fragment" />
 
-</FrameLayout>
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/constraintLayout"
+        android:layout_width="match_parent"
+        android:layout_height="150dp"
+        android:background="@color/vecto_theme_orange"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:id="@+id/UserNameText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_marginBottom="30dp"
+            android:fontFamily="@font/lineseedkr_bd"
+            android:lineSpacingExtra="5dp"
+            android:text="VECTO입니다.\n무엇을 도와드릴까요?"
+            android:textColor="@color/white"
+            android:textSize="25sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        app:layout_constraintTop_toBottomOf="@+id/constraintLayout"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/ScrollInConstraint"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+
+            <TextView
+                android:id="@+id/Text1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:layout_marginTop="15dp"
+                android:alpha="0.7"
+                android:fontFamily="@font/lineseedkr_bd"
+                android:text="자주 묻는 질문"
+                android:textColor="@color/vecto_gray"
+                android:textSize="12sp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/ScrollInConstraint" />
+
+            <ImageView
+                android:id="@+id/QueryBox1"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_marginStart="10dp"
+                android:layout_marginTop="35dp"
+                android:layout_marginEnd="10dp"
+                android:src="@drawable/mypage_menubox"
+                app:layout_constraintBottom_toBottomOf="@+id/SendLogText"
+                app:layout_constraintTop_toTopOf="@+id/ScrollInConstraint" />
+
+            <TextView
+                android:id="@+id/Qtitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:layout_marginTop="15dp"
+                android:fontFamily="@font/lineseedkr_bd"
+                android:text="Q"
+                android:textColor="@color/vecto_pathcolor"
+                android:textSize="18sp"
+                app:layout_constraintStart_toStartOf="@+id/QueryBox1"
+                app:layout_constraintTop_toTopOf="@+id/QueryBox1" />
+
+            <TextView
+                android:id="@+id/Qtext"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="5dp"
+                android:layout_marginTop="15dp"
+                android:fontFamily="@font/lineseedkr_bd"
+                android:text="경로수집이 작동하지 않아요."
+                android:textColor="@color/black"
+                android:textSize="18sp"
+                app:layout_constraintStart_toEndOf="@+id/Qtitle"
+                app:layout_constraintTop_toTopOf="@+id/QueryBox1" />
+
+            <TextView
+                android:id="@+id/Qcontent"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:layout_marginEnd="20dp"
+                android:fontFamily="@font/lineseedkr_rg"
+                android:lineSpacingExtra="3dp"
+                android:text=" 먼저 권한설정이 올바르게 되어있는지 확인해주세요.\n설정 > 애플케이션 > VECTO > 권한에서 위치와 알림권한이 모두 허용되어있어야, 원활하게 위치수집이 이루어집니다.\n
+\n 권한이 모두 허용되어있는데도, 문제가 발생한다면, 위치 수집을 종료후 실행해주세요.\n\n
+경로 수집중 문제가 발행했을 경우, 하단의 개발자에게 로그 보내기를 통해 오류를 전달하고, 위치 수집을 종료후 실행해주세요."
+                android:textColor="@color/black"
+                android:textSize="15sp"
+                app:layout_constraintEnd_toEndOf="@id/QueryBox1"
+                app:layout_constraintStart_toStartOf="@+id/Qtitle"
+                app:layout_constraintTop_toBottomOf="@+id/Qtitle" />
+
+            <TextView
+                android:id="@+id/SendLogText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:alpha="0.7"
+                android:fontFamily="@font/lineseedkr_rg"
+                android:lineSpacingExtra="2dp"
+                android:paddingTop="10dp"
+                android:paddingBottom="10dp"
+                android:text="@string/sendlog"
+                android:textColor="@color/vecto_pathcolor"
+                android:textSize="14sp"
+                android:textStyle=""
+                app:layout_constraintEnd_toEndOf="@+id/Qcontent"
+                app:layout_constraintTop_toBottomOf="@+id/Qcontent" />
+
+            <TextView
+                android:id="@+id/Text2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:layout_marginTop="15dp"
+                android:alpha="0.7"
+                android:fontFamily="@font/lineseedkr_bd"
+                android:text="약관 및 정책"
+                android:textColor="@color/vecto_gray"
+                android:textSize="12sp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/QueryBox1" />
+
+            <ImageView
+                android:id="@+id/contractTextBox"
+                android:layout_width="match_parent"
+                android:layout_height="30dp"
+                android:layout_marginStart="10dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginEnd="10dp"
+                android:src="@drawable/mypage_menubox"
+                app:layout_constraintTop_toBottomOf="@id/Text2" />
+
+
+            <TextView
+                android:id="@+id/ContractText"
+                android:layout_width="300dp"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/lineseedkr_rg"
+                android:lineSpacingExtra="2dp"
+                android:text="개인정보 처리 방침"
+                android:layout_marginStart="20dp"
+                android:textColor="@color/black"
+                android:textSize="15sp"
+                app:layout_constraintBottom_toBottomOf="@+id/contractTextBox"
+                app:layout_constraintStart_toStartOf="@+id/contractTextBox"
+                app:layout_constraintTop_toTopOf="@+id/contractTextBox"
+                app:layout_constraintVertical_bias="0.5" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </ScrollView>
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -13,6 +13,6 @@ class LogDatabase(context: Context) {
             put("log", logData.log)
         }
         db.insert("log_data", null, values)
-        db.close()
+        //db.close()
     }
 }

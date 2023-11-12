@@ -210,8 +210,6 @@ class LocationService : Service() {
     private fun requestLocationUpdates() {
         val locationRequest = LocationRequest.create().apply {
             interval = 10000
-            fastestInterval = 5000
-            maxWaitTime = 10000
             Priority.PRIORITY_HIGH_ACCURACY
         }
 

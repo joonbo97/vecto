@@ -1,11 +1,14 @@
 package com.vecto_example.vecto
 
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.os.bundleOf
 import androidx.datastore.preferences.preferencesDataStore
 import androidx.navigation.findNavController
+import androidx.navigation.fragment.findNavController
 import androidx.navigation.ui.setupWithNavController
 import com.vecto_example.vecto.MainActivity.DataStoreUtils.myDataStore
 import com.vecto_example.vecto.data.Auth
@@ -44,7 +47,25 @@ class MainActivity : AppCompatActivity() {
         }
         Log.d("CHECK_NOTIFICATION", Auth.showFlag.value.toString())
 
+
+
+        /*Notification Intent 관련*/
+        intent.getIntExtra("feedId", -1).let{
+            if(it >= 0)//댓글 관련 알림인 경우
+            {
+                /*val bundle = bundleOf("selectedDateKey" to it)
+                navController.navigate(R.id.SearchFragment, bundle)*/
+
+                val intent = Intent(this, CommentActivity::class.java)
+                intent.putExtra("feedID", it)
+                this.startActivity(intent)
+            }
+
+        }
+
+
     }
+
 
 
 }

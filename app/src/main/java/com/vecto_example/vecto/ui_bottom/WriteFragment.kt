@@ -88,8 +88,6 @@ class WriteFragment : Fragment(), OnMapReadyCallback {
     private val visitMarkers = mutableListOf<Marker>()
     private val pathOverlays = mutableListOf<PathOverlay>()
 
-    private var imageCnt = 0
-
     private var imageUri = mutableListOf<Uri>()
 
     lateinit var address: MutableList<String>
@@ -409,10 +407,7 @@ class WriteFragment : Fragment(), OnMapReadyCallback {
                             if (response.isSuccessful) {
                                 if(response.body()?.results != null) {
 
-                                    Log.d("legalcode", response.body()!!.results[0].toString())
-
-                                    //response.body()!!.results[0].region?.area1?.name?.isEmpty()
-                                    address.add("")
+                                    /*XX 시 XX 구 XX 동을 전달받는 API*/
 
                                     if(response.body()!!.results[0].region?.area1?.name?.isEmpty() == false){
                                         address[i] += response.body()!!.results[0].region?.area1?.name.toString()
@@ -424,20 +419,8 @@ class WriteFragment : Fragment(), OnMapReadyCallback {
                                     }
 
 
-
-                                    visitDataForWriteList[i] = VisitDataForWite(
-                                        visitDataList[i].datetime,
-                                        visitDataList[i].endtime,
-                                        visitDataList[i].lat,
-                                        visitDataList[i].lng,
-                                        visitDataList[i].lat_set,
-                                        visitDataList[i].lng_set,
-                                        visitDataList[i].staytime,
-                                        visitDataList[i].name,
-                                        address[i]
-                                    )
-
-
+                                    //address 정보가 포함된 VisitData
+                                    visitDataForWriteList[i] = VisitDataForWite(visitDataList[i].datetime, visitDataList[i].endtime, visitDataList[i].lat, visitDataList[i].lng, visitDataList[i].lat_set, visitDataList[i].lng_set, visitDataList[i].staytime, visitDataList[i].name, address[i])
                                 }
 
                                 Log.d("NAVERAPI", "성공: ${response.body()}")

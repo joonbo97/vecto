@@ -34,6 +34,8 @@ class MysearchpostAdapter(private val context: Context) : RecyclerView.Adapter<M
 {
     val feedInfo = mutableListOf<VectoService.PostResponse>()
     val feedID = mutableListOf<Int>()
+    var pageNo = 0
+    var query = ""
 
     inner class ViewHolder(view: View): RecyclerView.ViewHolder(view) {
 
@@ -227,8 +229,10 @@ class MysearchpostAdapter(private val context: Context) : RecyclerView.Adapter<M
                 isfollow(feed.userId)
 
             followButton.setOnClickListener {
-                if(Auth.loginFlag.value == false)
+                if(Auth.loginFlag.value == false) {
                     loginDialog()
+                    return@setOnClickListener
+                }
 
                 followButton.isEnabled = false
                 if(!followFlag)
@@ -331,6 +335,8 @@ class MysearchpostAdapter(private val context: Context) : RecyclerView.Adapter<M
                     putExtra("feedInfoListJson", Gson().toJson(feedInfo))
                     putExtra("feedIDListJson", Gson().toJson(feedID))
                     putExtra("position", adapterPosition)
+                    putExtra("query", query)
+                    putExtra("pageNo", pageNo)
                 }
                 context.startActivity(intent)
             }

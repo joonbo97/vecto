@@ -23,6 +23,7 @@ class SearchFragment : Fragment(){
     private lateinit var binding: FragmentSearchBinding
     private lateinit var mysearchpostAdapter: MysearchpostAdapter
 
+    var query = ""
     private var pageNo = 0
     private var cnt = 0
     private var pageList = mutableListOf<Int>()
@@ -37,6 +38,7 @@ class SearchFragment : Fragment(){
 
         pageNo = 0
 
+
         mysearchpostAdapter = MysearchpostAdapter(requireContext())
         val searchRecyclerView = binding.SearchRecyclerView
         searchRecyclerView.adapter = mysearchpostAdapter
@@ -48,7 +50,9 @@ class SearchFragment : Fragment(){
                 if (!recyclerView.canScrollVertically(1)) {
                     if(pageNo != -1)
                     {
+                        startLoading()
                         pageNo++
+                        mysearchpostAdapter.pageNo = pageNo
                         getPostList()
                     }
                 }
@@ -75,8 +79,14 @@ class SearchFragment : Fragment(){
             startActivity(intent)
         }
 
-        var query: String
+
         binding.SearchIconImage.setOnClickListener {
+            if(binding.editTextID.text.isEmpty())
+            {
+                Toast.makeText(requireContext(), "검색어를 입력해주세요.", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
             pageNo = 0
             cnt = 0
             mysearchpostAdapter = MysearchpostAdapter(requireContext())
@@ -88,6 +98,7 @@ class SearchFragment : Fragment(){
             mysearchpostAdapter.feedID.clear()
             mysearchpostAdapter.feedInfo.clear()
             query = binding.editTextID.text.toString()
+            mysearchpostAdapter.query = query
 
             searchRecyclerView.clearOnScrollListeners()
             searchRecyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
@@ -98,6 +109,7 @@ class SearchFragment : Fragment(){
                         if(pageNo != -1)
                         {
                             pageNo++
+                            mysearchpostAdapter.pageNo = pageNo
                             getSearchPostList(query)
                         }
                     }
@@ -126,6 +138,8 @@ class SearchFragment : Fragment(){
                     if(response.body()?.result?.isEmpty() == true)
                     {
                         pageNo = -1
+                        mysearchpostAdapter.pageNo = pageNo
+                        endLoading()
                     }
                     else
                     {
@@ -172,6 +186,7 @@ class SearchFragment : Fragment(){
                         }
 
                         pageNo = -1
+                        mysearchpostAdapter.pageNo = pageNo
                     }
                     else
                     {
@@ -243,6 +258,7 @@ class SearchFragment : Fragment(){
                         }
 
                         mysearchpostAdapter.notifyDataSetChanged()
+                        endLoading()
                     }
                 }
                 else{
@@ -257,4 +273,10 @@ class SearchFragment : Fragment(){
         })
     }
 
+    private fun startLoading(){
+        binding.progressBar.visibility = View.VISIBLE
+    }
+    private fun endLoading(){
+        binding.progressBar.visibility = View.GONE
+    }
 }

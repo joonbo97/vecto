@@ -96,6 +96,9 @@ class MypostAdapter(private val context: Context): RecyclerView.Adapter<MypostAd
 
             titleText.text = feed.title
 
+            if(Auth._userId.value == feedInfo[adapterPosition].userId)
+                menu.visibility = View.GONE
+
             if(feed.userProfile != null)
             {
                 Glide.with(context)

@@ -98,4 +98,6 @@ dependencies {
 
     implementation 'io.github.ParkSangGwon:tedclustering-naver:1.0.2'
 
+    implementation 'com.sothree.slidinguppanel:library:3.4.0'
+
 }

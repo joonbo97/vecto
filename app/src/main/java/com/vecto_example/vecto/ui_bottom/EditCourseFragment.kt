@@ -31,8 +31,6 @@ import com.vecto_example.vecto.data.VisitData
 import com.vecto_example.vecto.data.VisitDatabase
 import com.vecto_example.vecto.dialog.DeleteVisitDialog
 import com.vecto_example.vecto.dialog.EditVisitDialog
-import com.vecto_example.vecto.retrofit.GooglePlacesApi
-import com.vecto_example.vecto.retrofit.GooglePlacesApi.Companion.key
 import com.vecto_example.vecto.retrofit.TMapAPIService
 import com.naver.maps.geometry.LatLng
 import com.naver.maps.geometry.LatLngBounds
@@ -41,7 +39,6 @@ import com.naver.maps.map.MapFragment
 import com.naver.maps.map.NaverMap
 import com.naver.maps.map.OnMapReadyCallback
 import com.naver.maps.map.overlay.CircleOverlay
-import com.naver.maps.map.overlay.InfoWindow
 import com.naver.maps.map.overlay.Marker
 import com.naver.maps.map.overlay.OverlayImage
 import com.naver.maps.map.overlay.PathOverlay
@@ -49,6 +46,7 @@ import com.vecto_example.vecto.MyClusterItem
 import com.vecto_example.vecto.R
 import com.vecto_example.vecto.databinding.FragmentEditCourseBinding
 import com.vecto_example.vecto.dialog.PlacePopupWindow
+import okhttp3.internal.notify
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -86,14 +84,12 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
     private val circleOverlays = mutableListOf<CircleOverlay>()
 
     private val placeMarkers = mutableListOf<Marker>()
+
     private var tedNaverClustering: TedNaverClustering<MyClusterItem>? = null
-
-
 
     private val buttonMarkers = mutableListOf<Marker>()
 
     private val placelist = mutableListOf<TMapAPIService.Poi>()
-
 
     //UI관련
     private lateinit var DateText: TextView
@@ -133,7 +129,7 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
         binding.editCourseButton.setOnClickListener {
             setButtonVisibility(0, false)
             setButtonVisibility(1, true)
-
+            startLoading()
 
             for(i in 0 until pathOverlays.size) {
                 pathOverlays[i].color = Color.argb(255, 186, 198, 213)
@@ -145,14 +141,7 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
 
             //TMap API를 통한 경로
             val tMapAPIService = TMapAPIService.create()
-            val call = tMapAPIService.getRecommendedRoute(
-                1, TMapAPIService.key(),
-                Start.latitude, Start.longitude,
-                End.latitude, End.longitude,
-                "WGS84GEO", "WGS84GEO",
-                "출발지_이름", "도착지_이름",
-                0
-            )
+            val call = tMapAPIService.getRecommendedRoute(1, TMapAPIService.key(), Start.latitude, Start.longitude, End.latitude, End.longitude, "WGS84GEO", "WGS84GEO", "출발지_이름", "도착지_이름", 0)
 
             responsePathData.clear()
 
@@ -185,6 +174,7 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
                         }
                         responsePathData.add(End)
                         addPathOverlay(responsePathData)
+                        endLoading()
 
                     } else {
                         Toast.makeText(requireContext(), "경로 불러오기에 실패해였습니다.", Toast.LENGTH_SHORT).show()
@@ -209,6 +199,7 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
         }
 
         binding.editCourseButtonOK.setOnClickListener {
+            startLoading()
             val startTime = LocalDateTime.parse(locationDataList.first().datetime, DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"))
 
             //시작과 끝을 제외한 기존 경로 삭제
@@ -235,6 +226,7 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
 
             setButtonVisibility(0, true)
             setButtonVisibility(1, false)
+            endLoading()
         }
 
         binding.RefreshButton.setOnClickListener {
@@ -242,16 +234,7 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
             setButtonVisibility(1, false)
             binding.RefreshButton.visibility =View.GONE
 
-            /*RecyclerView Adapter 설정*/
-            myCourseAdapter = MyCourseAdapter(requireContext(), this)
-            val locationRecyclerView = binding.LocationRecyclerView
-            locationRecyclerView.adapter = myCourseAdapter
-            locationRecyclerView.layoutManager =
-                LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
-            while (locationRecyclerView.itemDecorationCount > 0) {
-                locationRecyclerView.removeItemDecorationAt(0)
-            }
-            locationRecyclerView.addItemDecoration(VerticalOverlapItemDecoration(42))
+            initRecyclerView()
             setRecyclerView(DateText.text.toString())
         }
 
@@ -303,14 +286,6 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
 
     }
 
-
-
-
-
-
-
-
-
     private fun addPathOverlayForLoacation(pathPoints: MutableList<LocationData>){
         val pathLatLng = mutableListOf<LatLng>()
 
@@ -355,19 +330,6 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
         visitMarkers.add(visitMarker)
     }
 
-
-
-    private fun addPlaceMarker(poi: TMapAPIService.Poi){
-        val visitMarker = Marker()
-
-        visitMarker.icon = OverlayImage.fromResource(R.drawable.place_marker)
-        visitMarker.position = LatLng(poi.frontLat, poi.frontLon)
-        visitMarker.captionText = poi.name
-        visitMarker.map = naverMap
-
-        placeMarkers.add(visitMarker)
-    }
-
     private fun addCircleOverlay(visitData: VisitData){
         val circleOverlay = CircleOverlay()
         circleOverlay.center = LatLng(visitData.lat, visitData.lng)
@@ -402,9 +364,14 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
         placeMarkers.clear()
 
         tedNaverClustering?.clearItems()
-        tedNaverClustering = null
+        if(tedNaverClustering != null)
+            Handler(Looper.getMainLooper()).post {
+            //UI 갱신
+            }
 
+        tedNaverClustering = null
     }
+
 
 
     /*지도의 버튼 관련 함수*/
@@ -462,6 +429,9 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
         buttonMarker3.setOnClickListener {
             placelist.clear()
             getPlace(1, visitData, p)
+            startLoading()
+
+            buttonMarker3.onClickListener = null
 
             true
         }
@@ -688,10 +658,6 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
     }
 
 
-
-
-
-
     /*Camera 관련 함수*/
     /*____________________________________________________________________________________________*/
     private fun moveCameraForPath(pathPoints: MutableList<LocationData>){
@@ -745,17 +711,7 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
                 DateText.text = selectedDate
                 naverMap.onSymbolClickListener = null
 
-                /*RecyclerView Adapter 설정*/
-                myCourseAdapter = MyCourseAdapter(requireContext(), this)
-                val locationRecyclerView = binding.LocationRecyclerView
-                locationRecyclerView.adapter = myCourseAdapter
-                locationRecyclerView.layoutManager =
-                    LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
-                while (locationRecyclerView.itemDecorationCount > 0) {
-                    locationRecyclerView.removeItemDecorationAt(0)
-                }
-                //locationRecyclerView.itemAnimator = null
-                locationRecyclerView.addItemDecoration(VerticalOverlapItemDecoration(42))
+                initRecyclerView()
 
                 setRecyclerView(selectedDate)
 
@@ -765,18 +721,8 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
         {
             DateText.text = date
 
-            /*RecyclerView Adapter 설정*/
-            myCourseAdapter = MyCourseAdapter(requireContext(), this)
-            val locationRecyclerView = binding.LocationRecyclerView
-            locationRecyclerView.adapter = myCourseAdapter
-            locationRecyclerView.layoutManager =
-                LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
-            while (locationRecyclerView.itemDecorationCount > 0) {
-                locationRecyclerView.removeItemDecorationAt(0)
-            }
-            //locationRecyclerView.itemAnimator = null
-            locationRecyclerView.addItemDecoration(VerticalOverlapItemDecoration(42))
 
+            initRecyclerView()
             setRecyclerView(date)
         }
     }
@@ -805,6 +751,13 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
                     VisitDatabase(requireContext()).updateVisitData(data, newVisitData)
                     updateVisitData(data, newVisitData)
 
+                    addVisitMarker(data)
+                    addButtonMarker(data, position)
+                    addCircleOverlay(data)
+
+                    moveCameraForVisit(data)
+                    selectedVisitData = data
+
                     Toast.makeText(context, "변경완료", Toast.LENGTH_SHORT).show()
                 }
                 else
@@ -819,7 +772,6 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
             addCircleOverlay(data)
 
             moveCameraForVisit(data)
-            selectedVisitData = data
         }
         else if(data is PathData)
         {
@@ -961,7 +913,6 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
                     if(pois != null) {
                         for (poi in pois) {
                             if(checkDistance(LatLng(selectedVisitData.lat, selectedVisitData.lng), LatLng(poi.frontLat, poi.frontLon), 100)){
-                                //addPlaceMarker(poi)
                             Log.d("POI Name", poi.name)
                             Log.d("POI Latitude", poi.frontLat.toString())
                             Log.d("POI Longitude", poi.frontLon.toString())
@@ -1054,7 +1005,6 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
 
                 val placePopupWindow = PlacePopupWindow(requireContext())
                 placePopupWindow.showPopupWindow(binding.RefreshButton, names) { name ->
-                    // 여기서 아이템 클릭 시의 이름 처리 로직
 
                     editVisitDialog(visitData, name, p)
                     deleteOverlay()
@@ -1063,22 +1013,18 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
 
                     Toast.makeText(context, "수정이 왼료되었습니다.", Toast.LENGTH_SHORT).show()
                 }
-
-
-
-                //showInfoWindow(cluster.position, names.joinToString("\n")) // InfoWindow에 표시할 텍스트를 준비합니다.
             }
             .make()
 
 
         // MyClusterItem 목록을 TedNaverClustering에 추가
         tedNaverClustering!!.addItems(clusterItems)
+        endLoading()
         val executor= Executors.newSingleThreadExecutor()
         Handler(Looper.getMainLooper())
         executor.execute {
             tedNaverClustering!!.addItems(clusterItems)
             // 클러스터링을 실행
-
         }
     }
 
@@ -1117,5 +1063,28 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
                 }
             }
         }
+    }
+
+    /*RecyclerView Adapter 설정*/
+    private fun initRecyclerView(){
+        myCourseAdapter = MyCourseAdapter(requireContext(), this)
+        val locationRecyclerView = binding.LocationRecyclerView
+        locationRecyclerView.adapter = myCourseAdapter
+        locationRecyclerView.layoutManager =
+            LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
+        while (locationRecyclerView.itemDecorationCount > 0) {
+            locationRecyclerView.removeItemDecorationAt(0)
+        }
+        locationRecyclerView.addItemDecoration(VerticalOverlapItemDecoration(42))
+    }
+
+    private fun startLoading(){
+        binding.constraintProgress.visibility = View.VISIBLE
+        binding.progressBar.visibility = View.VISIBLE
+    }
+
+    private fun endLoading(){
+        binding.constraintProgress.visibility = View.GONE
+        binding.progressBar.visibility = View.GONE
     }
 }

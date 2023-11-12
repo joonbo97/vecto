@@ -43,30 +43,42 @@
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
+
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/naver_map_detail"
         android:name="com.naver.maps.map.MapFragment"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        app:layout_constraintDimensionRatio="1.5:1"
-        app:layout_constraintTop_toBottomOf="@+id/constraintLayout"/>
+        android:layout_height="250dp"
+        app:layout_constraintTop_toBottomOf="@+id/constraintLayout" />
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/constraintLayout2"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_marginTop="-50dp"
+        android:background="@drawable/bottom_dialog_box"
         android:elevation="20dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/naver_map_detail"
-        android:background="@drawable/bottom_dialog_box">
+        app:layout_constraintTop_toBottomOf="@+id/naver_map_detail">
+
+        <ImageView
+            android:id="@+id/slide"
+            android:layout_width="100dp"
+            android:layout_height="20dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
+            android:src="@drawable/slideline"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/PostDetailRecyclerView"
             android:layout_width="0dp"
             android:layout_height="0dp"
+            android:layout_marginTop="20dp"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-            android:layout_marginTop="5dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
