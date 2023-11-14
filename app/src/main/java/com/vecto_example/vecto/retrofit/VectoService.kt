@@ -179,6 +179,18 @@ interface VectoService {
         @Path("feedId") feedId: Int
     ):Call<VectoResponse<Unit>>
 
+    @PATCH("feed/comment")
+    fun updateComment(
+        @Header("Authorization") authorization: String,
+        @Body commentData: CommentUpdateRequest
+    ): Call<VectoResponse<String>>
+
+    @PATCH("feed")
+    fun updatePost(
+        @Header("Authorization") authorization: String,
+        @Body updatePostData: UpdatePostRequest
+    ): Call<VectoResponse<String>>
+
 
 
 
@@ -281,7 +293,7 @@ interface VectoService {
         val commentId: Int,
         val nickName: String,
         val userId: String,
-        val content: String,
+        var content: String,
         val timeDifference: String,
         val profileUrl: String?,
         var commentCount: Int,
@@ -298,5 +310,20 @@ interface VectoService {
         val userPw: String?,
         val provider: String,
         val nickName: String?,
+    )
+
+    data class CommentUpdateRequest(
+        val commentId: Int,
+        val content: String
+    )
+
+    data class UpdatePostRequest(
+        val feedId: Int,
+        val title: String, //제목
+        val content: String?, //내용
+        var image: MutableList<String>?, //이미지
+        val location: MutableList<LocationData>, //경로 정보
+        val visit: MutableList<VisitDataForWite>, //방문지 정보
+        var mapimage: MutableList<String>?
     )
 }

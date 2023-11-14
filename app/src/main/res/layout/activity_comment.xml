@@ -44,81 +44,122 @@
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <ImageView
-        android:id="@+id/CommentNullImage"
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/swipeRefreshLayout"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_marginStart="80dp"
-        android:layout_marginTop="150dp"
-        android:layout_marginEnd="80dp"
-        android:visibility="gone"
-        app:layout_constraintDimensionRatio="763:512"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="@+id/CommentRecyclerView"
-        app:layout_constraintTop_toTopOf="@+id/constraintLayout"
-        app:srcCompat="@drawable/null_image_comment" />
-
-    <TextView
-        android:id="@+id/CommentNullText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="30dp"
-        android:fontFamily="@font/lineseedkr_bd"
-        android:text="첫 댓글을 작성해주세요!"
-        android:visibility="gone"
-        android:textColor="@color/black"
-        android:textSize="20sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/CommentNullImage" />
-
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/CommentRecyclerView"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginBottom="5dp"
-        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         app:layout_constraintBottom_toTopOf="@+id/constraintLayout2"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/constraintLayout" />
+        app:layout_constraintTop_toBottomOf="@+id/constraintLayout">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/constraintLayoutSlide"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <ImageView
+                android:id="@+id/CommentNullImage"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_marginStart="80dp"
+                android:layout_marginTop="50dp"
+                android:layout_marginEnd="100dp"
+                android:visibility="gone"
+                app:layout_constraintDimensionRatio="763:512"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.5"
+                app:layout_constraintStart_toStartOf="@+id/CommentRecyclerView"
+                app:layout_constraintTop_toTopOf="parent"
+                app:srcCompat="@drawable/null_image_comment" />
+
+            <TextView
+                android:id="@+id/CommentNullText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:fontFamily="@font/lineseedkr_bd"
+                android:text="첫 댓글을 작성해주세요!"
+                android:visibility="gone"
+                android:textColor="@color/black"
+                android:textSize="20sp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.5"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/CommentNullImage" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/CommentRecyclerView"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                app:layout_constraintBottom_toBottomOf="@+id/constraintLayoutSlide"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.5"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/constraintLayoutSlide" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/constraintLayout2"
         android:layout_width="match_parent"
-        android:layout_height="60dp"
+        android:layout_height="0dp"
         android:background="@color/white"
         android:elevation="20dp"
         app:layout_constraintBottom_toBottomOf="parent">
+
+        <ImageView
+            android:id="@+id/EditCommentBox"
+            android:layout_width="match_parent"
+            android:layout_height="20dp"
+            android:src="@drawable/edit_comment_textbox"
+            android:visibility="gone"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toTopOf="@+id/CommentBox"/>
+
+        <TextView
+            android:id="@+id/EditCommentText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:layout_marginStart="20dp"
+            android:fontFamily="@font/lineseedkr_rg"
+            android:text="댓글 수정중입니다. 취소하려면 터치하세요."
+            android:visibility="gone"
+            android:textColor="@color/edit_gray"
+            android:textSize="11sp"
+            app:layout_constraintBottom_toBottomOf="@+id/EditCommentBox"
+            app:layout_constraintStart_toStartOf="@+id/EditCommentBox"
+            app:layout_constraintTop_toTopOf="@+id/EditCommentBox"
+            app:layout_constraintVertical_bias="0.5" />
 
         <ImageView
             android:id="@+id/CommentBox"
             android:layout_width="match_parent"
             android:layout_height="50dp"
             android:layout_marginStart="20dp"
-            android:layout_marginTop="5dp"
             android:layout_marginEnd="20dp"
             android:src="@drawable/comment_box"
+            android:layout_marginBottom="10dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintBottom_toBottomOf="parent" />
 
         <ImageView
             android:id="@+id/CommentButton"
             android:layout_width="86dp"
             android:layout_height="38dp"
-            android:layout_marginTop="5dp"
             android:layout_marginEnd="25dp"
-            android:layout_marginBottom="5dp"
+            android:layout_marginBottom="1dp"
             android:src="@drawable/comment_button"
-            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintBottom_toBottomOf="@+id/CommentBox"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/CommentBox"
             app:layout_constraintVertical_bias="0.5" />
 
         <TextView

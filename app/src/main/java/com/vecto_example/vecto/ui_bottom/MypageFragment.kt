@@ -17,6 +17,7 @@ import androidx.core.content.ContextCompat
 import androidx.navigation.fragment.findNavController
 import com.bumptech.glide.Glide
 import com.vecto_example.vecto.LoginActivity
+import com.vecto_example.vecto.MainActivity
 import com.vecto_example.vecto.NotificationActivity
 import com.vecto_example.vecto.R
 import com.vecto_example.vecto.data.Auth
@@ -46,6 +47,9 @@ class MypageFragment : Fragment() {
 
         if(!Auth.loginFlag.value!!){
             goLogin()
+            (activity as? MainActivity)?.updateBottomNavigationSelection(R.id.SearchFragment)
+            val navController = findNavController()
+            navController.navigate(R.id.SearchFragment)
         }
 
         profileImageView = binding.ProfileImage
@@ -85,13 +89,13 @@ class MypageFragment : Fragment() {
             startActivity(intent)
         }
 
-        profileImageView.setOnClickListener {
+/*        profileImageView.setOnClickListener {
             // 갤러리에서 이미지 선택
             val intent = Intent(Intent.ACTION_PICK)
             intent.type = "image/jpeg"
             //pickImage.launch(intent)
             openGallery()
-        }
+        }*/
 
         binding.MypageMenu1.setOnClickListener {
             // 클릭 이벤트 처리

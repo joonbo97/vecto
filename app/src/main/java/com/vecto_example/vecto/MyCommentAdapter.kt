@@ -11,6 +11,8 @@ import android.view.animation.AnimationUtils
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.vecto_example.vecto.data.Auth
@@ -23,6 +25,21 @@ import retrofit2.Response
 
 class MyCommentAdapter(private val context: Context): RecyclerView.Adapter<MyCommentAdapter.ViewHolder>(){
     val commentInfo = mutableListOf<VectoService.CommentResponse>()
+    var editFlag = false
+
+    var selectedPosition = -1
+    interface OnEditActionListener {
+        fun onEditAction(commentId: Int, position: Int)
+    }
+
+    var editActionListener: OnEditActionListener? = null
+
+    fun cancelEditing() {
+        if (selectedPosition != -1) {
+            editFlag = false
+            notifyItemChanged(selectedPosition)
+        }
+    }
 
 
     inner class ViewHolder(view: View): RecyclerView.ViewHolder(view) {
@@ -35,6 +52,8 @@ class MyCommentAdapter(private val context: Context): RecyclerView.Adapter<MyCom
         val likeCount: TextView = view.findViewById(R.id.CommentLikeCountText)
 
         val menu: ImageView = view.findViewById(R.id.CommentMenuImage)
+
+        val constraintLayout: ConstraintLayout = view.findViewById(R.id.constraintLayout)
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
@@ -122,12 +141,46 @@ class MyCommentAdapter(private val context: Context): RecyclerView.Adapter<MyCom
             clickLikeAction()
         }
 
+        if(selectedPosition != -1 && !editFlag) {
+            holder.constraintLayout.setBackgroundColor(ContextCompat.getColor(context, R.color.white))
+            selectedPosition = -1
+        }
+        else if(editFlag && selectedPosition == position)
+            holder.constraintLayout.setBackgroundColor(ContextCompat.getColor(context, R.color.vecto_alphagray))
+
 
 
         holder.menu.setOnClickListener {
             val editDeletePopupWindow = EditDeletePopupWindow(context,
                 editListener = {
-                    //TODO 댓글 수정
+                    if(Auth.loginFlag.value == false)
+                    {
+                        val loginRequestDialog = LoginRequestDialog(context)
+                        loginRequestDialog.showDialog()
+                        loginRequestDialog.onOkButtonClickListener = {
+                            val intent = Intent(context, LoginActivity::class.java)
+                            context.startActivity(intent)
+                        }
+
+                        return@EditDeletePopupWindow
+                    }
+                    else if(editFlag)
+                    {
+                        Toast.makeText(context, "한번에 하나의 댓글만 수정할 수 있습니다.", Toast.LENGTH_SHORT).show()
+                        return@EditDeletePopupWindow
+                    }
+                    else if(Auth._userId.value != commentInfo[position].userId)
+                    {
+                        Toast.makeText(context, "본인의 댓글만 수정할 수 있습니다.", Toast.LENGTH_SHORT).show()
+                        return@EditDeletePopupWindow
+                    }
+                    else//로그인이 되어있고, 처음 선택하는 것이며, 본인의 댓글인 경우
+                    {
+                        holder.constraintLayout.setBackgroundColor(ContextCompat.getColor(context, R.color.vecto_alphagray))
+                        editActionListener?.onEditAction(comment.commentId, position)
+                        selectedPosition = position
+                    }
+
                 },
                 deleteListener = {
                     deleteComment(commentInfo[position].commentId, position)
@@ -136,6 +189,7 @@ class MyCommentAdapter(private val context: Context): RecyclerView.Adapter<MyCom
             // 앵커 뷰를 기준으로 팝업 윈도우 표시
             editDeletePopupWindow.showPopupWindow(holder.menu)
         }
+
     }
 
     private fun deleteComment(commentId: Int, position: Int) {

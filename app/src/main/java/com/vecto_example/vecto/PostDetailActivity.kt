@@ -10,6 +10,7 @@ import android.util.Log
 import android.util.TypedValue
 import android.view.MotionEvent
 import android.view.View
+import android.widget.Toast
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -50,8 +51,13 @@ class PostDetailActivity : AppCompatActivity(), OnMapReadyCallback {
     private var responseData = mutableListOf<VectoService.PostResponse>()
     private var responsePageData = mutableListOf<Int>()
 
+    private var loadingFlag = false
+
+    private var likePostFlag = false
+
     var cnt = 0
 
+    var userId = ""
     var query = ""
     var pageNo = 0
 
@@ -66,6 +72,7 @@ class PostDetailActivity : AppCompatActivity(), OnMapReadyCallback {
         setContentView(binding.root)
 
         initMap()
+        startLoading(0)
 
         val topMargin = dpToPx(150f, this) // 상단에서 최소 150dp
         val bottomMargin = dpToPx(100f, this) // 하단에서 최소 100dp
@@ -166,12 +173,18 @@ class PostDetailActivity : AppCompatActivity(), OnMapReadyCallback {
                 }
 
                 if (!recyclerView.canScrollVertically(1)) {
-                    if(pageNo != -1)
+                    if(pageNo != -1 && !loadingFlag)
                     {
                         pageNo++
-                        if(query.isEmpty())
+                        startLoading(1)
+
+                        if(likePostFlag)
+                            getUserLikePostList()
+                        else if(query.isEmpty() && userId.isEmpty())
                             getPostList()
-                        else
+                        else if(userId.isNotEmpty())
+                            getPostByUserIdList(userId)
+                        else if(query.isNotEmpty())
                             getSearchPostList(query)
                     }
                 }
@@ -185,8 +198,14 @@ class PostDetailActivity : AppCompatActivity(), OnMapReadyCallback {
         val position = intent.getIntExtra("position", -1)
         pageNo = intent.getIntExtra("pageNo", -1)
         val intentQuery = intent.getStringExtra("query")
+        val intentUserId = intent.getStringExtra("userId")
+        likePostFlag = intent.getBooleanExtra("likePostFlag", false)
+
         if(!intentQuery.isNullOrEmpty()){
             query = intentQuery
+        }
+        if(!intentUserId.isNullOrEmpty()){
+            userId = intentUserId
         }
 
 
@@ -205,6 +224,7 @@ class PostDetailActivity : AppCompatActivity(), OnMapReadyCallback {
         if(position != -1)
             (binding.PostDetailRecyclerView.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(position, 0)
 
+        endLoading()
     }
 
     private fun getPostList() {
@@ -223,6 +243,7 @@ class PostDetailActivity : AppCompatActivity(), OnMapReadyCallback {
                     if(response.body()?.result?.isEmpty() == true)
                     {
                         pageNo = -1
+                        endLoading()
                     }
                     else
                     {
@@ -236,11 +257,15 @@ class PostDetailActivity : AppCompatActivity(), OnMapReadyCallback {
                 }
                 else{
                     Log.d("POSTID", "성공했으나 서버 오류 ${response.errorBody()?.string()}")
+                    Toast.makeText(this@PostDetailActivity, "잠시후 다시 시도해주세요.", Toast.LENGTH_SHORT).show()
+                    endLoading()
                 }
             }
 
             override fun onFailure(call: Call<VectoService.VectoResponse<List<Int>>>, t: Throwable) {
                 Log.d("POSTID", "실패")
+                Toast.makeText(this@PostDetailActivity, getText(R.string.APIFailToastMessage), Toast.LENGTH_SHORT).show()
+                endLoading()
             }
 
         })
@@ -292,15 +317,20 @@ class PostDetailActivity : AppCompatActivity(), OnMapReadyCallback {
                         }
 
                         myPostDetailAdapter.notifyDataSetChanged()
+                        endLoading()
                     }
                 }
                 else{
                     Log.d("POSTINFO", "성공했으나 서버 오류 ${response.errorBody()?.string()}")
+                    Toast.makeText(this@PostDetailActivity, "잠시후 다시 시도해주세요.", Toast.LENGTH_SHORT).show()
+                    endLoading()
                 }
             }
 
             override fun onFailure(call: Call<VectoService.VectoResponse<VectoService.PostResponse>>, t: Throwable) {
                 Log.d("POSTINFO", "실패")
+                Toast.makeText(this@PostDetailActivity, getText(R.string.APIFailToastMessage), Toast.LENGTH_SHORT).show()
+                endLoading()
             }
 
         })
@@ -322,6 +352,7 @@ class PostDetailActivity : AppCompatActivity(), OnMapReadyCallback {
                     if(response.body()?.result?.isEmpty() == true)
                     {
                         pageNo = -1
+                        endLoading()
                     }
                     else
                     {
@@ -335,11 +366,104 @@ class PostDetailActivity : AppCompatActivity(), OnMapReadyCallback {
                 }
                 else{
                     Log.d("SEARCHPOSTID", "성공했으나 서버 오류 ${response.errorBody()?.string()}")
+                    Toast.makeText(this@PostDetailActivity, "잠시후 다시 시도해주세요.", Toast.LENGTH_SHORT).show()
+                    endLoading()
                 }
             }
 
             override fun onFailure(call: Call<VectoService.VectoResponse<List<Int>>>, t: Throwable) {
                 Log.d("SEARCHPOSTID", "실패")
+                Toast.makeText(this@PostDetailActivity, getText(R.string.APIFailToastMessage), Toast.LENGTH_SHORT).show()
+                endLoading()
+            }
+
+        })
+    }
+
+    private fun getPostByUserIdList(userId: String) {
+        val vectoService = VectoService.create()
+
+        val call = vectoService.getUserPost(userId, pageNo)
+        call.enqueue(object : Callback<VectoService.VectoResponse<List<Int>>> {
+            override fun onResponse(call: Call<VectoService.VectoResponse<List<Int>>>, response: Response<VectoService.VectoResponse<List<Int>>>) {
+                if(response.isSuccessful){
+                    Log.d("POSTID", "성공: ${response.body()}")
+
+                    cnt = 0
+                    responseData.clear()
+                    responsePageData.clear()
+
+                    if(response.body()?.result?.isEmpty() == true)
+                    {
+                        pageNo = -1
+                        endLoading()
+                    }
+                    else
+                    {
+                        pageList = response.body()?.result!!.toMutableList()
+
+                        for(item in response.body()!!.result!!){
+                            getPostInfo(item)
+                        }
+
+                    }
+                }
+                else{
+                    Log.d("POSTID", "성공했으나 서버 오류 ${response.errorBody()?.string()}")
+                    Toast.makeText(this@PostDetailActivity, "잠시후 다시 시도해주세요.", Toast.LENGTH_SHORT).show()
+                    endLoading()
+
+                }
+            }
+
+            override fun onFailure(call: Call<VectoService.VectoResponse<List<Int>>>, t: Throwable) {
+                Log.d("POSTID", "실패")
+                Toast.makeText(this@PostDetailActivity, getText(R.string.APIFailToastMessage), Toast.LENGTH_SHORT).show()
+                endLoading()
+            }
+
+        })
+    }
+
+    private fun getUserLikePostList() {
+        val vectoService = VectoService.create()
+
+        val call = vectoService.getUserLikePost(Auth._userId.value.toString(), pageNo)
+        call.enqueue(object : Callback<VectoService.VectoResponse<List<Int>>> {
+            override fun onResponse(call: Call<VectoService.VectoResponse<List<Int>>>, response: Response<VectoService.VectoResponse<List<Int>>>) {
+                if(response.isSuccessful){
+                    Log.d("LIKEPOSTID", "성공: ${response.body()}")
+
+                    cnt = 0
+                    responseData.clear()
+                    responsePageData.clear()
+
+                    if(response.body()?.result?.isEmpty() == true)
+                    {
+                        pageNo = -1
+                        endLoading()
+                    }
+                    else
+                    {
+                        pageList = response.body()?.result!!.toMutableList()
+
+                        for(item in response.body()!!.result!!){
+                            getPostInfo(item)
+                        }
+
+                    }
+                }
+                else{
+                    Log.d("LIKEPOSTID", "성공했으나 서버 오류 ${response.errorBody()?.string()}")
+                    Toast.makeText(this@PostDetailActivity, "잠시후 다시 시도해주세요.", Toast.LENGTH_SHORT).show()
+                    endLoading()
+                }
+            }
+
+            override fun onFailure(call: Call<VectoService.VectoResponse<List<Int>>>, t: Throwable) {
+                Log.d("LIKEPOSTID", "실패")
+                Toast.makeText(this@PostDetailActivity, getText(R.string.APIFailToastMessage), Toast.LENGTH_SHORT).show()
+                endLoading()
             }
 
         })
@@ -434,6 +558,20 @@ class PostDetailActivity : AppCompatActivity(), OnMapReadyCallback {
         naverMap.moveCamera(CameraUpdate.scrollTo(targetLatLng))
         naverMap.moveCamera(CameraUpdate.zoomTo(18.0))
         naverMap.moveCamera(CameraUpdate.scrollBy(Offset))
+    }
+
+    private fun startLoading(type: Int){
+        when(type){
+            0 -> binding.progressBarCenter.visibility = View.VISIBLE
+            1 -> binding.progressBar.visibility = View.VISIBLE
+        }
+
+        loadingFlag = true
+    }
+    private fun endLoading(){
+        binding.progressBarCenter.visibility = View.GONE
+        binding.progressBar.visibility = View.GONE
+        loadingFlag = false
     }
 
 }

@@ -23,9 +23,12 @@ class NotificationActivity : AppCompatActivity() {
         notificationRecyclerView.adapter = myNotificationAdapter
         notificationRecyclerView.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
 
-        val notifications = NotificationDatabase(this).getAllNotificationData()
-        for(i in 0 until notifications.size)
-            myNotificationAdapter.notificationData.add(notifications[i])
+        if(Auth.loginFlag.value == true) {
+            val notifications = NotificationDatabase(this).getAllNotificationData()
+            for (i in 0 until notifications.size)
+                myNotificationAdapter.notificationData.add(notifications[i])
+        }
+
         if(myNotificationAdapter.notificationData.isEmpty())
         {
             binding.NoneImage.visibility = View.VISIBLE

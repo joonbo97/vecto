@@ -7,11 +7,14 @@ import android.view.View
 import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.vecto_example.vecto.data.Auth
 import com.vecto_example.vecto.databinding.ActivityUserInfoBinding
+import com.vecto_example.vecto.dialog.ReportPopupWindow
 import com.vecto_example.vecto.retrofit.VectoService
 import com.vecto_example.vecto.ui_bottom.MypostAdapter
+import com.vecto_example.vecto.ui_bottom.MysearchpostAdapter
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -22,12 +25,15 @@ class UserInfoActivity : AppCompatActivity() {
 
     private lateinit var mypostAdapter: MypostAdapter
 
+    private var userId = ""
 
     private var cnt = 0
     private var pageNo = 0
     private var pageList = mutableListOf<Int>()
     private var responseData = mutableListOf<VectoService.PostResponse>()
     private var responsePageData = mutableListOf<Int>()
+
+    private var loadingFlag = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,14 +42,77 @@ class UserInfoActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         intent.getStringExtra("userId")?.let {
+            startLoading(0)
+            userId = it
             getUserInfo(it)
             getPostList(it)
+
+            if(userId == Auth._userId.value)
+                binding.MenuIcon.visibility = View.GONE
         }
 
         mypostAdapter = MypostAdapter(this)
         val postRecyclerView = binding.UserPostRecyclerView
         postRecyclerView.adapter = mypostAdapter
+        mypostAdapter.userId = userId
         postRecyclerView.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
+        postRecyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                super.onScrolled(recyclerView, dx, dy)
+
+                if(!recyclerView.canScrollVertically(1)) {
+                    if(pageNo != -1 && !loadingFlag)
+                    {
+                        startLoading(1)
+                        pageNo++
+                        mypostAdapter.pageNo = pageNo
+                        getPostList(userId)
+                    }
+
+
+                }
+            }
+        })
+
+
+        binding.MenuIcon.setOnClickListener {
+            val reportPopupWindow = ReportPopupWindow(this,
+                reportListener = {
+                    //TODO 신고하기
+                    Toast.makeText(this@UserInfoActivity, "신고처리 되었습니다. 검토후 조치 예정입니다.", Toast.LENGTH_SHORT).show()
+                }
+            )
+
+            // 앵커 뷰를 기준으로 팝업 윈도우 표시
+            reportPopupWindow.showPopupWindow(binding.MenuIcon)
+        }
+
+
+        val swipeRefreshLayout = binding.swipeRefreshLayout
+        swipeRefreshLayout.setOnRefreshListener {
+
+            if(!loadingFlag) {
+                startLoading(0)
+
+                pageNo = 0
+                cnt = 0
+                mypostAdapter = MypostAdapter(this)
+                binding.UserPostRecyclerView.adapter = mypostAdapter
+
+                binding.NoneImage.visibility = View.GONE
+                binding.NoneText.visibility = View.GONE
+
+                mypostAdapter.feedID.clear()
+                mypostAdapter.feedInfo.clear()
+
+                getPostList(userId)
+
+                loadingFlag = false
+            }
+
+            swipeRefreshLayout.isRefreshing = false
+
+        }
 
     }
 
@@ -93,6 +162,8 @@ class UserInfoActivity : AppCompatActivity() {
         }
 
         binding.PostCountText.text = userinfo.feedCount.toString()
+        if(userinfo.feedCount == 0)
+            binding.NoneText.text = "${userinfo.nickName}님이 작성한 게시물이 없어요!"
 
         binding.FollowerCount.text = userinfo.followerCount.toString()
 
@@ -210,6 +281,14 @@ class UserInfoActivity : AppCompatActivity() {
         })
     }
     private fun setFollowButton(followflag: Boolean){
+        if(Auth._userId.value == userId)
+        {
+            binding.FollowButton.visibility = View.GONE
+            binding.FollowButtonText.visibility = View.GONE
+
+            return
+        }
+
         if(followflag)//이미 팔로우 한 상태라면
         {
             binding.FollowButton.setImageResource(R.drawable.userinfo_following_button)
@@ -243,9 +322,19 @@ class UserInfoActivity : AppCompatActivity() {
                     responseData.clear()
                     responsePageData.clear()
 
-                    if(response.body()?.result == null)
+                    if(response.body()?.result?.isEmpty() == true)
                     {
-                        //TODO 페이지의 끝
+                        if(pageNo == 0)//검색결과가 없을 경우
+                        {
+                            binding.UserPostRecyclerView.adapter = null
+                            binding.NoneImage.visibility = View.VISIBLE
+                            binding.NoneText.visibility = View.VISIBLE
+                            pageNo = -1
+                            mypostAdapter.pageNo = -1
+                        }
+
+                        pageNo = -1
+                        endLoading()
                     }
                     else
                     {
@@ -259,11 +348,13 @@ class UserInfoActivity : AppCompatActivity() {
                 }
                 else{
                     Log.d("POSTID", "성공했으나 서버 오류 ${response.errorBody()?.string()}")
+                    Toast.makeText(this@UserInfoActivity, "잠시후 다시 시도해주세요.", Toast.LENGTH_SHORT).show()
                 }
             }
 
             override fun onFailure(call: Call<VectoService.VectoResponse<List<Int>>>, t: Throwable) {
                 Log.d("POSTID", "실패")
+                Toast.makeText(this@UserInfoActivity, getText(R.string.APIFailToastMessage), Toast.LENGTH_SHORT).show()
             }
 
         })
@@ -299,14 +390,9 @@ class UserInfoActivity : AppCompatActivity() {
                     {
 
                         var idxcnt = 0
-                        Log.d("pageList", pageList.toString())
-                        Log.d("responsePageData", responsePageData.toString())
-                        Log.d("responseData", responseData.toString())
-
 
                         while(cnt != 0) {
                             for (i in 0 until pageList.size) {
-                                Log.d("i", i.toString())
                                 if (pageList[idxcnt] == responsePageData[i]) {
                                     mypostAdapter.feedInfo.add(responseData[i])
                                     mypostAdapter.feedID.add(responsePageData[i])
@@ -319,17 +405,33 @@ class UserInfoActivity : AppCompatActivity() {
                         }
 
                         mypostAdapter.notifyDataSetChanged()
+                        endLoading()
                     }
                 }
                 else{
                     Log.d("POSTINFO", "성공했으나 서버 오류 ${response.errorBody()?.string()}")
+                    Toast.makeText(this@UserInfoActivity, "잠시후 다시 시도해주세요.", Toast.LENGTH_SHORT).show()
+                    endLoading()
                 }
             }
 
             override fun onFailure(call: Call<VectoService.VectoResponse<VectoService.PostResponse>>, t: Throwable) {
                 Log.d("POSTINFO", "실패")
+                Toast.makeText(this@UserInfoActivity, getText(R.string.APIFailToastMessage), Toast.LENGTH_SHORT).show()
+                endLoading()
             }
 
         })
+    }
+
+    private fun startLoading(type: Int){
+        when(type){
+            0 -> binding.progressBarCenter.visibility = View.VISIBLE
+            1 -> binding.progressBar.visibility = View.VISIBLE
+        }
+    }
+    private fun endLoading(){
+        binding.progressBarCenter.visibility = View.GONE
+        binding.progressBar.visibility = View.GONE
     }
 }

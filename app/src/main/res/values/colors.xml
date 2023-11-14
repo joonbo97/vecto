@@ -21,4 +21,6 @@
     <color name="comment_stroke">#FFBAC2D9</color>
     <color name="detail_gray">#FF66727E</color>
     <color name="progress_background">#4D000000</color>
+    <color name="edit_gray">#8C97A1</color>
+
 </resources>

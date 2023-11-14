@@ -36,6 +36,7 @@ class MysearchpostAdapter(private val context: Context) : RecyclerView.Adapter<M
     val feedID = mutableListOf<Int>()
     var pageNo = 0
     var query = ""
+    var likePostFlag = false
 
     inner class ViewHolder(view: View): RecyclerView.ViewHolder(view) {
 
@@ -114,6 +115,16 @@ class MysearchpostAdapter(private val context: Context) : RecyclerView.Adapter<M
             nicknameText.text = feed.nickName
             posttimeText.text = feed.timeDifference
 
+            if(Auth.loginFlag.value == true && Auth._userId.value == feedInfo[adapterPosition].userId)
+            {
+                followButton.visibility = View.GONE
+                followText.visibility = View.GONE
+            }
+            else
+            {
+                followButton.visibility = View.VISIBLE
+                followText.visibility = View.VISIBLE
+            }
 
             fun setFollowButton(flag: Boolean){
                 if(flag)
@@ -180,7 +191,7 @@ class MysearchpostAdapter(private val context: Context) : RecyclerView.Adapter<M
                         } else {
                             // 서버 에러 처리
                             Log.d("POSTFOLLOWCACEL", "팔로우 해제 실패 : " + response.errorBody()?.string())
-                            Toast.makeText(context, "팔로우 요청에 실패했습니다. 잠시후 다시 시도해주세요.", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, "팔로우 취소 요청이 실패했습니다. 잠시후 다시 시도해주세요.", Toast.LENGTH_SHORT).show()
                         }
                     }
 
@@ -337,6 +348,7 @@ class MysearchpostAdapter(private val context: Context) : RecyclerView.Adapter<M
                     putExtra("position", adapterPosition)
                     putExtra("query", query)
                     putExtra("pageNo", pageNo)
+                    putExtra("likePostFlag", likePostFlag)
                 }
                 context.startActivity(intent)
             }

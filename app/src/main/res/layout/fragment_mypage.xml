@@ -34,14 +34,6 @@
             app:layout_constraintStart_toStartOf="parent"
             app:srcCompat="@drawable/profile_basic" />
 
-        <ImageView
-            android:id="@+id/ProfileEditIcon"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
-            android:src="@drawable/edit_profile_image_icon"
-            app:layout_constraintBottom_toBottomOf="@+id/ProfileImage"
-            app:layout_constraintEnd_toEndOf="@+id/ProfileImage" />
-
         <TextView
             android:id="@+id/UserNameText"
             android:layout_width="wrap_content"

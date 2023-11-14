@@ -30,6 +30,8 @@ class SearchFragment : Fragment(){
     private var responseData = mutableListOf<VectoService.PostResponse>()
     private var responsePageData = mutableListOf<Int>()
 
+    private var loadingFlag = false
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -48,9 +50,9 @@ class SearchFragment : Fragment(){
                 super.onScrolled(recyclerView, dx, dy)
 
                 if (!recyclerView.canScrollVertically(1)) {
-                    if(pageNo != -1)
+                    if(pageNo != -1 && !loadingFlag)
                     {
-                        startLoading()
+                        startLoading(1)
                         pageNo++
                         mysearchpostAdapter.pageNo = pageNo
                         getPostList()
@@ -59,6 +61,7 @@ class SearchFragment : Fragment(){
             }
         })
 
+        startLoading(0)
         getPostList()
 
 
@@ -86,6 +89,8 @@ class SearchFragment : Fragment(){
                 Toast.makeText(requireContext(), "검색어를 입력해주세요.", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
+
+            startLoading(0)
 
             pageNo = 0
             cnt = 0
@@ -122,6 +127,36 @@ class SearchFragment : Fragment(){
         return binding.root
     }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        val swipeRefreshLayout = binding.swipeRefreshLayout
+        swipeRefreshLayout.setOnRefreshListener {
+            if(!loadingFlag) {
+                startLoading(0)
+
+                pageNo = 0
+                cnt = 0
+                mysearchpostAdapter = MysearchpostAdapter(requireContext())
+                binding.SearchRecyclerView.adapter = mysearchpostAdapter
+
+                binding.NoneImage.visibility = View.GONE
+                binding.NoneText.visibility = View.GONE
+
+                mysearchpostAdapter.feedID.clear()
+                mysearchpostAdapter.feedInfo.clear()
+
+                if (query.isEmpty()) {
+                    getPostList()
+                } else {
+                    getSearchPostList(query)
+                }
+                loadingFlag = false
+            }
+            swipeRefreshLayout.isRefreshing = false
+        }
+    }
+
     private fun getPostList() {
         val vectoService = VectoService.create()
 
@@ -153,11 +188,15 @@ class SearchFragment : Fragment(){
                 }
                 else{
                     Log.d("POSTID", "성공했으나 서버 오류 ${response.errorBody()?.string()}")
+                    Toast.makeText(requireContext(), "잠시후 다시 시도해주세요.", Toast.LENGTH_SHORT).show()
+                    endLoading()
                 }
             }
 
             override fun onFailure(call: Call<VectoService.VectoResponse<List<Int>>>, t: Throwable) {
                 Log.d("POSTID", "실패")
+                Toast.makeText(requireContext(), getText(R.string.APIFailToastMessage), Toast.LENGTH_SHORT).show()
+                endLoading()
             }
 
         })
@@ -187,6 +226,7 @@ class SearchFragment : Fragment(){
 
                         pageNo = -1
                         mysearchpostAdapter.pageNo = pageNo
+                        endLoading()
                     }
                     else
                     {
@@ -200,11 +240,15 @@ class SearchFragment : Fragment(){
                 }
                 else{
                     Log.d("SEARCHPOSTID", "성공했으나 서버 오류 ${response.errorBody()?.string()}")
+                    Toast.makeText(requireContext(), "잠시후 다시 시도해주세요.", Toast.LENGTH_SHORT).show()
+                    endLoading()
                 }
             }
 
             override fun onFailure(call: Call<VectoService.VectoResponse<List<Int>>>, t: Throwable) {
                 Log.d("SEARCHPOSTID", "실패")
+                Toast.makeText(requireContext(), getText(R.string.APIFailToastMessage), Toast.LENGTH_SHORT).show()
+                endLoading()
             }
 
         })
@@ -240,9 +284,7 @@ class SearchFragment : Fragment(){
 
                     if(cnt == pageList.size)//마지막 항목일 경우
                     {
-
                         var idxcnt = 0
-
 
                         while(cnt != 0) {
                             for (i in 0 until pageList.size) {
@@ -259,24 +301,35 @@ class SearchFragment : Fragment(){
 
                         mysearchpostAdapter.notifyDataSetChanged()
                         endLoading()
+
                     }
                 }
                 else{
                     Log.d("POSTINFO", "성공했으나 서버 오류 ${response.errorBody()?.string()}")
+                    Toast.makeText(requireContext(), "잠시후 다시 시도해주세요.", Toast.LENGTH_SHORT).show()
+                    endLoading()
                 }
             }
 
             override fun onFailure(call: Call<VectoService.VectoResponse<VectoService.PostResponse>>, t: Throwable) {
                 Log.d("POSTINFO", "실패")
+                Toast.makeText(requireContext(), getText(R.string.APIFailToastMessage), Toast.LENGTH_SHORT).show()
+                endLoading()
             }
 
         })
     }
 
-    private fun startLoading(){
-        binding.progressBar.visibility = View.VISIBLE
+    private fun startLoading(type: Int){
+        when(type){
+            0 -> binding.progressBarCenter.visibility = View.VISIBLE
+            1 -> binding.progressBar.visibility = View.VISIBLE
+        }
+        loadingFlag = true
     }
     private fun endLoading(){
+        binding.progressBarCenter.visibility = View.GONE
         binding.progressBar.visibility = View.GONE
+        loadingFlag = false
     }
 }

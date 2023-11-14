@@ -23,6 +23,7 @@ import com.vecto_example.vecto.dialog.EditDeletePopupWindow
 import com.vecto_example.vecto.dialog.LoginRequestDialog
 import com.vecto_example.vecto.retrofit.VectoService
 import com.google.gson.Gson
+import com.vecto_example.vecto.EditPostActivity
 import com.vecto_example.vecto.R
 import retrofit2.Call
 import retrofit2.Callback
@@ -35,6 +36,9 @@ class MypostAdapter(private val context: Context): RecyclerView.Adapter<MypostAd
 {
     val feedInfo = mutableListOf<VectoService.PostResponse>()
     val feedID = mutableListOf<Int>()
+    var pageNo = 0
+    var userId = ""
+
 
     inner class ViewHolder(view: View): RecyclerView.ViewHolder(view) {
 
@@ -96,15 +100,15 @@ class MypostAdapter(private val context: Context): RecyclerView.Adapter<MypostAd
 
             titleText.text = feed.title
 
-            if(Auth._userId.value == feedInfo[adapterPosition].userId)
+            if(Auth._userId.value != feedInfo[adapterPosition].userId) {
                 menu.visibility = View.GONE
+            }
 
             if(feed.userProfile != null)
             {
                 Glide.with(context)
                     .load(feed.userProfile)
-                    .placeholder(R.drawable.profile_basic) // 로딩 중 표시될 이미지
-                    .error(R.drawable.profile_basic) // 에러 발생 시 표시될 이미지
+                    .error(R.drawable.img_error_01) // 에러 발생 시 표시될 이미지
                     .circleCrop()
                     .into(profileImage)
             }
@@ -205,6 +209,8 @@ class MypostAdapter(private val context: Context): RecyclerView.Adapter<MypostAd
                 val intent = Intent(context, PostDetailActivity::class.java).apply {
                     putExtra("feedInfoListJson", Gson().toJson(feedInfo))
                     putExtra("feedIDListJson", Gson().toJson(feedID))
+                    putExtra("userId", userId)
+                    putExtra("pageNo", pageNo)
                 }
                 context.startActivity(intent)
             }
@@ -212,7 +218,11 @@ class MypostAdapter(private val context: Context): RecyclerView.Adapter<MypostAd
             menu.setOnClickListener {
                 val editDeletePopupWindow = EditDeletePopupWindow(context,
                     editListener = {
-                        //TODO 게시글 수정
+                        val intent = Intent(context, EditPostActivity::class.java).apply {
+                            putExtra("feedInfoJson", Gson().toJson(feedInfo[adapterPosition]))
+                            putExtra("feedId", feedID[adapterPosition])
+                        }
+                        context.startActivity(intent)
                     },
                     deleteListener = {
                         val deletePostDialog = DeletePostDialog(context)

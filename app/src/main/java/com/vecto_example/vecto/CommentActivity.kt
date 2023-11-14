@@ -15,18 +15,31 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
-class CommentActivity : AppCompatActivity() {
+class CommentActivity : AppCompatActivity(), MyCommentAdapter.OnEditActionListener {
     lateinit var binding: ActivityCommentBinding
     lateinit var myCommentAdapter: MyCommentAdapter
+
+    var editFlag = false
+    var editcommentId = -1
+    var editcommentPosition = -1
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         binding = ActivityCommentBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        binding.EditCommentBox.setOnClickListener {
+            if(editFlag)//수정중이라면
+            {
+                onEditCancelled()
+            }
+        }
+
 
         val feedID = intent.getIntExtra("feedID", -1)
         myCommentAdapter = MyCommentAdapter(this)
+        myCommentAdapter.editActionListener = this
         val commentRecyclerView = binding.CommentRecyclerView
         commentRecyclerView.adapter = myCommentAdapter
         commentRecyclerView.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
@@ -49,15 +62,54 @@ class CommentActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            if(binding.EditContent.text.isEmpty())
-                Toast.makeText(this, "댓글을 작성해주세요.", Toast.LENGTH_SHORT).show()
+            if(binding.EditContent.text.isEmpty()) {
+                if (editFlag)
+                    Toast.makeText(this, "댓글 수정 내용을 작성해 주세요.", Toast.LENGTH_SHORT).show()
+                else
+                    Toast.makeText(this, "댓글을 작성해 주세요.", Toast.LENGTH_SHORT).show()
+            }
             else
             {
-                if(feedID != -1)
-                    sendComment(feedID, binding.EditContent.text.toString())
+                if(feedID != -1) {
+                    if(editFlag && editcommentId != -1)
+                        updateComment(VectoService.CommentUpdateRequest(editcommentId, binding.EditContent.text.toString()))
+                    else
+                        sendComment(feedID, binding.EditContent.text.toString())
+                }
             }
         }
+
+        val swipeRefreshLayout = binding.swipeRefreshLayout
+        swipeRefreshLayout.setOnRefreshListener {
+            myCommentAdapter = MyCommentAdapter(this)
+            myCommentAdapter.editActionListener = this
+            binding.CommentRecyclerView.adapter = myCommentAdapter
+
+            binding.CommentNullImage.visibility = View.GONE
+            binding.CommentNullText.visibility = View.GONE
+
+            myCommentAdapter.commentInfo.clear()
+            myCommentAdapter.editFlag = false
+            myCommentAdapter.selectedPosition = -1
+            editFlag = false
+            editcommentPosition = -1
+            binding.EditContent.hint = "댓글을 작성해 주세요."
+            binding.EditCommentBox.visibility = View.GONE
+            binding.EditCommentText.visibility = View.GONE
+
+
+            commentRecyclerView.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
+
+            if(feedID != -1)
+                loadComment(feedID)
+            else
+                Toast.makeText(this, "오류가 발생했습니다. 다시 시도해주세요.", Toast.LENGTH_SHORT).show()
+
+            swipeRefreshLayout.isRefreshing = false
+        }
+
     }
+
 
     private fun sendComment(feedid: Int, text: String) {
         val vectoService = VectoService.create()
@@ -137,4 +189,64 @@ class CommentActivity : AppCompatActivity() {
         })
 
     }
+
+    private fun updateComment(commentUpdateRequest: VectoService.CommentUpdateRequest) {
+        val vectoService = VectoService.create()
+
+        val call = vectoService.updateComment("Bearer ${Auth.token}", commentUpdateRequest)
+        call.enqueue(object : Callback<VectoService.VectoResponse<String>> {
+            override fun onResponse(call: Call<VectoService.VectoResponse<String>>, response: Response<VectoService.VectoResponse<String>>) {
+                if (response.isSuccessful) {
+                    // 성공
+                    Log.d("UserUpdate", "업데이트 성공 : " + response.message())
+                    Toast.makeText(this@CommentActivity, "변경이 완료되었습니다.", Toast.LENGTH_SHORT).show()
+                    myCommentAdapter.commentInfo[editcommentPosition].content = commentUpdateRequest.content
+
+                    myCommentAdapter.cancelEditing()
+                    binding.EditContent.hint = "댓글을 작성해 주세요."
+                    myCommentAdapter.editFlag = false
+                    editcommentId = -1
+                    editcommentPosition = -1
+                    binding.EditCommentBox.visibility = View.GONE
+                    binding.EditCommentText.visibility = View.GONE
+                    binding.EditContent.text.clear()
+
+                } else {
+                    // 실패
+                    Log.d("UserUpdate", "업데이트 실패 : " + response.errorBody()?.string())
+                    Toast.makeText(this@CommentActivity, "오류가 발생했습니다. 잠시후 다시 시도해주세요.", Toast.LENGTH_SHORT).show()
+                }
+
+            }
+            override fun onFailure(call: Call<VectoService.VectoResponse<String>>, t: Throwable) {
+                // 네트워크 등 기타 에러 처리
+                Toast.makeText(this@CommentActivity, getText(R.string.APIFailToastMessage), Toast.LENGTH_SHORT).show()
+                Log.d("UserUpdate", "업데이트 실패 : " + t.message)
+            }
+        })
+    }
+
+    override fun onEditAction(commentId: Int, position: Int) {
+        binding.EditCommentBox.visibility = View.VISIBLE
+        binding.EditCommentText.visibility = View.VISIBLE
+
+        editcommentId = commentId
+        editcommentPosition = position
+        editFlag = true
+        binding.EditContent.hint = "수정할 내용을 작성해 주세요."
+    }
+
+    fun onEditCancelled() {
+        myCommentAdapter.cancelEditing()
+        Toast.makeText(this, "댓글 수정이 취소 되었습니다.", Toast.LENGTH_SHORT).show()
+        binding.EditContent.hint = "댓글을 작성해 주세요."
+
+        myCommentAdapter.editFlag = false
+        editcommentId = -1
+        editcommentPosition = -1
+        binding.EditCommentBox.visibility = View.GONE
+        binding.EditCommentText.visibility = View.GONE
+
+    }
+
 }

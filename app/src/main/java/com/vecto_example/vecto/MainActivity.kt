@@ -60,12 +60,22 @@ class MainActivity : AppCompatActivity() {
                 intent.putExtra("feedID", it)
                 this.startActivity(intent)
             }
+        }
 
+        /*글 수정 Intent 관련*/
+        intent.getStringExtra("editCourse").let{
+            if(it != null) {
+                updateBottomNavigationSelection(R.id.EditCourseFragment)
+                val bundle = bundleOf("selectedDateKey" to it)
+                navController.navigate(R.id.EditCourseFragment, bundle)
+            }
         }
 
 
     }
 
+    fun updateBottomNavigationSelection(menuItemId: Int) {
+        binding.navView.selectedItemId = menuItemId
 
-
+    }
 }

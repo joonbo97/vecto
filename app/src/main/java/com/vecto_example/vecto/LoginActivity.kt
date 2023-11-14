@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import com.vecto_example.vecto.data.Auth
 import com.vecto_example.vecto.retrofit.VectoService
 import com.google.firebase.messaging.FirebaseMessaging
