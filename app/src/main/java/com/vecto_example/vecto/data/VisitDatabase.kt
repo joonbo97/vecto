@@ -164,4 +164,34 @@ class VisitDatabase(private val context: Context) {
         return dataList
     }
 
+    @SuppressLint("Range")
+    fun getVisitDataByMonth(year: Int, month: Int): List<VisitData> {
+        val db = dbHelper.readableDatabase
+
+        val startDate = String.format("%d-%02d-01T00:00:00", year, month)
+        val endDate = String.format("%d-%02d-31T23:59:59", year, month)
+
+        val cursor = db.rawQuery("SELECT * FROM visit_data WHERE datetime BETWEEN ? AND ?", arrayOf(startDate, endDate))
+        val dataList = mutableListOf<VisitData>()
+
+        if (cursor.moveToFirst()) {
+            do {
+                val datetime = cursor.getString(cursor.getColumnIndex("datetime"))
+                val endtime = cursor.getString(cursor.getColumnIndex("endtime"))
+                val lat = cursor.getDouble(cursor.getColumnIndex("lat"))
+                val lng = cursor.getDouble(cursor.getColumnIndex("lng"))
+                val lat_set = cursor.getDouble(cursor.getColumnIndex("lat_set"))
+                val lng_set = cursor.getDouble(cursor.getColumnIndex("lng_set"))
+                val staytime = cursor.getInt(cursor.getColumnIndex("staytime"))
+                val name = cursor.getString(cursor.getColumnIndex("name"))
+                dataList.add(VisitData(datetime, endtime, lat, lng, lat_set, lng_set, staytime, name))
+            } while (cursor.moveToNext())
+        }
+
+        cursor.close()
+        db.close()
+
+        return dataList
+    }
+
 }

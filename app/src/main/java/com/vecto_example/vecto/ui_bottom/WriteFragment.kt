@@ -50,6 +50,7 @@ import com.naver.maps.map.overlay.PathOverlay
 import com.vecto_example.vecto.R
 import com.vecto_example.vecto.databinding.ActivityMainBinding
 import com.vecto_example.vecto.databinding.FragmentWriteBinding
+import com.vecto_example.vecto.dialog.CalendarDialog
 import com.yalantis.ucrop.UCrop
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
@@ -65,7 +66,7 @@ import java.time.LocalDateTime
 import java.util.Calendar
 import java.util.Locale
 
-class WriteFragment : Fragment(), OnMapReadyCallback {
+class WriteFragment : Fragment(), OnMapReadyCallback, CalendarDialog.OnDateSelectedListener {
     private lateinit var binding: FragmentWriteBinding
     private lateinit var mapImage: ImageView
     private lateinit var mapFragmentContainerView: FragmentContainerView
@@ -308,50 +309,11 @@ class WriteFragment : Fragment(), OnMapReadyCallback {
 
     @SuppressLint("NotifyDataSetChanged")
     private fun showDatePickerDialog(){
-        val calendar = Calendar.getInstance()
-        val year = calendar.get(Calendar.YEAR)
-        val month = calendar.get(Calendar.MONTH)
-        val day = calendar.get(Calendar.DAY_OF_MONTH)
 
-        DatePickerDialog(requireContext(), { _, selectedYear, selectedMonth, selectedDay ->
+        val calendarDialog = CalendarDialog(requireContext())
+        calendarDialog.onDateSelectedListener = this
+        calendarDialog.showDialog()
 
-            val selectedDate = if((selectedMonth > 8) && (selectedDay > 9)) {
-                "$selectedYear-${selectedMonth + 1}-$selectedDay"
-            } else if(selectedMonth > 8) {
-                "$selectedYear-${selectedMonth + 1}-0$selectedDay"
-            } else if(selectedDay > 9) {
-                "$selectedYear-0${selectedMonth + 1}-$selectedDay"
-            } else{
-                "$selectedYear-0${selectedMonth + 1}-0$selectedDay"
-            }
-
-            val previousDate = getPreviousDate(selectedDate)
-
-            val filteredData = VisitDatabase(requireContext()).getAllVisitData().filter { visitData ->
-                val visitDate = visitData.datetime.substring(0, 10)
-                val endDate = visitData.endtime.substring(0, 10)
-                visitDate == previousDate && endDate == selectedDate
-            }
-
-            visitDataList = VisitDatabase(requireContext()).getAllVisitData().filter {
-                it.datetime.startsWith(selectedDate)
-            }.toMutableList()
-
-            //종료 시간이 선택 날짜인 방문지 추가
-            if(filteredData.isNotEmpty())
-                visitDataList.add(0, filteredData[0])
-
-            if(visitDataList.isNotEmpty()){
-                //방문 장소가 있을 경우
-
-                selectVisit(selectedDate)
-            }
-            else{
-                //방문 장소 없을 경우
-                deleteOverlay()
-            }
-
-        }, year, month, day).show()
     }
 
     private fun selectVisit(selectedDate: String) = //특정 날짜에 해당하는 방문지를 선택하는 함수
@@ -701,5 +663,33 @@ class WriteFragment : Fragment(), OnMapReadyCallback {
 
         naverMap.moveCamera(CameraUpdate.scrollTo(targetLatLng))
         naverMap.moveCamera(CameraUpdate.zoomTo(18.0))
+    }
+
+    override fun onDateSelected(date: String) {
+        val previousDate = getPreviousDate(date)
+
+        val filteredData = VisitDatabase(requireContext()).getAllVisitData().filter { visitData ->
+            val visitDate = visitData.datetime.substring(0, 10)
+            val endDate = visitData.endtime.substring(0, 10)
+            visitDate == previousDate && endDate == date
+        }
+
+        visitDataList = VisitDatabase(requireContext()).getAllVisitData().filter {
+            it.datetime.startsWith(date)
+        }.toMutableList()
+
+        //종료 시간이 선택 날짜인 방문지 추가
+        if(filteredData.isNotEmpty())
+            visitDataList.add(0, filteredData[0])
+
+        if(visitDataList.isNotEmpty()){
+            //방문 장소가 있을 경우
+
+            selectVisit(date)
+        }
+        else{
+            //방문 장소 없을 경우
+            deleteOverlay()
+        }
     }
 }

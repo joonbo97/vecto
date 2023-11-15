@@ -1,0 +1,919 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="300dp"
+    android:layout_height="320dp"
+    android:background="@drawable/dialog_background"
+    android:backgroundTint="@color/vecto_main">
+
+    <ImageView
+        android:id="@+id/BeforeButton"
+        android:layout_width="35dp"
+        android:layout_height="35dp"
+        android:padding="10dp"
+        android:layout_marginStart="21dp"
+        android:layout_marginTop="9dp"
+        android:src="@drawable/calendar_before"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/AfterButton"
+        android:layout_width="35dp"
+        android:layout_height="35dp"
+        android:padding="10dp"
+        android:layout_marginTop="9dp"
+        android:layout_marginEnd="21dp"
+        android:src="@drawable/calendar_next"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/DateText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:fontFamily="@font/lineseedkr_rg"
+        android:gravity="center"
+        android:text="2023년 11월"
+        android:textColor="@color/black"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/SundayText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="60dp"
+        android:fontFamily="@font/lineseedkr_rg"
+        android:gravity="center"
+        android:text="일"
+        android:textColor="@color/black"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="@+id/verticalguideline2"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="@+id/verticalguideline1"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/MondayText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="60dp"
+        android:fontFamily="@font/lineseedkr_rg"
+        android:gravity="center"
+        android:text="월"
+        android:textColor="@color/black"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="@+id/verticalguideline3"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="@+id/verticalguideline2"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/TuesdayText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="60dp"
+        android:fontFamily="@font/lineseedkr_rg"
+        android:gravity="center"
+        android:text="화"
+        android:textColor="@color/black"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="@+id/verticalguideline4"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="@+id/verticalguideline3"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/WednesdayText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="60dp"
+        android:fontFamily="@font/lineseedkr_rg"
+        android:gravity="center"
+        android:text="수"
+        android:textColor="@color/black"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="@+id/verticalguideline5"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="@+id/verticalguideline4"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/ThursdayText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="60dp"
+        android:fontFamily="@font/lineseedkr_rg"
+        android:gravity="center"
+        android:text="목"
+        android:textColor="@color/black"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="@+id/verticalguideline6"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="@+id/verticalguideline5"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/FridayText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="60dp"
+        android:fontFamily="@font/lineseedkr_rg"
+        android:gravity="center"
+        android:text="금"
+        android:textColor="@color/black"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="@+id/verticalguideline7"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="@+id/verticalguideline6"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/SaturdayText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="60dp"
+        android:fontFamily="@font/lineseedkr_rg"
+        android:gravity="center"
+        android:text="토"
+        android:textColor="@color/black"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="@+id/verticalguideline8"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="@+id/verticalguideline7"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/DateText01"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:layout_marginTop="15dp"
+        android:fontFamily="@font/lineseedkr_rg"
+        android:gravity="center"
+        android:text="0"
+        android:textColor="@color/black"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="@+id/verticalguideline2"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="@+id/verticalguideline1"
+        app:layout_constraintTop_toBottomOf="@id/SundayText" />
+
+    <TextView
+        android:id="@+id/DateText02"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:layout_marginTop="15dp"
+        android:fontFamily="@font/lineseedkr_rg"
+        android:gravity="center"
+        android:text="0"
+        android:textColor="@color/black"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="@+id/verticalguideline3"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="@+id/verticalguideline2"
+        app:layout_constraintTop_toBottomOf="@id/SundayText" />
+
+    <TextView
+        android:id="@+id/DateText03"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:layout_marginTop="15dp"
+        android:fontFamily="@font/lineseedkr_rg"
+        android:gravity="center"
+        android:text="0"
+        android:textColor="@color/black"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="@+id/verticalguideline4"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="@+id/verticalguideline3"
+        app:layout_constraintTop_toBottomOf="@id/SundayText" />
+
+    <TextView
+        android:id="@+id/DateText04"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:layout_marginTop="15dp"
+        android:fontFamily="@font/lineseedkr_rg"
+        android:gravity="center"
+        android:text="0"
+        android:textColor="@color/black"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="@+id/verticalguideline5"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="@+id/verticalguideline4"
+        app:layout_constraintTop_toBottomOf="@id/SundayText" />
+
+    <TextView
+        android:id="@+id/DateText05"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:layout_marginTop="15dp"
+        android:fontFamily="@font/lineseedkr_rg"
+        android:gravity="center"
+        android:text="0"
+        android:textColor="@color/black"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="@+id/verticalguideline6"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="@+id/verticalguideline5"
+        app:layout_constraintTop_toBottomOf="@id/SundayText" />
+
+    <TextView
+        android:id="@+id/DateText06"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:layout_marginTop="15dp"
+        android:fontFamily="@font/lineseedkr_rg"
+        android:gravity="center"
+        android:text="0"
+        android:textColor="@color/black"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="@+id/verticalguideline7"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="@+id/verticalguideline6"
+        app:layout_constraintTop_toBottomOf="@id/SundayText" />
+
+    <TextView
+        android:id="@+id/DateText07"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:layout_marginTop="15dp"
+        android:fontFamily="@font/lineseedkr_rg"
+        android:gravity="center"
+        android:text="0"
+        android:textColor="@color/black"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="@+id/verticalguideline8"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="@+id/verticalguideline7"
+        app:layout_constraintTop_toBottomOf="@id/SundayText" />
+
+    <TextView
+        android:id="@+id/DateText08"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:layout_marginTop="15dp"
+        android:fontFamily="@font/lineseedkr_rg"
+        android:gravity="center"
+        android:text="0"
+        android:textColor="@color/black"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="@+id/verticalguideline2"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="@+id/verticalguideline1"
+        app:layout_constraintTop_toBottomOf="@id/DateText01" />
+
+    <TextView
+        android:id="@+id/DateText09"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:layout_marginTop="15dp"
+        android:fontFamily="@font/lineseedkr_rg"
+        android:gravity="center"
+        android:text="0"
+        android:textColor="@color/black"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="@+id/verticalguideline3"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="@+id/verticalguideline2"
+        app:layout_constraintTop_toBottomOf="@id/DateText02" />
+
+    <TextView
+        android:id="@+id/DateText10"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:layout_marginTop="15dp"
+        android:fontFamily="@font/lineseedkr_rg"
+        android:gravity="center"
+        android:text="0"
+        android:textColor="@color/black"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="@+id/verticalguideline4"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="@+id/verticalguideline3"
+        app:layout_constraintTop_toBottomOf="@id/DateText03" />
+
+    <TextView
+        android:id="@+id/DateText11"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:layout_marginTop="15dp"
+        android:fontFamily="@font/lineseedkr_rg"
+        android:gravity="center"
+        android:text="0"
+        android:textColor="@color/black"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="@+id/verticalguideline5"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="@+id/verticalguideline4"
+        app:layout_constraintTop_toBottomOf="@id/DateText04" />
+
+    <TextView
+        android:id="@+id/DateText12"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:layout_marginTop="15dp"
+        android:fontFamily="@font/lineseedkr_rg"
+        android:gravity="center"
+        android:text="0"
+        android:textColor="@color/black"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="@+id/verticalguideline6"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="@+id/verticalguideline5"
+        app:layout_constraintTop_toBottomOf="@id/DateText05" />
+
+    <TextView
+        android:id="@+id/DateText13"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:layout_marginTop="15dp"
+        android:fontFamily="@font/lineseedkr_rg"
+        android:gravity="center"
+        android:text="0"
+        android:textColor="@color/black"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="@+id/verticalguideline7"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="@+id/verticalguideline6"
+        app:layout_constraintTop_toBottomOf="@id/DateText06" />
+
+    <TextView
+        android:id="@+id/DateText14"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:layout_marginTop="15dp"
+        android:fontFamily="@font/lineseedkr_rg"
+        android:gravity="center"
+        android:text="0"
+        android:textColor="@color/black"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="@+id/verticalguideline8"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="@+id/verticalguideline7"
+        app:layout_constraintTop_toBottomOf="@id/DateText07" />
+
+    <TextView
+        android:id="@+id/DateText15"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:layout_marginTop="15dp"
+        android:fontFamily="@font/lineseedkr_rg"
+        android:gravity="center"
+        android:text="0"
+        android:textColor="@color/black"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="@+id/verticalguideline2"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="@+id/verticalguideline1"
+        app:layout_constraintTop_toBottomOf="@id/DateText08" />
+
+    <TextView
+        android:id="@+id/DateText16"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:layout_marginTop="15dp"
+        android:fontFamily="@font/lineseedkr_rg"
+        android:gravity="center"
+        android:text="0"
+        android:textColor="@color/black"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="@+id/verticalguideline3"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="@+id/verticalguideline2"
+        app:layout_constraintTop_toBottomOf="@id/DateText09" />
+
+    <TextView
+        android:id="@+id/DateText17"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:layout_marginTop="15dp"
+        android:fontFamily="@font/lineseedkr_rg"
+        android:gravity="center"
+        android:text="0"
+        android:textColor="@color/black"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="@+id/verticalguideline4"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="@+id/verticalguideline3"
+        app:layout_constraintTop_toBottomOf="@id/DateText10" />
+
+    <TextView
+        android:id="@+id/DateText18"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:layout_marginTop="15dp"
+        android:fontFamily="@font/lineseedkr_rg"
+        android:gravity="center"
+        android:text="0"
+        android:textColor="@color/black"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="@+id/verticalguideline5"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="@+id/verticalguideline4"
+        app:layout_constraintTop_toBottomOf="@id/DateText11" />
+
+    <TextView
+        android:id="@+id/DateText19"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:layout_marginTop="15dp"
+        android:fontFamily="@font/lineseedkr_rg"
+        android:gravity="center"
+        android:text="0"
+        android:textColor="@color/black"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="@+id/verticalguideline6"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="@+id/verticalguideline5"
+        app:layout_constraintTop_toBottomOf="@id/DateText12" />
+
+    <TextView
+        android:id="@+id/DateText20"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:layout_marginTop="15dp"
+        android:fontFamily="@font/lineseedkr_rg"
+        android:gravity="center"
+        android:text="0"
+        android:textColor="@color/black"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="@+id/verticalguideline7"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="@+id/verticalguideline6"
+        app:layout_constraintTop_toBottomOf="@id/DateText13" />
+
+    <TextView
+        android:id="@+id/DateText21"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:layout_marginTop="15dp"
+        android:fontFamily="@font/lineseedkr_rg"
+        android:gravity="center"
+        android:text="0"
+        android:textColor="@color/black"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="@+id/verticalguideline8"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="@+id/verticalguideline7"
+        app:layout_constraintTop_toBottomOf="@id/DateText14" />
+
+    <TextView
+        android:id="@+id/DateText22"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:layout_marginTop="15dp"
+        android:fontFamily="@font/lineseedkr_rg"
+        android:gravity="center"
+        android:text="0"
+        android:textColor="@color/black"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="@+id/verticalguideline2"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="@+id/verticalguideline1"
+        app:layout_constraintTop_toBottomOf="@id/DateText15" />
+
+    <TextView
+        android:id="@+id/DateText23"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:layout_marginTop="15dp"
+        android:fontFamily="@font/lineseedkr_rg"
+        android:gravity="center"
+        android:text="0"
+        android:textColor="@color/black"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="@+id/verticalguideline3"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="@+id/verticalguideline2"
+        app:layout_constraintTop_toBottomOf="@id/DateText16" />
+
+    <TextView
+        android:id="@+id/DateText24"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:layout_marginTop="15dp"
+        android:fontFamily="@font/lineseedkr_rg"
+        android:gravity="center"
+        android:text="0"
+        android:textColor="@color/black"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="@+id/verticalguideline4"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="@+id/verticalguideline3"
+        app:layout_constraintTop_toBottomOf="@id/DateText17" />
+
+    <TextView
+        android:id="@+id/DateText25"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:layout_marginTop="15dp"
+        android:fontFamily="@font/lineseedkr_rg"
+        android:gravity="center"
+        android:text="0"
+        android:textColor="@color/black"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="@+id/verticalguideline5"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="@+id/verticalguideline4"
+        app:layout_constraintTop_toBottomOf="@id/DateText18" />
+
+    <TextView
+        android:id="@+id/DateText26"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:layout_marginTop="15dp"
+        android:fontFamily="@font/lineseedkr_rg"
+        android:gravity="center"
+        android:text="0"
+        android:textColor="@color/black"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="@+id/verticalguideline6"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="@+id/verticalguideline5"
+        app:layout_constraintTop_toBottomOf="@id/DateText19" />
+
+    <TextView
+        android:id="@+id/DateText27"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:layout_marginTop="15dp"
+        android:fontFamily="@font/lineseedkr_rg"
+        android:gravity="center"
+        android:text="0"
+        android:textColor="@color/black"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="@+id/verticalguideline7"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="@+id/verticalguideline6"
+        app:layout_constraintTop_toBottomOf="@id/DateText20" />
+
+    <TextView
+        android:id="@+id/DateText28"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:layout_marginTop="15dp"
+        android:fontFamily="@font/lineseedkr_rg"
+        android:gravity="center"
+        android:text="0"
+        android:textColor="@color/black"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="@+id/verticalguideline8"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="@+id/verticalguideline7"
+        app:layout_constraintTop_toBottomOf="@id/DateText21" />
+
+    <TextView
+        android:id="@+id/DateText29"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:layout_marginTop="15dp"
+        android:fontFamily="@font/lineseedkr_rg"
+        android:gravity="center"
+        android:text="0"
+        android:textColor="@color/black"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="@+id/verticalguideline2"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="@+id/verticalguideline1"
+        app:layout_constraintTop_toBottomOf="@id/DateText22" />
+
+    <TextView
+        android:id="@+id/DateText30"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:layout_marginTop="15dp"
+        android:fontFamily="@font/lineseedkr_rg"
+        android:gravity="center"
+        android:text="0"
+        android:textColor="@color/black"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="@+id/verticalguideline3"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="@+id/verticalguideline2"
+        app:layout_constraintTop_toBottomOf="@id/DateText23" />
+
+    <TextView
+        android:id="@+id/DateText31"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:layout_marginTop="15dp"
+        android:fontFamily="@font/lineseedkr_rg"
+        android:gravity="center"
+        android:text="0"
+        android:textColor="@color/black"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="@+id/verticalguideline4"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="@+id/verticalguideline3"
+        app:layout_constraintTop_toBottomOf="@id/DateText24" />
+
+    <TextView
+        android:id="@+id/DateText32"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:layout_marginTop="15dp"
+        android:fontFamily="@font/lineseedkr_rg"
+        android:gravity="center"
+        android:text="0"
+        android:textColor="@color/black"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="@+id/verticalguideline5"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="@+id/verticalguideline4"
+        app:layout_constraintTop_toBottomOf="@id/DateText25" />
+
+    <TextView
+        android:id="@+id/DateText33"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:layout_marginTop="15dp"
+        android:fontFamily="@font/lineseedkr_rg"
+        android:gravity="center"
+        android:text="0"
+        android:textColor="@color/black"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="@+id/verticalguideline6"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="@+id/verticalguideline5"
+        app:layout_constraintTop_toBottomOf="@id/DateText26" />
+
+    <TextView
+        android:id="@+id/DateText34"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:layout_marginTop="15dp"
+        android:fontFamily="@font/lineseedkr_rg"
+        android:gravity="center"
+        android:text="0"
+        android:textColor="@color/black"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="@+id/verticalguideline7"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="@+id/verticalguideline6"
+        app:layout_constraintTop_toBottomOf="@id/DateText27" />
+
+    <TextView
+        android:id="@+id/DateText35"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:layout_marginTop="15dp"
+        android:fontFamily="@font/lineseedkr_rg"
+        android:gravity="center"
+        android:text="0"
+        android:textColor="@color/black"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="@+id/verticalguideline8"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="@+id/verticalguideline7"
+        app:layout_constraintTop_toBottomOf="@id/DateText28" />
+
+    <TextView
+        android:id="@+id/DateText36"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:layout_marginTop="15dp"
+        android:fontFamily="@font/lineseedkr_rg"
+        android:gravity="center"
+        android:text="0"
+        android:textColor="@color/black"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="@+id/verticalguideline2"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="@+id/verticalguideline1"
+        app:layout_constraintTop_toBottomOf="@id/DateText29" />
+
+    <TextView
+        android:id="@+id/DateText37"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:layout_marginTop="15dp"
+        android:fontFamily="@font/lineseedkr_rg"
+        android:gravity="center"
+        android:text="0"
+        android:textColor="@color/black"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="@+id/verticalguideline3"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="@+id/verticalguideline2"
+        app:layout_constraintTop_toBottomOf="@id/DateText30" />
+
+    <TextView
+        android:id="@+id/DateText38"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:layout_marginTop="15dp"
+        android:fontFamily="@font/lineseedkr_rg"
+        android:gravity="center"
+        android:text="0"
+        android:textColor="@color/black"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="@+id/verticalguideline4"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="@+id/verticalguideline3"
+        app:layout_constraintTop_toBottomOf="@id/DateText31" />
+
+    <TextView
+        android:id="@+id/DateText39"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:layout_marginTop="15dp"
+        android:fontFamily="@font/lineseedkr_rg"
+        android:gravity="center"
+        android:text="0"
+        android:textColor="@color/black"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="@+id/verticalguideline5"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="@+id/verticalguideline4"
+        app:layout_constraintTop_toBottomOf="@id/DateText32" />
+
+    <TextView
+        android:id="@+id/DateText40"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:layout_marginTop="15dp"
+        android:fontFamily="@font/lineseedkr_rg"
+        android:gravity="center"
+        android:text="0"
+        android:textColor="@color/black"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="@+id/verticalguideline6"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="@+id/verticalguideline5"
+        app:layout_constraintTop_toBottomOf="@id/DateText33" />
+
+    <TextView
+        android:id="@+id/DateText41"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:layout_marginTop="15dp"
+        android:fontFamily="@font/lineseedkr_rg"
+        android:gravity="center"
+        android:text="0"
+        android:textColor="@color/black"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="@+id/verticalguideline7"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="@+id/verticalguideline6"
+        app:layout_constraintTop_toBottomOf="@id/DateText34" />
+
+    <TextView
+        android:id="@+id/DateText42"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:layout_marginTop="15dp"
+        android:fontFamily="@font/lineseedkr_rg"
+        android:gravity="center"
+        android:text="0"
+        android:textColor="@color/black"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="@+id/verticalguideline8"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="@+id/verticalguideline7"
+        app:layout_constraintTop_toBottomOf="@id/DateText35" />
+
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/verticalguideline1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_begin="31dp" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/verticalguideline2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_begin="65dp" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/verticalguideline3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_begin="99dp" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/verticalguideline4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_begin="133dp" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/verticalguideline5"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_end="133dp" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/verticalguideline6"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_end="99dp" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/verticalguideline7"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_end="65dp" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/verticalguideline8"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_end="31dp" />
+
+    <TextView
+        android:id="@+id/OKText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="31dp"
+        android:layout_marginBottom="20dp"
+        android:fontFamily="@font/lineseedkr_rg"
+        android:gravity="center"
+        android:text="확인"
+        android:textColor="@color/black"
+        android:textSize="15sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <TextView
+        android:id="@+id/NOText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="31dp"
+        android:layout_marginBottom="20dp"
+        android:fontFamily="@font/lineseedkr_rg"
+        android:gravity="center"
+        android:text="취소"
+        android:textColor="@color/black"
+        android:textSize="15sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/OKText" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

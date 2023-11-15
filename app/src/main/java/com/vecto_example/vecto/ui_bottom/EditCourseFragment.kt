@@ -45,6 +45,7 @@ import com.naver.maps.map.overlay.PathOverlay
 import com.vecto_example.vecto.MyClusterItem
 import com.vecto_example.vecto.R
 import com.vecto_example.vecto.databinding.FragmentEditCourseBinding
+import com.vecto_example.vecto.dialog.CalendarDialog
 import com.vecto_example.vecto.dialog.PlacePopupWindow
 import okhttp3.internal.notify
 import java.text.SimpleDateFormat
@@ -61,7 +62,8 @@ import java.time.format.DateTimeFormatter
 import java.util.concurrent.Executors
 
 
-class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnItemClickListener {
+class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnItemClickListener,
+    CalendarDialog.OnDateSelectedListener {
     lateinit var binding: FragmentEditCourseBinding
 
     //map설정 관련
@@ -691,31 +693,9 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
         binding.RefreshButton.visibility = View.GONE
 
         if (date == null) {
-            val calendar = Calendar.getInstance()
-            val year = calendar.get(Calendar.YEAR)
-            val month = calendar.get(Calendar.MONTH)
-            val day = calendar.get(Calendar.DAY_OF_MONTH)
-
-            DatePickerDialog(requireContext(), { _, selectedYear, selectedMonth, selectedDay ->
-
-                val selectedDate = if ((selectedMonth > 8) && (selectedDay > 9)) {
-                    "$selectedYear-${selectedMonth + 1}-$selectedDay"
-                } else if (selectedMonth > 8) {
-                    "$selectedYear-${selectedMonth + 1}-0$selectedDay"
-                } else if (selectedDay > 9) {
-                    "$selectedYear-0${selectedMonth + 1}-$selectedDay"
-                } else {
-                    "$selectedYear-0${selectedMonth + 1}-0$selectedDay"
-                }
-
-                DateText.text = selectedDate
-                naverMap.onSymbolClickListener = null
-
-                initRecyclerView()
-
-                setRecyclerView(selectedDate)
-
-            }, year, month, day).show()
+            val calendarDialog = CalendarDialog(requireContext())
+            calendarDialog.onDateSelectedListener = this
+            calendarDialog.showDialog()
         }
         else
         {
@@ -1086,5 +1066,14 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
     private fun endLoading(){
         binding.constraintProgress.visibility = View.GONE
         binding.progressBar.visibility = View.GONE
+    }
+
+    override fun onDateSelected(date: String) {
+        DateText.text = date
+        naverMap.onSymbolClickListener = null
+
+        initRecyclerView()
+
+        setRecyclerView(date)
     }
 }
