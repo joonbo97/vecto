@@ -40,6 +40,10 @@ class NotificationActivity : AppCompatActivity() {
             binding.NoneText.visibility = View.GONE
         }
 
+        binding.BackButton.setOnClickListener {
+            finish()
+        }
+
 
 
 

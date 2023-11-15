@@ -241,6 +241,10 @@ class EditPostActivity : AppCompatActivity(), OnMapReadyCallback,
             }
         }
 
+        binding.BackButton.setOnClickListener {
+            finish()
+        }
+
     }
 
     private fun initMap() {

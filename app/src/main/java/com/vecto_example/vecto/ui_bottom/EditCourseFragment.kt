@@ -747,6 +747,8 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
                 true
             }
 
+            selectedVisitData = data
+
             addVisitMarker(data)
             addButtonMarker(data, position)
             addCircleOverlay(data)

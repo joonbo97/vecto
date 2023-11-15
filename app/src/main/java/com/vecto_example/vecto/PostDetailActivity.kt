@@ -109,6 +109,10 @@ class PostDetailActivity : AppCompatActivity(), OnMapReadyCallback {
             }
         }
 
+        binding.BackButton.setOnClickListener {
+            finish()
+        }
+
     }
 
     private fun dpToPx(dp: Float, context: Context): Int {

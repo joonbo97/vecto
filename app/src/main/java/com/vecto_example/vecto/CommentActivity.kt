@@ -108,6 +108,10 @@ class CommentActivity : AppCompatActivity(), MyCommentAdapter.OnEditActionListen
             swipeRefreshLayout.isRefreshing = false
         }
 
+        binding.BackButton.setOnClickListener {
+            finish()
+        }
+
     }
 
 

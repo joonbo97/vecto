@@ -160,6 +160,13 @@ class WriteFragment : Fragment(), OnMapReadyCallback, CalendarDialog.OnDateSelec
 
         }
 
+        binding.BackButton.setOnClickListener {
+            (activity as? MainActivity)?.updateBottomNavigationSelection(R.id.SearchFragment)
+            val navController = findNavController()
+            navController.navigate(R.id.SearchFragment)
+        }
+
+
         return binding.root
     }
     private fun getCourse() {
