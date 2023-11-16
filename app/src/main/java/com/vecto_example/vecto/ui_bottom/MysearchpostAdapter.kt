@@ -76,8 +76,7 @@ class MysearchpostAdapter(private val context: Context) : RecyclerView.Adapter<M
 
                 Glide.with(context)
                     .load(feed.mapImage[1])
-                    .placeholder(R.drawable.empty_image) // 로딩 중 표시될 이미지
-                    .error(R.drawable.empty_image) // 에러 발생 시 표시될 이미지
+                    .error(R.drawable.error_image) // 에러 발생 시 표시될 이미지
                     .into(mapLarge)
 
             } else {//1:1 mapImage[0]
@@ -87,14 +86,12 @@ class MysearchpostAdapter(private val context: Context) : RecyclerView.Adapter<M
 
                 Glide.with(context)
                     .load(feed.mapImage[0])
-                    .placeholder(R.drawable.empty_image) // 로딩 중 표시될 이미지
-                    .error(R.drawable.empty_image) // 에러 발생 시 표시될 이미지
+                    .error(R.drawable.error_image) // 에러 발생 시 표시될 이미지
                     .into(mapSmall)
 
                 Glide.with(context)
                     .load(feed.image[0])
-                    .placeholder(R.drawable.empty_image) // 로딩 중 표시될 이미지
-                    .error(R.drawable.empty_image) // 에러 발생 시 표시될 이미지
+                    .error(R.drawable.error_image) // 에러 발생 시 표시될 이미지
                     .into(postImage)
             }
 

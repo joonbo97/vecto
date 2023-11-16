@@ -22,6 +22,7 @@ class ImageSliderAdapter(private val context: Context, private val imageUrls: Li
     override fun onBindViewHolder(holder: ImageViewHolder, position: Int) {
         Glide.with(context)
             .load(imageUrls[position])
+            .error(R.drawable.error_image)
             .into(holder.imageView)
     }
 

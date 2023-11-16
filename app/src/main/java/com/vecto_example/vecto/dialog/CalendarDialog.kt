@@ -148,7 +148,6 @@ class CalendarDialog (private val context: Context) {//deletepostdialog copy
                         setTextColor(ContextCompat.getColor(context, R.color.black))
                         setOnClickListener {
                             selectedDate = String.format("%d-%02d-%02d", year, month + 1, i)
-                            Log.d("selectedDate", "${selectedDate}")
                             setTextColor(ContextCompat.getColor(context, R.color.vecto_theme_orange))
 
                             dialog.findViewById<TextView>(R.id.OKText).setTextColor(ContextCompat.getColor(context, R.color.black))

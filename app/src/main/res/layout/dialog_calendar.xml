@@ -9,10 +9,13 @@
 
     <ImageView
         android:id="@+id/BeforeButton"
-        android:layout_width="35dp"
+        android:layout_width="55dp"
         android:layout_height="35dp"
-        android:padding="10dp"
-        android:layout_marginStart="21dp"
+        android:paddingBottom="10dp"
+        android:paddingTop="10dp"
+        android:paddingEnd="20dp"
+        android:paddingStart="20dp"
+        android:layout_marginStart="11dp"
         android:layout_marginTop="9dp"
         android:src="@drawable/calendar_before"
         app:layout_constraintStart_toStartOf="parent"
@@ -20,9 +23,12 @@
 
     <ImageView
         android:id="@+id/AfterButton"
-        android:layout_width="35dp"
+        android:layout_width="55dp"
         android:layout_height="35dp"
-        android:padding="10dp"
+        android:paddingBottom="10dp"
+        android:paddingTop="10dp"
+        android:paddingEnd="20dp"
+        android:paddingStart="20dp"
         android:layout_marginTop="9dp"
         android:layout_marginEnd="21dp"
         android:src="@drawable/calendar_next"
@@ -33,12 +39,12 @@
         android:id="@+id/DateText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="18dp"
         android:fontFamily="@font/lineseedkr_rg"
         android:gravity="center"
         android:text="2023년 11월"
         android:textColor="@color/black"
-        android:textSize="12sp"
+        android:textSize="15sp"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
@@ -159,9 +165,9 @@
 
     <TextView
         android:id="@+id/DateText01"
-        android:layout_width="20dp"
-        android:layout_height="20dp"
-        android:layout_marginTop="15dp"
+        android:layout_width="34dp"
+        android:layout_height="34dp"
+        android:layout_marginTop="1dp"
         android:fontFamily="@font/lineseedkr_rg"
         android:gravity="center"
         android:text="0"
@@ -175,9 +181,9 @@
 
     <TextView
         android:id="@+id/DateText02"
-        android:layout_width="20dp"
-        android:layout_height="20dp"
-        android:layout_marginTop="15dp"
+        android:layout_width="34dp"
+        android:layout_height="34dp"
+        android:layout_marginTop="1dp"
         android:fontFamily="@font/lineseedkr_rg"
         android:gravity="center"
         android:text="0"
@@ -191,9 +197,9 @@
 
     <TextView
         android:id="@+id/DateText03"
-        android:layout_width="20dp"
-        android:layout_height="20dp"
-        android:layout_marginTop="15dp"
+        android:layout_width="34dp"
+        android:layout_height="34dp"
+        android:layout_marginTop="1dp"
         android:fontFamily="@font/lineseedkr_rg"
         android:gravity="center"
         android:text="0"
@@ -207,9 +213,9 @@
 
     <TextView
         android:id="@+id/DateText04"
-        android:layout_width="20dp"
-        android:layout_height="20dp"
-        android:layout_marginTop="15dp"
+        android:layout_width="34dp"
+        android:layout_height="34dp"
+        android:layout_marginTop="1dp"
         android:fontFamily="@font/lineseedkr_rg"
         android:gravity="center"
         android:text="0"
@@ -223,9 +229,9 @@
 
     <TextView
         android:id="@+id/DateText05"
-        android:layout_width="20dp"
-        android:layout_height="20dp"
-        android:layout_marginTop="15dp"
+        android:layout_width="34dp"
+        android:layout_height="34dp"
+        android:layout_marginTop="1dp"
         android:fontFamily="@font/lineseedkr_rg"
         android:gravity="center"
         android:text="0"
@@ -239,9 +245,9 @@
 
     <TextView
         android:id="@+id/DateText06"
-        android:layout_width="20dp"
-        android:layout_height="20dp"
-        android:layout_marginTop="15dp"
+        android:layout_width="34dp"
+        android:layout_height="34dp"
+        android:layout_marginTop="1dp"
         android:fontFamily="@font/lineseedkr_rg"
         android:gravity="center"
         android:text="0"
@@ -255,9 +261,9 @@
 
     <TextView
         android:id="@+id/DateText07"
-        android:layout_width="20dp"
-        android:layout_height="20dp"
-        android:layout_marginTop="15dp"
+        android:layout_width="34dp"
+        android:layout_height="34dp"
+        android:layout_marginTop="1dp"
         android:fontFamily="@font/lineseedkr_rg"
         android:gravity="center"
         android:text="0"
@@ -271,9 +277,9 @@
 
     <TextView
         android:id="@+id/DateText08"
-        android:layout_width="20dp"
-        android:layout_height="20dp"
-        android:layout_marginTop="15dp"
+        android:layout_width="34dp"
+        android:layout_height="34dp"
+        android:layout_marginTop="1dp"
         android:fontFamily="@font/lineseedkr_rg"
         android:gravity="center"
         android:text="0"
@@ -287,9 +293,9 @@
 
     <TextView
         android:id="@+id/DateText09"
-        android:layout_width="20dp"
-        android:layout_height="20dp"
-        android:layout_marginTop="15dp"
+        android:layout_width="34dp"
+        android:layout_height="34dp"
+        android:layout_marginTop="1dp"
         android:fontFamily="@font/lineseedkr_rg"
         android:gravity="center"
         android:text="0"
@@ -303,9 +309,9 @@
 
     <TextView
         android:id="@+id/DateText10"
-        android:layout_width="20dp"
-        android:layout_height="20dp"
-        android:layout_marginTop="15dp"
+        android:layout_width="34dp"
+        android:layout_height="34dp"
+        android:layout_marginTop="1dp"
         android:fontFamily="@font/lineseedkr_rg"
         android:gravity="center"
         android:text="0"
@@ -319,9 +325,9 @@
 
     <TextView
         android:id="@+id/DateText11"
-        android:layout_width="20dp"
-        android:layout_height="20dp"
-        android:layout_marginTop="15dp"
+        android:layout_width="34dp"
+        android:layout_height="34dp"
+        android:layout_marginTop="1dp"
         android:fontFamily="@font/lineseedkr_rg"
         android:gravity="center"
         android:text="0"
@@ -335,9 +341,9 @@
 
     <TextView
         android:id="@+id/DateText12"
-        android:layout_width="20dp"
-        android:layout_height="20dp"
-        android:layout_marginTop="15dp"
+        android:layout_width="34dp"
+        android:layout_height="34dp"
+        android:layout_marginTop="1dp"
         android:fontFamily="@font/lineseedkr_rg"
         android:gravity="center"
         android:text="0"
@@ -351,9 +357,9 @@
 
     <TextView
         android:id="@+id/DateText13"
-        android:layout_width="20dp"
-        android:layout_height="20dp"
-        android:layout_marginTop="15dp"
+        android:layout_width="34dp"
+        android:layout_height="34dp"
+        android:layout_marginTop="1dp"
         android:fontFamily="@font/lineseedkr_rg"
         android:gravity="center"
         android:text="0"
@@ -367,9 +373,9 @@
 
     <TextView
         android:id="@+id/DateText14"
-        android:layout_width="20dp"
-        android:layout_height="20dp"
-        android:layout_marginTop="15dp"
+        android:layout_width="34dp"
+        android:layout_height="34dp"
+        android:layout_marginTop="1dp"
         android:fontFamily="@font/lineseedkr_rg"
         android:gravity="center"
         android:text="0"
@@ -383,9 +389,9 @@
 
     <TextView
         android:id="@+id/DateText15"
-        android:layout_width="20dp"
-        android:layout_height="20dp"
-        android:layout_marginTop="15dp"
+        android:layout_width="34dp"
+        android:layout_height="34dp"
+        android:layout_marginTop="1dp"
         android:fontFamily="@font/lineseedkr_rg"
         android:gravity="center"
         android:text="0"
@@ -399,9 +405,9 @@
 
     <TextView
         android:id="@+id/DateText16"
-        android:layout_width="20dp"
-        android:layout_height="20dp"
-        android:layout_marginTop="15dp"
+        android:layout_width="34dp"
+        android:layout_height="34dp"
+        android:layout_marginTop="1dp"
         android:fontFamily="@font/lineseedkr_rg"
         android:gravity="center"
         android:text="0"
@@ -415,9 +421,9 @@
 
     <TextView
         android:id="@+id/DateText17"
-        android:layout_width="20dp"
-        android:layout_height="20dp"
-        android:layout_marginTop="15dp"
+        android:layout_width="34dp"
+        android:layout_height="34dp"
+        android:layout_marginTop="1dp"
         android:fontFamily="@font/lineseedkr_rg"
         android:gravity="center"
         android:text="0"
@@ -431,9 +437,9 @@
 
     <TextView
         android:id="@+id/DateText18"
-        android:layout_width="20dp"
-        android:layout_height="20dp"
-        android:layout_marginTop="15dp"
+        android:layout_width="34dp"
+        android:layout_height="34dp"
+        android:layout_marginTop="1dp"
         android:fontFamily="@font/lineseedkr_rg"
         android:gravity="center"
         android:text="0"
@@ -447,9 +453,9 @@
 
     <TextView
         android:id="@+id/DateText19"
-        android:layout_width="20dp"
-        android:layout_height="20dp"
-        android:layout_marginTop="15dp"
+        android:layout_width="34dp"
+        android:layout_height="34dp"
+        android:layout_marginTop="1dp"
         android:fontFamily="@font/lineseedkr_rg"
         android:gravity="center"
         android:text="0"
@@ -463,9 +469,9 @@
 
     <TextView
         android:id="@+id/DateText20"
-        android:layout_width="20dp"
-        android:layout_height="20dp"
-        android:layout_marginTop="15dp"
+        android:layout_width="34dp"
+        android:layout_height="34dp"
+        android:layout_marginTop="1dp"
         android:fontFamily="@font/lineseedkr_rg"
         android:gravity="center"
         android:text="0"
@@ -479,9 +485,9 @@
 
     <TextView
         android:id="@+id/DateText21"
-        android:layout_width="20dp"
-        android:layout_height="20dp"
-        android:layout_marginTop="15dp"
+        android:layout_width="34dp"
+        android:layout_height="34dp"
+        android:layout_marginTop="1dp"
         android:fontFamily="@font/lineseedkr_rg"
         android:gravity="center"
         android:text="0"
@@ -495,9 +501,9 @@
 
     <TextView
         android:id="@+id/DateText22"
-        android:layout_width="20dp"
-        android:layout_height="20dp"
-        android:layout_marginTop="15dp"
+        android:layout_width="34dp"
+        android:layout_height="34dp"
+        android:layout_marginTop="1dp"
         android:fontFamily="@font/lineseedkr_rg"
         android:gravity="center"
         android:text="0"
@@ -511,9 +517,9 @@
 
     <TextView
         android:id="@+id/DateText23"
-        android:layout_width="20dp"
-        android:layout_height="20dp"
-        android:layout_marginTop="15dp"
+        android:layout_width="34dp"
+        android:layout_height="34dp"
+        android:layout_marginTop="1dp"
         android:fontFamily="@font/lineseedkr_rg"
         android:gravity="center"
         android:text="0"
@@ -527,9 +533,9 @@
 
     <TextView
         android:id="@+id/DateText24"
-        android:layout_width="20dp"
-        android:layout_height="20dp"
-        android:layout_marginTop="15dp"
+        android:layout_width="34dp"
+        android:layout_height="34dp"
+        android:layout_marginTop="1dp"
         android:fontFamily="@font/lineseedkr_rg"
         android:gravity="center"
         android:text="0"
@@ -543,9 +549,9 @@
 
     <TextView
         android:id="@+id/DateText25"
-        android:layout_width="20dp"
-        android:layout_height="20dp"
-        android:layout_marginTop="15dp"
+        android:layout_width="34dp"
+        android:layout_height="34dp"
+        android:layout_marginTop="1dp"
         android:fontFamily="@font/lineseedkr_rg"
         android:gravity="center"
         android:text="0"
@@ -559,9 +565,9 @@
 
     <TextView
         android:id="@+id/DateText26"
-        android:layout_width="20dp"
-        android:layout_height="20dp"
-        android:layout_marginTop="15dp"
+        android:layout_width="34dp"
+        android:layout_height="34dp"
+        android:layout_marginTop="1dp"
         android:fontFamily="@font/lineseedkr_rg"
         android:gravity="center"
         android:text="0"
@@ -575,9 +581,9 @@
 
     <TextView
         android:id="@+id/DateText27"
-        android:layout_width="20dp"
-        android:layout_height="20dp"
-        android:layout_marginTop="15dp"
+        android:layout_width="34dp"
+        android:layout_height="34dp"
+        android:layout_marginTop="1dp"
         android:fontFamily="@font/lineseedkr_rg"
         android:gravity="center"
         android:text="0"
@@ -591,9 +597,9 @@
 
     <TextView
         android:id="@+id/DateText28"
-        android:layout_width="20dp"
-        android:layout_height="20dp"
-        android:layout_marginTop="15dp"
+        android:layout_width="34dp"
+        android:layout_height="34dp"
+        android:layout_marginTop="1dp"
         android:fontFamily="@font/lineseedkr_rg"
         android:gravity="center"
         android:text="0"
@@ -607,9 +613,9 @@
 
     <TextView
         android:id="@+id/DateText29"
-        android:layout_width="20dp"
-        android:layout_height="20dp"
-        android:layout_marginTop="15dp"
+        android:layout_width="34dp"
+        android:layout_height="34dp"
+        android:layout_marginTop="1dp"
         android:fontFamily="@font/lineseedkr_rg"
         android:gravity="center"
         android:text="0"
@@ -623,9 +629,9 @@
 
     <TextView
         android:id="@+id/DateText30"
-        android:layout_width="20dp"
-        android:layout_height="20dp"
-        android:layout_marginTop="15dp"
+        android:layout_width="34dp"
+        android:layout_height="34dp"
+        android:layout_marginTop="1dp"
         android:fontFamily="@font/lineseedkr_rg"
         android:gravity="center"
         android:text="0"
@@ -639,9 +645,9 @@
 
     <TextView
         android:id="@+id/DateText31"
-        android:layout_width="20dp"
-        android:layout_height="20dp"
-        android:layout_marginTop="15dp"
+        android:layout_width="34dp"
+        android:layout_height="34dp"
+        android:layout_marginTop="1dp"
         android:fontFamily="@font/lineseedkr_rg"
         android:gravity="center"
         android:text="0"
@@ -655,9 +661,9 @@
 
     <TextView
         android:id="@+id/DateText32"
-        android:layout_width="20dp"
-        android:layout_height="20dp"
-        android:layout_marginTop="15dp"
+        android:layout_width="34dp"
+        android:layout_height="34dp"
+        android:layout_marginTop="1dp"
         android:fontFamily="@font/lineseedkr_rg"
         android:gravity="center"
         android:text="0"
@@ -671,9 +677,9 @@
 
     <TextView
         android:id="@+id/DateText33"
-        android:layout_width="20dp"
-        android:layout_height="20dp"
-        android:layout_marginTop="15dp"
+        android:layout_width="34dp"
+        android:layout_height="34dp"
+        android:layout_marginTop="1dp"
         android:fontFamily="@font/lineseedkr_rg"
         android:gravity="center"
         android:text="0"
@@ -687,9 +693,9 @@
 
     <TextView
         android:id="@+id/DateText34"
-        android:layout_width="20dp"
-        android:layout_height="20dp"
-        android:layout_marginTop="15dp"
+        android:layout_width="34dp"
+        android:layout_height="34dp"
+        android:layout_marginTop="1dp"
         android:fontFamily="@font/lineseedkr_rg"
         android:gravity="center"
         android:text="0"
@@ -703,9 +709,9 @@
 
     <TextView
         android:id="@+id/DateText35"
-        android:layout_width="20dp"
-        android:layout_height="20dp"
-        android:layout_marginTop="15dp"
+        android:layout_width="34dp"
+        android:layout_height="34dp"
+        android:layout_marginTop="1dp"
         android:fontFamily="@font/lineseedkr_rg"
         android:gravity="center"
         android:text="0"
@@ -719,9 +725,9 @@
 
     <TextView
         android:id="@+id/DateText36"
-        android:layout_width="20dp"
-        android:layout_height="20dp"
-        android:layout_marginTop="15dp"
+        android:layout_width="34dp"
+        android:layout_height="34dp"
+        android:layout_marginTop="1dp"
         android:fontFamily="@font/lineseedkr_rg"
         android:gravity="center"
         android:text="0"
@@ -735,9 +741,9 @@
 
     <TextView
         android:id="@+id/DateText37"
-        android:layout_width="20dp"
-        android:layout_height="20dp"
-        android:layout_marginTop="15dp"
+        android:layout_width="34dp"
+        android:layout_height="34dp"
+        android:layout_marginTop="1dp"
         android:fontFamily="@font/lineseedkr_rg"
         android:gravity="center"
         android:text="0"
@@ -751,9 +757,9 @@
 
     <TextView
         android:id="@+id/DateText38"
-        android:layout_width="20dp"
-        android:layout_height="20dp"
-        android:layout_marginTop="15dp"
+        android:layout_width="34dp"
+        android:layout_height="34dp"
+        android:layout_marginTop="1dp"
         android:fontFamily="@font/lineseedkr_rg"
         android:gravity="center"
         android:text="0"
@@ -767,9 +773,9 @@
 
     <TextView
         android:id="@+id/DateText39"
-        android:layout_width="20dp"
-        android:layout_height="20dp"
-        android:layout_marginTop="15dp"
+        android:layout_width="34dp"
+        android:layout_height="34dp"
+        android:layout_marginTop="1dp"
         android:fontFamily="@font/lineseedkr_rg"
         android:gravity="center"
         android:text="0"
@@ -783,9 +789,9 @@
 
     <TextView
         android:id="@+id/DateText40"
-        android:layout_width="20dp"
-        android:layout_height="20dp"
-        android:layout_marginTop="15dp"
+        android:layout_width="34dp"
+        android:layout_height="34dp"
+        android:layout_marginTop="1dp"
         android:fontFamily="@font/lineseedkr_rg"
         android:gravity="center"
         android:text="0"
@@ -799,9 +805,9 @@
 
     <TextView
         android:id="@+id/DateText41"
-        android:layout_width="20dp"
-        android:layout_height="20dp"
-        android:layout_marginTop="15dp"
+        android:layout_width="34dp"
+        android:layout_height="34dp"
+        android:layout_marginTop="1dp"
         android:fontFamily="@font/lineseedkr_rg"
         android:gravity="center"
         android:text="0"
@@ -815,9 +821,9 @@
 
     <TextView
         android:id="@+id/DateText42"
-        android:layout_width="20dp"
-        android:layout_height="20dp"
-        android:layout_marginTop="15dp"
+        android:layout_width="34dp"
+        android:layout_height="34dp"
+        android:layout_marginTop="1dp"
         android:fontFamily="@font/lineseedkr_rg"
         android:gravity="center"
         android:text="0"
@@ -890,8 +896,9 @@
         android:id="@+id/OKText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="31dp"
-        android:layout_marginBottom="20dp"
+        android:layout_marginEnd="21dp"
+        android:layout_marginBottom="10dp"
+        android:padding="10dp"
         android:fontFamily="@font/lineseedkr_rg"
         android:gravity="center"
         android:text="확인"
@@ -905,8 +912,9 @@
         android:id="@+id/NOText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="31dp"
-        android:layout_marginBottom="20dp"
+        android:layout_marginEnd="21dp"
+        android:layout_marginBottom="10dp"
+        android:padding="10dp"
         android:fontFamily="@font/lineseedkr_rg"
         android:gravity="center"
         android:text="취소"

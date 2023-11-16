@@ -169,7 +169,8 @@ class LocationService : Service() {
         val defaultHandler = Thread.getDefaultUncaughtExceptionHandler()
 
         Thread.setDefaultUncaughtExceptionHandler { thread, throwable ->
-            logDatabase.addLogData(LogData("" ,throwable.message.toString()))
+            val datetime = LocalDateTime.now().withNano(0).format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"))
+            logDatabase.addLogData(LogData(datetime ,throwable.message.toString()))
             defaultHandler?.uncaughtException(thread, throwable)  // 이전 기본 처리기에 위임하여 앱이 종료되게 할 수 있습니다.
         }
 
