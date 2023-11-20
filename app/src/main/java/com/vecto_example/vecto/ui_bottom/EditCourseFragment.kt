@@ -2,6 +2,7 @@ package com.vecto_example.vecto.ui_bottom
 
 import android.annotation.SuppressLint
 import android.app.DatePickerDialog
+import android.content.Context
 import android.content.res.Resources
 import android.graphics.Color
 import android.graphics.PointF
@@ -14,12 +15,14 @@ import android.util.TypedValue
 import android.view.Gravity
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.vecto_example.vecto.LocationService
@@ -96,6 +99,9 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
     //UI관련
     private lateinit var DateText: TextView
 
+    var offset = 350
+
+    @SuppressLint("ClickableViewAccessibility")
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -104,22 +110,6 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
 
 
         DateText = binding.TextForLargeRight
-
-
-
-    /*  sample data */
-        /*VisitDatabase(requireContext()).addVisitData(VisitData("2023-11-08T10:00:00", "2023-11-08T11:00:00",
-            37.5112474, 127.098459, 37.5112474,127.098459, 60, ""))
-        LocationDatabase(requireContext()).addLocationData(LocationData("2023-11-08T10:00:00", 37.5112474, 127.098459))
-
-        VisitDatabase(requireContext()).addVisitData(VisitData("2023-11-08T11:00:00", "2023-11-08T13:00:00",
-            37.5126404, 127.102612, 37.5126404,127.102612, 120, ""))
-        LocationDatabase(requireContext()).addLocationData(LocationData("2023-11-08T11:00:00", 37.5126404, 127.102612))
-
-        VisitDatabase(requireContext()).addVisitData(VisitData("2023-11-08T17:00:00", "2023-11-08T19:00:00",
-            37.5145638, 127.108768, 37.5145638,127.108768, 120, ""))
-        LocationDatabase(requireContext()).addLocationData(LocationData("2023-11-08T17:00:00", 37.5145638, 127.108768))*/
-
 
         initMap()
 
@@ -240,7 +230,51 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
             setRecyclerView(DateText.text.toString())
         }
 
+        val topMargin = dpToPx(150f, requireContext()) // 상단에서 최소 150dp
+        val bottomMargin = dpToPx(100f, requireContext()) // 하단에서 최소 100dp
+        val screenHeight = Resources.getSystem().displayMetrics.heightPixels
+        var lastY = 0f
+
+        binding.slide.setOnTouchListener { view, event ->
+            val layoutParams = binding.EditLayout.layoutParams as ConstraintLayout.LayoutParams
+            when (event.action) {
+                MotionEvent.ACTION_DOWN -> {
+                    lastY = event.rawY
+                    true
+                }
+                MotionEvent.ACTION_MOVE -> {
+                    val newY = event.rawY
+                    val deltaY = newY - lastY
+                    var newHeight = layoutParams.height - deltaY.toInt()
+
+                    // 상단 마진과 하단 마진을 고려하여 새로운 높이를 조정합니다.
+                    newHeight = newHeight.coerceAtLeast(topMargin)
+                    newHeight = newHeight.coerceAtMost(screenHeight - bottomMargin)
+
+                    layoutParams.height = newHeight
+                    binding.EditLayout.layoutParams = layoutParams
+                    binding.EditLayout.requestLayout()
+
+                    lastY = newY
+                    true
+                }
+                MotionEvent.ACTION_UP -> {
+                    view.performClick()
+                    true
+                }
+                else -> false
+            }
+        }
+
         return binding.root
+    }
+
+    private fun dpToPx(dp: Float, context: Context): Int {
+        return TypedValue.applyDimension(
+            TypedValue.COMPLEX_UNIT_DIP,
+            dp,
+            context.resources.displayMetrics
+        ).toInt()
     }
 
 

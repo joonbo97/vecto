@@ -11,6 +11,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
@@ -21,6 +22,7 @@ import com.vecto_example.vecto.MainActivity
 import com.vecto_example.vecto.NotificationActivity
 import com.vecto_example.vecto.R
 import com.vecto_example.vecto.data.Auth
+import com.vecto_example.vecto.data.Auth.setUserData
 import com.vecto_example.vecto.databinding.FragmentMypageBinding
 import com.vecto_example.vecto.retrofit.VectoService
 import com.yalantis.ucrop.UCrop
@@ -123,6 +125,12 @@ class MypageFragment : Fragment() {
             navController.navigate(R.id.MypageInquiryFragment)
         }
 
+        binding.MypageMenu5.setOnClickListener {
+            Auth.setLoginFlag(false)
+            setUserData("", "", "", "", "")
+            Auth.token = ""
+            Toast.makeText(requireContext(), " 로그아웃 되었습니다.", Toast.LENGTH_SHORT).show()
+        }
 
         return binding.root
     }
@@ -213,4 +221,5 @@ class MypageFragment : Fragment() {
             }
         })
     }
+
 }

@@ -20,7 +20,7 @@ class GuideThirdFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         binding = FragmentGuideThirdBinding.inflate(inflater, container, false)
 
         val permission: Array<String> = arrayOf(Manifest.permission.POST_NOTIFICATIONS)
@@ -34,7 +34,8 @@ class GuideThirdFragment : Fragment() {
             }
             else
             {
-                (activity as? GuideActivity)?.moveToNextFragment()
+                //(activity as? GuideActivity)?.moveToNextFragment()
+                requireActivity().finish()
             }
 
         }

@@ -164,19 +164,33 @@
         android:id="@+id/EditLayout"
         android:layout_width="match_parent"
         android:layout_height="350dp"
-        android:background="@drawable/edit_background"
+        android:background="@drawable/bottom_dialog_box"
         android:clickable="true"
         android:elevation="10dp"
         android:focusable="true"
         app:layout_constraintBottom_toBottomOf="@+id/naver_map_Edit"
         tools:layout_editor_absoluteX="0dp">
 
+        <ImageView
+            android:id="@+id/slide"
+            android:layout_width="100dp"
+            android:layout_height="20dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
+            android:src="@drawable/slideline"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/LocationRecyclerView"
             android:layout_width="match_parent"
-            android:layout_height="285dp"
-            android:layout_marginTop="10dp"
+            android:layout_height="0dp"
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="55dp"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"

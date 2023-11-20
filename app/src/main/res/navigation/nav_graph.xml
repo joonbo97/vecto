@@ -33,7 +33,23 @@
         android:id="@+id/MypageFragment"
         android:name="com.vecto_example.vecto.ui_bottom.MypageFragment"
         android:label="fragment_mypage"
-        tools:layout="@layout/fragment_mypage"/>
+        tools:layout="@layout/fragment_mypage">
+        <action
+            android:id="@+id/action_MypageFragment_to_MypageSettingkakaoFragment"
+            app:destination="@id/MypageSettingkakaoFragment" />
+        <action
+            android:id="@+id/action_MypageFragment_to_MypageSettingFragment"
+            app:destination="@id/MypageSettingFragment" />
+        <action
+            android:id="@+id/action_MypageFragment_to_MypageLikepostFragment"
+            app:destination="@id/MypageLikepostFragment" />
+        <action
+            android:id="@+id/action_MypageFragment_to_MypagePostFragment"
+            app:destination="@id/MypagePostFragment" />
+        <action
+            android:id="@+id/action_MypageFragment_to_MypageInquiryFragment"
+            app:destination="@id/MypageInquiryFragment" />
+    </fragment>
 
     <fragment
         android:id="@+id/MypageSettingFragment"

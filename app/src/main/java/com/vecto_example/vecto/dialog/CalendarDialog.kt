@@ -95,10 +95,10 @@ class CalendarDialog (private val context: Context) {//deletepostdialog copy
         AfterButton.setOnClickListener {
             month++
 
-            if(month == 13)
+            if(month == 12)
             {
                 year++
-                month = 1
+                month = 0
             }
 
             initCalendar(year, month)

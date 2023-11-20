@@ -25,7 +25,7 @@ class GuideFourthFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         binding = FragmentGuideFourthBinding.inflate(inflater, container, false)
 
         //글자색 변경

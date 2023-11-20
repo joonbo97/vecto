@@ -16,10 +16,11 @@
 
         <ImageView
             android:id="@+id/AlarmIconImage"
-            android:layout_width="25dp"
-            android:layout_height="25dp"
-            android:layout_marginTop="55dp"
-            android:layout_marginEnd="30dp"
+            android:layout_width="45dp"
+            android:layout_height="45dp"
+            android:padding="10dp"
+            android:layout_marginTop="45dp"
+            android:layout_marginEnd="20dp"
             android:src="@drawable/alarmoff_icon"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
@@ -207,5 +208,46 @@
         app:layout_constraintBottom_toBottomOf="@+id/MypageMenu4"
         app:layout_constraintEnd_toEndOf="@+id/MypageMenu4"
         app:layout_constraintTop_toTopOf="@+id/MypageMenu4"
+        app:layout_constraintVertical_bias="0.5" />
+
+    <ImageView
+        android:id="@+id/MypageMenu5"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="15dp"
+        android:layout_marginEnd="10dp"
+        android:layout_marginBottom="15dp"
+        android:src="@drawable/mypage_menubox"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/MypageMenu4" />
+
+
+    <TextView
+        android:id="@+id/menuText5"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="30dp"
+        android:fontFamily="@font/lineseedkr_bd"
+        android:text="로그아웃"
+        android:textColor="@color/black"
+        android:textSize="15sp"
+        app:layout_constraintBottom_toBottomOf="@+id/MypageMenu5"
+        app:layout_constraintStart_toStartOf="@+id/MypageMenu5"
+        app:layout_constraintTop_toTopOf="@+id/MypageMenu5"
+        app:layout_constraintVertical_bias="0.53" />
+
+
+    <ImageView
+        android:id="@+id/mypageImage5"
+        android:layout_width="15dp"
+        android:layout_height="15dp"
+        android:src="@drawable/edit_profile_intro_image"
+        android:layout_marginEnd="30dp"
+        app:layout_constraintBottom_toBottomOf="@+id/MypageMenu5"
+        app:layout_constraintEnd_toEndOf="@+id/MypageMenu5"
+        app:layout_constraintTop_toTopOf="@+id/MypageMenu5"
         app:layout_constraintVertical_bias="0.5" />
 </androidx.constraintlayout.widget.ConstraintLayout>

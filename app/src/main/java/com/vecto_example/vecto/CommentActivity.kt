@@ -23,6 +23,8 @@ class CommentActivity : AppCompatActivity(), MyCommentAdapter.OnEditActionListen
     var editcommentId = -1
     var editcommentPosition = -1
 
+    var loadingFlag = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -71,10 +73,13 @@ class CommentActivity : AppCompatActivity(), MyCommentAdapter.OnEditActionListen
             else
             {
                 if(feedID != -1) {
-                    if(editFlag && editcommentId != -1)
-                        updateComment(VectoService.CommentUpdateRequest(editcommentId, binding.EditContent.text.toString()))
-                    else
-                        sendComment(feedID, binding.EditContent.text.toString())
+                    if(!loadingFlag) {
+                        startLoading()
+                        if (editFlag && editcommentId != -1)
+                            updateComment(VectoService.CommentUpdateRequest(editcommentId, binding.EditContent.text.toString()))
+                        else
+                            sendComment(feedID, binding.EditContent.text.toString())
+                    }
                 }
             }
         }
@@ -128,18 +133,19 @@ class CommentActivity : AppCompatActivity(), MyCommentAdapter.OnEditActionListen
                     binding.EditContent.text.clear()
 
                     loadComment(feedid)
+                    endLoading()
                 }
                 else{
                     Log.d("COMMENTADD", "성공했으나 서버 오류 ${response.errorBody()?.string()}")
                     Toast.makeText(this@CommentActivity, "오류가 발생하였습니다. 잠시후 다시 시도해주세요.", Toast.LENGTH_SHORT).show()
-
+                    endLoading()
                 }
             }
 
             override fun onFailure(call: Call<VectoService.VectoResponse<String>>, t: Throwable) {
                 Log.d("COMMENTADD", "실패")
                 Toast.makeText(this@CommentActivity, getString(R.string.APIFailToastMessage), Toast.LENGTH_SHORT).show()
-
+                endLoading()
             }
 
         })
@@ -215,10 +221,13 @@ class CommentActivity : AppCompatActivity(), MyCommentAdapter.OnEditActionListen
                     binding.EditCommentText.visibility = View.GONE
                     binding.EditContent.text.clear()
 
+                    endLoading()
+
                 } else {
                     // 실패
                     Log.d("UserUpdate", "업데이트 실패 : " + response.errorBody()?.string())
                     Toast.makeText(this@CommentActivity, "오류가 발생했습니다. 잠시후 다시 시도해주세요.", Toast.LENGTH_SHORT).show()
+                    endLoading()
                 }
 
             }
@@ -226,6 +235,7 @@ class CommentActivity : AppCompatActivity(), MyCommentAdapter.OnEditActionListen
                 // 네트워크 등 기타 에러 처리
                 Toast.makeText(this@CommentActivity, getText(R.string.APIFailToastMessage), Toast.LENGTH_SHORT).show()
                 Log.d("UserUpdate", "업데이트 실패 : " + t.message)
+                endLoading()
             }
         })
     }
@@ -251,6 +261,15 @@ class CommentActivity : AppCompatActivity(), MyCommentAdapter.OnEditActionListen
         binding.EditCommentBox.visibility = View.GONE
         binding.EditCommentText.visibility = View.GONE
 
+    }
+
+    private fun startLoading(){
+        binding.progressBar.visibility = View.VISIBLE
+        loadingFlag = true
+    }
+    private fun endLoading(){
+        binding.progressBar.visibility = View.GONE
+        loadingFlag = false
     }
 
 }

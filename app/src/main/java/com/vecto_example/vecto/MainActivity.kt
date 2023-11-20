@@ -76,6 +76,5 @@ class MainActivity : AppCompatActivity() {
 
     fun updateBottomNavigationSelection(menuItemId: Int) {
         binding.navView.selectedItemId = menuItemId
-
     }
 }

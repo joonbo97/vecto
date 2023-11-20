@@ -43,7 +43,7 @@ class VisitDatabase(private val context: Context) {
         }
 
         cursor.close()
-        //db.close()
+        db.close()
 
         return dataList
     }
