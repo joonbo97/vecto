@@ -178,16 +178,21 @@ class LocationService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        when (intent?.action) {
-            Actions.START_FOREGROUND -> {
-                startForegroundService()
-                requestLocationUpdates()
-                Log.d("NotificationDebug", "Notification ID: $NOTIFICATION_ID")
+        if(intent == null){
+            requestLocationUpdates()
+        }else {
+            when (intent.action) {
+                Actions.START_FOREGROUND -> {
+                    startForegroundService()
+                    requestLocationUpdates()
+                    Log.d("NotificationDebug", "Notification ID: $NOTIFICATION_ID")
 
-            }
-            Actions.STOP_FOREGROUND -> {
-                stopForegroundService()
-                stopLocationUpdates()
+                }
+
+                Actions.STOP_FOREGROUND -> {
+                    stopForegroundService()
+                    stopLocationUpdates()
+                }
             }
         }
         return START_STICKY

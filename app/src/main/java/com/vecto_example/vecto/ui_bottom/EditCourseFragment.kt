@@ -1,7 +1,6 @@
 package com.vecto_example.vecto.ui_bottom
 
 import android.annotation.SuppressLint
-import android.app.DatePickerDialog
 import android.content.Context
 import android.content.res.Resources
 import android.graphics.Color
@@ -50,7 +49,6 @@ import com.vecto_example.vecto.R
 import com.vecto_example.vecto.databinding.FragmentEditCourseBinding
 import com.vecto_example.vecto.dialog.CalendarDialog
 import com.vecto_example.vecto.dialog.PlacePopupWindow
-import okhttp3.internal.notify
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -113,11 +111,11 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
 
         initMap()
 
-
         binding.CalendarLargeBoxImage.setOnClickListener {
             showDatePickerDialog(null)
         }
 
+        //추천 경로 선택
         binding.editCourseButton.setOnClickListener {
             setButtonVisibility(0, false)
             setButtonVisibility(1, true)
@@ -131,7 +129,7 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
             val Start = LatLng(locationDataList.first().lat, locationDataList.first().lng)
             val End = LatLng(locationDataList.last().lat, locationDataList.last().lng)
 
-            //TMap API를 통한 경로
+            //TMap API를 통한 최적 경로 불러오기
             val tMapAPIService = TMapAPIService.create()
             val call = tMapAPIService.getRecommendedRoute(1, TMapAPIService.key(), Start.latitude, Start.longitude, End.latitude, End.longitude, "WGS84GEO", "WGS84GEO", "출발지_이름", "도착지_이름", 0)
 
@@ -252,6 +250,7 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
                     newHeight = newHeight.coerceAtMost(screenHeight - bottomMargin)
 
                     layoutParams.height = newHeight
+                    offset = (newHeight / resources.displayMetrics.density).toInt()
                     binding.EditLayout.layoutParams = layoutParams
                     binding.EditLayout.requestLayout()
 
@@ -705,7 +704,7 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
 
             val bounds = LatLngBounds(LatLng(minLat , minLng), LatLng(maxLat, maxLng))
             naverMap.moveCamera(CameraUpdate.fitBounds(bounds, 350))
-            val Offset = PointF(0.0f, (-350).toFloat())
+            val Offset = PointF(0.0f, (-offset).toFloat())
             naverMap.moveCamera(CameraUpdate.scrollBy(Offset))
 
         }
@@ -713,14 +712,13 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
 
     private fun moveCameraForVisit(visit: VisitData){
         val targetLatLng = LatLng(visit.lat_set, visit.lng_set)
-        val Offset = PointF(0.0f, (-350).toFloat())
+        val Offset = PointF(0.0f, (-offset).toFloat())
 
         naverMap.moveCamera(CameraUpdate.scrollTo(targetLatLng))
         naverMap.moveCamera(CameraUpdate.zoomTo(18.0))
         naverMap.moveCamera(CameraUpdate.scrollBy(Offset))
     }
 
-    @SuppressLint("NotifyDataSetChanged")
     private fun showDatePickerDialog(date: String?) {
         setButtonVisibility(0, false)
         setButtonVisibility(1, false)
@@ -730,14 +728,15 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
             val calendarDialog = CalendarDialog(requireContext())
             calendarDialog.onDateSelectedListener = this
             calendarDialog.showDialog()
+            DateText.text = "날짜를 선택해주세요."
+            setBlock(true)
         }
         else
         {
             DateText.text = date
-
-
             initRecyclerView()
             setRecyclerView(date)
+            setBlock(false)
         }
     }
 
@@ -765,14 +764,13 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
                     VisitDatabase(requireContext()).updateVisitData(data, newVisitData)
                     updateVisitData(data, newVisitData)
 
-                    addVisitMarker(data)
                     addButtonMarker(data, position)
                     addCircleOverlay(data)
 
                     moveCameraForVisit(data)
                     selectedVisitData = data
 
-                    Toast.makeText(context, "변경완료", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "선택한 장소로 변경이 완료되었습니다.", Toast.LENGTH_SHORT).show()
                 }
                 else
                 {
@@ -903,7 +901,7 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
         return selectedDateFormat.format(calendar.time)
     }
 
-    private fun getTimeDiff(datetime1: String, datetime2: String): Int{
+    private fun getTimeDiff(datetime1: String, datetime2: String): Int {
         val FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")
 
         val date1 = LocalDateTime.parse(datetime1, FORMAT)
@@ -1104,6 +1102,18 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
         binding.progressBar.visibility = View.GONE
     }
 
+    private fun setBlock(flag: Boolean){
+        if(flag) {
+            binding.constraintBlock.visibility = View.VISIBLE
+            binding.EditLayout.visibility = View.INVISIBLE
+            deleteOverlay()
+        }
+        else {
+            binding.constraintBlock.visibility = View.GONE
+            binding.EditLayout.visibility = View.VISIBLE
+        }
+    }
+
     override fun onDateSelected(date: String) {
         DateText.text = date
         naverMap.onSymbolClickListener = null
@@ -1111,5 +1121,6 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
         initRecyclerView()
 
         setRecyclerView(date)
+        setBlock(false)
     }
 }

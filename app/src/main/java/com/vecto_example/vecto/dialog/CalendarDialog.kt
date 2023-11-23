@@ -11,7 +11,6 @@ import android.widget.Toast
 import androidx.core.content.ContextCompat
 import com.vecto_example.vecto.R
 import com.vecto_example.vecto.data.VisitDatabase
-import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Calendar
@@ -83,7 +82,7 @@ class CalendarDialog (private val context: Context) {//deletepostdialog copy
             if (month == 0)
             {
                 year--
-                month = 12
+                month = 11
             }
 
             initCalendar(year, month)
@@ -95,7 +94,7 @@ class CalendarDialog (private val context: Context) {//deletepostdialog copy
         AfterButton.setOnClickListener {
             month++
 
-            if(month == 12)
+            if(month == 11)
             {
                 year++
                 month = 0
