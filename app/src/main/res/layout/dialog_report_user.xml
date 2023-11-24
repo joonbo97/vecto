@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="300dp"
+    android:layout_height="400dp"
+    android:background="@drawable/dialog_background">
+
+    <ImageView
+        android:id="@+id/DialogImage"
+        android:layout_width="150dp"
+        android:layout_height="100dp"
+        android:layout_marginTop="30dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/edit_dialog_image" />
+
+    <TextView
+        android:id="@+id/Guide_TextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:fontFamily="@font/lineseedkr_bd"
+        android:gravity="center"
+        android:lineSpacingExtra="4sp"
+        android:text="신고사유를 선택해주세요."
+        android:textColor="@color/black"
+        android:textSize="15sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/DialogImage" />
+
+    <RadioGroup
+        android:id="@+id/radioGroupReport"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
+        android:background="@drawable/report_content_box"
+        android:paddingStart="10dp"
+        android:paddingEnd="10dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/Guide_TextView">
+
+        <RadioButton
+            android:id="@+id/radioButton0"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:textSize="13sp"
+            android:textColor="@color/white"
+            android:button="@drawable/selector_report_radio_button"
+            android:layoutDirection="rtl"
+            android:text="비매너 사용자에요" />
+
+        <RadioButton
+            android:id="@+id/radioButton1"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:textSize="13sp"
+            android:textColor="@color/white"
+            android:button="@drawable/selector_report_radio_button"
+            android:layoutDirection="rtl"
+            android:text="욕설을 해요" />
+
+        <RadioButton
+            android:id="@+id/radioButton2"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:textSize="13sp"
+            android:textColor="@color/white"
+            android:button="@drawable/selector_report_radio_button"
+            android:layoutDirection="rtl"
+            android:text="성희롱/성폭력 행위가 있어요" />
+
+        <RadioButton
+            android:id="@+id/radioButton3"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:textSize="13sp"
+            android:textColor="@color/white"
+            android:button="@drawable/selector_report_radio_button"
+            android:layoutDirection="rtl"
+            android:text="다른 문제에요" />
+    </RadioGroup>
+
+    <ImageView
+        android:id="@+id/ReportContentBox"
+        android:layout_width="0dp"
+        android:layout_height="100dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginTop="10dp"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/radioGroupReport"
+        app:srcCompat="@drawable/report_user_text_box" />
+
+    <EditText
+        android:id="@+id/ReportContentEditText"
+        android:layout_width="240dp"
+        android:layout_marginStart="30dp"
+        android:layout_marginEnd="30dp"
+        android:layout_height="80dp"
+        android:gravity="top"
+        android:background="@null"
+        android:ems="20"
+        android:hint="신고 내용을 입력하세요."
+        android:visibility="gone"
+        android:scrollHorizontally ="true"
+        android:maxLines="6"
+        android:lines="6"
+        android:minLines="1"
+        android:textColorHint="@color/vecto_gray"
+        android:textColor="@color/black"
+        android:textSize="15sp"
+        android:inputType="textMultiLine"
+        android:text=""
+        app:layout_constraintBottom_toBottomOf="@+id/ReportContentBox"
+        app:layout_constraintEnd_toEndOf="@+id/ReportContentBox"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="@+id/ReportContentBox"
+        app:layout_constraintTop_toTopOf="@+id/ReportContentBox"
+        app:layout_constraintVertical_bias="0.5" />
+
+
+
+    <ImageView
+        android:id="@+id/ButtonImage"
+        android:layout_width="300dp"
+        android:layout_height="56dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:srcCompat="@drawable/dialog_button_image" />
+
+    <TextView
+        android:id="@+id/ButtonText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/lineseedkr_bd"
+        android:text="신고하기"
+        android:textColor="@color/white"
+        android:textSize="20sp"
+        app:layout_constraintBottom_toBottomOf="@+id/ButtonImage"
+        app:layout_constraintEnd_toEndOf="@+id/ButtonImage"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="@+id/ButtonImage"
+        app:layout_constraintTop_toTopOf="@+id/ButtonImage"
+        app:layout_constraintVertical_bias="0.5" />
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -40,8 +40,8 @@ class CalendarDialog (private val context: Context) {//deletepostdialog copy
             WindowManager.LayoutParams.WRAP_CONTENT,
             WindowManager.LayoutParams.WRAP_CONTENT
         )
-        dialog.setCanceledOnTouchOutside(true)
-        dialog.setCancelable(true)
+        dialog.setCanceledOnTouchOutside(false)
+        dialog.setCancelable(false)
 
         val currentCalendar = Calendar.getInstance()
         year = currentCalendar.get(Calendar.YEAR)

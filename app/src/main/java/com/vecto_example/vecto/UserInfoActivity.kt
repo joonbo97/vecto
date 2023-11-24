@@ -12,6 +12,7 @@ import com.bumptech.glide.Glide
 import com.vecto_example.vecto.data.Auth
 import com.vecto_example.vecto.databinding.ActivityUserInfoBinding
 import com.vecto_example.vecto.dialog.ReportPopupWindow
+import com.vecto_example.vecto.dialog.ReportUserDialog
 import com.vecto_example.vecto.retrofit.VectoService
 import com.vecto_example.vecto.ui_bottom.MypostAdapter
 import com.vecto_example.vecto.ui_bottom.MysearchpostAdapter
@@ -78,7 +79,13 @@ class UserInfoActivity : AppCompatActivity() {
         binding.MenuIcon.setOnClickListener {
             val reportPopupWindow = ReportPopupWindow(this,
                 reportListener = {
-                    //TODO 신고하기
+
+                    val reportUserDialog = ReportUserDialog(this)
+                    reportUserDialog.showDialog()
+                    reportUserDialog.onOkButtonClickListener = {
+
+                    }
+
                     Toast.makeText(this@UserInfoActivity, "신고처리 되었습니다. 검토후 조치 예정입니다.", Toast.LENGTH_SHORT).show()
                 }
             )
