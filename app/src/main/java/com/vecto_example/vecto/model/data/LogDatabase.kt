@@ -1,4 +1,4 @@
-package com.vecto_example.vecto.data
+package com.vecto_example.vecto.model.data
 
 import android.content.ContentValues
 import android.content.Context

@@ -10,7 +10,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.ContextCompat
 import com.vecto_example.vecto.R
-import com.vecto_example.vecto.data.VisitDatabase
+import com.vecto_example.vecto.model.data.VisitDatabase
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Calendar

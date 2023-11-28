@@ -5,8 +5,8 @@ import android.os.Bundle
 import android.view.View
 import androidx.activity.OnBackPressedCallback
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.vecto_example.vecto.data.Auth
-import com.vecto_example.vecto.data.NotificationDatabase
+import com.vecto_example.vecto.model.data.Auth
+import com.vecto_example.vecto.model.data.NotificationDatabase
 import com.vecto_example.vecto.databinding.ActivityNotificationBinding
 
 class NotificationActivity : AppCompatActivity() {

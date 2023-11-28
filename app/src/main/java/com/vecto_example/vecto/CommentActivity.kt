@@ -7,7 +7,7 @@ import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.vecto_example.vecto.data.Auth
+import com.vecto_example.vecto.model.data.Auth
 import com.vecto_example.vecto.databinding.ActivityCommentBinding
 import com.vecto_example.vecto.dialog.LoginRequestDialog
 import com.vecto_example.vecto.retrofit.VectoService
@@ -78,7 +78,7 @@ class CommentActivity : AppCompatActivity(), MyCommentAdapter.OnEditActionListen
                         if (editFlag && editcommentId != -1)
                             updateComment(VectoService.CommentUpdateRequest(editcommentId, binding.EditContent.text.toString()))
                         else
-                            sendComment(feedID, binding.EditContent.text.toString())
+                            addComment(feedID, binding.EditContent.text.toString())
                     }
                 }
             }
@@ -120,7 +120,7 @@ class CommentActivity : AppCompatActivity(), MyCommentAdapter.OnEditActionListen
     }
 
 
-    private fun sendComment(feedid: Int, text: String) {
+    private fun addComment(feedid: Int, text: String) {
         val vectoService = VectoService.create()
 
         val call = vectoService.sendComment("Bearer ${Auth.token}", VectoService.CommentRequest(feedid, text))

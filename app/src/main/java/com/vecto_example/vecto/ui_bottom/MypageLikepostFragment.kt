@@ -11,7 +11,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.vecto_example.vecto.R
-import com.vecto_example.vecto.data.Auth
+import com.vecto_example.vecto.model.data.Auth
 import com.vecto_example.vecto.databinding.FragmentMypageLikepostBinding
 import com.vecto_example.vecto.retrofit.VectoService
 import retrofit2.Call

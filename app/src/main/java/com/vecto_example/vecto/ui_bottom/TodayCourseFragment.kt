@@ -25,10 +25,10 @@ import com.vecto_example.vecto.Actions
 import com.vecto_example.vecto.LocationService
 import com.vecto_example.vecto.MainActivity
 import com.vecto_example.vecto.MainActivity.DataStoreUtils.myDataStore
-import com.vecto_example.vecto.data.LocationData
-import com.vecto_example.vecto.data.LocationDatabase
-import com.vecto_example.vecto.data.VisitData
-import com.vecto_example.vecto.data.VisitDatabase
+import com.vecto_example.vecto.model.data.LocationData
+import com.vecto_example.vecto.model.data.LocationDatabase
+import com.vecto_example.vecto.model.data.VisitData
+import com.vecto_example.vecto.model.data.VisitDatabase
 import com.vecto_example.vecto.dialog.EndServiceDialog
 import com.vecto_example.vecto.dialog.StartServiceDialog
 import com.vecto_example.vecto.guide.GuideActivity

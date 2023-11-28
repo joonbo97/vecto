@@ -15,8 +15,8 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.vecto_example.vecto.data.LocationData
-import com.vecto_example.vecto.data.VisitData
+import com.vecto_example.vecto.model.data.LocationData
+import com.vecto_example.vecto.model.data.VisitData
 import com.vecto_example.vecto.retrofit.VectoService
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
@@ -29,7 +29,7 @@ import com.naver.maps.map.OnMapReadyCallback
 import com.naver.maps.map.overlay.Marker
 import com.naver.maps.map.overlay.OverlayImage
 import com.naver.maps.map.overlay.PathOverlay
-import com.vecto_example.vecto.data.Auth
+import com.vecto_example.vecto.model.data.Auth
 import com.vecto_example.vecto.databinding.ActivityPostDetailBinding
 import retrofit2.Call
 import retrofit2.Callback

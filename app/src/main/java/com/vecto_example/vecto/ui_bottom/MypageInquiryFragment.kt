@@ -16,7 +16,7 @@ import com.vecto_example.vecto.LoginActivity
 import com.vecto_example.vecto.MainActivity
 import com.vecto_example.vecto.PolicyActivity
 import com.vecto_example.vecto.R
-import com.vecto_example.vecto.data.Auth
+import com.vecto_example.vecto.model.data.Auth
 import com.vecto_example.vecto.databinding.FragmentMypageInquiryBinding
 import java.io.File
 import java.io.FileInputStream

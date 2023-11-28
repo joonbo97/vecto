@@ -8,8 +8,8 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.vecto_example.vecto.R
-import com.vecto_example.vecto.data.PathData
-import com.vecto_example.vecto.data.VisitData
+import com.vecto_example.vecto.model.data.PathData
+import com.vecto_example.vecto.model.data.VisitData
 import java.lang.IllegalArgumentException
 
 
@@ -94,10 +94,63 @@ class MyCourseAdapter(private val context: Context, private val itemClickListene
 
             if (adapterPosition == selectedPosition) {
                 boximageView.setImageResource(R.drawable.course_visitbox_select)
+
+                if(adapterPosition == 0)
+                {
+                    if(visitdata.size == 1) {
+                        imageView.setImageResource(R.drawable.course_visit_only_select)
+                    }
+                    else {
+                        imageView.setImageResource(R.drawable.course_visit_top_select)
+                    }
+                }
+                else if(adapterPosition == visitdata.size + pathdata.size - 1)
+                {
+                        imageView.setImageResource(R.drawable.course_visit_bottom_select)
+                }
+                else
+                {
+                    if(item.name.isNotEmpty())
+                        imageView.setImageResource(R.drawable.course_visit_middle_select)
+                }
             } else {
                 // 나머지 아이템은 기본 이미지로 설정
                 boximageView.setImageResource(R.drawable.course_visitbox)
+
+                if(adapterPosition == 0)
+                {
+                    if(item.name.isNotEmpty())
+                    {
+                        if(visitdata.size == 1)
+                            imageView.setImageResource(R.drawable.course_visit_only_on)
+                        else
+                            imageView.setImageResource(R.drawable.course_visit_top_on)
+                    }
+                    else
+                    {
+                        if(visitdata.size == 1)
+                            imageView.setImageResource(R.drawable.course_visit_only_off)
+                        else
+                            imageView.setImageResource(R.drawable.course_visit_top_off)
+                    }
+                }
+                else if(adapterPosition == visitdata.size + pathdata.size - 1)
+                {
+                    if(item.name.isNotEmpty())
+                        imageView.setImageResource(R.drawable.course_visit_bottom_on)
+                    else
+                        imageView.setImageResource(R.drawable.course_visit_bottom_off)
+                }
+                else
+                {
+                    if(item.name.isNotEmpty())
+                        imageView.setImageResource(R.drawable.course_visit_middle_on)
+                    else
+                        imageView.setImageResource(R.drawable.course_visit_middle_off)
+                }
             }
+
+
 
             if(visitdata.size > 1) {
                 if (adapterPosition == selectedPosition - 1 && selectedPosition != -1) { //왼쪽(위쪽의 데이터)
@@ -180,7 +233,6 @@ class MyCourseAdapter(private val context: Context, private val itemClickListene
             if (position != RecyclerView.NO_POSITION) {
 
                 // 선택된 위치 업데이트
-                val prevSelectedPosition = selectedPosition
                 selectedPosition = position
 
 

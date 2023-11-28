@@ -1,8 +1,8 @@
 package com.vecto_example.vecto.retrofit
 
-import com.vecto_example.vecto.data.LocationData
-import com.vecto_example.vecto.data.VisitData
-import com.vecto_example.vecto.data.VisitDataForWite
+import com.vecto_example.vecto.model.data.LocationData
+import com.vecto_example.vecto.model.data.VisitData
+import com.vecto_example.vecto.model.data.VisitDataForWite
 import okhttp3.MultipartBody
 import retrofit2.Call
 import retrofit2.Retrofit
@@ -191,6 +191,10 @@ interface VectoService {
         @Body updatePostData: UpdatePostRequest
     ): Call<VectoResponse<String>>
 
+    @GET("feed/feeds/personal")
+    fun getSearchFeedList(
+        @Header("Authorization") authorization: String
+    ): Call<VectoResponse<List<Int>>>
 
 
 

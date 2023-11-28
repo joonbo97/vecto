@@ -27,12 +27,12 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.vecto_example.vecto.LoginActivity
 import com.vecto_example.vecto.MainActivity
-import com.vecto_example.vecto.data.Auth
-import com.vecto_example.vecto.data.LocationData
-import com.vecto_example.vecto.data.LocationDatabase
-import com.vecto_example.vecto.data.VisitData
-import com.vecto_example.vecto.data.VisitDataForWite
-import com.vecto_example.vecto.data.VisitDatabase
+import com.vecto_example.vecto.model.data.Auth
+import com.vecto_example.vecto.model.data.LocationData
+import com.vecto_example.vecto.model.data.LocationDatabase
+import com.vecto_example.vecto.model.data.VisitData
+import com.vecto_example.vecto.model.data.VisitDataForWite
+import com.vecto_example.vecto.model.data.VisitDatabase
 import com.vecto_example.vecto.dialog.LoginRequestDialog
 import com.vecto_example.vecto.dialog.WriteBottomDialog
 import com.vecto_example.vecto.dialog.WriteNameEmptyDialog
@@ -364,7 +364,7 @@ class WriteFragment : Fragment(), OnMapReadyCallback, CalendarDialog.OnDateSelec
                 visitDataList = selectedItems.toMutableList()
 
                 address = MutableList(visitDataList.size) {""}
-                visitDataForWriteList = MutableList(visitDataList.size){VisitDataForWite("", "", 0.0, 0.0, 0.0, 0.0, 0, "", "")}
+                visitDataForWriteList = MutableList(visitDataList.size){ VisitDataForWite("", "", 0.0, 0.0, 0.0, 0.0, 0, "", "") }
 
 
                 for(i in 0 until visitDataList.size)

@@ -9,7 +9,7 @@ import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import com.vecto_example.vecto.data.Auth
+import com.vecto_example.vecto.model.data.Auth
 import com.vecto_example.vecto.databinding.ActivityUserInfoBinding
 import com.vecto_example.vecto.dialog.ReportPopupWindow
 import com.vecto_example.vecto.dialog.ReportUserDialog

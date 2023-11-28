@@ -7,7 +7,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.vecto_example.vecto.data.VisitData
+import com.vecto_example.vecto.model.data.VisitData
 
 class VisitNumberAdapter(private val context: Context): RecyclerView.Adapter<VisitNumberAdapter.ViewHolder>() {
     val visitdataList = mutableListOf<VisitData>()

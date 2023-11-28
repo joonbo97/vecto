@@ -21,8 +21,8 @@ import com.vecto_example.vecto.LoginActivity
 import com.vecto_example.vecto.MainActivity
 import com.vecto_example.vecto.NotificationActivity
 import com.vecto_example.vecto.R
-import com.vecto_example.vecto.data.Auth
-import com.vecto_example.vecto.data.Auth.setUserData
+import com.vecto_example.vecto.model.data.Auth
+import com.vecto_example.vecto.model.data.Auth.setUserData
 import com.vecto_example.vecto.databinding.FragmentMypageBinding
 import com.vecto_example.vecto.retrofit.VectoService
 import com.yalantis.ucrop.UCrop

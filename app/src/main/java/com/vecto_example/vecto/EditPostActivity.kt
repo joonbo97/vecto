@@ -34,12 +34,12 @@ import com.naver.maps.map.OnMapReadyCallback
 import com.naver.maps.map.overlay.Marker
 import com.naver.maps.map.overlay.OverlayImage
 import com.naver.maps.map.overlay.PathOverlay
-import com.vecto_example.vecto.data.Auth
-import com.vecto_example.vecto.data.LocationData
-import com.vecto_example.vecto.data.LocationDatabase
-import com.vecto_example.vecto.data.VisitData
-import com.vecto_example.vecto.data.VisitDataForWite
-import com.vecto_example.vecto.data.VisitDatabase
+import com.vecto_example.vecto.model.data.Auth
+import com.vecto_example.vecto.model.data.LocationData
+import com.vecto_example.vecto.model.data.LocationDatabase
+import com.vecto_example.vecto.model.data.VisitData
+import com.vecto_example.vecto.model.data.VisitDataForWite
+import com.vecto_example.vecto.model.data.VisitDatabase
 import com.vecto_example.vecto.databinding.ActivityEditPostBinding
 import com.vecto_example.vecto.dialog.CalendarDialog
 import com.vecto_example.vecto.dialog.LoginRequestDialog
@@ -417,7 +417,7 @@ class EditPostActivity : AppCompatActivity(), OnMapReadyCallback,
                 visitDataList = selectedItems.toMutableList()
 
                 address = MutableList(visitDataList.size) {""}
-                visitDataForWriteList = MutableList(visitDataList.size){VisitDataForWite("", "", 0.0, 0.0, 0.0, 0.0, 0, "", "")}
+                visitDataForWriteList = MutableList(visitDataList.size){ VisitDataForWite("", "", 0.0, 0.0, 0.0, 0.0, 0, "", "") }
 
 
                 for(i in 0 until visitDataList.size)

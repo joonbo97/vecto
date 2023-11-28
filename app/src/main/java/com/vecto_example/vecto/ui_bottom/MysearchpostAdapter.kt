@@ -18,7 +18,7 @@ import com.vecto_example.vecto.CommentActivity
 import com.vecto_example.vecto.LoginActivity
 import com.vecto_example.vecto.PostDetailActivity
 import com.vecto_example.vecto.UserInfoActivity
-import com.vecto_example.vecto.data.Auth
+import com.vecto_example.vecto.model.data.Auth
 import com.vecto_example.vecto.dialog.LoginRequestDialog
 import com.vecto_example.vecto.retrofit.VectoService
 import com.google.gson.Gson
