@@ -7,6 +7,8 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="red">#FFFF0000</color>
+    <color name="green">#FF00FF00</color>
     <color name="vecto_main">#FFF2F6FF</color>
     <color name="vecto_theme_orange">#FFFD7156</color>
     <color name="vecto_theme_blue">#FF4696EB</color>
@@ -22,5 +24,6 @@
     <color name="detail_gray">#FF66727E</color>
     <color name="progress_background">#4D000000</color>
     <color name="edit_gray">#8C97A1</color>
+    <color name="vecto_warning">#FF951F</color>
     <color name="progress_background2">#B3000000</color>
 </resources>
