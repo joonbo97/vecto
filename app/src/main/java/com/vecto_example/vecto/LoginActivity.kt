@@ -61,7 +61,7 @@ class LoginActivity : AppCompatActivity() {
         }
 
 
-        KakaoSdk.init(this, "1ad70f21b84b4b2472d7b036d0fc40ce")
+        KakaoSdk.init(this, BuildConfig.KAKAO_KEY)
 
 
         binding.LoginBoxKakao.setOnClickListener {
