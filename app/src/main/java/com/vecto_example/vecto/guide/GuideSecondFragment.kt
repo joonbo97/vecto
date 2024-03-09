@@ -8,6 +8,8 @@ import android.view.ViewGroup
 import com.vecto_example.vecto.databinding.FragmentGuideSecondBinding
 
 class GuideSecondFragment : Fragment() {
+    /*   절전 모드 해제 안내를 위한 Guide Fragment   */
+
     private lateinit var binding: FragmentGuideSecondBinding
 
     override fun onCreateView(

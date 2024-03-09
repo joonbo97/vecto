@@ -12,6 +12,8 @@ import androidx.core.content.ContextCompat
 import com.vecto_example.vecto.databinding.FragmentGuideFirstBinding
 
 class GuideFirstFragment : Fragment() {
+    /*   위치 권한 요청 안내를 위한 Guide Fragment   */
+
     private lateinit var binding: FragmentGuideFirstBinding
 
     override fun onCreateView(
@@ -34,7 +36,7 @@ class GuideFirstFragment : Fragment() {
                     requireActivity(),
                     permission,
                     LOCATION_PERMISSION_REQUEST_CODE
-                ) //권한이 하나 라도 없으면 권한에 대한 허가 요청
+                )
             }
             else
             {

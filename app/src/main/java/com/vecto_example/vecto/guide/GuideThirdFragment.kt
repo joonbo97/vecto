@@ -12,6 +12,8 @@ import androidx.core.content.ContextCompat
 import com.vecto_example.vecto.databinding.FragmentGuideThirdBinding
 
 class GuideThirdFragment : Fragment() {
+    /*   알림 권한 요청 안내를 위한 Guide Fragment   */
+
     private lateinit var binding: FragmentGuideThirdBinding
     companion object {
         private const val NOTIFICATION_PERMISSION_REQUEST_CODE = 1500
@@ -34,7 +36,6 @@ class GuideThirdFragment : Fragment() {
             }
             else
             {
-                //(activity as? GuideActivity)?.moveToNextFragment()
                 requireActivity().finish()
             }
 

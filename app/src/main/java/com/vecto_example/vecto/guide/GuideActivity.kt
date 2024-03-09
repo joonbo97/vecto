@@ -9,6 +9,8 @@ import com.vecto_example.vecto.databinding.ActivityGuideBinding
 import java.lang.IllegalArgumentException
 
 class GuideActivity : AppCompatActivity() {
+    /*   Guide Fragment (1 ~ 3) 를 위한 Activity   */
+
     private lateinit var binding: ActivityGuideBinding
     private lateinit var guideViewPager: ViewPager2
 
@@ -32,14 +34,14 @@ class GuideActivity : AppCompatActivity() {
 
     fun moveToNextFragment() {
         val currentItem = guideViewPager.currentItem
-        if (currentItem < 3) {
+        if (currentItem < 2) {
             guideViewPager.currentItem = currentItem + 1
         }
     }
 
     inner class GuidePagerAdapter(activity: AppCompatActivity): FragmentStateAdapter(activity){
         override fun getItemCount(): Int {
-            return 4
+            return 3
         }
 
         override fun createFragment(position: Int): Fragment {
@@ -47,7 +49,7 @@ class GuideActivity : AppCompatActivity() {
                 0 -> GuideFirstFragment()
                 1 -> GuideSecondFragment()
                 2 -> GuideThirdFragment()
-                3 -> GuideFourthFragment()
+                //3 -> GuideFourthFragment()
                 else -> throw IllegalArgumentException("Invalid position: $position")
             }
         }

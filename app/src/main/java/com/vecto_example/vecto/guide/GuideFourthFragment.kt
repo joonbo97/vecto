@@ -17,6 +17,9 @@ import com.vecto_example.vecto.R
 import com.vecto_example.vecto.databinding.FragmentGuideFourthBinding
 
 class GuideFourthFragment : Fragment() {
+    /*   플레이스토어 정책으로 인해 Foreground 사용으로 인해 사용하지 않는 코드   */
+    /*   백그라운드 권한 요청 안내를 위한 Guide Fragment   */
+
     private lateinit var binding: FragmentGuideFourthBinding
 
     companion object {
