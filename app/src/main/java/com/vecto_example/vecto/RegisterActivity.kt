@@ -7,7 +7,6 @@ import android.os.CountDownTimer
 import android.util.Log
 import android.view.View
 import android.widget.EditText
-import android.widget.ImageView
 import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.core.widget.addTextChangedListener
@@ -33,6 +32,10 @@ class RegisterActivity : AppCompatActivity() {
 
     var idDuplicateFlag = false
     var emailDuplicateFlag = false
+
+    enum class Type {
+        ID, NICKNAME, PASSWORD, EMAIL, EMAILVERIFY
+    }
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -231,21 +234,21 @@ class RegisterActivity : AppCompatActivity() {
         /*   아이디 형식 체크   */
         val input = editTextID.text.toString()
 
-        return handleValidationResult(ValidationUtils.isValidId(input), 0)
+        return handleValidationResult(ValidationUtils.isValidId(input), Type.ID)
     }
 
     private fun checkNickname(): Boolean{
         /*   닉네임 형식 체크   */
         val input = editTextNickname.text.toString()
 
-        return handleValidationResult(ValidationUtils.isValidNickname(input), 1)
+        return handleValidationResult(ValidationUtils.isValidNickname(input), Type.NICKNAME)
     }
 
     private fun checkPW(): Boolean{
         /*   비밀번호 형식 체크   */
         val input = editTextPW.text.toString()
 
-        return handleValidationResult(ValidationUtils.isValidPw(input), 2)
+        return handleValidationResult(ValidationUtils.isValidPw(input), Type.PASSWORD)
     }
 
     private fun checkPWverify(): Boolean{
@@ -266,26 +269,25 @@ class RegisterActivity : AppCompatActivity() {
         /*   이메일 형식 체크   */
         val input = editTextEmail.text.toString()
 
-        return handleValidationResult(ValidationUtils.isValidEmail(input), 3)
+        return handleValidationResult(ValidationUtils.isValidEmail(input), Type.EMAIL)
     }
 
     private fun checkEmailverify(): Boolean{
         /*   이메일 인증 공란 확인   */
         val input = editTextEmailCode.text.toString()
 
-        return handleValidationResult(ValidationUtils.isValidEmailVerify(input), 4)
+        return handleValidationResult(ValidationUtils.isValidEmailVerify(input), Type.EMAILVERIFY)
     }
 
 
-    private fun handleValidationResult(validationResult: ValidationUtils.ValidationResult, type: Int): Boolean{
+    private fun handleValidationResult(validationResult: ValidationUtils.ValidationResult, type: Type): Boolean{
         /*   ValidationResult 에 따른 결과 처리   */
-        /*   0: Id, 1: Nickname, 2: PW, 3: Email, 4: Email Code   */
 
         return when(validationResult){
             ValidationUtils.ValidationResult.VALID -> {
                 //유효함
                 when (type) {
-                    0 -> {//ID
+                    Type.ID -> {//ID
                         if(idDuplicateFlag)//중복확인 완료
                         {
                             binding.IdNotificationText.setTextColor(ContextCompat.getColor(this, R.color.green))
@@ -297,15 +299,15 @@ class RegisterActivity : AppCompatActivity() {
                             binding.IdNotificationText.text = "중복확인을 진행해 주세요."
                         }
                     }
-                    1 -> {//Nickname
+                    Type.NICKNAME -> {//Nickname
                         binding.NicknameNotificationText.setTextColor(ContextCompat.getColor(this, R.color.green))
                         binding.NicknameNotificationText.text = "사용 가능한 닉네임 입니다."
                     }
-                    2 -> {//PW
+                    Type.PASSWORD -> {//PW
                         binding.PwNotificationText.setTextColor(ContextCompat.getColor(this, R.color.green))
                         binding.PwNotificationText.text = "사용 가능한 비밀번호 입니다."
                     }
-                    3 -> {//Email
+                    Type.EMAIL -> {//Email
                         if(emailDuplicateFlag)
                         {
                             binding.EmailNotificationText.setTextColor(ContextCompat.getColor(this, R.color.green))
@@ -318,10 +320,7 @@ class RegisterActivity : AppCompatActivity() {
                         }
 
                     }
-                    4 -> {//Email Code
-
-                    }
-                    else -> {
+                    Type.EMAILVERIFY -> {//Email Code
 
                     }
                 }
@@ -332,38 +331,35 @@ class RegisterActivity : AppCompatActivity() {
             ValidationUtils.ValidationResult.EMPTY -> {
                 //비어있음
                 when (type) {
-                    0 -> {//ID
+                    Type.ID -> {//ID
                         Toast.makeText(this, "아이디 항목이 비어있습니다.", Toast.LENGTH_SHORT).show()
 
                         binding.IdNotificationText.setTextColor(ContextCompat.getColor(this, R.color.red))
                         binding.IdNotificationText.text = "아이디를 입력해주세요."
                     }
-                    1 -> {//Nickname
+                    Type.NICKNAME -> {//Nickname
                         Toast.makeText(this, "닉네임 항목이 비어있습니다.", Toast.LENGTH_SHORT).show()
 
                         binding.NicknameNotificationText.setTextColor(ContextCompat.getColor(this, R.color.red))
                         binding.NicknameNotificationText.text = "닉네임을 입력해주세요."
                     }
-                    2 -> {//PW
+                    Type.PASSWORD -> {//PW
                         Toast.makeText(this, "비밀번호 항목이 비어있습니다.", Toast.LENGTH_SHORT).show()
 
                         binding.PwNotificationText.setTextColor(ContextCompat.getColor(this, R.color.red))
                         binding.PwNotificationText.text = "비밀번호를 입력해주세요."
                     }
-                    3 -> {//Email
+                    Type.EMAIL -> {//Email
                         Toast.makeText(this, "이메일 항목이 비어있습니다.", Toast.LENGTH_SHORT).show()
 
                         binding.EmailNotificationText.setTextColor(ContextCompat.getColor(this, R.color.red))
                         binding.EmailNotificationText.text = "이메일을 입력해주세요."
                     }
-                    4 -> {//Email code
+                    Type.EMAILVERIFY -> {//Email code
                         Toast.makeText(this, "이메일 인증 항목이 비어있습니다.", Toast.LENGTH_SHORT).show()
 
                         binding.EmailcodeNotificationText.setTextColor(ContextCompat.getColor(this, R.color.red))
                         binding.EmailcodeNotificationText.text = "인증 코드를 입력해주세요."
-                    }
-                    else -> {
-
                     }
                 }
 
@@ -373,34 +369,31 @@ class RegisterActivity : AppCompatActivity() {
             ValidationUtils.ValidationResult.INVALID_FORMAT -> {
                 //형식에 맞지 않음
                 when (type) {
-                    0 -> {//ID
+                    Type.ID -> {//ID
                         Toast.makeText(this, "아이디 형식에 맞지 않습니다.", Toast.LENGTH_SHORT).show()
 
                         binding.IdNotificationText.setTextColor(ContextCompat.getColor(this, R.color.red))
                         binding.IdNotificationText.text = "올바르지 않은 아이디입니다."
                     }
-                    1 -> {//Nickname
+                    Type.NICKNAME -> {//Nickname
                         Toast.makeText(this, "닉네임 형식에 맞지 않습니다.", Toast.LENGTH_SHORT).show()
 
                         binding.NicknameNotificationText.setTextColor(ContextCompat.getColor(this, R.color.red))
                         binding.NicknameNotificationText.text = "올바르지 않은 닉네임입니다."
                     }
-                    2 -> {//PW
+                    Type.PASSWORD -> {//PW
                         Toast.makeText(this, "비밀번호 형식에 맞지 않습니다.", Toast.LENGTH_SHORT).show()
 
                         binding.PwNotificationText.setTextColor(ContextCompat.getColor(this, R.color.red))
                         binding.PwNotificationText.text = "올바르지 않은 비밀번호입니다."
                     }
-                    3 -> {//Email
+                    Type.EMAIL -> {//Email
                         Toast.makeText(this, "이메일 형식에 맞지 않습니다.", Toast.LENGTH_SHORT).show()
 
                         binding.EmailNotificationText.setTextColor(ContextCompat.getColor(this, R.color.red))
                         binding.EmailNotificationText.text = "올바르지 않은 이메일 입니다."
                     }
-                    4 ->{//Email Code
-
-                    }
-                    else -> {
+                    Type.EMAILVERIFY ->{//Email Code
 
                     }
                 }
