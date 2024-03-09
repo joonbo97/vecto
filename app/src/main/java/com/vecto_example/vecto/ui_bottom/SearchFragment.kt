@@ -20,6 +20,8 @@ import retrofit2.Callback
 import retrofit2.Response
 
 class SearchFragment : Fragment(){
+    /*   다른 사용자의 게시글을 확인 할 수 있는 Search Fragment   */
+
     private lateinit var binding: FragmentSearchBinding
     private lateinit var mysearchpostAdapter: MysearchpostAdapter
 

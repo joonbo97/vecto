@@ -23,6 +23,8 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 class LocationService : Service() {
+    /*   Foreground Service   */
+
     /*위치 관련*/
     private lateinit var fusedLocationClient: FusedLocationProviderClient
 
@@ -34,7 +36,7 @@ class LocationService : Service() {
 
     /*시간, 위치 관련*/
     private var lastUpdateTime: LocalDateTime? = LocalDateTime.now().withNano(0)
-    private var lastUpdateLocation: LatLng = LatLng(0.0, 0.0)//방문 중심 좌표
+    private var lastUpdateLocation: LatLng = LatLng(0.0, 0.0)//초기 방문 중심 좌표
     val FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")
     var cnt: Int = 1
 
@@ -145,7 +147,7 @@ class LocationService : Service() {
                     }
 
                 }
-                else//under 50M accuracy is ignored
+                else
                 {
                     Log.d("LocationService", "Ignoring ${location.accuracy}")
                     savelog(5)
