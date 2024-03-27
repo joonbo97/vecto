@@ -10,7 +10,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.ContextCompat
 import com.vecto_example.vecto.R
-import com.vecto_example.vecto.model.data.VisitDatabase
+import com.vecto_example.vecto.data.model.VisitDatabase
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Calendar
@@ -25,7 +25,7 @@ class CalendarDialog (private val context: Context) {//deletepostdialog copy
     var selectedDate = ""
     var lastSelect = -1
 
-    private val dateTextViews = arrayOf(R.id.DateText01, R.id.DateText02, R.id.DateText03, R.id.DateText04, R.id.DateText05, R.id.DateText06, R.id.DateText07, R.id.DateText08, R.id.DateText09, R.id.DateText10, R.id.DateText11, R.id.DateText12,R.id.DateText13,R.id.DateText14, R.id.DateText15, R.id.DateText16, R.id.DateText17, R.id.DateText18,R.id.DateText19, R.id.DateText20, R.id.DateText21, R.id.DateText22, R.id.DateText23, R.id.DateText24, R.id.DateText25, R.id.DateText26, R.id.DateText27, R.id.DateText28, R.id.DateText29, R.id.DateText30, R.id.DateText31,R.id.DateText32, R.id.DateText32, R.id.DateText33, R.id.DateText34, R.id.DateText35, R.id.DateText36, R.id.DateText37, R.id.DateText38, R.id.DateText39, R.id.DateText40, R.id.DateText41, R.id.DateText42)
+    private val dateTextViews = arrayOf(R.id.DateText01, R.id.DateText02, R.id.DateText03, R.id.DateText04, R.id.DateText05, R.id.DateText06, R.id.DateText07, R.id.DateText08, R.id.DateText09, R.id.DateText10, R.id.DateText11, R.id.DateText12,R.id.DateText13,R.id.DateText14, R.id.DateText15, R.id.DateText16, R.id.DateText17, R.id.DateText18,R.id.DateText19, R.id.DateText20, R.id.DateText21, R.id.DateText22, R.id.DateText23, R.id.DateText24, R.id.DateText25, R.id.DateText26, R.id.DateText27, R.id.DateText28, R.id.DateText29, R.id.DateText30, R.id.DateText31,R.id.DateText32, R.id.DateText33, R.id.DateText34, R.id.DateText35, R.id.DateText36, R.id.DateText37, R.id.DateText38, R.id.DateText39, R.id.DateText40, R.id.DateText41, R.id.DateText42)
 
     var year = 0
     var month = 0
@@ -77,13 +77,15 @@ class CalendarDialog (private val context: Context) {//deletepostdialog copy
         val AfterButton: ImageView = dialog.findViewById(R.id.AfterButton)
 
         BeforeButton.setOnClickListener {
-            month--
+
 
             if (month == 0)
             {
                 year--
                 month = 11
             }
+            else
+                month--
 
             initCalendar(year, month)
             selectedDate = ""
@@ -92,13 +94,15 @@ class CalendarDialog (private val context: Context) {//deletepostdialog copy
         }
 
         AfterButton.setOnClickListener {
-            month++
+
 
             if(month == 11)
             {
                 year++
                 month = 0
             }
+            else
+                month++
 
             initCalendar(year, month)
             selectedDate = ""
@@ -140,6 +144,8 @@ class CalendarDialog (private val context: Context) {//deletepostdialog copy
             dialog.findViewById<TextView>(dateTextViews[firstDayOfWeek + i - 2]).apply {
                 text = i.toString()
                 visibility = View.VISIBLE
+
+                Log.d("TEST", "i: $i, ${firstDayOfWeek + i - 2}")
 
                 if(i in datesWithData){
 

@@ -7,7 +7,7 @@ import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.vecto_example.vecto.model.data.Auth
+import com.vecto_example.vecto.data.Auth
 import com.vecto_example.vecto.databinding.ActivityCommentBinding
 import com.vecto_example.vecto.dialog.LoginRequestDialog
 import com.vecto_example.vecto.retrofit.VectoService

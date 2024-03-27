@@ -16,7 +16,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import com.bumptech.glide.Glide
 import com.vecto_example.vecto.R
-import com.vecto_example.vecto.model.data.Auth
+import com.vecto_example.vecto.data.Auth
 import com.vecto_example.vecto.databinding.FragmentMypageSettingBinding
 import com.vecto_example.vecto.retrofit.VectoService
 import com.yalantis.ucrop.UCrop

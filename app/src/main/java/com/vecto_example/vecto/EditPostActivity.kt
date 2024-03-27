@@ -1,7 +1,6 @@
 package com.vecto_example.vecto
 
 import android.app.Activity
-import android.app.DatePickerDialog
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -18,10 +17,7 @@ import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
-import androidx.core.os.bundleOf
 import androidx.fragment.app.FragmentContainerView
-import androidx.navigation.findNavController
-import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
@@ -34,12 +30,12 @@ import com.naver.maps.map.OnMapReadyCallback
 import com.naver.maps.map.overlay.Marker
 import com.naver.maps.map.overlay.OverlayImage
 import com.naver.maps.map.overlay.PathOverlay
-import com.vecto_example.vecto.model.data.Auth
-import com.vecto_example.vecto.model.data.LocationData
-import com.vecto_example.vecto.model.data.LocationDatabase
-import com.vecto_example.vecto.model.data.VisitData
-import com.vecto_example.vecto.model.data.VisitDataForWite
-import com.vecto_example.vecto.model.data.VisitDatabase
+import com.vecto_example.vecto.data.Auth
+import com.vecto_example.vecto.data.model.LocationData
+import com.vecto_example.vecto.data.model.LocationDatabase
+import com.vecto_example.vecto.data.model.VisitData
+import com.vecto_example.vecto.data.model.VisitDataForWite
+import com.vecto_example.vecto.data.model.VisitDatabase
 import com.vecto_example.vecto.databinding.ActivityEditPostBinding
 import com.vecto_example.vecto.dialog.CalendarDialog
 import com.vecto_example.vecto.dialog.LoginRequestDialog
@@ -47,7 +43,6 @@ import com.vecto_example.vecto.dialog.WriteBottomDialog
 import com.vecto_example.vecto.dialog.WriteNameEmptyDialog
 import com.vecto_example.vecto.retrofit.NaverSearchApiService
 import com.vecto_example.vecto.retrofit.VectoService
-import com.vecto_example.vecto.ui_bottom.MyimageAdapter
 import com.vecto_example.vecto.ui_bottom.SpacesItemDecoration
 import com.yalantis.ucrop.UCrop
 import okhttp3.MediaType.Companion.toMediaTypeOrNull

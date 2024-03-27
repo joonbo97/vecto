@@ -8,11 +8,10 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.os.bundleOf
 import androidx.datastore.preferences.preferencesDataStore
 import androidx.navigation.findNavController
-import androidx.navigation.fragment.findNavController
 import androidx.navigation.ui.setupWithNavController
 import com.vecto_example.vecto.MainActivity.DataStoreUtils.myDataStore
-import com.vecto_example.vecto.model.data.Auth
-import com.vecto_example.vecto.model.data.NotificationDatabase
+import com.vecto_example.vecto.data.Auth
+import com.vecto_example.vecto.data.model.NotificationDatabase
 import com.vecto_example.vecto.databinding.ActivityMainBinding
 
 

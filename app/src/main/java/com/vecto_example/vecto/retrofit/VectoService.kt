@@ -1,10 +1,11 @@
 package com.vecto_example.vecto.retrofit
 
-import com.vecto_example.vecto.model.data.LocationData
-import com.vecto_example.vecto.model.data.VisitData
-import com.vecto_example.vecto.model.data.VisitDataForWite
+import com.vecto_example.vecto.data.model.LocationData
+import com.vecto_example.vecto.data.model.VisitData
+import com.vecto_example.vecto.data.model.VisitDataForWite
 import okhttp3.MultipartBody
 import retrofit2.Call
+import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.Body
@@ -84,10 +85,10 @@ interface VectoService {
         @Query("page") page: Int
     ): Call<VectoResponse<List<Int>>>
 
-    @GET("feed/feedList")
+    /*@GET("feed/feedList")
     fun getFeedList(
         @Query("page") page: Int
-    ): Call<VectoResponse<List<Int>>>
+    ): Call<VectoResponse<List<Int>>>*/
 
     @GET("feed/feeds/search")
     fun getSearchFeedList(
@@ -192,9 +193,21 @@ interface VectoService {
     ): Call<VectoResponse<String>>
 
     @GET("feed/feeds/personal")
-    fun getSearchFeedList(
-        @Header("Authorization") authorization: String
-    ): Call<VectoResponse<List<Int>>>
+    suspend fun getPersonalFeedList(
+        @Header("Authorization") authorization: String,
+        @Query("page") page: Int,
+        @Query("isFollowPage") isFollowPage: Boolean
+    ): Response<VectoResponse<FeedResponse>>
+
+    @GET("feed/feedList")
+    suspend fun getFeedList(
+        @Query("page") page: Int
+    ): Response<VectoResponse<FeedResponse>>
+
+    @GET("feed/{feedId}")
+    suspend fun getFeedInfo2(
+        @Path("feedId") feedId: Int
+    ): Response<VectoResponse<PostResponse>>
 
 
 
@@ -247,6 +260,13 @@ interface VectoService {
         val feedCount: Int,
         val followerCount: Int,
         val followingCount: Int
+    )
+
+    data class FeedResponse(
+        val nextPage: Int,
+        val feedIds: List<Int>,
+        val lastPage: Boolean,
+        val followPage: Boolean
     )
 
     data class ImageResponse(

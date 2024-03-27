@@ -2,7 +2,6 @@ package com.vecto_example.vecto.ui_bottom
 
 import android.annotation.SuppressLint
 import android.app.Activity
-import android.app.DatePickerDialog
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -27,12 +26,12 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.vecto_example.vecto.LoginActivity
 import com.vecto_example.vecto.MainActivity
-import com.vecto_example.vecto.model.data.Auth
-import com.vecto_example.vecto.model.data.LocationData
-import com.vecto_example.vecto.model.data.LocationDatabase
-import com.vecto_example.vecto.model.data.VisitData
-import com.vecto_example.vecto.model.data.VisitDataForWite
-import com.vecto_example.vecto.model.data.VisitDatabase
+import com.vecto_example.vecto.data.Auth
+import com.vecto_example.vecto.data.model.LocationData
+import com.vecto_example.vecto.data.model.LocationDatabase
+import com.vecto_example.vecto.data.model.VisitData
+import com.vecto_example.vecto.data.model.VisitDataForWite
+import com.vecto_example.vecto.data.model.VisitDatabase
 import com.vecto_example.vecto.dialog.LoginRequestDialog
 import com.vecto_example.vecto.dialog.WriteBottomDialog
 import com.vecto_example.vecto.dialog.WriteNameEmptyDialog
@@ -48,7 +47,6 @@ import com.naver.maps.map.overlay.Marker
 import com.naver.maps.map.overlay.OverlayImage
 import com.naver.maps.map.overlay.PathOverlay
 import com.vecto_example.vecto.R
-import com.vecto_example.vecto.databinding.ActivityMainBinding
 import com.vecto_example.vecto.databinding.FragmentWriteBinding
 import com.vecto_example.vecto.dialog.CalendarDialog
 import com.yalantis.ucrop.UCrop

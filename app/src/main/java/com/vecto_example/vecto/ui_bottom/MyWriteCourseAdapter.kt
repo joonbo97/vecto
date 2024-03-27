@@ -8,7 +8,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.vecto_example.vecto.R
-import com.vecto_example.vecto.model.data.VisitData
+import com.vecto_example.vecto.data.model.VisitData
 
 class MyWriteCourseAdapter(private val context: Context): RecyclerView.Adapter<MyWriteCourseAdapter.ViewHolder>() {
     var myVisit = mutableListOf<VisitData>()

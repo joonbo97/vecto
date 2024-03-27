@@ -7,7 +7,7 @@
 
     <fragment
         android:id="@+id/SearchFragment"
-        android:name="com.vecto_example.vecto.ui_bottom.SearchFragment"
+        android:name="com.vecto_example.vecto.ui.search.SearchFragment"
         android:label="fragment_search"
         tools:layout="@layout/fragment_search"/>
 

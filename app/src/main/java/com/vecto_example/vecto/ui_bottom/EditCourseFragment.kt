@@ -26,11 +26,11 @@ import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.vecto_example.vecto.LocationService
 import com.vecto_example.vecto.VerticalOverlapItemDecoration
-import com.vecto_example.vecto.model.data.LocationData
-import com.vecto_example.vecto.model.data.LocationDatabase
-import com.vecto_example.vecto.model.data.PathData
-import com.vecto_example.vecto.model.data.VisitData
-import com.vecto_example.vecto.model.data.VisitDatabase
+import com.vecto_example.vecto.data.model.LocationData
+import com.vecto_example.vecto.data.model.LocationDatabase
+import com.vecto_example.vecto.data.model.PathData
+import com.vecto_example.vecto.data.model.VisitData
+import com.vecto_example.vecto.data.model.VisitDatabase
 import com.vecto_example.vecto.dialog.DeleteVisitDialog
 import com.vecto_example.vecto.dialog.EditVisitDialog
 import com.vecto_example.vecto.retrofit.TMapAPIService

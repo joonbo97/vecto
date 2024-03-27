@@ -134,7 +134,7 @@
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toTopOf="@+id/CommentBox"/>
+            app:layout_constraintBottom_toTopOf="@+id/guideline"/>
 
         <TextView
             android:id="@+id/EditCommentText"
@@ -152,6 +152,14 @@
             app:layout_constraintTop_toTopOf="@+id/EditCommentBox"
             app:layout_constraintVertical_bias="0.5" />
 
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guideline"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            app:layout_constraintGuide_end="60dp" />
+
         <ImageView
             android:id="@+id/CommentBox"
             android:layout_width="match_parent"
@@ -159,9 +167,12 @@
             android:layout_marginStart="20dp"
             android:layout_marginEnd="20dp"
             android:src="@drawable/comment_box"
+            android:layout_marginTop="10dp"
             android:layout_marginBottom="10dp"
+            app:layout_constraintTop_toTopOf="@+id/guideline"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintVertical_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintBottom_toBottomOf="parent" />
 
@@ -214,6 +225,8 @@
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="@+id/CommentBox"
             app:layout_constraintTop_toTopOf="@+id/CommentBox" />
+
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 

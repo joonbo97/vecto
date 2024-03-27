@@ -15,8 +15,8 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.vecto_example.vecto.model.data.LocationData
-import com.vecto_example.vecto.model.data.VisitData
+import com.vecto_example.vecto.data.model.LocationData
+import com.vecto_example.vecto.data.model.VisitData
 import com.vecto_example.vecto.retrofit.VectoService
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
@@ -29,12 +29,11 @@ import com.naver.maps.map.OnMapReadyCallback
 import com.naver.maps.map.overlay.Marker
 import com.naver.maps.map.overlay.OverlayImage
 import com.naver.maps.map.overlay.PathOverlay
-import com.vecto_example.vecto.model.data.Auth
+import com.vecto_example.vecto.data.Auth
 import com.vecto_example.vecto.databinding.ActivityPostDetailBinding
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import kotlin.math.max
 
 class PostDetailActivity : AppCompatActivity(), OnMapReadyCallback {
     private lateinit var binding: ActivityPostDetailBinding
@@ -234,9 +233,9 @@ class PostDetailActivity : AppCompatActivity(), OnMapReadyCallback {
     private fun getPostList() {
         val vectoService = VectoService.create()
 
-        val call = vectoService.getFeedList(pageNo)
-        call.enqueue(object : Callback<VectoService.VectoResponse<List<Int>>> {
-            override fun onResponse(call: Call<VectoService.VectoResponse<List<Int>>>, response: Response<VectoService.VectoResponse<List<Int>>>) {
+        /*val call = vectoService.getFeedList(pageNo)
+        call.enqueue(object : Callback<VectoService.VectoResponse<VectoService.FeedResponse>> {
+            override fun onResponse(call: Call<VectoService.VectoResponse<VectoService.FeedResponse>>, response: Response<VectoService.VectoResponse<VectoService.FeedResponse>>) {
                 if(response.isSuccessful){
                     Log.d("POSTID", "성공: ${response.body()}")
 
@@ -244,16 +243,16 @@ class PostDetailActivity : AppCompatActivity(), OnMapReadyCallback {
                     responseData.clear()
                     responsePageData.clear()
 
-                    if(response.body()?.result?.isEmpty() == true)
+                    if(response.body()?.result?.feedIds!!.isEmpty())
                     {
                         pageNo = -1
                         endLoading()
                     }
                     else
                     {
-                        pageList = response.body()?.result!!.toMutableList()
+                        pageList = response.body()?.result!!.feedIds.toMutableList()
 
-                        for(item in response.body()!!.result!!){
+                        for(item in response.body()!!.result!!.feedIds){
                             getPostInfo(item)
                         }
 
@@ -266,13 +265,13 @@ class PostDetailActivity : AppCompatActivity(), OnMapReadyCallback {
                 }
             }
 
-            override fun onFailure(call: Call<VectoService.VectoResponse<List<Int>>>, t: Throwable) {
+            override fun onFailure(call: Call<VectoService.VectoResponse<VectoService.FeedResponse>>, t: Throwable) {
                 Log.d("POSTID", "실패")
                 Toast.makeText(this@PostDetailActivity, getText(R.string.APIFailToastMessage), Toast.LENGTH_SHORT).show()
                 endLoading()
             }
 
-        })
+        })*/
     }
 
     private fun getPostInfo(feedid: Int) {

@@ -7,8 +7,8 @@ import android.content.Context
 import android.content.Intent
 import android.util.Log
 import androidx.core.app.NotificationCompat
-import com.vecto_example.vecto.model.data.NotificationData
-import com.vecto_example.vecto.model.data.NotificationDatabase
+import com.vecto_example.vecto.data.model.NotificationData
+import com.vecto_example.vecto.data.model.NotificationDatabase
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import java.time.LocalDateTime

@@ -7,8 +7,8 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.vecto_example.vecto.model.data.NotificationDataResult
-import com.vecto_example.vecto.model.data.NotificationDatabase
+import com.vecto_example.vecto.data.model.NotificationDataResult
+import com.vecto_example.vecto.data.model.NotificationDatabase
 import java.time.Duration
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter

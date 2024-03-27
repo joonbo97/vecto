@@ -48,7 +48,7 @@
             android:name=".LoginActivity"
             android:exported="false" />
         <activity
-            android:name=".guide.GuideActivity"
+            android:name=".ui.guide.activity.GuideActivity"
             android:exported="false" />
 
         <service

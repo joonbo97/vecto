@@ -8,8 +8,8 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.vecto_example.vecto.R
-import com.vecto_example.vecto.model.data.PathData
-import com.vecto_example.vecto.model.data.VisitData
+import com.vecto_example.vecto.data.model.PathData
+import com.vecto_example.vecto.data.model.VisitData
 import java.lang.IllegalArgumentException
 
 

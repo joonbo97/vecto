@@ -3,7 +3,7 @@ package com.vecto_example.vecto.dialog
 import android.content.Context
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.vecto_example.vecto.model.data.VisitData
+import com.vecto_example.vecto.data.model.VisitData
 import com.vecto_example.vecto.ui_bottom.MyWriteCourseAdapter
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.vecto_example.vecto.R

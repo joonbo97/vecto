@@ -16,9 +16,9 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
 import com.bumptech.glide.Glide
-import com.vecto_example.vecto.model.data.Auth
-import com.vecto_example.vecto.model.data.LocationData
-import com.vecto_example.vecto.model.data.VisitData
+import com.vecto_example.vecto.data.Auth
+import com.vecto_example.vecto.data.model.LocationData
+import com.vecto_example.vecto.data.model.VisitData
 import com.vecto_example.vecto.dialog.LoginRequestDialog
 import com.vecto_example.vecto.retrofit.VectoService
 import me.relex.circleindicator.CircleIndicator3
