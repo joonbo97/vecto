@@ -1,4 +1,4 @@
-package com.vecto_example.vecto.ui_bottom
+package com.vecto_example.vecto.ui.search.adapter
 
 import android.content.Context
 import android.content.Intent
@@ -18,7 +18,7 @@ import com.vecto_example.vecto.CommentActivity
 import com.vecto_example.vecto.LoginActivity
 import com.vecto_example.vecto.PostDetailActivity
 import com.vecto_example.vecto.UserInfoActivity
-import com.vecto_example.vecto.model.data.Auth
+import com.vecto_example.vecto.data.Auth
 import com.vecto_example.vecto.dialog.LoginRequestDialog
 import com.vecto_example.vecto.retrofit.VectoService
 import com.google.gson.Gson
@@ -364,7 +364,7 @@ class MysearchpostAdapter(private val context: Context) : RecyclerView.Adapter<M
 
 
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MysearchpostAdapter.ViewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(context).inflate(R.layout.post_small_item, parent, false)
         return ViewHolder(view)
     }
@@ -373,7 +373,7 @@ class MysearchpostAdapter(private val context: Context) : RecyclerView.Adapter<M
         return feedInfo.size
     }
 
-    override fun onBindViewHolder(holder: MysearchpostAdapter.ViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val feed = feedInfo[position]
         holder.bind(feed)
     }
@@ -418,5 +418,12 @@ class MysearchpostAdapter(private val context: Context) : RecyclerView.Adapter<M
             }
 
         })
+    }
+
+    fun addData(newData: List<VectoService.PostResponse>) {
+        //데이터 추가 함수
+        val startIdx = feedInfo.size
+        feedInfo.addAll(newData)
+        notifyItemRangeInserted(startIdx, newData.size)
     }
 }

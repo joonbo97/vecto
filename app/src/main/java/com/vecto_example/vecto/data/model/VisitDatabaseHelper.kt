@@ -1,10 +1,10 @@
-package com.vecto_example.vecto.model.data
+package com.vecto_example.vecto.data.model
 
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 
-class LocationDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
+class VisitDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
 
     override fun onCreate(db: SQLiteDatabase) {
         db.execSQL(CREATE_TABLE_QUERY)
@@ -16,17 +16,23 @@ class LocationDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATAB
     }
 
     companion object {
-        private const val DATABASE_NAME = "location_database"
+        private const val DATABASE_NAME = "visit_database"
         private const val DATABASE_VERSION = 4
 
-        private const val CREATE_TABLE_QUERY = "CREATE TABLE IF NOT EXISTS location_data (" +
+        private const val CREATE_TABLE_QUERY = "CREATE TABLE IF NOT EXISTS visit_data (" +
                 "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 "datetime TEXT, " +
+                "endtime TEXT, " +
                 "lat REAL, " +
                 "lng REAL, " +
-                "showFlag INTEGER" +
+                "lat_set REAL, " +
+                "lng_set REAL, " +
+                "staytime INTEGER, " +
+                "name TEXT" +
                 ")"
 
-        private const val DROP_TABLE_QUERY = "DROP TABLE IF EXISTS location_data"
+        private const val DROP_TABLE_QUERY = "DROP TABLE IF EXISTS visit_data"
     }
+
+
 }

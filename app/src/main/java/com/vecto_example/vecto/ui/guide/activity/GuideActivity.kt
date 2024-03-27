@@ -1,4 +1,4 @@
-package com.vecto_example.vecto.guide
+package com.vecto_example.vecto.ui.guide.activity
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -6,6 +6,9 @@ import androidx.fragment.app.Fragment
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import androidx.viewpager2.widget.ViewPager2
 import com.vecto_example.vecto.databinding.ActivityGuideBinding
+import com.vecto_example.vecto.ui.guide.fragment.GuideFirstFragment
+import com.vecto_example.vecto.ui.guide.fragment.GuideSecondFragment
+import com.vecto_example.vecto.ui.guide.fragment.GuideThirdFragment
 import java.lang.IllegalArgumentException
 
 class GuideActivity : AppCompatActivity() {

@@ -1,4 +1,4 @@
-package com.vecto_example.vecto.guide
+package com.vecto_example.vecto.ui.guide.fragment
 
 import android.Manifest
 import android.content.pm.PackageManager
@@ -10,6 +10,7 @@ import android.view.ViewGroup
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.vecto_example.vecto.databinding.FragmentGuideFirstBinding
+import com.vecto_example.vecto.ui.guide.activity.GuideActivity
 
 class GuideFirstFragment : Fragment() {
     /*   위치 권한 요청 안내를 위한 Guide Fragment   */

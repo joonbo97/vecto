@@ -1,4 +1,4 @@
-package com.vecto_example.vecto.guide
+package com.vecto_example.vecto.ui.guide.fragment
 
 import android.Manifest
 import android.content.pm.PackageManager
