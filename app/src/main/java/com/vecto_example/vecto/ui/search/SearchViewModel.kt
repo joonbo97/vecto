@@ -67,7 +67,7 @@ class SearchViewModel(private val repository: SearchRepository) : ViewModel() {
         viewModelScope.launch {
             try {
                 if(!lastPage){  //마지막 page가 아닐 경우에만 실행
-                    val feedListResponse = repository.getPersonalFeedList(true, nextPage)
+                    val feedListResponse = repository.getPersonalFeedList(followPage, nextPage)
                     val feedIds = feedListResponse.feedIds
 
                     val feedInfo = feedIds.map {
@@ -77,10 +77,40 @@ class SearchViewModel(private val repository: SearchRepository) : ViewModel() {
                     _feedInfoLiveData.postValue(feedInfo)   //LiveData 값 변경
                     _feedIdsLiveData.postValue(feedListResponse)
 
+
                     nextPage = feedListResponse.nextPage    //페이지 정보값 변경
                     lastPage = feedListResponse.lastPage
+                    followPage = feedListResponse.followPage
                 }
 
+            } catch (e: Exception) {
+                throw Exception("fetchPostResults Failed")
+            } finally {
+                _isLoadingCenter.postValue(false)
+                _isLoadingBottom.postValue(false)
+            }
+        }
+    }
+
+    fun fetchSearchFeedResults(query: String){
+        startLoading()
+
+        viewModelScope.launch {
+            try{
+                if(!lastPage){
+                    val feedListResponse = repository.getSearchFeedList(query, nextPage)
+                    val feedIds = feedListResponse.feedIds
+
+                    val feedInfo = feedIds.map {
+                        async { repository.getFeedInfo(it) }
+                    }.awaitAll()
+
+                    _feedInfoLiveData.postValue(feedInfo)
+                    _feedIdsLiveData.postValue(feedListResponse)
+
+                    nextPage = feedListResponse.nextPage
+                    lastPage = feedListResponse.lastPage
+                }
             } catch (e: Exception) {
                 throw Exception("fetchPostResults Failed")
             } finally {
@@ -93,7 +123,6 @@ class SearchViewModel(private val repository: SearchRepository) : ViewModel() {
     fun initSetting(){
         nextPage = 0
         lastPage = false
-
+        followPage = true
     }
-
 }

@@ -340,7 +340,7 @@ class PostDetailActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     private fun getSearchPostList(q: String) {
-        val vectoService = VectoService.create()
+        /*val vectoService = VectoService.create()
 
         val call = vectoService.getSearchFeedList(pageNo, q)
         call.enqueue(object : Callback<VectoService.VectoResponse<List<Int>>> {
@@ -380,7 +380,7 @@ class PostDetailActivity : AppCompatActivity(), OnMapReadyCallback {
                 endLoading()
             }
 
-        })
+        })*/
     }
 
     private fun getPostByUserIdList(userId: String) {

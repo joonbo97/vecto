@@ -85,17 +85,6 @@ interface VectoService {
         @Query("page") page: Int
     ): Call<VectoResponse<List<Int>>>
 
-    /*@GET("feed/feedList")
-    fun getFeedList(
-        @Query("page") page: Int
-    ): Call<VectoResponse<List<Int>>>*/
-
-    @GET("feed/feeds/search")
-    fun getSearchFeedList(
-        @Query("page") page: Int,
-        @Query("q") q: String
-    ): Call<VectoResponse<List<Int>>>
-
     @GET("feed/{feedId}")
     fun getFeedInfo(
         @Path("feedId") feedId: Int
@@ -204,10 +193,23 @@ interface VectoService {
         @Query("page") page: Int
     ): Response<VectoResponse<FeedResponse>>
 
+    @GET("feed/feeds/search")
+    suspend fun getSearchFeedList(
+        @Query("page") page: Int,
+        @Query("q") q: String
+    ): Response<VectoResponse<FeedResponse>>
+
     @GET("feed/{feedId}")
     suspend fun getFeedInfo2(
         @Path("feedId") feedId: Int
     ): Response<VectoResponse<PostResponse>>
+
+    @POST("feed/{feedId}")
+    suspend fun getFeedInfo2(
+        @Header("Authorization") authorization: String,
+        @Path("feedId") feedId: Int
+    ): Response<VectoResponse<PostResponse>>
+
 
 
 
