@@ -44,7 +44,6 @@ class SearchFragment : Fragment(){
         initObservers()
         initListeners()
 
-        //getFeed()
 
         return binding.root
     }
@@ -115,7 +114,15 @@ class SearchFragment : Fragment(){
 
         /*   로그인 관련 Observer   */
         Auth.loginFlag.observe(viewLifecycleOwner) {
-            getFeed()   //로그인 상태 변경시 게시글 다시 불러옴
+
+            if(Auth.loginFlag.value != viewModel.originLoginFlag) {
+                Log.d("LOGINFLAG", "LOGINFLAG IS CHANGED: ${Auth.loginFlag.value}")
+                clearRecyclerView()
+                clearNoneImage()
+                viewModel.initSetting()
+                getFeed()   //로그인 상태 변경시 게시글 다시 불러옴
+                viewModel.originLoginFlag = Auth.loginFlag.value!!
+            }
         }
 
         /*   게시글 관련 Observer   */

@@ -50,8 +50,8 @@ class MypageFragment : Fragment() {
         if(!Auth.loginFlag.value!!){
             goLogin()
             (activity as? MainActivity)?.updateBottomNavigationSelection(R.id.SearchFragment)
-            val navController = findNavController()
-            navController.navigate(R.id.SearchFragment)
+            /*val navController = findNavController()
+            navController.navigate(R.id.SearchFragment)*/
         }
 
         profileImageView = binding.ProfileImage
@@ -130,6 +130,7 @@ class MypageFragment : Fragment() {
             setUserData("", "", "", "", "")
             Auth.token = ""
             Toast.makeText(requireContext(), " 로그아웃 되었습니다.", Toast.LENGTH_SHORT).show()
+            (activity as? MainActivity)?.updateBottomNavigationSelection(R.id.SearchFragment)
         }
 
         return binding.root

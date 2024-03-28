@@ -13,6 +13,7 @@ class SearchViewModel(private val repository: SearchRepository) : ViewModel() {
     var nextPage: Int = 0
     var lastPage: Boolean = false
     var followPage: Boolean = true
+    var originLoginFlag: Boolean? = null
 
     private val _isLoadingCenter = MutableLiveData<Boolean>()
     val isLoadingCenter: LiveData<Boolean> = _isLoadingCenter

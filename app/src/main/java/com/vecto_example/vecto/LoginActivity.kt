@@ -242,4 +242,6 @@ class LoginActivity : AppCompatActivity() {
         Toast.makeText(this@LoginActivity, getString(R.string.APIFailToastMessage), Toast.LENGTH_SHORT).show()
     }
 
+
+
 }
