@@ -1,5 +1,6 @@
 package com.vecto_example.vecto.ui.search
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -14,6 +15,9 @@ class SearchViewModel(private val repository: SearchRepository) : ViewModel() {
     var lastPage: Boolean = false
     var followPage: Boolean = true
     var originLoginFlag: Boolean? = null
+
+    val allFeedIds = mutableListOf<Int>()
+    val allFeedInfo = mutableListOf<VectoService.PostResponse>()
 
     private val _isLoadingCenter = MutableLiveData<Boolean>()
     val isLoadingCenter: LiveData<Boolean> = _isLoadingCenter
@@ -40,6 +44,11 @@ class SearchViewModel(private val repository: SearchRepository) : ViewModel() {
         viewModelScope.launch {
             try {
                 if(!lastPage) { //마지막 page가 아닐 경우에만 실행
+                    Log.d("EXE", "LastPage가 아니므로 실행됩니다.")
+
+                    feedIdsLiveData.value?.let { allFeedIds.addAll(it.feedIds) }
+                    feedInfoLiveData.value?.let { allFeedInfo.addAll(it) }
+
                     val feedListResponse = repository.getFeedList(nextPage)
                     val feedIds = feedListResponse.feedIds  //요청한 pageNo에 해당하는 Feed Ids
 

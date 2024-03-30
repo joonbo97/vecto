@@ -44,7 +44,6 @@ class SearchFragment : Fragment(){
         initObservers()
         initListeners()
 
-
         return binding.root
     }
 
@@ -129,7 +128,11 @@ class SearchFragment : Fragment(){
         viewModel.feedInfoLiveData.observe(viewLifecycleOwner) { feedInfo ->
             //새로운 feed 정보를 받았을 때의 처리
             mysearchpostAdapter.pageNo = viewModel.nextPage //다음 page 정보
-            viewModel.feedInfoLiveData.value?.let { mysearchpostAdapter.addData(it) }   //새로 받은 게시글 정보 추가
+            viewModel.feedInfoLiveData.value?.let { mysearchpostAdapter.addFeedInfoData(it) }   //새로 받은 게시글 정보 추가
+        }
+
+        viewModel.feedIdsLiveData.observe(viewLifecycleOwner) {
+            viewModel.feedIdsLiveData.value?.let { mysearchpostAdapter.addFeedIdData(it.feedIds) }
         }
 
         /*   로딩 관련 Observer   */
@@ -151,6 +154,14 @@ class SearchFragment : Fragment(){
     private fun initRecyclerView() {
         /*   Recycler 초기화 함수   */
         mysearchpostAdapter = MysearchpostAdapter(requireContext())
+
+        clearRecyclerView()
+
+        mysearchpostAdapter.addFeedInfoData(viewModel.allFeedInfo)
+        mysearchpostAdapter.addFeedIdData(viewModel.allFeedIds)
+
+        Log.d("ADAPTERSIZE", "${mysearchpostAdapter.feedInfo.size}")
+
 
         val searchRecyclerView = binding.SearchRecyclerView
         searchRecyclerView.adapter = mysearchpostAdapter
@@ -204,9 +215,6 @@ class SearchFragment : Fragment(){
             else{
                 viewModel.fetchPersonalFeedResults()
                 Log.d("getFeed", "Personal")
-
-                /*if(viewModel.feedIdsLiveData.value!!.feedIds.isEmpty() && !viewModel.lastPage)
-                    viewModel.fetchPersonalFeedResults()*/
             }
         }
     }

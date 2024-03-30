@@ -420,10 +420,16 @@ class MysearchpostAdapter(private val context: Context) : RecyclerView.Adapter<M
         })
     }
 
-    fun addData(newData: List<VectoService.PostResponse>) {
+    fun addFeedInfoData(newData: List<VectoService.PostResponse>) {
         //데이터 추가 함수
         val startIdx = feedInfo.size
         feedInfo.addAll(newData)
+        notifyItemRangeInserted(startIdx, newData.size)
+    }
+
+    fun addFeedIdData(newData: List<Int>){
+        val startIdx = feedInfo.size
+        feedID.addAll(newData)
         notifyItemRangeInserted(startIdx, newData.size)
     }
 }
