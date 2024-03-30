@@ -1,6 +1,5 @@
 package com.vecto_example.vecto.ui.search
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -44,8 +43,6 @@ class SearchViewModel(private val repository: SearchRepository) : ViewModel() {
         viewModelScope.launch {
             try {
                 if(!lastPage) { //마지막 page가 아닐 경우에만 실행
-                    Log.d("EXE", "LastPage가 아니므로 실행됩니다.")
-
                     feedIdsLiveData.value?.let { allFeedIds.addAll(it.feedIds) }
                     feedInfoLiveData.value?.let { allFeedInfo.addAll(it) }
 
@@ -134,5 +131,8 @@ class SearchViewModel(private val repository: SearchRepository) : ViewModel() {
         nextPage = 0
         lastPage = false
         followPage = true
+
+        allFeedIds.clear()
+        allFeedInfo.clear()
     }
 }

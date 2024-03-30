@@ -18,9 +18,6 @@ import com.vecto_example.vecto.data.Auth
 import com.vecto_example.vecto.databinding.FragmentSearchBinding
 import com.vecto_example.vecto.retrofit.VectoService
 import com.vecto_example.vecto.ui.search.adapter.MysearchpostAdapter
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 
 class SearchFragment : Fragment(){
     /*   다른 사용자의 게시글을 확인 할 수 있는 Search Fragment   */
@@ -119,13 +116,14 @@ class SearchFragment : Fragment(){
                 clearRecyclerView()
                 clearNoneImage()
                 viewModel.initSetting()
+                queryFlag = false
                 getFeed()   //로그인 상태 변경시 게시글 다시 불러옴
                 viewModel.originLoginFlag = Auth.loginFlag.value!!
             }
         }
 
         /*   게시글 관련 Observer   */
-        viewModel.feedInfoLiveData.observe(viewLifecycleOwner) { feedInfo ->
+        viewModel.feedInfoLiveData.observe(viewLifecycleOwner) {
             //새로운 feed 정보를 받았을 때의 처리
             mysearchpostAdapter.pageNo = viewModel.nextPage //다음 page 정보
             viewModel.feedInfoLiveData.value?.let { mysearchpostAdapter.addFeedInfoData(it) }   //새로 받은 게시글 정보 추가
@@ -133,6 +131,10 @@ class SearchFragment : Fragment(){
 
         viewModel.feedIdsLiveData.observe(viewLifecycleOwner) {
             viewModel.feedIdsLiveData.value?.let { mysearchpostAdapter.addFeedIdData(it.feedIds) }
+
+            if(queryFlag && viewModel.allFeedIds.isEmpty() && viewModel.feedIdsLiveData.value?.feedIds.isNullOrEmpty()){
+                setNoneImage()
+            }
         }
 
         /*   로딩 관련 Observer   */
@@ -194,6 +196,12 @@ class SearchFragment : Fragment(){
     private fun clearNoneImage() {
         binding.NoneImage.visibility = View.GONE
         binding.NoneText.visibility = View.GONE
+        Log.d("NONE GONE", "NONE IMAGE IS GONE")
+    }
+
+    private fun setNoneImage() {
+        binding.NoneImage.visibility = View.VISIBLE
+        binding.NoneText.visibility = View.VISIBLE
     }
 
     private fun checkLoading(): Boolean{
