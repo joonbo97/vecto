@@ -103,7 +103,7 @@ class RegisterActivity : AppCompatActivity() {
         binding.RegesterIDCheck.setOnClickListener {
             if(checkID())
             {
-                isIdExist(binding.editTextID.toString())
+                isIdExist(binding.editTextID.text.toString())
             }
         }
 
@@ -166,6 +166,8 @@ class RegisterActivity : AppCompatActivity() {
 
 
     private fun isIdExist(id: String){
+        Log.d("ID CHECK", "${id}")
+
         val vectoService = VectoService.create()
 
         val call = vectoService.idCheck(VectoService.IdCheckRequest(id))

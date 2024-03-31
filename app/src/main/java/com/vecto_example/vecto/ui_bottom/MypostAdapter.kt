@@ -15,7 +15,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.vecto_example.vecto.CommentActivity
 import com.vecto_example.vecto.LoginActivity
-import com.vecto_example.vecto.PostDetailActivity
+import com.vecto_example.vecto.ui.detail.FeedDetailActivity
 import com.vecto_example.vecto.UserInfoActivity
 import com.vecto_example.vecto.data.Auth
 import com.vecto_example.vecto.dialog.DeletePostDialog
@@ -34,7 +34,7 @@ import java.time.format.DateTimeFormatter
 
 class MypostAdapter(private val context: Context): RecyclerView.Adapter<MypostAdapter.ViewHolder>()
 {
-    val feedInfo = mutableListOf<VectoService.PostResponse>()
+    val feedInfo = mutableListOf<VectoService.FeedInfoResponse>()
     val feedID = mutableListOf<Int>()
     var pageNo = 0
     var userId = ""
@@ -66,7 +66,7 @@ class MypostAdapter(private val context: Context): RecyclerView.Adapter<MypostAd
         private val menu: ImageView = view.findViewById(R.id.PostMenuImage)
 
 
-        fun bind(feed: VectoService.PostResponse) {
+        fun bind(feed: VectoService.FeedInfoResponse) {
             Log.d("FEED", "FeedImage Size: ${feed.image.size}")
             //이미지가 있는지 여부를 확인하여 style을 결정
             if (feed.image.isEmpty()) {//2:1 mapImage [1]
@@ -203,7 +203,7 @@ class MypostAdapter(private val context: Context): RecyclerView.Adapter<MypostAd
             }
 
             itemView.setOnClickListener {
-                val intent = Intent(context, PostDetailActivity::class.java).apply {
+                val intent = Intent(context, FeedDetailActivity::class.java).apply {
                     putExtra("feedInfoListJson", Gson().toJson(feedInfo))
                     putExtra("feedIDListJson", Gson().toJson(feedID))
                     putExtra("userId", userId)

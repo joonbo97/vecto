@@ -27,7 +27,7 @@ class MypageLikepostFragment : Fragment() {
     private var pageNo = 0
     private var cnt = 0
     private var pageList = mutableListOf<Int>()
-    private var responseData = mutableListOf<VectoService.PostResponse>()
+    private var responseData = mutableListOf<VectoService.FeedInfoResponse>()
     private var responsePageData = mutableListOf<Int>()
 
     private var loadingFlag = false
@@ -106,7 +106,7 @@ class MypageLikepostFragment : Fragment() {
     }
 
     private fun getPostList() {
-        val vectoService = VectoService.create()
+        /*val vectoService = VectoService.create()
 
         val call = vectoService.getUserLikePost(Auth._userId.value.toString(), pageNo)
         call.enqueue(object : Callback<VectoService.VectoResponse<List<Int>>> {
@@ -154,7 +154,7 @@ class MypageLikepostFragment : Fragment() {
                 endLoading()
             }
 
-        })
+        })*/
     }
 
 
@@ -164,7 +164,7 @@ class MypageLikepostFragment : Fragment() {
     private fun getPostInfo(feedid: Int) {
         val vectoService = VectoService.create()
 
-        val call: Call<VectoService.VectoResponse<VectoService.PostResponse>>
+        val call: Call<VectoService.VectoResponse<VectoService.FeedInfoResponse>>
 
         if(Auth.loginFlag.value == true)
         {
@@ -175,8 +175,8 @@ class MypageLikepostFragment : Fragment() {
             call = vectoService.getFeedInfo(feedid)
         }
 
-        call.enqueue(object : Callback<VectoService.VectoResponse<VectoService.PostResponse>> {
-            override fun onResponse(call: Call<VectoService.VectoResponse<VectoService.PostResponse>>, response: Response<VectoService.VectoResponse<VectoService.PostResponse>>) {
+        call.enqueue(object : Callback<VectoService.VectoResponse<VectoService.FeedInfoResponse>> {
+            override fun onResponse(call: Call<VectoService.VectoResponse<VectoService.FeedInfoResponse>>, response: Response<VectoService.VectoResponse<VectoService.FeedInfoResponse>>) {
                 if(response.isSuccessful){
                     Log.d("LIKEPOSTINFO", "성공: ${response.body()}")
 
@@ -219,7 +219,7 @@ class MypageLikepostFragment : Fragment() {
                 }
             }
 
-            override fun onFailure(call: Call<VectoService.VectoResponse<VectoService.PostResponse>>, t: Throwable) {
+            override fun onFailure(call: Call<VectoService.VectoResponse<VectoService.FeedInfoResponse>>, t: Throwable) {
                 Log.d("LIKEPOSTINFO", "실패")
                 Toast.makeText(requireContext(), getText(R.string.APIFailToastMessage), Toast.LENGTH_SHORT).show()
                 endLoading()

@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.vecto_example.vecto.NotificationActivity
 import com.vecto_example.vecto.R
 import com.vecto_example.vecto.data.Auth
+import com.vecto_example.vecto.data.repository.FeedRepository
 import com.vecto_example.vecto.databinding.FragmentSearchBinding
 import com.vecto_example.vecto.retrofit.VectoService
 import com.vecto_example.vecto.ui.search.adapter.MysearchpostAdapter
@@ -24,7 +25,7 @@ class SearchFragment : Fragment(){
 
     private lateinit var binding: FragmentSearchBinding
     private val viewModel: SearchViewModel by viewModels {
-        SearchViewModelFactory(SearchRepository(VectoService.create()))
+        SearchViewModelFactory(FeedRepository(VectoService.create()))
     }
     private lateinit var mysearchpostAdapter: MysearchpostAdapter
 

@@ -102,8 +102,8 @@ class EditPostActivity : AppCompatActivity(), OnMapReadyCallback,
         binding = ActivityEditPostBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        val typeofFeedInfo = object : TypeToken<VectoService.PostResponse>() {}.type
-        val feedInfo = Gson().fromJson<VectoService.PostResponse>(intent.getStringExtra("feedInfoJson"), typeofFeedInfo)
+        val typeofFeedInfo = object : TypeToken<VectoService.FeedInfoResponse>() {}.type
+        val feedInfo = Gson().fromJson<VectoService.FeedInfoResponse>(intent.getStringExtra("feedInfoJson"), typeofFeedInfo)
         locationDataList = feedInfo.location.toMutableList()
         visitDataList = feedInfo.visit.toMutableList()
         imageUrl = feedInfo.image.toMutableList()

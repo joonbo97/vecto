@@ -1,4 +1,4 @@
-package com.vecto_example.vecto
+package com.vecto_example.vecto.ui.detail.adapter
 
 import android.content.Context
 import android.content.Intent
@@ -16,6 +16,11 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
 import com.bumptech.glide.Glide
+import com.vecto_example.vecto.CommentActivity
+import com.vecto_example.vecto.ImageSliderAdapter
+import com.vecto_example.vecto.LoginActivity
+import com.vecto_example.vecto.R
+import com.vecto_example.vecto.VisitNumberAdapter
 import com.vecto_example.vecto.data.Auth
 import com.vecto_example.vecto.data.model.LocationData
 import com.vecto_example.vecto.data.model.VisitData
@@ -29,15 +34,15 @@ import java.time.Duration
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
-class MyPostDetailAdapter(private val context: Context): RecyclerView.Adapter<MyPostDetailAdapter.ViewHolder>() {
-    val feedInfo = mutableListOf<VectoService.PostResponse>()
+class MyFeedDetailAdapter(private val context: Context): RecyclerView.Adapter<MyFeedDetailAdapter.ViewHolder>() {
+    val feedInfo = mutableListOf<VectoService.FeedInfoResponse>()
     val feedID = mutableListOf<Int>()
 
     lateinit var visitdata: List<VisitData>
     lateinit var locationdata: List<LocationData>
 
     interface OnItemViewedListener {
-        fun onItemViewed(feedInfo: VectoService.PostResponse)
+        fun onItemViewed(feedInfo: VectoService.FeedInfoResponse)
     }
 
     var onItemViewedListener: OnItemViewedListener? = null
@@ -85,7 +90,7 @@ class MyPostDetailAdapter(private val context: Context): RecyclerView.Adapter<My
         }
     }
 
-    override fun onBindViewHolder(holder: MyPostDetailAdapter.ViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         /*제목 설정*/
         holder.titleText.text = feedInfo[position].title
 
@@ -274,7 +279,9 @@ class MyPostDetailAdapter(private val context: Context): RecyclerView.Adapter<My
                             }
                             holder.followButton.setImageResource(R.drawable.detail_follow_button)
                             holder.followText.text = "팔로우"
-                            holder.followText.setTextColor(ContextCompat.getColor(context, R.color.white))
+                            holder.followText.setTextColor(ContextCompat.getColor(context,
+                                R.color.white
+                            ))
                             followFlag = false
 
                             Log.d("POSTFOLLOWCACEL", "팔로우 해제 성공 : ${response.body()}")
@@ -307,7 +314,9 @@ class MyPostDetailAdapter(private val context: Context): RecyclerView.Adapter<My
                             }
                             holder.followButton.setImageResource(R.drawable.detail_following_button)
                             holder.followText.text = "팔로잉"
-                            holder.followText.setTextColor(ContextCompat.getColor(context, R.color.detail_gray))
+                            holder.followText.setTextColor(ContextCompat.getColor(context,
+                                R.color.detail_gray
+                            ))
                             followFlag = true
 
                             Log.d("POSTFOLLOW", "팔로우 요청 성공 : ${response.body()?.result}")
@@ -346,7 +355,7 @@ class MyPostDetailAdapter(private val context: Context): RecyclerView.Adapter<My
 
 
     }
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyPostDetailAdapter.ViewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(context).inflate(R.layout.post_detail_item, parent, false)
         return ViewHolder(view)
     }
@@ -403,6 +412,19 @@ class MyPostDetailAdapter(private val context: Context): RecyclerView.Adapter<My
             val intent = Intent(context, LoginActivity::class.java)
             context.startActivity(intent)
         }
+    }
+
+    fun addFeedInfoData(newData: List<VectoService.FeedInfoResponse>) {
+        //데이터 추가 함수
+        val startIdx = feedInfo.size
+        feedInfo.addAll(newData)
+        notifyItemRangeInserted(startIdx, newData.size)
+    }
+
+    fun addFeedIdData(newData: List<Int>){
+        val startIdx = feedInfo.size
+        feedID.addAll(newData)
+        notifyItemRangeInserted(startIdx, newData.size)
     }
 
 }

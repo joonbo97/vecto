@@ -73,28 +73,16 @@ interface VectoService {
         @Body request: MailRequest
     ): Call<VectoResponse<Unit>>
 
-    @GET("feed")
-    fun getUserPost(
-        @Query("userId") userId: String,
-        @Query("page") page: Int
-    ): Call<VectoResponse<List<Int>>>
-
-    @GET("feed/likes")
-    fun getUserLikePost(
-        @Query("userId") userId: String,
-        @Query("page") page: Int
-    ): Call<VectoResponse<List<Int>>>
-
     @GET("feed/{feedId}")
     fun getFeedInfo(
         @Path("feedId") feedId: Int
-    ): Call<VectoResponse<PostResponse>>
+    ): Call<VectoResponse<FeedInfoResponse>>
 
     @POST("feed/{feedId}")
     fun getFeedInfo(
         @Header("Authorization") authorization: String,
         @Path("feedId") feedId: Int
-    ): Call<VectoResponse<PostResponse>>
+    ): Call<VectoResponse<FeedInfoResponse>>
 
     @POST("feed/{feedId}/likes")
     fun sendLike(
@@ -186,29 +174,41 @@ interface VectoService {
         @Header("Authorization") authorization: String,
         @Query("page") page: Int,
         @Query("isFollowPage") isFollowPage: Boolean
-    ): Response<VectoResponse<FeedResponse>>
+    ): Response<VectoResponse<FeedPageResponse>>
 
     @GET("feed/feedList")
     suspend fun getFeedList(
         @Query("page") page: Int
-    ): Response<VectoResponse<FeedResponse>>
+    ): Response<VectoResponse<FeedPageResponse>>
 
     @GET("feed/feeds/search")
     suspend fun getSearchFeedList(
         @Query("page") page: Int,
         @Query("q") q: String
-    ): Response<VectoResponse<FeedResponse>>
+    ): Response<VectoResponse<FeedPageResponse>>
+
+    @GET("feed/likes")
+    suspend fun getLikeFeedList(
+        @Query("userId") userId: String,
+        @Query("page") page: Int
+    ): Response<VectoResponse<FeedPageResponse>>
+
+    @GET("feed")
+    suspend fun getUserFeedList(
+        @Query("userId") userId: String,
+        @Query("page") page: Int
+    ): Response<VectoResponse<FeedPageResponse>>
 
     @GET("feed/{feedId}")
     suspend fun getFeedInfo2(
         @Path("feedId") feedId: Int
-    ): Response<VectoResponse<PostResponse>>
+    ): Response<VectoResponse<FeedInfoResponse>>
 
     @POST("feed/{feedId}")
     suspend fun getFeedInfo2(
         @Header("Authorization") authorization: String,
         @Path("feedId") feedId: Int
-    ): Response<VectoResponse<PostResponse>>
+    ): Response<VectoResponse<FeedInfoResponse>>
 
 
 
@@ -264,7 +264,7 @@ interface VectoService {
         val followingCount: Int
     )
 
-    data class FeedResponse(
+    data class FeedPageResponse(
         val nextPage: Int,
         val feedIds: List<Int>,
         val lastPage: Boolean,
@@ -295,7 +295,7 @@ interface VectoService {
         var mapimage: MutableList<String>?
     )
 
-    data class PostResponse(
+    data class FeedInfoResponse(
         val title: String,
         val content: String,
         val timeDifference: String,

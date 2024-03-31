@@ -1,4 +1,4 @@
-package com.vecto_example.vecto.ui.search
+package com.vecto_example.vecto.ui.detail
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -10,7 +10,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
 
-class SearchViewModel(private val repository: FeedRepository) : ViewModel() {
+class FeedDetailViewModel(private val repository: FeedRepository) : ViewModel() {
     var nextPage: Int = 0
     var lastPage: Boolean = false
     var followPage: Boolean = true
@@ -66,7 +66,7 @@ class SearchViewModel(private val repository: FeedRepository) : ViewModel() {
                     lastPage = feedListResponse.lastPage
                 }
             } catch (e: Exception) {
-                throw Exception("fetchPostResults Failed")
+                throw Exception("fetchFeedResults Failed")
             } finally {
                 endLoading()
             }
@@ -96,7 +96,7 @@ class SearchViewModel(private val repository: FeedRepository) : ViewModel() {
                 }
 
             } catch (e: Exception) {
-                throw Exception("fetchPostResults Failed")
+                throw Exception("fetchPersonalFeedResults Failed")
             } finally {
                 endLoading()
             }
@@ -123,7 +123,62 @@ class SearchViewModel(private val repository: FeedRepository) : ViewModel() {
                     lastPage = feedListResponse.lastPage
                 }
             } catch (e: Exception) {
-                throw Exception("fetchPostResults Failed")
+                throw Exception("fetchSearchFeedResults Failed")
+            } finally {
+                endLoading()
+            }
+        }
+    }
+
+
+    fun fetchLikeFeedResults() {
+        startLoading()
+
+        viewModelScope.launch {
+            try{
+                if(!lastPage){
+                    val feedListResponse = repository.getLikeFeedList(nextPage)
+                    val feedIds = feedListResponse.feedIds
+
+                    val feedInfo = feedIds.map {
+                        async { repository.getFeedInfo(it) }
+                    }.awaitAll()
+
+                    _feedInfoLiveData.postValue(feedInfo)
+                    _feedIdsLiveData.postValue(feedListResponse)
+
+                    nextPage = feedListResponse.nextPage
+                    lastPage = feedListResponse.lastPage
+                }
+            } catch (e: Exception) {
+                throw Exception("fetchLikeFeedResults Failed")
+            } finally {
+                endLoading()
+            }
+        }
+    }
+
+    fun fetchUserFeedResults(userId: String) {
+        startLoading()
+
+        viewModelScope.launch {
+            try{
+                if(!lastPage){
+                    val feedListResponse = repository.getUserFeedList(userId, nextPage)
+                    val feedIds = feedListResponse.feedIds
+
+                    val feedInfo = feedIds.map {
+                        async { repository.getFeedInfo(it) }
+                    }.awaitAll()
+
+                    _feedInfoLiveData.postValue(feedInfo)
+                    _feedIdsLiveData.postValue(feedListResponse)
+
+                    nextPage = feedListResponse.nextPage
+                    lastPage = feedListResponse.lastPage
+                }
+            } catch (e: Exception) {
+                throw Exception("fetchUserFeedResults Failed")
             } finally {
                 endLoading()
             }

@@ -30,7 +30,7 @@ class UserInfoActivity : AppCompatActivity() {
     private var cnt = 0
     private var pageNo = 0
     private var pageList = mutableListOf<Int>()
-    private var responseData = mutableListOf<VectoService.PostResponse>()
+    private var responseData = mutableListOf<VectoService.FeedInfoResponse>()
     private var responsePageData = mutableListOf<Int>()
 
     private var loadingFlag = false
@@ -316,7 +316,7 @@ class UserInfoActivity : AppCompatActivity() {
 
 
     private fun getPostList(userId: String) {
-        val vectoService = VectoService.create()
+        /*val vectoService = VectoService.create()
 
         val call = vectoService.getUserPost(userId, pageNo)
         call.enqueue(object : Callback<VectoService.VectoResponse<List<Int>>> {
@@ -363,13 +363,13 @@ class UserInfoActivity : AppCompatActivity() {
                 Toast.makeText(this@UserInfoActivity, getText(R.string.APIFailToastMessage), Toast.LENGTH_SHORT).show()
             }
 
-        })
+        })*/
     }
 
     private fun getPostInfo(feedid: Int) {
         val vectoService = VectoService.create()
 
-        val call: Call<VectoService.VectoResponse<VectoService.PostResponse>>
+        val call: Call<VectoService.VectoResponse<VectoService.FeedInfoResponse>>
 
         if(Auth.loginFlag.value == true)
         {
@@ -380,8 +380,8 @@ class UserInfoActivity : AppCompatActivity() {
             call = vectoService.getFeedInfo(feedid)
         }
 
-        call.enqueue(object : Callback<VectoService.VectoResponse<VectoService.PostResponse>> {
-            override fun onResponse(call: Call<VectoService.VectoResponse<VectoService.PostResponse>>, response: Response<VectoService.VectoResponse<VectoService.PostResponse>>) {
+        call.enqueue(object : Callback<VectoService.VectoResponse<VectoService.FeedInfoResponse>> {
+            override fun onResponse(call: Call<VectoService.VectoResponse<VectoService.FeedInfoResponse>>, response: Response<VectoService.VectoResponse<VectoService.FeedInfoResponse>>) {
                 if(response.isSuccessful){
                     Log.d("POSTINFO", "성공: ${response.body()}")
 
@@ -421,7 +421,7 @@ class UserInfoActivity : AppCompatActivity() {
                 }
             }
 
-            override fun onFailure(call: Call<VectoService.VectoResponse<VectoService.PostResponse>>, t: Throwable) {
+            override fun onFailure(call: Call<VectoService.VectoResponse<VectoService.FeedInfoResponse>>, t: Throwable) {
                 Log.d("POSTINFO", "실패")
                 Toast.makeText(this@UserInfoActivity, getText(R.string.APIFailToastMessage), Toast.LENGTH_SHORT).show()
                 endLoading()

@@ -26,7 +26,7 @@
             android:name=".PolicyActivity"
             android:exported="false" />
         <activity
-            android:name=".PostDetailActivity"
+            android:name=".ui.detail.FeedDetailActivity"
             android:exported="false" />
         <activity
             android:name=".UserInfoActivity"
