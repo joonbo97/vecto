@@ -14,7 +14,7 @@ class FeedDetailViewModel(private val repository: FeedRepository) : ViewModel() 
     var nextPage: Int = 0
     var lastPage: Boolean = false
     var followPage: Boolean = true
-    var originLoginFlag: Boolean? = null
+    var originLoginFlag: Boolean? = false
 
     val allFeedIds = mutableListOf<Int>()
     val allFeedInfo = mutableListOf<VectoService.FeedInfoResponse>()

@@ -3,44 +3,35 @@ package com.vecto_example.vecto.ui.detail
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.res.Resources
-import android.graphics.PointF
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.util.TypedValue
 import android.view.MotionEvent
 import android.view.View
-import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.vecto_example.vecto.data.model.LocationData
-import com.vecto_example.vecto.data.model.VisitData
 import com.vecto_example.vecto.retrofit.VectoService
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import com.naver.maps.geometry.LatLng
-import com.naver.maps.geometry.LatLngBounds
 import com.naver.maps.map.CameraUpdate
 import com.naver.maps.map.MapFragment
 import com.naver.maps.map.NaverMap
 import com.naver.maps.map.OnMapReadyCallback
-import com.naver.maps.map.overlay.Marker
-import com.naver.maps.map.overlay.OverlayImage
-import com.naver.maps.map.overlay.PathOverlay
 import com.vecto_example.vecto.ui.detail.adapter.MyFeedDetailAdapter
 import com.vecto_example.vecto.R
 import com.vecto_example.vecto.data.Auth
 import com.vecto_example.vecto.data.repository.FeedRepository
 import com.vecto_example.vecto.databinding.ActivityPostDetailBinding
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
+import com.vecto_example.vecto.utils.MapMarkerManager
+import com.vecto_example.vecto.utils.MapOverlayManager
 
 class FeedDetailActivity : AppCompatActivity(), OnMapReadyCallback {
     private lateinit var binding: ActivityPostDetailBinding
+    private lateinit var mapMarkerManager: MapMarkerManager
+    private lateinit var mapOverlayManager: MapOverlayManager
 
     private val viewModel: FeedDetailViewModel by viewModels {
         FeedDetailViewModelFactory(FeedRepository(VectoService.create()))
@@ -51,9 +42,6 @@ class FeedDetailActivity : AppCompatActivity(), OnMapReadyCallback {
     //map설정 관련
     private lateinit var mapView: MapFragment
     private lateinit var naverMap: NaverMap
-
-    private val visitMarkers = mutableListOf<Marker>()
-    private val pathOverlays = mutableListOf<PathOverlay>()
 
     private var likePostFlag = false
 
@@ -127,25 +115,6 @@ class FeedDetailActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
 
-    private fun addOverlayForPost(feedInfo: VectoService.FeedInfoResponse) {
-        deleteOverlay()
-
-        for(i in 0 until feedInfo.visit.size)
-            addVisitMarker(feedInfo.visit[i])
-
-        addPathOverlayForLocation(feedInfo.location.toMutableList())
-
-        if(feedInfo.visit.size == 1)
-        {
-            moveCameraForVisit(feedInfo.visit[0])
-        }
-        else
-        {
-            moveCameraForPath(feedInfo.location.toMutableList())
-        }
-
-    }
-
     private fun initMap(){
         mapView = supportFragmentManager.findFragmentById(R.id.naver_map_detail) as MapFragment?
             ?: MapFragment.newInstance().also {
@@ -158,6 +127,9 @@ class FeedDetailActivity : AppCompatActivity(), OnMapReadyCallback {
         this.naverMap = naverMap
         naverMap.moveCamera(CameraUpdate.zoomTo(18.0))
         naverMap.uiSettings.isZoomControlEnabled = false
+
+        mapMarkerManager = MapMarkerManager(naverMap)
+        mapOverlayManager = MapOverlayManager(this, mapMarkerManager, naverMap)
 
         myFeedDetailAdapter = MyFeedDetailAdapter(this)
         val postDetailRecyclerView = binding.PostDetailRecyclerView
@@ -173,10 +145,10 @@ class FeedDetailActivity : AppCompatActivity(), OnMapReadyCallback {
                 val firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition()
                 val lastVisibleItemPosition = layoutManager.findLastVisibleItemPosition()
 
-                // 아이템의 정보를 가져와서 처리합니다.
+                // 아이템의 정보를 가져와서 처리
                 for (position in firstVisibleItemPosition..lastVisibleItemPosition) {
                     val feedInfo = myFeedDetailAdapter.feedInfo[position]
-                    addOverlayForPost(feedInfo)
+                    mapOverlayManager.addOverlayForPost(feedInfo)
                 }
 
                 if (!recyclerView.canScrollVertically(1)) {
@@ -220,102 +192,12 @@ class FeedDetailActivity : AppCompatActivity(), OnMapReadyCallback {
             (binding.PostDetailRecyclerView.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(position, 0)
     }
 
-    private fun addVisitMarker(visitData: VisitData){
-        val visitMarker = Marker()
-
-        visitMarker.icon = OverlayImage.fromResource(getMarkerIcon())
-
-        if(visitData.name.isNotEmpty()) {
-            visitMarker.position = LatLng(visitData.lat_set, visitData.lng_set)
-        }
-        else {
-            visitMarker.position = LatLng(visitData.lat, visitData.lng)
-        }
-
-        visitMarker.map = naverMap
-
-        visitMarkers.add(visitMarker)
-    }
-
-    private fun addPathOverlayForLocation(pathPoints: MutableList<LocationData>){
-        val pathLatLng = mutableListOf<LatLng>()
-
-        for(i in 0 until pathPoints.size) {
-            pathLatLng.add(LatLng(pathPoints[i].lat, pathPoints[i].lng))
-        }
-
-        addPathOverlay(pathLatLng)
-    }
-
-    private fun addPathOverlay(pathPoints: MutableList<LatLng>){
-        val pathOverlay = PathOverlay()
-
-        if(pathPoints.size > 1) {
-            pathOverlay.coords = pathPoints
-            pathOverlay.width = 20
-            pathOverlay.color = ContextCompat.getColor(this, R.color.vecto_pathcolor)
-            pathOverlay.outlineColor = ContextCompat.getColor(this, R.color.vecto_pathcolor)
-            pathOverlay.patternImage = OverlayImage.fromResource(R.drawable.pathoverlay_pattern)
-            pathOverlay.patternInterval = 50
-            pathOverlay.map = naverMap
-            pathOverlays.add(pathOverlay)
-        }
-    }
-
-    private fun deleteOverlay() {
-        pathOverlays.forEach{ it.map = null}
-        pathOverlays.clear()
-
-        visitMarkers.forEach { it.map = null }
-        visitMarkers.clear()
-    }
-
-    private fun getMarkerIcon(): Int{
-        return when(visitMarkers.size){
-            0 -> R.drawable.marker_number_1
-            1 -> R.drawable.marker_number_2
-            2 -> R.drawable.marker_number_3
-            3 -> R.drawable.marker_number_4
-            4 -> R.drawable.marker_number_5
-            5 -> R.drawable.marker_number_6
-            6 -> R.drawable.marker_number_7
-            7 -> R.drawable.marker_number_8
-            8 -> R.drawable.marker_number_9
-            else -> R.drawable.marker_image
-        }
-
-    }
-
-    private fun moveCameraForPath(pathPoints: MutableList<LocationData>){
-        if(pathPoints.isNotEmpty()) {
-            val minLat = pathPoints.minOf { it.lat }
-            val maxLat = pathPoints.maxOf { it.lat }
-            val minLng = pathPoints.minOf { it.lng }
-            val maxLng = pathPoints.maxOf { it.lng }
-
-            val bounds = LatLngBounds(LatLng(minLat , minLng), LatLng(maxLat, maxLng))
-            naverMap.moveCamera(CameraUpdate.fitBounds(bounds, 150, 200, 150, 150))
-            val Offset = PointF(0.0f, (-50).toFloat())
-            naverMap.moveCamera(CameraUpdate.scrollBy(Offset))
-
-        }
-    }
-
-    private fun moveCameraForVisit(visit: VisitData){
-        val targetLatLng = LatLng(visit.lat_set, visit.lng_set)
-        val Offset = PointF(0.0f, (-50).toFloat())
-
-        naverMap.moveCamera(CameraUpdate.scrollTo(targetLatLng))
-        naverMap.moveCamera(CameraUpdate.zoomTo(18.0))
-        naverMap.moveCamera(CameraUpdate.scrollBy(Offset))
-    }
-
     private fun initObservers() {
         /*   로그인 관련 Observer   */
         Auth.loginFlag.observe(this) {
             if(Auth.loginFlag.value != viewModel.originLoginFlag) {
                 Log.d("LOGINFLAG", "LOGINFLAG IS CHANGED: ${Auth.loginFlag.value}")
-                //clearRecyclerView()
+                clearRecyclerView()
                 viewModel.initSetting()
                 getFeed()   //로그인 상태 변경시 게시글 다시 불러옴
                 viewModel.originLoginFlag = Auth.loginFlag.value!!
@@ -347,6 +229,14 @@ class FeedDetailActivity : AppCompatActivity(), OnMapReadyCallback {
                 binding.progressBar.visibility = View.GONE
         }
 
+    }
+
+    @SuppressLint("NotifyDataSetChanged")
+    private fun clearRecyclerView() {
+        myFeedDetailAdapter.feedID.clear()
+        myFeedDetailAdapter.feedInfo.clear()
+        myFeedDetailAdapter.notifyDataSetChanged()
+        Log.d("CLEAR TEST", "RecyclerView is Cleared")
     }
 
     private fun getFeed() {
