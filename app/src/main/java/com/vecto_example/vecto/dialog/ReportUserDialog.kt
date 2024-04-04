@@ -8,12 +8,12 @@ import android.widget.EditText
 import android.widget.ImageView
 import android.widget.RadioButton
 import android.widget.RadioGroup
-import android.widget.Toast
 import com.vecto_example.vecto.R
 
 class ReportUserDialog (val context: Context) {
     private val dialog = Dialog(context, R.style.CustomDialog)
-    var onOkButtonClickListener: ((String) -> Unit)? = null
+    var onOkButtonClickListener: ((Int, String?) -> Unit)? = null
+    private var selectedOptionId: Int = -1 // Selected RadioButton ID
 
     fun showDialog() {
         dialog.setContentView(R.layout.dialog_report_user)
@@ -32,10 +32,14 @@ class ReportUserDialog (val context: Context) {
         val editBox: ImageView = dialog.findViewById(R.id.ReportContentBox)
 
         okButton.setOnClickListener {
+            val detailContent = if (selectedOptionId == R.id.radioButton3) editText.text.toString() else null
 
+            onOkButtonClickListener?.invoke(selectedOptionId, detailContent)
+            dialog.dismiss()
         }
 
         radioGroupReport.setOnCheckedChangeListener{ group, checkedId  ->
+            selectedOptionId = checkedId
 
             if(checkedId == R.id.radioButton3) {
                 for (i in 0 until group.childCount) {
