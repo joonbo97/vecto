@@ -29,10 +29,10 @@
             android:name=".ui.detail.FeedDetailActivity"
             android:exported="false" />
         <activity
-            android:name=".UserInfoActivity"
+            android:name=".ui.userinfo.UserInfoActivity"
             android:exported="false" />
         <activity
-            android:name=".NotificationActivity"
+            android:name=".ui.notification.NotificationActivity"
             android:exported="false" />
         <activity
             android:name=".CommentActivity"

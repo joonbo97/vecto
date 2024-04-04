@@ -21,7 +21,7 @@
         android:id="@+id/TodayCourseFragment"
         android:name="com.vecto_example.vecto.ui_bottom.TodayCourseFragment"
         android:label="fragment_write"
-        tools:layout="@layout/fragment_write"/>
+        tools:layout="@layout/fragment_today_course"/>
 
     <fragment
         android:id="@+id/EditCourseFragment"
@@ -31,7 +31,7 @@
 
     <fragment
         android:id="@+id/MypageFragment"
-        android:name="com.vecto_example.vecto.ui_bottom.MypageFragment"
+        android:name="com.vecto_example.vecto.ui.mypage.MypageFragment"
         android:label="fragment_mypage"
         tools:layout="@layout/fragment_mypage">
         <action
@@ -53,31 +53,31 @@
 
     <fragment
         android:id="@+id/MypageSettingFragment"
-        android:name="com.vecto_example.vecto.ui_bottom.MypageSettingFragment"
+        android:name="com.vecto_example.vecto.ui.mypage.setting.MypageSettingFragment"
         android:label="fragment_mypage_setting"
         tools:layout="@layout/fragment_mypage_setting"/>
 
     <fragment
         android:id="@+id/MypageSettingkakaoFragment"
-        android:name="com.vecto_example.vecto.ui_bottom.MypageSettingkakaoFragment"
+        android:name="com.vecto_example.vecto.ui.mypage.setting.MypageSettingkakaoFragment"
         android:label="fragment_mypage_settingkakao"
         tools:layout="@layout/fragment_mypage_settingkakao"/>
 
     <fragment
         android:id="@+id/MypagePostFragment"
-        android:name="com.vecto_example.vecto.ui_bottom.MypagePostFragment"
+        android:name="com.vecto_example.vecto.ui.mypage.myfeed.MypageFeedFragment"
         android:label="fragment_mypage_post"
         tools:layout="@layout/fragment_mypage_post"/>
 
     <fragment
         android:id="@+id/MypageLikepostFragment"
-        android:name="com.vecto_example.vecto.ui_bottom.MypageLikepostFragment"
+        android:name="com.vecto_example.vecto.ui.mypage.likefeed.MypageLikeFeedFragment"
         android:label="fragment_mypage_likepost"
         tools:layout="@layout/fragment_mypage_likepost"/>
 
     <fragment
         android:id="@+id/MypageInquiryFragment"
-        android:name="com.vecto_example.vecto.ui_bottom.MypageInquiryFragment"
+        android:name="com.vecto_example.vecto.ui.mypage.inquiry.MypageInquiryFragment"
         android:label="fragment_mypage_inquiry"
         tools:layout="@layout/fragment_mypage_inquiry"/>
 </navigation>
