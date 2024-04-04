@@ -12,7 +12,7 @@ import android.widget.Toast
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.vecto_example.vecto.NotificationActivity
+import com.vecto_example.vecto.ui.notification.NotificationActivity
 import com.vecto_example.vecto.R
 import com.vecto_example.vecto.data.Auth
 import com.vecto_example.vecto.data.repository.FeedRepository
@@ -38,19 +38,19 @@ class SearchFragment : Fragment(){
     ): View {
         binding = FragmentSearchBinding.inflate(inflater, container, false)
 
-        initRecyclerView()
-        initObservers()
-        initListeners()
-
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        initRecyclerView()
+        initObservers()
+        initListeners()
+
         val swipeRefreshLayout = binding.swipeRefreshLayout
         swipeRefreshLayout.setOnRefreshListener {
-            if(!checkLoading()){//로딩중이 아니라면
+            if(!viewModel.checkLoading()){//로딩중이 아니라면
 
                 viewModel.initSetting()
                 clearRecyclerView()
@@ -163,9 +163,6 @@ class SearchFragment : Fragment(){
         mysearchpostAdapter.addFeedInfoData(viewModel.allFeedInfo)
         mysearchpostAdapter.addFeedIdData(viewModel.allFeedIds)
 
-        Log.d("ADAPTERSIZE", "${mysearchpostAdapter.feedInfo.size}")
-
-
         val searchRecyclerView = binding.SearchRecyclerView
         searchRecyclerView.adapter = mysearchpostAdapter
         searchRecyclerView.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
@@ -175,7 +172,7 @@ class SearchFragment : Fragment(){
                 super.onScrolled(recyclerView, dx, dy)
 
                 if (!recyclerView.canScrollVertically(1)) {
-                    if(viewModel.isLoadingBottom.value == false && viewModel.isLoadingCenter.value == false)
+                    if(!viewModel.checkLoading())
                     {
                         getFeed()
                     }
@@ -191,7 +188,6 @@ class SearchFragment : Fragment(){
         mysearchpostAdapter.feedID.clear()
         mysearchpostAdapter.feedInfo.clear()
         mysearchpostAdapter.notifyDataSetChanged()
-        Log.d("CLEAER TEST", "${mysearchpostAdapter.feedInfo.size}")
     }
 
     private fun clearNoneImage() {
@@ -203,11 +199,6 @@ class SearchFragment : Fragment(){
     private fun setNoneImage() {
         binding.NoneImage.visibility = View.VISIBLE
         binding.NoneText.visibility = View.VISIBLE
-    }
-
-    private fun checkLoading(): Boolean{
-        //로딩중이 아니라면 false, 로딩중이라면 true
-        return !(viewModel.isLoadingBottom.value == false && viewModel.isLoadingCenter.value == false)
     }
 
     private fun getFeed() {
