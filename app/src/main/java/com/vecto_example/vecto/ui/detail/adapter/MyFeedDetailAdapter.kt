@@ -17,7 +17,6 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
 import com.bumptech.glide.Glide
 import com.vecto_example.vecto.CommentActivity
-import com.vecto_example.vecto.ImageSliderAdapter
 import com.vecto_example.vecto.LoginActivity
 import com.vecto_example.vecto.R
 import com.vecto_example.vecto.VisitNumberAdapter

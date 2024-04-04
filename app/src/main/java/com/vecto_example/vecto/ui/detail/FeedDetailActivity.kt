@@ -233,10 +233,12 @@ class FeedDetailActivity : AppCompatActivity(), OnMapReadyCallback {
 
     @SuppressLint("NotifyDataSetChanged")
     private fun clearRecyclerView() {
-        myFeedDetailAdapter.feedID.clear()
-        myFeedDetailAdapter.feedInfo.clear()
-        myFeedDetailAdapter.notifyDataSetChanged()
-        Log.d("CLEAR TEST", "RecyclerView is Cleared")
+        if(::myFeedDetailAdapter.isInitialized) {
+            myFeedDetailAdapter.feedID.clear()
+            myFeedDetailAdapter.feedInfo.clear()
+            myFeedDetailAdapter.notifyDataSetChanged()
+            Log.d("CLEAR TEST", "RecyclerView is Cleared")
+        }
     }
 
     private fun getFeed() {

@@ -36,30 +36,21 @@ interface VectoService {
         @Body request: IdCheckRequest
     ): Call<VectoResponse<Unit>>
 
+    @POST("userId/check")
+    suspend fun idCheck2(
+        @Body request: IdCheckRequest
+    ): Response<VectoResponse<Unit>>
+
     @GET("user")
     fun getUserInfo(
         @Query("userId") userId: String
     ): Call<VectoResponse<UserInfoResponse>>
-
-    @PATCH("user")
-    fun updateUser(
-        @Header("Authorization") authorization: String,
-        @Body userData: UserUpdateData
-    ): Call<VectoResponse<String>>
 
     @POST("feed")
     fun addPost(
         @Header("Authorization") authorization: String,
         @Body request: PostDataForUpload
     ): Call<VectoResponse<Int>>
-
-    @Multipart
-    @POST("upload/profile")
-    fun uploadImage(
-        @Header("Authorization")
-        authorization: String,
-        @Part image: MultipartBody.Part
-    ): Call<VectoResponse<String>>
 
     @Multipart
     @POST("upload/feed")
@@ -72,17 +63,6 @@ interface VectoService {
     fun sendMail(
         @Body request: MailRequest
     ): Call<VectoResponse<Unit>>
-
-    @GET("feed/{feedId}")
-    fun getFeedInfo(
-        @Path("feedId") feedId: Int
-    ): Call<VectoResponse<FeedInfoResponse>>
-
-    @POST("feed/{feedId}")
-    fun getFeedInfo(
-        @Header("Authorization") authorization: String,
-        @Path("feedId") feedId: Int
-    ): Call<VectoResponse<FeedInfoResponse>>
 
     @POST("feed/{feedId}/likes")
     fun sendLike(
@@ -169,6 +149,12 @@ interface VectoService {
         @Body updatePostData: UpdatePostRequest
     ): Call<VectoResponse<String>>
 
+    @POST("complaint")
+    fun postComplaint(
+        @Header("Authorization") authorization: String,
+        @Body request: ComplaintRequest
+    ): Call<VectoResponse<Unit>>
+
     @GET("feed/feeds/personal")
     suspend fun getPersonalFeedList(
         @Header("Authorization") authorization: String,
@@ -200,15 +186,29 @@ interface VectoService {
     ): Response<VectoResponse<FeedPageResponse>>
 
     @GET("feed/{feedId}")
-    suspend fun getFeedInfo2(
+    suspend fun getFeedInfo(
         @Path("feedId") feedId: Int
     ): Response<VectoResponse<FeedInfoResponse>>
 
     @POST("feed/{feedId}")
-    suspend fun getFeedInfo2(
+    suspend fun getFeedInfo(
         @Header("Authorization") authorization: String,
         @Path("feedId") feedId: Int
     ): Response<VectoResponse<FeedInfoResponse>>
+
+    @Multipart
+    @POST("upload/profile") //프로필 이미지 업로드
+    suspend fun uploadImage(
+        @Header("Authorization")
+        authorization: String,
+        @Part image: MultipartBody.Part
+    ): Response<VectoResponse<String>>
+
+    @PATCH("user")
+    suspend fun updateUserProfile(
+        @Header("Authorization") authorization: String,
+        @Body userData: UserUpdateData
+    ): Response<VectoResponse<String>>
 
 
 
@@ -351,5 +351,11 @@ interface VectoService {
         val location: MutableList<LocationData>, //경로 정보
         val visit: MutableList<VisitDataForWite>, //방문지 정보
         var mapimage: MutableList<String>?
+    )
+
+    data class ComplaintRequest(
+        val complaintType: String,
+        val toUserId: String,
+        val content: String?
     )
 }

@@ -19,6 +19,7 @@ import com.vecto_example.vecto.data.Auth
 import com.vecto_example.vecto.dialog.EditDeletePopupWindow
 import com.vecto_example.vecto.dialog.LoginRequestDialog
 import com.vecto_example.vecto.retrofit.VectoService
+import com.vecto_example.vecto.ui.userinfo.UserInfoActivity
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response

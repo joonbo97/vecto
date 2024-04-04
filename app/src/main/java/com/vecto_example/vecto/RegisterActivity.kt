@@ -166,7 +166,7 @@ class RegisterActivity : AppCompatActivity() {
 
 
     private fun isIdExist(id: String){
-        Log.d("ID CHECK", "${id}")
+        Log.d("ID CHECK", id)
 
         val vectoService = VectoService.create()
 

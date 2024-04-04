@@ -11,6 +11,6 @@ class SearchViewModelFactory(private val repository: FeedRepository): ViewModelP
             return SearchViewModel(repository) as T
         }
 
-        throw IllegalArgumentException("ViewModel Factory ERROR")
+        throw IllegalArgumentException("SearchViewModelFactory ERROR")
     }
 }

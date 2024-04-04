@@ -16,7 +16,7 @@ import com.bumptech.glide.Glide
 import com.vecto_example.vecto.CommentActivity
 import com.vecto_example.vecto.LoginActivity
 import com.vecto_example.vecto.ui.detail.FeedDetailActivity
-import com.vecto_example.vecto.UserInfoActivity
+import com.vecto_example.vecto.ui.userinfo.UserInfoActivity
 import com.vecto_example.vecto.data.Auth
 import com.vecto_example.vecto.dialog.DeletePostDialog
 import com.vecto_example.vecto.dialog.EditDeletePopupWindow
@@ -322,5 +322,18 @@ class MypostAdapter(private val context: Context): RecyclerView.Adapter<MypostAd
             }
 
         })
+    }
+
+    fun addFeedInfoData(newData: List<VectoService.FeedInfoResponse>) {
+        //데이터 추가 함수
+        val startIdx = feedInfo.size
+        feedInfo.addAll(newData)
+        notifyItemRangeInserted(startIdx, newData.size)
+    }
+
+    fun addFeedIdData(newData: List<Int>){
+        val startIdx = feedInfo.size
+        feedID.addAll(newData)
+        notifyItemRangeInserted(startIdx, newData.size)
     }
 }

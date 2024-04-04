@@ -83,9 +83,9 @@ class FeedRepository (private val vectoService: VectoService) {
         /*   FeedId를 통해 게시물 상세 정보를 확인 할 수 있는 함수   */
 
         val response = if (Auth.loginFlag.value == true) {
-            vectoService.getFeedInfo2("Bearer ${Auth.token}", feedId)
+            vectoService.getFeedInfo("Bearer ${Auth.token}", feedId)
         } else {
-            vectoService.getFeedInfo2(feedId)
+            vectoService.getFeedInfo(feedId)
         }
 
         if(response.isSuccessful){
