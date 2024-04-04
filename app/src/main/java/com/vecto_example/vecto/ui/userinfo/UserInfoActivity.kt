@@ -1,15 +1,19 @@
-package com.vecto_example.vecto
+package com.vecto_example.vecto.ui.userinfo
 
+import android.annotation.SuppressLint
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.Toast
+import androidx.activity.viewModels
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.vecto_example.vecto.R
 import com.vecto_example.vecto.data.Auth
+import com.vecto_example.vecto.data.repository.FeedRepository
 import com.vecto_example.vecto.databinding.ActivityUserInfoBinding
 import com.vecto_example.vecto.dialog.ReportPopupWindow
 import com.vecto_example.vecto.dialog.ReportUserDialog
@@ -21,19 +25,15 @@ import retrofit2.Response
 
 class UserInfoActivity : AppCompatActivity() {
     lateinit var binding: ActivityUserInfoBinding
+    private val viewModel: UserInfoViewModel by viewModels {
+        UserInfoViewModelFactory(FeedRepository(VectoService.create()))
+    }
+
     var followFlag: Boolean = false
 
     private lateinit var mypostAdapter: MypostAdapter
 
     private var userId = ""
-
-    private var cnt = 0
-    private var pageNo = 0
-    private var pageList = mutableListOf<Int>()
-    private var responseData = mutableListOf<VectoService.FeedInfoResponse>()
-    private var responsePageData = mutableListOf<Int>()
-
-    private var loadingFlag = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,37 +42,16 @@ class UserInfoActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         intent.getStringExtra("userId")?.let {
-            startLoading(0)
             userId = it
             getUserInfo(it)
-            getPostList(it)
+            getFeed(it)
 
             if(userId == Auth._userId.value)
                 binding.MenuIcon.visibility = View.GONE
         }
 
-        mypostAdapter = MypostAdapter(this)
-        val postRecyclerView = binding.UserPostRecyclerView
-        postRecyclerView.adapter = mypostAdapter
-        mypostAdapter.userId = userId
-        postRecyclerView.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
-        postRecyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
-            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                super.onScrolled(recyclerView, dx, dy)
-
-                if(!recyclerView.canScrollVertically(1)) {
-                    if(pageNo != -1 && !loadingFlag)
-                    {
-                        startLoading(1)
-                        pageNo++
-                        mypostAdapter.pageNo = pageNo
-                        getPostList(userId)
-                    }
-
-
-                }
-            }
-        })
+        initRecyclerView()
+        initObservers()
 
 
         binding.MenuIcon.setOnClickListener {
@@ -81,11 +60,31 @@ class UserInfoActivity : AppCompatActivity() {
 
                     val reportUserDialog = ReportUserDialog(this)
                     reportUserDialog.showDialog()
-                    reportUserDialog.onOkButtonClickListener = {
+                    reportUserDialog.onOkButtonClickListener = { selectedOptionId, detailContent ->
+                        when(selectedOptionId) {
+                            R.id.radioButton0 -> {
+                                complaintUser("BAD_MANNER", userId, null)
+                            }
 
+                            R.id.radioButton1 -> {
+                                complaintUser("INSULT", userId, null)
+                            }
+                            R.id.radioButton2 -> {
+                                complaintUser("SEXUAL_HARASSMENT", userId, null)
+                            }
+                            R.id.radioButton3 -> {
+                                if (detailContent != null) {
+                                    complaintUser("OTHER_PROBLEM", userId, detailContent)
+                                }
+                                else{
+                                    complaintUser("OTHER_PROBLEM", userId, null)
+                                }
+                            }
+                        }
+
+
+                        Toast.makeText(this@UserInfoActivity, "신고처리 되었습니다. 검토후 조치 예정입니다.", Toast.LENGTH_SHORT).show()
                     }
-
-                    Toast.makeText(this@UserInfoActivity, "신고처리 되었습니다. 검토후 조치 예정입니다.", Toast.LENGTH_SHORT).show()
                 }
             )
 
@@ -97,23 +96,12 @@ class UserInfoActivity : AppCompatActivity() {
         val swipeRefreshLayout = binding.swipeRefreshLayout
         swipeRefreshLayout.setOnRefreshListener {
 
-            if(!loadingFlag) {
-                startLoading(0)
+            if(!viewModel.checkLoading()){
+                viewModel.initSetting()
+                clearRecyclerView()
+                clearNoneImage()
 
-                pageNo = 0
-                cnt = 0
-                mypostAdapter = MypostAdapter(this)
-                binding.UserPostRecyclerView.adapter = mypostAdapter
-
-                binding.NoneImage.visibility = View.GONE
-                binding.NoneText.visibility = View.GONE
-
-                mypostAdapter.feedID.clear()
-                mypostAdapter.feedInfo.clear()
-
-                getPostList(userId)
-
-                loadingFlag = false
+                getFeed(userId)
             }
 
             swipeRefreshLayout.isRefreshing = false
@@ -121,6 +109,70 @@ class UserInfoActivity : AppCompatActivity() {
         }
 
     }
+
+    private fun initObservers() {
+        /*   게시글 관련 Observer   */
+        viewModel.feedInfoLiveData.observe(this) {
+            //새로운 feed 정보를 받았을 때의 처리
+            mypostAdapter.pageNo = viewModel.nextPage //다음 page 정보
+            viewModel.feedInfoLiveData.value?.let { mypostAdapter.addFeedInfoData(it) }   //새로 받은 게시글 정보 추가
+        }
+
+        viewModel.feedIdsLiveData.observe(this) {
+            viewModel.feedIdsLiveData.value?.let { mypostAdapter.addFeedIdData(it.feedIds) }
+
+            if(viewModel.allFeedIds.isEmpty() && viewModel.feedIdsLiveData.value?.feedIds.isNullOrEmpty()){
+                setNoneImage()
+            }
+        }
+
+        /*   로딩 관련 Observer   */
+        viewModel.isLoadingCenter.observe(this) {
+            if(it)
+                binding.progressBarCenter.visibility = View.VISIBLE
+            else
+                binding.progressBarCenter.visibility = View.GONE
+        }
+        viewModel.isLoadingBottom.observe(this) {
+            if(it)
+                binding.progressBar.visibility = View.VISIBLE
+            else
+                binding.progressBar.visibility = View.GONE
+        }
+    }
+
+    private fun initRecyclerView(){
+        mypostAdapter = MypostAdapter(this)
+
+        clearRecyclerView()
+
+        mypostAdapter.addFeedInfoData(viewModel.allFeedInfo)
+        mypostAdapter.addFeedIdData(viewModel.allFeedIds)
+
+        val postRecyclerView = binding.UserPostRecyclerView
+        postRecyclerView.adapter = mypostAdapter
+        mypostAdapter.userId = userId
+        postRecyclerView.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
+        postRecyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                super.onScrolled(recyclerView, dx, dy)
+
+                if(!recyclerView.canScrollVertically(1)) {
+                    if(!viewModel.checkLoading()){
+                        getFeed(userId)
+                    }
+                }
+            }
+        })
+    }
+
+    @SuppressLint("NotifyDataSetChanged")
+    private fun clearRecyclerView() {
+        mypostAdapter.feedID.clear()
+        mypostAdapter.feedInfo.clear()
+        mypostAdapter.notifyDataSetChanged()
+    }
+
 
     private fun getUserInfo(userId: String) {
         val vectoService = VectoService.create()
@@ -286,6 +338,27 @@ class UserInfoActivity : AppCompatActivity() {
             }
         })
     }
+
+    private fun complaintUser(type: String, userId: String, content: String?){
+
+        val vectoService = VectoService.create()
+
+        val call = vectoService.postComplaint("Bearer ${Auth.token}", VectoService.ComplaintRequest(type, userId, content))
+        call.enqueue(object : Callback<VectoService.VectoResponse<Unit>> {
+            override fun onResponse(call: Call<VectoService.VectoResponse<Unit>>, response: Response<VectoService.VectoResponse<Unit>>) {
+                if (response.isSuccessful) {
+                    Log.d("complaintUser", "성공 : " + response.body())
+                } else {
+                    // 서버 에러 처리
+                    Log.d("complaintUser", "실패 : " + response.errorBody()?.string())
+                }
+            }
+
+            override fun onFailure(call: Call<VectoService.VectoResponse<Unit>>, t: Throwable) {
+                Log.d("complaintUser", "실패 : " + t.message)
+            }
+        })
+    }
     private fun setFollowButton(followflag: Boolean){
         if(Auth._userId.value == userId)
         {
@@ -299,7 +372,9 @@ class UserInfoActivity : AppCompatActivity() {
         {
             binding.FollowButton.setImageResource(R.drawable.userinfo_following_button)
             binding.FollowButtonText.text = "팔로잉"
-            binding.FollowButtonText.setTextColor(ContextCompat.getColor(this, R.color.vecto_theme_orange))
+            binding.FollowButtonText.setTextColor(ContextCompat.getColor(this,
+                R.color.vecto_theme_orange
+            ))
             followFlag = true
         }
         else
@@ -314,130 +389,21 @@ class UserInfoActivity : AppCompatActivity() {
         binding.FollowButtonText.visibility = View.VISIBLE
     }
 
-
-    private fun getPostList(userId: String) {
-        /*val vectoService = VectoService.create()
-
-        val call = vectoService.getUserPost(userId, pageNo)
-        call.enqueue(object : Callback<VectoService.VectoResponse<List<Int>>> {
-            override fun onResponse(call: Call<VectoService.VectoResponse<List<Int>>>, response: Response<VectoService.VectoResponse<List<Int>>>) {
-                if(response.isSuccessful){
-                    Log.d("POSTID", "성공: ${response.body()}")
-
-                    cnt = 0
-                    responseData.clear()
-                    responsePageData.clear()
-
-                    if(response.body()?.result?.isEmpty() == true)
-                    {
-                        if(pageNo == 0)//검색결과가 없을 경우
-                        {
-                            binding.UserPostRecyclerView.adapter = null
-                            binding.NoneImage.visibility = View.VISIBLE
-                            binding.NoneText.visibility = View.VISIBLE
-                            pageNo = -1
-                            mypostAdapter.pageNo = -1
-                        }
-
-                        pageNo = -1
-                        endLoading()
-                    }
-                    else
-                    {
-                        pageList = response.body()?.result!!.toMutableList()
-
-                        for(item in response.body()!!.result!!){
-                            getPostInfo(item)
-                        }
-
-                    }
-                }
-                else{
-                    Log.d("POSTID", "성공했으나 서버 오류 ${response.errorBody()?.string()}")
-                    Toast.makeText(this@UserInfoActivity, "잠시후 다시 시도해주세요.", Toast.LENGTH_SHORT).show()
-                }
-            }
-
-            override fun onFailure(call: Call<VectoService.VectoResponse<List<Int>>>, t: Throwable) {
-                Log.d("POSTID", "실패")
-                Toast.makeText(this@UserInfoActivity, getText(R.string.APIFailToastMessage), Toast.LENGTH_SHORT).show()
-            }
-
-        })*/
+    private fun getFeed(userId: String){
+        viewModel.fetchUserFeedResults(userId)
     }
 
-    private fun getPostInfo(feedid: Int) {
-        val vectoService = VectoService.create()
-
-        val call: Call<VectoService.VectoResponse<VectoService.FeedInfoResponse>>
-
-        if(Auth.loginFlag.value == true)
-        {
-            call = vectoService.getFeedInfo("Bearer ${Auth.token}", feedid)
-        }
-        else
-        {
-            call = vectoService.getFeedInfo(feedid)
-        }
-
-        call.enqueue(object : Callback<VectoService.VectoResponse<VectoService.FeedInfoResponse>> {
-            override fun onResponse(call: Call<VectoService.VectoResponse<VectoService.FeedInfoResponse>>, response: Response<VectoService.VectoResponse<VectoService.FeedInfoResponse>>) {
-                if(response.isSuccessful){
-                    Log.d("POSTINFO", "성공: ${response.body()}")
-
-                    val result = response.body()!!.result
-
-
-                    responseData.add(result!!)
-                    responsePageData.add(feedid)
-                    cnt++
-
-                    if(cnt == pageList.size)//마지막 항목일 경우
-                    {
-
-                        var idxcnt = 0
-
-                        while(cnt != 0) {
-                            for (i in 0 until pageList.size) {
-                                if (pageList[idxcnt] == responsePageData[i]) {
-                                    mypostAdapter.feedInfo.add(responseData[i])
-                                    mypostAdapter.feedID.add(responsePageData[i])
-                                    cnt--
-                                    break
-                                }
-                            }
-
-                            idxcnt++
-                        }
-
-                        mypostAdapter.notifyDataSetChanged()
-                        endLoading()
-                    }
-                }
-                else{
-                    Log.d("POSTINFO", "성공했으나 서버 오류 ${response.errorBody()?.string()}")
-                    Toast.makeText(this@UserInfoActivity, "잠시후 다시 시도해주세요.", Toast.LENGTH_SHORT).show()
-                    endLoading()
-                }
-            }
-
-            override fun onFailure(call: Call<VectoService.VectoResponse<VectoService.FeedInfoResponse>>, t: Throwable) {
-                Log.d("POSTINFO", "실패")
-                Toast.makeText(this@UserInfoActivity, getText(R.string.APIFailToastMessage), Toast.LENGTH_SHORT).show()
-                endLoading()
-            }
-
-        })
+    private fun setNoneImage() {
+        binding.NoneImage.visibility = View.VISIBLE
+        binding.NoneText.visibility = View.VISIBLE
+        binding.NoneText.text = "${binding.UserNameText.text}님이 작성한 게시물이 없어요!"
+        Log.d("NONE SET", "NONE IMAGE SET")
     }
 
-    private fun startLoading(type: Int){
-        when(type){
-            0 -> binding.progressBarCenter.visibility = View.VISIBLE
-            1 -> binding.progressBar.visibility = View.VISIBLE
-        }
-    }
-    private fun endLoading(){
-        binding.progressBarCenter.visibility = View.GONE
-        binding.progressBar.visibility = View.GONE
+
+    private fun clearNoneImage() {
+        binding.NoneImage.visibility = View.GONE
+        binding.NoneText.visibility = View.GONE
+        Log.d("NONE GONE", "NONE IMAGE IS GONE")
     }
 }

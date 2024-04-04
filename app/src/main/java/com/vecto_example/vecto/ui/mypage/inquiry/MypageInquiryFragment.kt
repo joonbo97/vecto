@@ -1,4 +1,4 @@
-package com.vecto_example.vecto.ui_bottom
+package com.vecto_example.vecto.ui.mypage.inquiry
 
 import android.content.Context
 import android.content.Intent
@@ -8,11 +8,8 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.core.content.FileProvider
 import androidx.navigation.fragment.findNavController
-import com.bumptech.glide.Glide
-import com.vecto_example.vecto.LoginActivity
 import com.vecto_example.vecto.MainActivity
 import com.vecto_example.vecto.PolicyActivity
 import com.vecto_example.vecto.R
@@ -78,14 +75,4 @@ class MypageInquiryFragment : Fragment() {
             e.printStackTrace()
         }
     }
-
-    override fun onResume() {
-        super.onResume()
-
-        (activity as? MainActivity)?.updateBottomNavigationSelection(R.id.MypageFragment)
-        val navController = findNavController()
-        navController.navigate(R.id.MypageFragment)
-    }
-
-
 }

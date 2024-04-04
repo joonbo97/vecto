@@ -1,4 +1,4 @@
-package com.vecto_example.vecto
+package com.vecto_example.vecto.ui.notification.adapter
 
 import android.content.Context
 import android.view.LayoutInflater
@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.vecto_example.vecto.R
 import com.vecto_example.vecto.data.model.NotificationDataResult
 import com.vecto_example.vecto.data.model.NotificationDatabase
 import java.time.Duration
@@ -22,7 +23,7 @@ class MyNotificationAdapter(private val context: Context): RecyclerView.Adapter<
         val box: ImageView = view.findViewById(R.id.notificationBox)
     }
 
-    override fun onBindViewHolder(holder: MyNotificationAdapter.ViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         holder.text.text = notificationData[position].text
 
         fun timeSince(dateTimeStr: String): String {
@@ -68,7 +69,7 @@ class MyNotificationAdapter(private val context: Context): RecyclerView.Adapter<
 
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyNotificationAdapter.ViewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(context).inflate(R.layout.notification_item, parent, false)
         return ViewHolder(view)
     }

@@ -1,4 +1,4 @@
-package com.vecto_example.vecto
+package com.vecto_example.vecto.ui.detail.adapter
 
 import android.content.Context
 import android.view.LayoutInflater
@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.vecto_example.vecto.R
 
 class ImageSliderAdapter(private val context: Context, private val imageUrls: List<String>): RecyclerView.Adapter<ImageSliderAdapter.ImageViewHolder>(){
     inner class ImageViewHolder(view: View) : RecyclerView.ViewHolder(view) {
