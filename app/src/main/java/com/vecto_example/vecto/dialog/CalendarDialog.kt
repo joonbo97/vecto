@@ -157,7 +157,7 @@ class CalendarDialog (private val context: Context) {//deletepostdialog copy
 
                             dialog.findViewById<TextView>(R.id.OKText).setTextColor(ContextCompat.getColor(context, R.color.black))
 
-                            if(lastSelect != -1)
+                            if(lastSelect != -1 && lastSelect != firstDayOfWeek + i - 2)    //이전에 선택한 날짜가 있으면 이전 선택된 날짜 색 변경
                             {
                                 dialog.findViewById<TextView>(dateTextViews[lastSelect]).setTextColor(ContextCompat.getColor(context, R.color.black))
                             }
