@@ -1,6 +1,5 @@
 package com.vecto_example.vecto
 
-import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
@@ -9,8 +8,8 @@ import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.vecto_example.vecto.data.Auth
 import com.vecto_example.vecto.databinding.ActivityCommentBinding
-import com.vecto_example.vecto.dialog.LoginRequestDialog
 import com.vecto_example.vecto.retrofit.VectoService
+import com.vecto_example.vecto.utils.RequestLoginUtils
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -55,12 +54,7 @@ class CommentActivity : AppCompatActivity(), MyCommentAdapter.OnEditActionListen
         binding.CommentButton.setOnClickListener {
             if(Auth.loginFlag.value == false)
             {
-                val loginRequestDialog = LoginRequestDialog(this)
-                loginRequestDialog.showDialog()
-                loginRequestDialog.onOkButtonClickListener = {
-                    val intent = Intent(this, LoginActivity::class.java)
-                    this.startActivity(intent)
-                }
+                RequestLoginUtils.requestLogin(this)
                 return@setOnClickListener
             }
 
@@ -250,7 +244,7 @@ class CommentActivity : AppCompatActivity(), MyCommentAdapter.OnEditActionListen
         binding.EditContent.hint = "수정할 내용을 작성해 주세요."
     }
 
-    fun onEditCancelled() {
+    private fun onEditCancelled() {
         myCommentAdapter.cancelEditing()
         Toast.makeText(this, "댓글 수정이 취소 되었습니다.", Toast.LENGTH_SHORT).show()
         binding.EditContent.hint = "댓글을 작성해 주세요."
