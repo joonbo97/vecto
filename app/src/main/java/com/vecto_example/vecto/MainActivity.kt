@@ -10,8 +10,6 @@ import androidx.datastore.preferences.preferencesDataStore
 import androidx.navigation.findNavController
 import androidx.navigation.ui.setupWithNavController
 import com.vecto_example.vecto.MainActivity.DataStoreUtils.myDataStore
-import com.vecto_example.vecto.data.Auth
-import com.vecto_example.vecto.data.model.NotificationDatabase
 import com.vecto_example.vecto.databinding.ActivityMainBinding
 
 
@@ -35,18 +33,6 @@ class MainActivity : AppCompatActivity() {
         val navController = findNavController(R.id.nav_host_fragment_activity_main)
         navView.setupWithNavController(navController)
         navView.itemIconTintList = null
-
-
-        val hasUnshown = NotificationDatabase(this).checkShowFlag()
-        if (hasUnshown) {//읽지않은 데이터가 있을 경우
-            Auth.setShowFlag(true)
-        }
-        else{
-            Auth.setShowFlag(false)
-        }
-        Log.d("CHECK_NOTIFICATION", Auth.showFlag.value.toString())
-
-
 
         /*Notification Intent 관련*/
         intent.getIntExtra("feedId", -1).let{

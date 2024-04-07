@@ -69,7 +69,7 @@ class MypageFeedViewModel(private val repository: FeedRepository) : ViewModel() 
                     lastPage = feedListResponse.lastPage
                 }
             } catch (e: Exception) {
-                throw Exception("fetchUserFeedResults Failed")
+                Log.e("fetchUserFeedResultsError", "Failed to load notifications", e)
             } finally {
                 endLoading()
             }

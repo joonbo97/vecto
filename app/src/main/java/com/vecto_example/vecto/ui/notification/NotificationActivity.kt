@@ -4,14 +4,10 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.View
-import androidx.activity.OnBackPressedCallback
 import androidx.activity.viewModels
-import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.vecto_example.vecto.ui.notification.adapter.MyNotificationAdapter
-import com.vecto_example.vecto.data.Auth
-import com.vecto_example.vecto.data.model.NotificationDatabase
 import com.vecto_example.vecto.data.repository.NotificationRepository
 import com.vecto_example.vecto.databinding.ActivityNotificationBinding
 import com.vecto_example.vecto.retrofit.VectoService

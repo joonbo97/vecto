@@ -68,7 +68,7 @@ class MypageLikeFeedViewModel(private val repository: FeedRepository) : ViewMode
                     lastPage = feedListResponse.lastPage
                 }
             } catch (e: Exception) {
-                throw Exception("fetchLikeFeedResults Failed")
+                Log.e("fetchLikeFeedResultsError", "Failed to load notifications", e)
             } finally {
                 endLoading()
             }
