@@ -48,15 +48,13 @@ class UserRepository (private val vectoService: VectoService) {
                     Log.d("ID_CHECK", "IS DUPLICATED ID")
                     Result.success(false)
                 } else {
-                    Log.d("IC_CHECK", "성공했으나 서버 오류")
+                    Log.d("ID_CHECK", "성공했으나 서버 오류")
                     Result.failure(Exception("서버오류"))
                 }
             }
         } catch (e: Exception) {
-            Log.d("IC_CHECK", "실패")
+            Log.d("ID_CHECK", "실패")
             Result.failure(e)
         }
     }
-
-
 }
