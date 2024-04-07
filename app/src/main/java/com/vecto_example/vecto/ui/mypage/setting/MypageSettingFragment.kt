@@ -33,8 +33,6 @@ class MypageSettingFragment : Fragment() {
     lateinit var cropResultLauncher: ActivityResultLauncher<Intent>
     lateinit var galleryResultLauncher: ActivityResultLauncher<Intent>
 
-    private var idDuplicateFlag = false
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -93,7 +91,7 @@ class MypageSettingFragment : Fragment() {
             it.onSuccess { isDuplicate ->
                 if(isDuplicate){
                     Toast.makeText(requireContext(), "사용 가능한 아이디 입니다.", Toast.LENGTH_SHORT).show()
-                    idDuplicateFlag
+
                 }
                 else {
                     binding.editTextID.isEnabled = true
@@ -151,7 +149,7 @@ class MypageSettingFragment : Fragment() {
 
             if(binding.editTextID.text.toString() != Auth._userId.value.toString())//ID변경이 있는 경우
             {
-                if(idDuplicateFlag) {
+                if(viewModel.idDuplicateFlag.value?.getOrNull() == true) {
                     if(viewModel.checkValidation(MypageSettingViewModel.Type.ID, binding.editTextID.text.toString())){
                         newID = binding.editTextID.text.toString()
                     }
