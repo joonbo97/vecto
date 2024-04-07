@@ -210,6 +210,17 @@ interface VectoService {
         @Body userData: UserUpdateData
     ): Response<VectoResponse<String>>
 
+    @GET("push/new")
+    suspend fun getNewNotificationFlag(
+        @Header("Authorization") authorization: String
+    ): Response<VectoResponse<Boolean>>
+
+    @GET("push")
+    suspend fun getNotification(
+        @Header("Authorization") authorization: String,
+        @Query("page") page: Int
+    ): Response<VectoResponse<NotificationResponse>>
+
 
 
 
@@ -358,4 +369,20 @@ interface VectoService {
         val toUserId: String,
         val content: String?
     )
+
+    data class NotificationResponse(
+        val nextPage: Int,
+        val notifications: List<Notification>,
+        val lastPage: Boolean
+    )
+
+    data class Notification(
+        val notificationType: String,
+        var requestedBefore: Boolean,
+        val feedId: Int,
+        val fromUserId: String,
+        val content: String,
+        val timeDifference: String
+    )
+
 }

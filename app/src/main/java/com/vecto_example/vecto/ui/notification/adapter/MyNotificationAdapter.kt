@@ -1,21 +1,20 @@
 package com.vecto_example.vecto.ui.notification.adapter
 
 import android.content.Context
+import android.content.Intent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.vecto_example.vecto.CommentActivity
 import com.vecto_example.vecto.R
-import com.vecto_example.vecto.data.model.NotificationDataResult
-import com.vecto_example.vecto.data.model.NotificationDatabase
-import java.time.Duration
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
+import com.vecto_example.vecto.retrofit.VectoService
+import com.vecto_example.vecto.ui.userinfo.UserInfoActivity
 
 class MyNotificationAdapter(private val context: Context): RecyclerView.Adapter<MyNotificationAdapter.ViewHolder>(){
-    val notificationData = mutableListOf<NotificationDataResult>()
+    val notificationData = mutableListOf<VectoService.Notification>()
     inner class ViewHolder(view: View): RecyclerView.ViewHolder(view) {
         val text: TextView = view.findViewById(R.id.notificationText)
         val timeText: TextView = view.findViewById(R.id.PostTimeText)
@@ -24,30 +23,11 @@ class MyNotificationAdapter(private val context: Context): RecyclerView.Adapter<
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.text.text = notificationData[position].text
+        holder.text.text = notificationData[position].content
 
-        fun timeSince(dateTimeStr: String): String {
-            val formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME
-            val dateTimeFromDB = LocalDateTime.parse(dateTimeStr, formatter)
+        holder.timeText.text =notificationData[position].timeDifference
 
-            val now = LocalDateTime.now()
-            val duration = Duration.between(dateTimeFromDB, now)
-
-            val daysPassed = duration.toDays()
-            val hoursPassed = duration.toHours() % 24
-            val minutesPassed = duration.toMinutes() % 60
-
-            return when {
-                daysPassed > 0 -> "${daysPassed}일 전"
-                hoursPassed > 0 -> "${hoursPassed}시간 전"
-                minutesPassed > 0 -> "${minutesPassed}분 전"
-                else -> "방금 전"
-            }
-        }
-
-        holder.timeText.text = timeSince(notificationData[position].datetime)
-
-        if(notificationData[position].showFlag == 0)//보여지지 않았다면
+        if(!notificationData[position].requestedBefore)//보여지지 않았다면
         {
             holder.circle.visibility = View.VISIBLE
         }
@@ -57,12 +37,24 @@ class MyNotificationAdapter(private val context: Context): RecyclerView.Adapter<
         }
 
         holder.itemView.setOnClickListener {
-            if(notificationData[position].showFlag == 0)//확인 안했으면
+            if(!notificationData[position].requestedBefore)//확인 안했으면
             {
-                notificationData[position] = notificationData[position].copy(showFlag = 1)
-                NotificationDatabase(context).updateShowFlag(notificationData[position].id)
-
                 notifyItemChanged(position)
+                notificationData[position].requestedBefore = true
+                holder.circle.visibility = View.INVISIBLE
+            }
+            else
+            {
+                if(notificationData[position].notificationType == "follow"){
+                    val intent = Intent(context, UserInfoActivity::class.java)
+                    intent.putExtra("userId", notificationData[position].fromUserId)
+                    context.startActivity(intent)
+                }
+                else if(notificationData[position].notificationType == "comment"){
+                    val intent = Intent(context, CommentActivity::class.java)
+                    intent.putExtra("feedID", notificationData[position].feedId)
+                    context.startActivity(intent)
+                }
             }
         }
 
@@ -76,5 +68,12 @@ class MyNotificationAdapter(private val context: Context): RecyclerView.Adapter<
 
     override fun getItemCount(): Int {
         return notificationData.size
+    }
+
+    fun addNotificationData(newData: List<VectoService.Notification>) {
+        //데이터 추가 함수
+        val startIdx = notificationData.size
+        notificationData.addAll(newData)
+        notifyItemRangeInserted(startIdx, newData.size)
     }
 }
