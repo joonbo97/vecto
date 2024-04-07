@@ -16,16 +16,23 @@ import com.vecto_example.vecto.ui.notification.NotificationActivity
 import com.vecto_example.vecto.R
 import com.vecto_example.vecto.data.Auth
 import com.vecto_example.vecto.data.repository.FeedRepository
+import com.vecto_example.vecto.data.repository.NotificationRepository
 import com.vecto_example.vecto.databinding.FragmentSearchBinding
 import com.vecto_example.vecto.retrofit.VectoService
+import com.vecto_example.vecto.ui.notification.NotificationViewModel
+import com.vecto_example.vecto.ui.notification.NotificationViewModelFactory
 import com.vecto_example.vecto.ui.search.adapter.MysearchpostAdapter
+import com.vecto_example.vecto.utils.RequestLoginUtils
 
 class SearchFragment : Fragment(){
     /*   다른 사용자의 게시글을 확인 할 수 있는 Search Fragment   */
 
     private lateinit var binding: FragmentSearchBinding
-    private val viewModel: SearchViewModel by viewModels {
+    private val searchViewModel: SearchViewModel by viewModels {
         SearchViewModelFactory(FeedRepository(VectoService.create()))
+    }
+    private val notificationViewModel: NotificationViewModel by viewModels {
+        NotificationViewModelFactory(NotificationRepository(VectoService.create()))
     }
     private lateinit var mysearchpostAdapter: MysearchpostAdapter
 
@@ -44,15 +51,16 @@ class SearchFragment : Fragment(){
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        initUI()
         initRecyclerView()
         initObservers()
         initListeners()
 
         val swipeRefreshLayout = binding.swipeRefreshLayout
         swipeRefreshLayout.setOnRefreshListener {
-            if(!viewModel.checkLoading()){//로딩중이 아니라면
+            if(!searchViewModel.checkLoading()){//로딩중이 아니라면
 
-                viewModel.initSetting()
+                searchViewModel.initSetting()
                 clearRecyclerView()
                 clearNoneImage()
 
@@ -63,11 +71,24 @@ class SearchFragment : Fragment(){
         }
     }
 
+    private fun initUI() {
+        /*   UI 초기화 함수   */
+        if(Auth.loginFlag.value == true){
+            notificationViewModel.getNewNotificationFlag()
+        }
+    }
+
     private fun initListeners() {
         /*   리스너 초기화 함수   */
 
         //알림 아이콘 클릭 이벤트
         binding.AlarmIconImage.setOnClickListener {
+            if(Auth.loginFlag.value == false)
+            {
+                RequestLoginUtils.requestLogin(requireContext())
+                return@setOnClickListener
+            }
+
             val intent = Intent(context, NotificationActivity::class.java)
             startActivity(intent)
         }
@@ -82,7 +103,7 @@ class SearchFragment : Fragment(){
 
             clearRecyclerView()
             clearNoneImage()
-            viewModel.initSetting()
+            searchViewModel.initSetting()
 
             /*   검색 상태 설정   */
             query = binding.editTextID.text.toString()
@@ -98,54 +119,77 @@ class SearchFragment : Fragment(){
 
     private fun initObservers() {
         /*   알림 아이콘 관련 Observer   */
-        Auth.showFlag.observe(viewLifecycleOwner) {
-            if(Auth.showFlag.value == true && Auth.loginFlag.value == true)//확인 안한 알림이 있을 경우
-            {
-                binding.AlarmIconImage.setImageResource(R.drawable.alarmon_icon)
+        notificationViewModel.newNotificationFlag.observe(viewLifecycleOwner) {
+            it.onSuccess { newNotificationFlag->
+                if(newNotificationFlag){    //새로운 알림이 있을 경우
+                    Log.d("SEARCH_INIT_UI", "SUCCESS_TRUE")
+                    binding.AlarmIconImage.setImageResource(R.drawable.alarmon_icon)
+                }
+                else{   //새로운 알림이 없는 경우
+                    Log.d("SEARCH_INIT_UI", "SUCCESS_FALSE")
+                    binding.AlarmIconImage.setImageResource(R.drawable.alarmoff_icon)
+                }
             }
-            else//확인 안한 알림이 없을 경우
-            {
-                binding.AlarmIconImage.setImageResource(R.drawable.alarmoff_icon)
-            }
+                .onFailure {//실패한 경우
+                    Log.d("SEARCH_INIT_UI", "FAIL")
+                    binding.AlarmIconImage.setImageResource(R.drawable.alarmoff_icon)
+                }
         }
 
         /*   로그인 관련 Observer   */
         Auth.loginFlag.observe(viewLifecycleOwner) {
+            initUI()
 
-            if(Auth.loginFlag.value != viewModel.originLoginFlag) {
+            if(Auth.loginFlag.value != searchViewModel.originLoginFlag) {
                 Log.d("LOGINFLAG", "LOGINFLAG IS CHANGED: ${Auth.loginFlag.value}")
                 clearRecyclerView()
                 clearNoneImage()
-                viewModel.initSetting()
+                searchViewModel.initSetting()
                 queryFlag = false
                 getFeed()   //로그인 상태 변경시 게시글 다시 불러옴
-                viewModel.originLoginFlag = Auth.loginFlag.value!!
+                searchViewModel.originLoginFlag = Auth.loginFlag.value!!
             }
         }
 
         /*   게시글 관련 Observer   */
-        viewModel.feedInfoLiveData.observe(viewLifecycleOwner) {
+        searchViewModel.feedInfoLiveData.observe(viewLifecycleOwner) {
             //새로운 feed 정보를 받았을 때의 처리
-            mysearchpostAdapter.pageNo = viewModel.nextPage //다음 page 정보
-            viewModel.feedInfoLiveData.value?.let { mysearchpostAdapter.addFeedInfoData(it) }   //새로 받은 게시글 정보 추가
-        }
+            mysearchpostAdapter.pageNo = searchViewModel.nextPage //다음 page 정보
+            searchViewModel.feedInfoLiveData.value?.let { mysearchpostAdapter.addFeedInfoData(it) }   //새로 받은 게시글 정보 추가
 
-        viewModel.feedIdsLiveData.observe(viewLifecycleOwner) {
-            viewModel.feedIdsLiveData.value?.let { mysearchpostAdapter.addFeedIdData(it.feedIds) }
-
-            if(queryFlag && viewModel.allFeedIds.isEmpty() && viewModel.feedIdsLiveData.value?.feedIds.isNullOrEmpty()){
-                setNoneImage()
+            if(searchViewModel.feedInfoLiveData.value != null && !searchViewModel.isDataLoaded){
+                searchViewModel.allFeedInfo.addAll(searchViewModel.feedInfoLiveData.value!!)
+                searchViewModel.isDataLoaded = true
             }
         }
 
+        searchViewModel.feedIdsLiveData.observe(viewLifecycleOwner) {
+            searchViewModel.feedIdsLiveData.value?.let { mysearchpostAdapter.addFeedIdData(it.feedIds) }
+
+            if(queryFlag && searchViewModel.allFeedIds.isEmpty() && searchViewModel.feedIdsLiveData.value?.feedIds.isNullOrEmpty()){
+                setNoneImage()
+            }
+
+
+            Log.d("Pagination", "Current allFeedIds size: ${searchViewModel.allFeedIds.size}")
+
+            if(searchViewModel.feedIdsLiveData.value != null && !searchViewModel.isDataLoaded) {
+                searchViewModel.allFeedIds.addAll(searchViewModel.feedIdsLiveData.value!!.feedIds)
+                searchViewModel.isDataLoaded = true
+            }
+
+            Log.d("Pagination", "New data added. Updated allFeedIds size: ${searchViewModel.allFeedIds.size}")
+
+        }
+
         /*   로딩 관련 Observer   */
-        viewModel.isLoadingCenter.observe(viewLifecycleOwner) {
+        searchViewModel.isLoadingCenter.observe(viewLifecycleOwner) {
             if(it)
                 binding.progressBarCenter.visibility = View.VISIBLE
             else
                 binding.progressBarCenter.visibility = View.GONE
         }
-        viewModel.isLoadingBottom.observe(viewLifecycleOwner) {
+        searchViewModel.isLoadingBottom.observe(viewLifecycleOwner) {
             if(it)
                 binding.progressBar.visibility = View.VISIBLE
             else
@@ -158,11 +202,6 @@ class SearchFragment : Fragment(){
         /*   Recycler 초기화 함수   */
         mysearchpostAdapter = MysearchpostAdapter(requireContext())
 
-        clearRecyclerView()
-
-        mysearchpostAdapter.addFeedInfoData(viewModel.allFeedInfo)
-        mysearchpostAdapter.addFeedIdData(viewModel.allFeedIds)
-
         val searchRecyclerView = binding.SearchRecyclerView
         searchRecyclerView.adapter = mysearchpostAdapter
         searchRecyclerView.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
@@ -172,7 +211,7 @@ class SearchFragment : Fragment(){
                 super.onScrolled(recyclerView, dx, dy)
 
                 if (!recyclerView.canScrollVertically(1)) {
-                    if(!viewModel.checkLoading())
+                    if(!searchViewModel.checkLoading())
                     {
                         getFeed()
                     }
@@ -185,6 +224,8 @@ class SearchFragment : Fragment(){
 
     @SuppressLint("NotifyDataSetChanged")
     private fun clearRecyclerView() {
+        Log.d("CLEAR_RECYCLERVIEW", "CLEAR")
+
         mysearchpostAdapter.feedID.clear()
         mysearchpostAdapter.feedInfo.clear()
         mysearchpostAdapter.notifyDataSetChanged()
@@ -204,18 +245,26 @@ class SearchFragment : Fragment(){
     private fun getFeed() {
         //게시글 요청 함수
         if(queryFlag) { //검색 요청인 경우
-            viewModel.fetchSearchFeedResults(query)
+            searchViewModel.fetchSearchFeedResults(query)
             Log.d("getFeed", "Query")
         }
         else{
             if(Auth.loginFlag.value == false) {   //로그인 X인 경우
-                viewModel.fetchFeedResults()
+                searchViewModel.fetchFeedResults()
                 Log.d("getFeed", "Normal")
             }
             else{
-                viewModel.fetchPersonalFeedResults()
+                searchViewModel.fetchPersonalFeedResults()
                 Log.d("getFeed", "Personal")
             }
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        clearRecyclerView()
+        mysearchpostAdapter.addFeedInfoData(searchViewModel.allFeedInfo)
+        mysearchpostAdapter.addFeedIdData(searchViewModel.allFeedIds)
     }
 }

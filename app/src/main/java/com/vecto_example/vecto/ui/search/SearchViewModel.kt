@@ -1,5 +1,6 @@
 package com.vecto_example.vecto.ui.search
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -15,6 +16,8 @@ class SearchViewModel(private val repository: FeedRepository) : ViewModel() {
     var lastPage: Boolean = false
     var followPage: Boolean = true
     var originLoginFlag: Boolean? = null
+
+    var isDataLoaded: Boolean = true    //데이터를 전부 다 가져왔는지 여부
 
     val allFeedIds = mutableListOf<Int>()
     val allFeedInfo = mutableListOf<VectoService.FeedInfoResponse>()
@@ -49,8 +52,6 @@ class SearchViewModel(private val repository: FeedRepository) : ViewModel() {
         viewModelScope.launch {
             try {
                 if(!lastPage) { //마지막 page가 아닐 경우에만 실행
-                    feedIdsLiveData.value?.let { allFeedIds.addAll(it.feedIds) }
-                    feedInfoLiveData.value?.let { allFeedInfo.addAll(it) }
 
                     val feedListResponse = repository.getFeedList(nextPage)
                     val feedIds = feedListResponse.feedIds  //요청한 pageNo에 해당하는 Feed Ids
@@ -61,6 +62,8 @@ class SearchViewModel(private val repository: FeedRepository) : ViewModel() {
 
                     _feedInfoLiveData.postValue(feedInfo)   //LiveData 값 변경
                     _feedIdsLiveData.postValue(feedListResponse)
+
+                    isDataLoaded = false
 
                     nextPage = feedListResponse.nextPage    //페이지 정보값 변경
                     lastPage = feedListResponse.lastPage
@@ -89,6 +92,7 @@ class SearchViewModel(private val repository: FeedRepository) : ViewModel() {
                     _feedInfoLiveData.postValue(feedInfo)   //LiveData 값 변경
                     _feedIdsLiveData.postValue(feedListResponse)
 
+                    isDataLoaded = false
 
                     nextPage = feedListResponse.nextPage    //페이지 정보값 변경
                     lastPage = feedListResponse.lastPage
@@ -119,6 +123,8 @@ class SearchViewModel(private val repository: FeedRepository) : ViewModel() {
                     _feedInfoLiveData.postValue(feedInfo)
                     _feedIdsLiveData.postValue(feedListResponse)
 
+                    isDataLoaded = false
+
                     nextPage = feedListResponse.nextPage
                     lastPage = feedListResponse.lastPage
                 }
@@ -134,6 +140,7 @@ class SearchViewModel(private val repository: FeedRepository) : ViewModel() {
         nextPage = 0
         lastPage = false
         followPage = true
+        isDataLoaded = true
 
         allFeedIds.clear()
         allFeedInfo.clear()
