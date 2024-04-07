@@ -43,13 +43,13 @@ class MyFirebaseMessagingService:  FirebaseMessagingService(){
             // 알림 제목과 내용이 있을 경우, 알림 표시
             val currentDateTime = LocalDateTime.now().withNano(0).toString()
 
-            val notificationDB = NotificationDatabase(this)
+            //val notificationDB = NotificationDatabase(this)
             if(feedId != null){
-                notificationDB.addNotificationData(NotificationData(currentDateTime, feedId.toInt(), body, 0))
+                //notificationDB.addNotificationData(NotificationData(currentDateTime, feedId.toInt(), body, 0))
                 showNotification(title, body, feedId.toInt())
             }
             else{
-                notificationDB.addNotificationData(NotificationData(currentDateTime, -1, body, 0))
+                //notificationDB.addNotificationData(NotificationData(currentDateTime, -1, body, 0))
                 showNotification(title, body, -1)
             }
         } else {
@@ -59,7 +59,6 @@ class MyFirebaseMessagingService:  FirebaseMessagingService(){
     }
 
     private fun showNotification(title: String?, body: String?, feedId: Int) {
-
         val intent = Intent(this, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             putExtra("feedId", feedId)
@@ -74,7 +73,7 @@ class MyFirebaseMessagingService:  FirebaseMessagingService(){
             .setContentTitle(title)
             .setContentText(body)
             .setSmallIcon(R.drawable.notification_icon)
-            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setContentIntent(pendingIntent)
             .setAutoCancel(true)
 
