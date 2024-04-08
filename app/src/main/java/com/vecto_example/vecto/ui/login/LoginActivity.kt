@@ -1,4 +1,4 @@
-package com.vecto_example.vecto
+package com.vecto_example.vecto.ui.login
 
 import android.content.Context
 import android.content.Intent
@@ -6,7 +6,6 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
-import androidx.activity.OnBackPressedCallback
 import androidx.activity.viewModels
 import com.vecto_example.vecto.data.Auth
 import com.vecto_example.vecto.retrofit.VectoService
@@ -19,10 +18,11 @@ import com.kakao.sdk.common.model.ClientErrorCause
 import com.kakao.sdk.common.model.KakaoSdkError
 import com.kakao.sdk.common.util.Utility
 import com.kakao.sdk.user.UserApiClient
+import com.vecto_example.vecto.BuildConfig
+import com.vecto_example.vecto.R
+import com.vecto_example.vecto.RegisterActivity
 import com.vecto_example.vecto.data.repository.UserRepository
 import com.vecto_example.vecto.databinding.ActivityLoginBinding
-import com.vecto_example.vecto.ui.login.LoginViewModel
-import com.vecto_example.vecto.ui.login.LoginViewModelFactory
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response

@@ -2,7 +2,7 @@ package com.vecto_example.vecto.utils
 
 import android.content.Context
 import android.content.Intent
-import com.vecto_example.vecto.LoginActivity
+import com.vecto_example.vecto.ui.login.LoginActivity
 import com.vecto_example.vecto.dialog.LoginRequestDialog
 
 class RequestLoginUtils {

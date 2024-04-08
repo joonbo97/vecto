@@ -15,7 +15,7 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import com.vecto_example.vecto.LoginActivity
+import com.vecto_example.vecto.ui.login.LoginActivity
 import com.vecto_example.vecto.R
 import com.vecto_example.vecto.data.Auth
 import com.vecto_example.vecto.dialog.EditDeletePopupWindow

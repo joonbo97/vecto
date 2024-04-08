@@ -24,7 +24,7 @@ import androidx.core.os.bundleOf
 import androidx.fragment.app.FragmentContainerView
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.vecto_example.vecto.LoginActivity
+import com.vecto_example.vecto.ui.login.LoginActivity
 import com.vecto_example.vecto.MainActivity
 import com.vecto_example.vecto.data.Auth
 import com.vecto_example.vecto.data.model.LocationData

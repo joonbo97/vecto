@@ -14,7 +14,7 @@ import android.widget.Toast
 import androidx.fragment.app.viewModels
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.navigation.fragment.findNavController
-import com.vecto_example.vecto.LoginActivity
+import com.vecto_example.vecto.ui.login.LoginActivity
 import com.vecto_example.vecto.MainActivity
 import com.vecto_example.vecto.ui.notification.NotificationActivity
 import com.vecto_example.vecto.R
