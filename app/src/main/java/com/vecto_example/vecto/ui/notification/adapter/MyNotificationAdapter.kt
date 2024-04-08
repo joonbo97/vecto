@@ -8,7 +8,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.vecto_example.vecto.CommentActivity
+import com.vecto_example.vecto.ui.comment.CommentActivity
 import com.vecto_example.vecto.R
 import com.vecto_example.vecto.retrofit.VectoService
 import com.vecto_example.vecto.ui.userinfo.UserInfoActivity

@@ -1,4 +1,4 @@
-package com.vecto_example.vecto
+package com.vecto_example.vecto.ui.comment
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -6,6 +6,8 @@ import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.vecto_example.vecto.MyCommentAdapter
+import com.vecto_example.vecto.R
 import com.vecto_example.vecto.data.Auth
 import com.vecto_example.vecto.databinding.ActivityCommentBinding
 import com.vecto_example.vecto.retrofit.VectoService

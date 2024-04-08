@@ -13,7 +13,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import com.vecto_example.vecto.CommentActivity
+import com.vecto_example.vecto.ui.comment.CommentActivity
 import com.vecto_example.vecto.LoginActivity
 import com.vecto_example.vecto.ui.detail.FeedDetailActivity
 import com.vecto_example.vecto.ui.userinfo.UserInfoActivity

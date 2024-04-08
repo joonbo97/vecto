@@ -11,6 +11,7 @@ import androidx.navigation.findNavController
 import androidx.navigation.ui.setupWithNavController
 import com.vecto_example.vecto.MainActivity.DataStoreUtils.myDataStore
 import com.vecto_example.vecto.databinding.ActivityMainBinding
+import com.vecto_example.vecto.ui.comment.CommentActivity
 
 
 class MainActivity : AppCompatActivity() {
