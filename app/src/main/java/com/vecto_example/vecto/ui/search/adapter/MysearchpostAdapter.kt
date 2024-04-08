@@ -317,6 +317,9 @@ class MysearchpostAdapter(private val context: Context) : RecyclerView.Adapter<M
             }
 
             commentTouch.setOnClickListener {
+                Log.d("FEEDINFOSIZE", "${feedInfo.size}")
+                Log.d("FEEDIDSIZE", "${feedID.size}")
+
                 val intent = Intent(context, CommentActivity::class.java)
                 intent.putExtra("feedID", feedID[adapterPosition])
                 context.startActivity(intent)

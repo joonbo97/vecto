@@ -19,8 +19,8 @@ class SearchViewModel(private val repository: FeedRepository) : ViewModel() {
 
     var isDataLoaded: Boolean = true    //데이터를 전부 다 가져왔는지 여부
 
-    val allFeedIds = mutableListOf<Int>()
-    val allFeedInfo = mutableListOf<VectoService.FeedInfoResponse>()
+    var allFeedIds = mutableListOf<Int>()
+    var allFeedInfo = mutableListOf<VectoService.FeedInfoResponse>()
 
     private val _isLoadingCenter = MutableLiveData<Boolean>()
     val isLoadingCenter: LiveData<Boolean> = _isLoadingCenter
@@ -60,8 +60,15 @@ class SearchViewModel(private val repository: FeedRepository) : ViewModel() {
                         async { repository.getFeedInfo(it) }
                     }.awaitAll()    //모든 feed info 요청이 완료될 때까지 기다림
 
-                    _feedInfoLiveData.postValue(feedInfo)   //LiveData 값 변경
-                    _feedIdsLiveData.postValue(feedListResponse)
+                    // 기존 데이터에 새로운 데이터 추가
+                    val updatedFeedInfo = _feedInfoLiveData.value?.toMutableList() ?: mutableListOf()
+                    updatedFeedInfo.addAll(feedInfo)
+                    _feedInfoLiveData.postValue(updatedFeedInfo)
+
+                    // 기존 Feed ID 리스트에 새로운 ID 추가
+                    val updatedFeedIds = _feedIdsLiveData.value?.feedIds?.toMutableList() ?: mutableListOf()
+                    updatedFeedIds.addAll(feedIds)
+                    _feedIdsLiveData.postValue(feedListResponse.copy(feedIds = updatedFeedIds))
 
                     isDataLoaded = false
 
@@ -89,8 +96,15 @@ class SearchViewModel(private val repository: FeedRepository) : ViewModel() {
                         async { repository.getFeedInfo(it) }
                     }.awaitAll()
 
-                    _feedInfoLiveData.postValue(feedInfo)   //LiveData 값 변경
-                    _feedIdsLiveData.postValue(feedListResponse)
+                    // 기존 데이터에 새로운 데이터 추가
+                    val updatedFeedInfo = _feedInfoLiveData.value?.toMutableList() ?: mutableListOf()
+                    updatedFeedInfo.addAll(feedInfo)
+                    _feedInfoLiveData.postValue(updatedFeedInfo)
+
+                    // 기존 Feed ID 리스트에 새로운 ID 추가
+                    val updatedFeedIds = _feedIdsLiveData.value?.feedIds?.toMutableList() ?: mutableListOf()
+                    updatedFeedIds.addAll(feedIds)
+                    _feedIdsLiveData.postValue(feedListResponse.copy(feedIds = updatedFeedIds))
 
                     isDataLoaded = false
 
@@ -137,13 +151,15 @@ class SearchViewModel(private val repository: FeedRepository) : ViewModel() {
     }
 
     fun initSetting(){
+        Log.d("SEARCH_VIEWMODEL", "initSetting")
+
         nextPage = 0
         lastPage = false
         followPage = true
         isDataLoaded = true
 
-        allFeedIds.clear()
-        allFeedInfo.clear()
+        _feedInfoLiveData.postValue(emptyList())
+        _feedIdsLiveData.postValue(VectoService.FeedPageResponse(0, emptyList(), false, false))
     }
 
     fun checkLoading(): Boolean{

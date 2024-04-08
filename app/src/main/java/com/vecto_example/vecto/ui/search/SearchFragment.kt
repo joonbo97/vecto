@@ -180,10 +180,18 @@ class SearchFragment : Fragment(){
             mysearchpostAdapter.pageNo = searchViewModel.nextPage //다음 page 정보
             searchViewModel.feedInfoLiveData.value?.let { mysearchpostAdapter.addFeedInfoData(it) }   //새로 받은 게시글 정보 추가
 
-            if(searchViewModel.feedInfoLiveData.value != null && !searchViewModel.isDataLoaded){
+            Log.d("Pagination", "Current allFeedIds size: ${searchViewModel.allFeedIds.size}")
+            Log.d("Pagination", "Current FeedIds size: ${searchViewModel.feedIdsLiveData.value?.feedIds?.size}")
+
+
+            /*if(searchViewModel.feedInfoLiveData.value != null && !searchViewModel.isDataLoaded && searchViewModel.feedIdsLiveData.value != null){
+                searchViewModel.allFeedIds.addAll(searchViewModel.feedIdsLiveData.value!!.feedIds)
                 searchViewModel.allFeedInfo.addAll(searchViewModel.feedInfoLiveData.value!!)
                 searchViewModel.isDataLoaded = true
-            }
+            }*/
+
+            Log.d("Pagination", "New data added. Updated allFeedIds size: ${searchViewModel.allFeedIds.size}")
+
         }
 
         searchViewModel.feedIdsLiveData.observe(viewLifecycleOwner) {
@@ -192,16 +200,6 @@ class SearchFragment : Fragment(){
             if(queryFlag && searchViewModel.allFeedIds.isEmpty() && searchViewModel.feedIdsLiveData.value?.feedIds.isNullOrEmpty()){
                 setNoneImage()
             }
-
-
-            Log.d("Pagination", "Current allFeedIds size: ${searchViewModel.allFeedIds.size}")
-
-            if(searchViewModel.feedIdsLiveData.value != null && !searchViewModel.isDataLoaded) {
-                searchViewModel.allFeedIds.addAll(searchViewModel.feedIdsLiveData.value!!.feedIds)
-                searchViewModel.isDataLoaded = true
-            }
-
-            Log.d("Pagination", "New data added. Updated allFeedIds size: ${searchViewModel.allFeedIds.size}")
 
         }
 
@@ -288,9 +286,11 @@ class SearchFragment : Fragment(){
 
         initUI()
 
-        clearRecyclerView()
+        /*clearRecyclerView()
         mysearchpostAdapter.addFeedInfoData(searchViewModel.allFeedInfo)
-        mysearchpostAdapter.addFeedIdData(searchViewModel.allFeedIds)
+        mysearchpostAdapter.addFeedIdData(searchViewModel.allFeedIds)*/
+
+        Log.d("RESUME", "adapter size ID: ${mysearchpostAdapter.feedID.size}, INFO: ${mysearchpostAdapter.feedInfo.size}")
     }
 
     override fun onDestroyView() {
