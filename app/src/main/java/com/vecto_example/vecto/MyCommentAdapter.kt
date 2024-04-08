@@ -39,6 +39,7 @@ class MyCommentAdapter(private val context: Context): RecyclerView.Adapter<MyCom
         if (selectedPosition != -1) {
             editFlag = false
             notifyItemChanged(selectedPosition)
+            selectedPosition = -1
         }
     }
 
@@ -273,6 +274,12 @@ class MyCommentAdapter(private val context: Context): RecyclerView.Adapter<MyCom
             }
 
         })
+    }
+
+    fun addCommentData(newData: List<VectoService.CommentResponse>){
+        val startIdx = commentInfo.size
+        commentInfo.addAll(newData)
+        notifyItemRangeInserted(startIdx, newData.size)
     }
 
 }
