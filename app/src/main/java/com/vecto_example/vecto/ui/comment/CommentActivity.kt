@@ -6,9 +6,8 @@ import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.activity.viewModels
-import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.vecto_example.vecto.MyCommentAdapter
+import com.vecto_example.vecto.ui.comment.adapter.MyCommentAdapter
 import com.vecto_example.vecto.R
 import com.vecto_example.vecto.data.Auth
 import com.vecto_example.vecto.databinding.ActivityCommentBinding
@@ -26,11 +25,9 @@ class CommentActivity : AppCompatActivity(), MyCommentAdapter.OnEditActionListen
         CommentViewModelFactory(CommentRepository(VectoService.create()))
     }
 
-    var editFlag = false
     var editcommentId = -1
     var editcommentPosition = -1
-
-    var loadingFlag = false
+    var feedID = -1
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,40 +39,12 @@ class CommentActivity : AppCompatActivity(), MyCommentAdapter.OnEditActionListen
         initRecyclerView()
         initObservers()
 
-        val feedID = intent.getIntExtra("feedID", -1)
+        feedID = intent.getIntExtra("feedID", -1)
 
         if(feedID != -1)
             loadComment(feedID)
         else
             Toast.makeText(this, "오류가 발생했습니다. 다시 시도해주세요.", Toast.LENGTH_SHORT).show()
-
-
-        binding.CommentButton.setOnClickListener {
-            if(Auth.loginFlag.value == false)
-            {
-                RequestLoginUtils.requestLogin(this)
-                return@setOnClickListener
-            }
-
-            if(binding.EditContent.text.isEmpty()) {
-                if (editFlag)
-                    Toast.makeText(this, "댓글 수정 내용을 작성해 주세요.", Toast.LENGTH_SHORT).show()
-                else
-                    Toast.makeText(this, "댓글을 작성해 주세요.", Toast.LENGTH_SHORT).show()
-            }
-            else
-            {
-                if(feedID != -1) {
-                    if(!loadingFlag) {
-                        startLoading()
-                        if (editFlag && editcommentId != -1)
-                            updateComment(VectoService.CommentUpdateRequest(editcommentId, binding.EditContent.text.toString()))
-                        else
-                            addComment(feedID, binding.EditContent.text.toString())
-                    }
-                }
-            }
-        }
 
         val swipeRefreshLayout = binding.swipeRefreshLayout
         swipeRefreshLayout.setOnRefreshListener {
@@ -99,6 +68,20 @@ class CommentActivity : AppCompatActivity(), MyCommentAdapter.OnEditActionListen
         commentViewModel.commentInfoLiveData.observe(this){
             myCommentAdapter.addCommentData(it.comments)
         }
+
+        /*   로딩 관련 Observer   */
+        commentViewModel.isLoadingCenter.observe(this) {
+            if(it)
+                binding.progressBarCenter.visibility = View.VISIBLE
+            else
+                binding.progressBarCenter.visibility = View.GONE
+        }
+        commentViewModel.isLoadingBottom.observe(this) {
+            if(it)
+                binding.progressBar.visibility = View.VISIBLE
+            else
+                binding.progressBar.visibility = View.GONE
+        }
     }
 
     private fun initRecyclerView() {
@@ -116,7 +99,7 @@ class CommentActivity : AppCompatActivity(), MyCommentAdapter.OnEditActionListen
 
         //댓글 수정 취소
         binding.EditCommentBox.setOnClickListener {
-            if(editFlag)//수정중이라면
+            if(myCommentAdapter.editFlag)//수정중이라면
             {
                 onEditCancelled()
             }
@@ -127,7 +110,33 @@ class CommentActivity : AppCompatActivity(), MyCommentAdapter.OnEditActionListen
             finish()
         }
 
+        //댓글 작성 버튼
+        binding.CommentButton.setOnClickListener {
+            if(Auth.loginFlag.value == false)
+            {
+                RequestLoginUtils.requestLogin(this)
+                return@setOnClickListener
+            }
 
+            if(binding.EditContent.text.isEmpty()) {
+                if (myCommentAdapter.editFlag)
+                    Toast.makeText(this, "댓글 수정 내용을 작성해 주세요.", Toast.LENGTH_SHORT).show()
+                else
+                    Toast.makeText(this, "댓글을 작성해 주세요.", Toast.LENGTH_SHORT).show()
+            }
+            else
+            {
+                if(feedID != -1) {
+                    if(true/*!loadingFlag*/) {
+                        if (myCommentAdapter.editFlag && editcommentId != -1)
+                            updateComment(VectoService.CommentUpdateRequest(editcommentId, binding.EditContent.text.toString()))
+                        else
+                            addComment(feedID, binding.EditContent.text.toString())
+                    }
+                }
+            }
+
+        }
     }
 
 
@@ -144,19 +153,16 @@ class CommentActivity : AppCompatActivity(), MyCommentAdapter.OnEditActionListen
                     binding.EditContent.text.clear()
 
                     loadComment(feedid)
-                    endLoading()
                 }
                 else{
                     Log.d("COMMENTADD", "성공했으나 서버 오류 ${response.errorBody()?.string()}")
                     Toast.makeText(this@CommentActivity, "오류가 발생하였습니다. 잠시후 다시 시도해주세요.", Toast.LENGTH_SHORT).show()
-                    endLoading()
                 }
             }
 
             override fun onFailure(call: Call<VectoService.VectoResponse<String>>, t: Throwable) {
                 Log.d("COMMENTADD", "실패")
                 Toast.makeText(this@CommentActivity, getString(R.string.APIFailToastMessage), Toast.LENGTH_SHORT).show()
-                endLoading()
             }
 
         })
@@ -225,22 +231,12 @@ class CommentActivity : AppCompatActivity(), MyCommentAdapter.OnEditActionListen
                     Toast.makeText(this@CommentActivity, "변경이 완료되었습니다.", Toast.LENGTH_SHORT).show()
                     myCommentAdapter.commentInfo[editcommentPosition].content = commentUpdateRequest.content
 
-                    myCommentAdapter.cancelEditing()
-                    binding.EditContent.hint = "댓글을 작성해 주세요."
-                    myCommentAdapter.editFlag = false
-                    editcommentId = -1
-                    editcommentPosition = -1
-                    binding.EditCommentBox.visibility = View.GONE
-                    binding.EditCommentText.visibility = View.GONE
-                    binding.EditContent.text.clear()
-
-                    endLoading()
+                    clearUI()
 
                 } else {
                     // 실패
                     Log.d("UserUpdate", "업데이트 실패 : " + response.errorBody()?.string())
                     Toast.makeText(this@CommentActivity, "오류가 발생했습니다. 잠시후 다시 시도해주세요.", Toast.LENGTH_SHORT).show()
-                    endLoading()
                 }
 
             }
@@ -248,7 +244,6 @@ class CommentActivity : AppCompatActivity(), MyCommentAdapter.OnEditActionListen
                 // 네트워크 등 기타 에러 처리
                 Toast.makeText(this@CommentActivity, getText(R.string.APIFailToastMessage), Toast.LENGTH_SHORT).show()
                 Log.d("UserUpdate", "업데이트 실패 : " + t.message)
-                endLoading()
             }
         })
     }
@@ -257,9 +252,13 @@ class CommentActivity : AppCompatActivity(), MyCommentAdapter.OnEditActionListen
         binding.EditCommentBox.visibility = View.VISIBLE
         binding.EditCommentText.visibility = View.VISIBLE
 
-        editcommentId = commentId
+        myCommentAdapter.editFlag = true
+
         editcommentPosition = position
-        editFlag = true
+        myCommentAdapter.selectedPosition = position
+
+        editcommentId = commentId
+
         binding.EditContent.hint = "수정할 내용을 작성해 주세요."
     }
 
@@ -278,21 +277,11 @@ class CommentActivity : AppCompatActivity(), MyCommentAdapter.OnEditActionListen
 
         editcommentId = -1
         editcommentPosition = -1
-        editFlag = false
         myCommentAdapter.cancelEditing()
     }
 
     private fun clearData(){
         myCommentAdapter.commentInfo.clear()
-    }
-
-    private fun startLoading(){
-        binding.progressBar.visibility = View.VISIBLE
-        loadingFlag = true
-    }
-    private fun endLoading(){
-        binding.progressBar.visibility = View.GONE
-        loadingFlag = false
     }
 
     private fun clearNoneImage() {
