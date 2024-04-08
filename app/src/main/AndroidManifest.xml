@@ -24,7 +24,7 @@
             android:exported="false"
             android:windowSoftInputMode="adjustPan"/>
         <activity
-            android:name=".PolicyActivity"
+            android:name=".ui.mypage.inquiry.PolicyActivity"
             android:exported="false" />
         <activity
             android:name=".ui.detail.FeedDetailActivity"

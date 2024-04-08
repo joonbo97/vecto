@@ -1,8 +1,7 @@
-package com.vecto_example.vecto
+package com.vecto_example.vecto.ui.mypage.inquiry
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.webkit.WebViewClient
 import com.vecto_example.vecto.databinding.ActivityPolicyBinding
 
 class PolicyActivity : AppCompatActivity() {

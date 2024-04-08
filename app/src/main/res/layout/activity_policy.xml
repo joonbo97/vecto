@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:backgroundTint="@color/vecto_main"
-    tools:context=".PolicyActivity">
+    tools:context=".ui.mypage.inquiry.PolicyActivity">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/constraintLayout"

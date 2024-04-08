@@ -9,10 +9,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.FileProvider
-import androidx.navigation.fragment.findNavController
-import com.vecto_example.vecto.MainActivity
-import com.vecto_example.vecto.PolicyActivity
-import com.vecto_example.vecto.R
 import com.vecto_example.vecto.data.Auth
 import com.vecto_example.vecto.databinding.FragmentMypageInquiryBinding
 import java.io.File
