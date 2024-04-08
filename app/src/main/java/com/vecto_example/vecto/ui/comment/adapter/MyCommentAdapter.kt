@@ -1,4 +1,4 @@
-package com.vecto_example.vecto
+package com.vecto_example.vecto.ui.comment.adapter
 
 import android.content.Context
 import android.content.Intent
@@ -15,6 +15,8 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.vecto_example.vecto.LoginActivity
+import com.vecto_example.vecto.R
 import com.vecto_example.vecto.data.Auth
 import com.vecto_example.vecto.dialog.EditDeletePopupWindow
 import com.vecto_example.vecto.dialog.LoginRequestDialog
@@ -144,11 +146,15 @@ class MyCommentAdapter(private val context: Context): RecyclerView.Adapter<MyCom
         }
 
         if(selectedPosition != -1 && !editFlag) {
-            holder.constraintLayout.setBackgroundColor(ContextCompat.getColor(context, R.color.white))
+            holder.constraintLayout.setBackgroundColor(ContextCompat.getColor(context,
+                R.color.white
+            ))
             selectedPosition = -1
         }
         else if(editFlag && selectedPosition == position)
-            holder.constraintLayout.setBackgroundColor(ContextCompat.getColor(context, R.color.vecto_alphagray))
+            holder.constraintLayout.setBackgroundColor(ContextCompat.getColor(context,
+                R.color.vecto_alphagray
+            ))
 
 
 
@@ -178,7 +184,9 @@ class MyCommentAdapter(private val context: Context): RecyclerView.Adapter<MyCom
                     }
                     else//로그인이 되어있고, 처음 선택하는 것이며, 본인의 댓글인 경우
                     {
-                        holder.constraintLayout.setBackgroundColor(ContextCompat.getColor(context, R.color.vecto_alphagray))
+                        holder.constraintLayout.setBackgroundColor(ContextCompat.getColor(context,
+                            R.color.vecto_alphagray
+                        ))
                         editActionListener?.onEditAction(comment.commentId, position)
                         selectedPosition = position
                     }
@@ -223,7 +231,7 @@ class MyCommentAdapter(private val context: Context): RecyclerView.Adapter<MyCom
         })
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyCommentAdapter.ViewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(context).inflate(R.layout.comment_item, parent, false)
         return ViewHolder(view)
     }
