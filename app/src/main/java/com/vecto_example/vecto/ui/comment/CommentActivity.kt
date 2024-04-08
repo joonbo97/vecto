@@ -5,6 +5,8 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.Toast
+import androidx.activity.viewModels
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.vecto_example.vecto.MyCommentAdapter
 import com.vecto_example.vecto.R
@@ -20,6 +22,10 @@ class CommentActivity : AppCompatActivity(), MyCommentAdapter.OnEditActionListen
     lateinit var binding: ActivityCommentBinding
     lateinit var myCommentAdapter: MyCommentAdapter
 
+    private val commentViewModel: CommentViewModel by viewModels {
+        CommentViewModelFactory(CommentRepository(VectoService.create()))
+    }
+
     var editFlag = false
     var editcommentId = -1
     var editcommentPosition = -1
@@ -32,20 +38,11 @@ class CommentActivity : AppCompatActivity(), MyCommentAdapter.OnEditActionListen
         binding = ActivityCommentBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        binding.EditCommentBox.setOnClickListener {
-            if(editFlag)//수정중이라면
-            {
-                onEditCancelled()
-            }
-        }
-
+        initListener()
+        initRecyclerView()
+        initObservers()
 
         val feedID = intent.getIntExtra("feedID", -1)
-        myCommentAdapter = MyCommentAdapter(this)
-        myCommentAdapter.editActionListener = this
-        val commentRecyclerView = binding.CommentRecyclerView
-        commentRecyclerView.adapter = myCommentAdapter
-        commentRecyclerView.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
 
         if(feedID != -1)
             loadComment(feedID)
@@ -82,24 +79,11 @@ class CommentActivity : AppCompatActivity(), MyCommentAdapter.OnEditActionListen
 
         val swipeRefreshLayout = binding.swipeRefreshLayout
         swipeRefreshLayout.setOnRefreshListener {
-            myCommentAdapter = MyCommentAdapter(this)
-            myCommentAdapter.editActionListener = this
             binding.CommentRecyclerView.adapter = myCommentAdapter
 
-            binding.CommentNullImage.visibility = View.GONE
-            binding.CommentNullText.visibility = View.GONE
-
-            myCommentAdapter.commentInfo.clear()
-            myCommentAdapter.editFlag = false
-            myCommentAdapter.selectedPosition = -1
-            editFlag = false
-            editcommentPosition = -1
-            binding.EditContent.hint = "댓글을 작성해 주세요."
-            binding.EditCommentBox.visibility = View.GONE
-            binding.EditCommentText.visibility = View.GONE
-
-
-            commentRecyclerView.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
+            clearNoneImage()
+            clearData()
+            clearUI()
 
             if(feedID != -1)
                 loadComment(feedID)
@@ -109,9 +93,40 @@ class CommentActivity : AppCompatActivity(), MyCommentAdapter.OnEditActionListen
             swipeRefreshLayout.isRefreshing = false
         }
 
+    }
+
+    private fun initObservers() {
+        commentViewModel.commentInfoLiveData.observe(this){
+            myCommentAdapter.addCommentData(it.comments)
+        }
+    }
+
+    private fun initRecyclerView() {
+        /*   RecyclerView 초기화 함수   */
+
+        myCommentAdapter = MyCommentAdapter(this)
+        myCommentAdapter.editActionListener = this
+        val commentRecyclerView = binding.CommentRecyclerView
+        commentRecyclerView.adapter = myCommentAdapter
+        commentRecyclerView.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
+    }
+
+    private fun initListener() {
+        /*   리스너 초기화 함수   */
+
+        //댓글 수정 취소
+        binding.EditCommentBox.setOnClickListener {
+            if(editFlag)//수정중이라면
+            {
+                onEditCancelled()
+            }
+        }
+
+        //뒤로 가기 버튼
         binding.BackButton.setOnClickListener {
             finish()
         }
+
 
     }
 
@@ -148,7 +163,9 @@ class CommentActivity : AppCompatActivity(), MyCommentAdapter.OnEditActionListen
     }
 
     private fun loadComment(feedid: Int) {
-        val vectoService = VectoService.create()
+        commentViewModel.fetchCommentResults(feedid)
+
+        /*val vectoService = VectoService.create()
 
         val call: Call<VectoService.VectoResponse<VectoService.CommentListResponse>>
 
@@ -192,7 +209,7 @@ class CommentActivity : AppCompatActivity(), MyCommentAdapter.OnEditActionListen
                 Toast.makeText(this@CommentActivity, getString(R.string.APIFailToastMessage), Toast.LENGTH_SHORT).show()
             }
 
-        })
+        })*/
 
     }
 
@@ -247,16 +264,26 @@ class CommentActivity : AppCompatActivity(), MyCommentAdapter.OnEditActionListen
     }
 
     private fun onEditCancelled() {
-        myCommentAdapter.cancelEditing()
-        Toast.makeText(this, "댓글 수정이 취소 되었습니다.", Toast.LENGTH_SHORT).show()
-        binding.EditContent.hint = "댓글을 작성해 주세요."
+        clearUI()
 
-        myCommentAdapter.editFlag = false
-        editcommentId = -1
-        editcommentPosition = -1
+        Toast.makeText(this, "댓글 수정이 취소 되었습니다.", Toast.LENGTH_SHORT).show()
+    }
+
+    private fun clearUI(){
         binding.EditCommentBox.visibility = View.GONE
         binding.EditCommentText.visibility = View.GONE
 
+        binding.EditContent.text.clear()
+        binding.EditContent.hint = "댓글을 작성해 주세요."
+
+        editcommentId = -1
+        editcommentPosition = -1
+        editFlag = false
+        myCommentAdapter.cancelEditing()
+    }
+
+    private fun clearData(){
+        myCommentAdapter.commentInfo.clear()
     }
 
     private fun startLoading(){
@@ -266,6 +293,18 @@ class CommentActivity : AppCompatActivity(), MyCommentAdapter.OnEditActionListen
     private fun endLoading(){
         binding.progressBar.visibility = View.GONE
         loadingFlag = false
+    }
+
+    private fun clearNoneImage() {
+        binding.CommentNullImage.visibility = View.GONE
+        binding.CommentNullText.visibility = View.GONE
+        Log.d("NONE GONE", "NONE IMAGE IS GONE")
+    }
+
+    private fun setNoneImage() {
+        binding.CommentNullImage.visibility = View.VISIBLE
+        binding.CommentNullText.visibility = View.VISIBLE
+        Log.d("NONE VISIBLE", "NONE IMAGE IS VISIBLE")
     }
 
 }
