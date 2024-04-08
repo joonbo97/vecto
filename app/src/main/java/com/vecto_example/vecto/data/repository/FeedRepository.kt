@@ -5,9 +5,9 @@ import com.vecto_example.vecto.data.Auth
 import com.vecto_example.vecto.retrofit.VectoService
 
 class FeedRepository (private val vectoService: VectoService) {
-    /*   Feed와 관련된 API 함수   */
+    /*   Feed 관련 API 함수   */
     suspend fun getFeedList(pageNo: Int): VectoService.FeedPageResponse {
-        /*   모든 게시물을 최신 순으로 확인 할 수 있는 알고리즘   */
+        /*   모든 게시물을 최신 순으로 확인 할 수 있는 함수   */
 
         val response = vectoService.getFeedList(pageNo)
 
