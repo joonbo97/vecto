@@ -22,9 +22,9 @@ import retrofit2.http.Query
 interface VectoService {
 
     @POST("login")
-    fun loginUser(
+    suspend fun loginUser(
         @Body request: LoginRequest
-    ): Call<VectoResponse<String>>
+    ): Response<VectoResponse<String>>
 
     @POST("user")
     fun registerUser(

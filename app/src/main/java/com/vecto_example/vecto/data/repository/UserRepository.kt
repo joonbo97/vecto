@@ -38,6 +38,27 @@ class UserRepository (private val vectoService: VectoService) {
     }
 
     /*   User 계정 관련 API 함수   */
+    suspend fun login(loginRequest: VectoService.LoginRequest): Result<Boolean>{
+        return try {
+            val response = vectoService.loginUser(loginRequest)
+
+            if(response.isSuccessful){
+                Result.success(true)
+            } else {
+                if(response.code() == 401){
+                    Log.d("LOGIN", "아이디 혹은 비밀번호가 일치하지 않습니다.")
+                    Result.success(false)
+                } else {
+                    Log.d("LOGIN", "성공했으나 서버 오류, ${response.body()}")
+                    Result.failure(Exception("서버오류"))
+                }
+            }
+        } catch (e: Exception) {
+            Log.d("LOGIN", "FAIL")
+            Result.failure(e)
+        }
+    }
+
     suspend fun checkUserId(userId: String): Result<Boolean>{
         return try{
             val response = vectoService.idCheck2(VectoService.IdCheckRequest(userId))

@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
+import androidx.activity.viewModels
 import com.vecto_example.vecto.data.Auth
 import com.vecto_example.vecto.retrofit.VectoService
 import com.google.firebase.messaging.FirebaseMessaging
@@ -18,13 +19,20 @@ import com.kakao.sdk.common.model.ClientErrorCause
 import com.kakao.sdk.common.model.KakaoSdkError
 import com.kakao.sdk.common.util.Utility
 import com.kakao.sdk.user.UserApiClient
+import com.vecto_example.vecto.data.repository.UserRepository
 import com.vecto_example.vecto.databinding.ActivityLoginBinding
+import com.vecto_example.vecto.ui.login.LoginViewModel
+import com.vecto_example.vecto.ui.login.LoginViewModelFactory
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
 class LoginActivity : AppCompatActivity() {
     private lateinit var binding: ActivityLoginBinding
+    private val loginViewModel: LoginViewModel by viewModels {
+        LoginViewModelFactory(UserRepository(VectoService.create()))
+    }
+
     private lateinit var nickname: String
     private lateinit var fcmtoken: String
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -66,7 +74,7 @@ class LoginActivity : AppCompatActivity() {
 
         binding.LoginBoxKakao.setOnClickListener {
             val keyHash = Utility.getKeyHash(this)
-            Log.d("keyHash", "$keyHash")
+            Log.d("keyHash", keyHash)
 
 
 
