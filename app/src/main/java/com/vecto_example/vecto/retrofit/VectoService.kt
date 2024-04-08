@@ -77,17 +77,6 @@ interface VectoService {
         @Path("feedId") feedId: Int,
     ): Call<VectoResponse<Unit>>
 
-    @GET("feed/{feedId}/comments")
-    fun getComment(
-        @Path("feedId") feedId: Int
-    ): Call<VectoResponse<CommentListResponse>>
-
-    @POST("feed/{feedId}/comments")
-    fun getComment(
-        @Header("Authorization") authorization: String,
-        @Path("feedId") feedId: Int
-    ): Call<VectoResponse<CommentListResponse>>
-
     @POST("feed/comment")
     fun sendComment(
         @Header("Authorization") authorization: String,
@@ -210,6 +199,22 @@ interface VectoService {
         @Body userData: UserUpdateData
     ): Response<VectoResponse<String>>
 
+    /*   Comment 관련   */
+
+    //비 로그인 시 댓글 목록
+    @GET("feed/{feedId}/comments")
+    suspend fun getCommentList(
+        @Path("feedId") feedId: Int
+    ): Response<VectoResponse<CommentListResponse>>
+
+    //로그인 시 댓글 목록
+    @POST("feed/{feedId}/comments")
+    suspend fun getCommentList(
+        @Header("Authorization") authorization: String,
+        @Path("feedId") feedId: Int
+    ): Response<VectoResponse<CommentListResponse>>
+
+    /*   Notification 관련   */
     @GET("push/new")
     suspend fun getNewNotificationFlag(
         @Header("Authorization") authorization: String
