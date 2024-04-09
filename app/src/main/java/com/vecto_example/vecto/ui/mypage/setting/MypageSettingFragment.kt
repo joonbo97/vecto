@@ -99,7 +99,7 @@ class MypageSettingFragment : Fragment() {
                 }
             }
                 .onFailure {
-                    Toast.makeText(requireContext(), getText(R.string.APIFailToastMessage), Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), getText(R.string.APIErrorToastMessage), Toast.LENGTH_SHORT).show()
                 }
         }
 
@@ -117,7 +117,7 @@ class MypageSettingFragment : Fragment() {
 
                 }
                 else{
-                    Toast.makeText(requireContext(), getText(R.string.APIFailToastMessage), Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), getText(R.string.APIErrorToastMessage), Toast.LENGTH_SHORT).show()
                 }
             }
         }

@@ -32,15 +32,19 @@ class MypageLikeFeedViewModel(private val repository: FeedRepository) : ViewMode
     val feedInfoLiveData: LiveData<List<VectoService.FeedInfoResponse>> = _feedInfoLiveData
 
     private fun startLoading(){
+        Log.d("STARTLOADING", "START")
+
         if(nextPage == 0)   //처음 실행하는 경우 center 로딩
-            _isLoadingCenter.postValue(true)
+            _isLoadingCenter.value = true
         else                //하단 스크롤인 경우 bottom 로딩
-            _isLoadingBottom.postValue(true)
+            _isLoadingBottom.value = true
     }
 
     private fun endLoading(){
-        _isLoadingCenter.postValue(false)
-        _isLoadingBottom.postValue(false)
+        Log.d("ENDLOADING", "END")
+
+        _isLoadingCenter.value = false
+        _isLoadingBottom.value = false
     }
 
     fun fetchLikeFeedResults(){

@@ -252,7 +252,7 @@ class MyFeedDetailAdapter(private val context: Context): RecyclerView.Adapter<My
                 override fun onFailure(call: Call<VectoService.VectoResponse<Unit>>, t: Throwable) {
                     setFollowButton(false)
                     Log.d("GETFOLLOW", "팔로우 정보 조회 실패 : " + t.message)
-                    Toast.makeText(context, R.string.APIFailToastMessage, Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, R.string.APIErrorToastMessage, Toast.LENGTH_SHORT).show()
                 }
             })
         }
@@ -294,7 +294,7 @@ class MyFeedDetailAdapter(private val context: Context): RecyclerView.Adapter<My
                     override fun onFailure(call: Call<VectoService.VectoResponse<Unit>>, t: Throwable) {
 
                         Log.d("POSTFOLLOWCACEL", "팔로우 해제 실패 : " + t.message)
-                        Toast.makeText(context, R.string.APIFailToastMessage, Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, R.string.APIErrorToastMessage, Toast.LENGTH_SHORT).show()
                     }
                 })
             }
@@ -327,7 +327,7 @@ class MyFeedDetailAdapter(private val context: Context): RecyclerView.Adapter<My
                     }
                     override fun onFailure(call: Call<VectoService.VectoResponse<Unit>>, t: Throwable) {
                         Log.d("POSTFOLLOW", "팔로우 요청 실패 : " + t.message)
-                        Toast.makeText(context, R.string.APIFailToastMessage, Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, R.string.APIErrorToastMessage, Toast.LENGTH_SHORT).show()
                     }
                 })
             }

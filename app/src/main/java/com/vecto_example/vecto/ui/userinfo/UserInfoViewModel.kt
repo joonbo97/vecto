@@ -6,12 +6,13 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.vecto_example.vecto.data.repository.FeedRepository
+import com.vecto_example.vecto.data.repository.UserRepository
 import com.vecto_example.vecto.retrofit.VectoService
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
 
-class UserInfoViewModel(private val repository: FeedRepository) : ViewModel() {
+class UserInfoViewModel(private val repository: FeedRepository, private val userRepository: UserRepository) : ViewModel() {
     var nextPage: Int = 0
     var lastPage: Boolean = false
     var followPage: Boolean = true
@@ -31,16 +32,23 @@ class UserInfoViewModel(private val repository: FeedRepository) : ViewModel() {
     private val _feedInfoLiveData = MutableLiveData<List<VectoService.FeedInfoResponse>>()
     val feedInfoLiveData: LiveData<List<VectoService.FeedInfoResponse>> = _feedInfoLiveData
 
+    private val _userInfoResult = MutableLiveData<Result<VectoService.UserInfoResponse>>()
+    val userInfoResult: LiveData<Result<VectoService.UserInfoResponse>> = _userInfoResult
+
     private fun startLoading(){
+        Log.d("STARTLOADING", "START")
+
         if(nextPage == 0)   //처음 실행하는 경우 center 로딩
-            _isLoadingCenter.postValue(true)
+            _isLoadingCenter.value = true
         else                //하단 스크롤인 경우 bottom 로딩
-            _isLoadingBottom.postValue(true)
+            _isLoadingBottom.value = true
     }
 
     private fun endLoading(){
-        _isLoadingCenter.postValue(false)
-        _isLoadingBottom.postValue(false)
+        Log.d("ENDLOADING", "END")
+
+        _isLoadingCenter.value = false
+        _isLoadingBottom.value = false
     }
 
     fun fetchUserFeedResults(userId: String){
@@ -72,6 +80,14 @@ class UserInfoViewModel(private val repository: FeedRepository) : ViewModel() {
             } finally {
                 endLoading()
             }
+        }
+    }
+
+    fun getUserInfo(userId: String){
+        viewModelScope.launch {
+            val userInfoResponse = userRepository.getUserInfo(userId)
+
+            _userInfoResult.value = userInfoResponse
         }
     }
 

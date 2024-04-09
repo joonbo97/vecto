@@ -63,6 +63,15 @@ class MyCommentAdapter(private val context: Context): RecyclerView.Adapter<MyCom
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val comment = commentInfo[position]
 
+        // 아이템 선택 상태에 따라 배경색 설정
+        if (selectedPosition == position) {
+            // 선택된 아이템의 배경색 변경
+            holder.constraintLayout.setBackgroundColor(ContextCompat.getColor(context, R.color.vecto_alphagray))
+        } else {
+            // 선택되지 않은 아이템의 배경색을 기본값으로 설정
+            holder.constraintLayout.setBackgroundColor(ContextCompat.getColor(context, R.color.white))
+        }
+
         /*댓글 프사 설정*/
         if(comment.profileUrl == null)
         {
@@ -225,7 +234,7 @@ class MyCommentAdapter(private val context: Context): RecyclerView.Adapter<MyCom
 
             override fun onFailure(call: Call<VectoService.VectoResponse<Unit>>, t: Throwable) {
                 Log.d("COMMENTDELETE", "실패 ${t.message.toString()}" )
-                Toast.makeText(context, R.string.APIFailToastMessage, Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, R.string.APIErrorToastMessage, Toast.LENGTH_SHORT).show()
             }
 
         })
@@ -288,6 +297,8 @@ class MyCommentAdapter(private val context: Context): RecyclerView.Adapter<MyCom
         val startIdx = commentInfo.size
         commentInfo.addAll(newData)
         notifyItemRangeInserted(startIdx, newData.size)
+
+        Log.d("COMMENTSIZE", "${commentInfo.size}")
     }
 
 }

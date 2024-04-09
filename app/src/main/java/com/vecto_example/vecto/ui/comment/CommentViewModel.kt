@@ -1,17 +1,22 @@
 package com.vecto_example.vecto.ui.comment
 
 import android.util.Log
+import android.widget.Toast
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.vecto_example.vecto.retrofit.VectoService
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.launch
 
 class CommentViewModel(private val repository: CommentRepository): ViewModel() {
 
     var nextPage: Int = 0
     var lastPage: Boolean = false
+
+    private val _commentErrorLiveData = MutableLiveData<Result<VectoService.CommentListResponse>>()
+    val commentErrorLiveData: LiveData<Result<VectoService.CommentListResponse>> = _commentErrorLiveData
 
     private val _commentInfoLiveData = MutableLiveData<VectoService.CommentListResponse>()
     val commentInfoLiveData: LiveData<VectoService.CommentListResponse> = _commentInfoLiveData
@@ -22,38 +27,30 @@ class CommentViewModel(private val repository: CommentRepository): ViewModel() {
     private val _isLoadingBottom = MutableLiveData<Boolean>()
     val isLoadingBottom: LiveData<Boolean> = _isLoadingBottom
 
+    private val _addCommentResult = MutableLiveData<Result<String>>()
+    val addCommentResult: LiveData<Result<String>> = _addCommentResult
+
+    private val _updateCommentResult = MutableLiveData<Result<String>>()
+    val updateCommentResult: LiveData<Result<String>> = _updateCommentResult
+
     fun fetchCommentResults(feedId: Int){
         startLoading()
 
         viewModelScope.launch {
-            try {
-                /*if(!lastPage) { //마지막 page가 아닐 경우에만 실행
-                    feedIdsLiveData.value?.let { allFeedIds.addAll(it.feedIds) }
-                    feedInfoLiveData.value?.let { allFeedInfo.addAll(it) }
+            val commentListResponse = repository.getCommentList(feedId, nextPage)
 
-                    val feedListResponse = repository.getFeedList(nextPage)
-                    val feedIds = feedListResponse.feedIds  //요청한 pageNo에 해당하는 Feed Ids
+            commentListResponse.onSuccess {
+                if(!lastPage){  //마지막 page가 아닐 경우에만 실행
+                    _commentInfoLiveData.postValue(it)
 
-                    val feedInfo = feedIds.map {
-                        async { repository.getFeedInfo(it) }
-                    }.awaitAll()    //모든 feed info 요청이 완료될 때까지 기다림
-
-                    _feedInfoLiveData.postValue(feedInfo)   //LiveData 값 변경
-                    _feedIdsLiveData.postValue(feedListResponse)
-
-                    nextPage = feedListResponse.nextPage    //페이지 정보값 변경
-                    lastPage = feedListResponse.lastPage
-                }*/
-
-                val commentListResponse = repository.getCommentList(feedId)
-
-                _commentInfoLiveData.postValue(commentListResponse)
-
-            } catch (e: Exception) {
-                Log.e("fetchCommentResultsError", "Failed to load comment", e)
-            } finally {
-                endLoading()
+                    nextPage = it.nextPage
+                    lastPage = it.lastPage
+                }
+            }.onFailure {
+                _commentErrorLiveData.value = commentListResponse
             }
+
+            endLoading()
         }
     }
 
@@ -61,16 +58,42 @@ class CommentViewModel(private val repository: CommentRepository): ViewModel() {
         startLoading()
 
         viewModelScope.launch {
-            try {
-                val commentListResponse = repository.getPersonalCommentList(feedId)
+            val commentListResponse = repository.getPersonalCommentList(feedId, nextPage)
 
-                _commentInfoLiveData.postValue(commentListResponse)
+            commentListResponse.onSuccess {
+                if(!lastPage){  //마지막 page가 아닐 경우에만 실행
+                    _commentInfoLiveData.postValue(it)
 
-            } catch (e: Exception) {
-                Log.e("fetchCommentResultsError", "Failed to load comment", e)
-            } finally {
-                endLoading()
+                    nextPage = it.nextPage
+                    lastPage = it.lastPage
+                }
+            }.onFailure {
+                _commentErrorLiveData.value = commentListResponse
             }
+
+            endLoading()
+        }
+    }
+
+    fun addComment(feedId: Int, content: String) {
+        startCenterLoading()
+        viewModelScope.launch {
+            val addCommentResponse = repository.addComment(feedId, content)
+
+            _addCommentResult.value = addCommentResponse
+
+            endLoading()
+        }
+    }
+
+    fun updateComment(commentUpdateRequest: VectoService.CommentUpdateRequest) {
+        startCenterLoading()
+        viewModelScope.launch {
+            val updateCommentResponse = repository.updateComment(commentUpdateRequest)
+
+            _updateCommentResult.value = updateCommentResponse
+
+            endLoading()
         }
     }
 
@@ -80,7 +103,7 @@ class CommentViewModel(private val repository: CommentRepository): ViewModel() {
         nextPage = 0
         lastPage = false
 
-        _commentInfoLiveData.postValue(VectoService.CommentListResponse(emptyList()))
+        _commentInfoLiveData.postValue(VectoService.CommentListResponse(0, emptyList(), false))
     }
 
     fun checkLoading(): Boolean{
@@ -89,15 +112,26 @@ class CommentViewModel(private val repository: CommentRepository): ViewModel() {
     }
 
     private fun startLoading(){
+        Log.d("STARTLOADING", "START")
+
         if(nextPage == 0)   //처음 실행하는 경우 center 로딩
-            _isLoadingCenter.postValue(true)
+            _isLoadingCenter.value = true
         else                //하단 스크롤인 경우 bottom 로딩
-            _isLoadingBottom.postValue(true)
+            _isLoadingBottom.value = true
+    }
+
+    private fun startCenterLoading(){
+        Log.d("STARTLOADING", "START")
+
+        _isLoadingCenter.value = true
+
     }
 
     private fun endLoading(){
-        _isLoadingCenter.postValue(false)
-        _isLoadingBottom.postValue(false)
+        Log.d("ENDLOADING", "END")
+
+        _isLoadingCenter.value = false
+        _isLoadingBottom.value = false
     }
 
 }

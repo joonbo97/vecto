@@ -70,6 +70,7 @@ class SearchFragment : Fragment(){
                 clearRecyclerView()
                 clearNoneImage()
 
+                Log.d("getFeed_REQUEST", "By Refresh")
                 getFeed()
             }
 
@@ -134,6 +135,7 @@ class SearchFragment : Fragment(){
             queryFlag = true
 
             /*   게시글 요청   */
+            Log.d("getFeed_REQUEST", "By Search")
             getFeed()
 
             Toast.makeText(requireContext(), "${binding.editTextID.text}에 대한 결과입니다.", Toast.LENGTH_SHORT).show()
@@ -165,11 +167,17 @@ class SearchFragment : Fragment(){
 
             if(Auth.loginFlag.value != searchViewModel.originLoginFlag) {
                 Log.d("LOGINFLAG", "LOGINFLAG IS CHANGED: ${Auth.loginFlag.value}")
+
                 clearRecyclerView()
                 clearNoneImage()
+
                 searchViewModel.initSetting()
+
                 queryFlag = false
+
+                Log.d("getFeed_REQUEST", "By loginFlag Change")
                 getFeed()   //로그인 상태 변경시 게시글 다시 불러옴
+
                 searchViewModel.originLoginFlag = Auth.loginFlag.value!!
             }
         }
@@ -178,26 +186,37 @@ class SearchFragment : Fragment(){
         searchViewModel.feedInfoLiveData.observe(viewLifecycleOwner) {
             //새로운 feed 정보를 받았을 때의 처리
             mysearchpostAdapter.pageNo = searchViewModel.nextPage //다음 page 정보
-            searchViewModel.feedInfoLiveData.value?.let { mysearchpostAdapter.addFeedInfoData(it) }   //새로 받은 게시글 정보 추가
+            searchViewModel.feedInfoLiveData.value?.let {
+                Log.d("BEFOREADD_INFO_DATA", "current adaper FeedInfo size: ${mysearchpostAdapter.feedInfo.size}")
+                Log.d("BEFOREADD_INFO_DATA", "current FeedInfo size: ${searchViewModel.feedInfoLiveData.value!!.size}")
 
-            Log.d("Pagination", "Current allFeedIds size: ${searchViewModel.allFeedIds.size}")
-            Log.d("Pagination", "Current FeedIds size: ${searchViewModel.feedIdsLiveData.value?.feedIds?.size}")
+                if(mysearchpostAdapter.feedInfo.isNotEmpty())
+                    mysearchpostAdapter.addFeedInfoData(searchViewModel.newFeedInfo)
+                else {
+                    mysearchpostAdapter.feedInfo.clear()
+                    mysearchpostAdapter.addFeedInfoData(it)
+                }
 
-
-            /*if(searchViewModel.feedInfoLiveData.value != null && !searchViewModel.isDataLoaded && searchViewModel.feedIdsLiveData.value != null){
-                searchViewModel.allFeedIds.addAll(searchViewModel.feedIdsLiveData.value!!.feedIds)
-                searchViewModel.allFeedInfo.addAll(searchViewModel.feedInfoLiveData.value!!)
-                searchViewModel.isDataLoaded = true
-            }*/
-
-            Log.d("Pagination", "New data added. Updated allFeedIds size: ${searchViewModel.allFeedIds.size}")
+                Log.d("ADD_INFO_DATA", "current adaper FeedInfo size: ${mysearchpostAdapter.feedInfo.size}")
+                Log.d("ADD_INFO_DATA", "current FeedInfo size: ${searchViewModel.feedInfoLiveData.value!!.size}")
+            }   //새로 받은 게시글 정보 추가
 
         }
 
         searchViewModel.feedIdsLiveData.observe(viewLifecycleOwner) {
-            searchViewModel.feedIdsLiveData.value?.let { mysearchpostAdapter.addFeedIdData(it.feedIds) }
+            searchViewModel.feedIdsLiveData.value?.let {
+                if(mysearchpostAdapter.feedID.isNotEmpty())
+                    mysearchpostAdapter.addFeedIdData(searchViewModel.newFeedIds)
+                else{
+                    mysearchpostAdapter.feedID.clear()
+                    mysearchpostAdapter.addFeedIdData(it.feedIds)
+                }
+                Log.d("ADD_ID_DATA", "current adaper FeedId size: ${mysearchpostAdapter.feedID.size}")
+                Log.d("ADD_ID_DATA", "current FeedId size: ${searchViewModel.feedIdsLiveData.value!!.feedIds.size}")
 
-            if(queryFlag && searchViewModel.allFeedIds.isEmpty() && searchViewModel.feedIdsLiveData.value?.feedIds.isNullOrEmpty()){
+            }
+
+            if(queryFlag && searchViewModel.feedIdsLiveData.value?.feedIds.isNullOrEmpty()){
                 setNoneImage()
             }
 
@@ -234,6 +253,7 @@ class SearchFragment : Fragment(){
                 if (!recyclerView.canScrollVertically(1)) {
                     if(!searchViewModel.checkLoading())
                     {
+                        Log.d("getFeed_REQUEST", "By Scroll")
                         getFeed()
                     }
 
@@ -264,31 +284,37 @@ class SearchFragment : Fragment(){
     }
 
     private fun getFeed() {
-        //게시글 요청 함수
-        if(queryFlag) { //검색 요청인 경우
-            searchViewModel.fetchSearchFeedResults(query)
-            Log.d("getFeed", "Query")
-        }
-        else{
-            if(Auth.loginFlag.value == false) {   //로그인 X인 경우
-                searchViewModel.fetchFeedResults()
-                Log.d("getFeed", "Normal")
+        if(!searchViewModel.checkLoading()){//로딩중이 아니라면
+
+            //게시글 요청 함수
+            if(queryFlag) { //검색 요청인 경우
+                searchViewModel.fetchSearchFeedResults(query)
+                Log.d("getFeed", "Query")
             }
             else{
-                searchViewModel.fetchPersonalFeedResults()
-                Log.d("getFeed", "Personal")
+                if(Auth.loginFlag.value == false) {   //로그인 X인 경우
+                    searchViewModel.fetchFeedResults()
+                    Log.d("getFeed", "Normal")
+                }
+                else{
+                    searchViewModel.fetchPersonalFeedResults()
+                    Log.d("getFeed", "Personal")
+                }
             }
         }
+
+
     }
 
     override fun onResume() {
         super.onResume()
 
+        searchViewModel.newFeedIds.clear()
+        searchViewModel.newFeedInfo.clear()
+
         initUI()
 
-        /*clearRecyclerView()
-        mysearchpostAdapter.addFeedInfoData(searchViewModel.allFeedInfo)
-        mysearchpostAdapter.addFeedIdData(searchViewModel.allFeedIds)*/
+
 
         Log.d("RESUME", "adapter size ID: ${mysearchpostAdapter.feedID.size}, INFO: ${mysearchpostAdapter.feedInfo.size}")
     }

@@ -262,7 +262,7 @@ class MypostAdapter(private val context: Context): RecyclerView.Adapter<MypostAd
 
             override fun onFailure(call: Call<VectoService.VectoResponse<Unit>>, t: Throwable) {
                 Log.d("DELETEPOSST", "게시글 삭제 요청 실패 : " + t.message)
-                Toast.makeText(context, R.string.APIFailToastMessage, Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, R.string.APIErrorToastMessage, Toast.LENGTH_SHORT).show()
             }
         })
     }

@@ -42,7 +42,7 @@
             android:theme="@style/Theme.Vecto"
             android:windowSoftInputMode="adjustPan" />
         <activity
-            android:name=".RegisterActivity"
+            android:name=".ui.register.RegisterActivity"
             android:exported="false"
             android:windowSoftInputMode="adjustPan" />
         <activity

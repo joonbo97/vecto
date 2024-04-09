@@ -173,7 +173,7 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
 
                 override fun onFailure(call: Call<TMapAPIService.GeoJsonResponse>, t: Throwable) {
                     Log.e("Retrofit", t.message.toString())
-                    Toast.makeText(requireContext(), getString(R.string.APIFailToastMessage), Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), getString(R.string.APIErrorToastMessage), Toast.LENGTH_SHORT).show()
                 }
             })
         }

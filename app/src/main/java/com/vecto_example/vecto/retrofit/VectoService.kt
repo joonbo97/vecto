@@ -27,9 +27,9 @@ interface VectoService {
     ): Response<VectoResponse<String>>
 
     @POST("user")
-    fun registerUser(
+    suspend fun registerUser(
         @Body request: RegisterRequest
-    ): Call<VectoResponse<String>>
+    ): Response<VectoResponse<String>>
 
     @POST("userId/check")
     fun idCheck(
@@ -42,9 +42,9 @@ interface VectoService {
     ): Response<VectoResponse<Unit>>
 
     @GET("user")
-    fun getUserInfo(
+    suspend fun getUserInfo(
         @Query("userId") userId: String
-    ): Call<VectoResponse<UserInfoResponse>>
+    ): Response<VectoResponse<UserInfoResponse>>
 
     @POST("feed")
     fun addPost(
@@ -78,10 +78,10 @@ interface VectoService {
     ): Call<VectoResponse<Unit>>
 
     @POST("feed/comment")
-    fun sendComment(
+    suspend fun addComment(
         @Header("Authorization") authorization: String,
         @Body request: CommentRequest
-    ): Call<VectoResponse<String>>
+    ): Response<VectoResponse<String>>
 
     @POST("comment/{commentId}/likes")
     fun sendCommentLike(
@@ -127,10 +127,10 @@ interface VectoService {
     ):Call<VectoResponse<Unit>>
 
     @PATCH("feed/comment")
-    fun updateComment(
+    suspend fun updateComment(
         @Header("Authorization") authorization: String,
         @Body commentData: CommentUpdateRequest
-    ): Call<VectoResponse<String>>
+    ): Response<VectoResponse<String>>
 
     @PATCH("feed")
     fun updatePost(
@@ -204,14 +204,16 @@ interface VectoService {
     //비 로그인 시 댓글 목록
     @GET("feed/{feedId}/comments")
     suspend fun getCommentList(
-        @Path("feedId") feedId: Int
+        @Path("feedId") feedId: Int,
+        @Query("page") page: Int
     ): Response<VectoResponse<CommentListResponse>>
 
     //로그인 시 댓글 목록
     @POST("feed/{feedId}/comments")
     suspend fun getCommentList(
         @Header("Authorization") authorization: String,
-        @Path("feedId") feedId: Int
+        @Path("feedId") feedId: Int,
+        @Query("page") page: Int
     ): Response<VectoResponse<CommentListResponse>>
 
     /*   Notification 관련   */
@@ -328,11 +330,14 @@ interface VectoService {
     )
 
     data class CommentListResponse(
-        val comments: List<CommentResponse>
+        val nextPage: Int,
+        val comments: List<CommentResponse>,
+        val lastPage: Boolean
     )
 
     data class CommentResponse(
         val commentId: Int,
+        val updatedBefore: Boolean,
         val nickName: String,
         val userId: String,
         var content: String,

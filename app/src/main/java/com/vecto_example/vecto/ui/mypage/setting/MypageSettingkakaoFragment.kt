@@ -15,22 +15,13 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.viewModels
-import com.bumptech.glide.Glide
 import com.vecto_example.vecto.R
 import com.vecto_example.vecto.data.Auth
 import com.vecto_example.vecto.data.repository.UserRepository
 import com.vecto_example.vecto.databinding.FragmentMypageSettingkakaoBinding
 import com.vecto_example.vecto.retrofit.VectoService
-import com.vecto_example.vecto.ui.mypage.MypageViewModel
-import com.vecto_example.vecto.ui.mypage.MypageViewModelFactory
 import com.vecto_example.vecto.utils.LoadImageUtils
 import com.yalantis.ucrop.UCrop
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
-import okhttp3.MultipartBody
-import okhttp3.RequestBody.Companion.asRequestBody
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 import java.io.File
 
 class MypageSettingkakaoFragment : Fragment() {
@@ -124,7 +115,7 @@ class MypageSettingkakaoFragment : Fragment() {
 
                 }
                 else{
-                    Toast.makeText(requireContext(), getText(R.string.APIFailToastMessage), Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), getText(R.string.APIErrorToastMessage), Toast.LENGTH_SHORT).show()
                 }
             }
         }

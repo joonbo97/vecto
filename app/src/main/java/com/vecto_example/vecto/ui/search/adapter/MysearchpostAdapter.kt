@@ -147,12 +147,12 @@ class MysearchpostAdapter(private val context: Context) : RecyclerView.Adapter<M
                 call.enqueue(object : Callback<VectoService.VectoResponse<Unit>> {
                     override fun onResponse(call: Call<VectoService.VectoResponse<Unit>>, response: Response<VectoService.VectoResponse<Unit>>) {
                         if (response.isSuccessful) {
-                            if(response.body()!!.code == "S027")
+                            if(response.body()!!.code == "S028")
                                 setFollowButton(true)
                             else
                                 setFollowButton(false)
 
-                            Log.d("GETFOLLOW", "팔로우 정보 조회 성공 : ${response.body()?.result}")
+                            Log.d("GETFOLLOW", "팔로우 정보 조회 성공 : ${response.body()}")
                         } else {
                             // 서버 에러 처리
                             Log.d("GETFOLLOW", "정보 조회 실패 : " + response.errorBody()?.string())
@@ -162,7 +162,7 @@ class MysearchpostAdapter(private val context: Context) : RecyclerView.Adapter<M
                     override fun onFailure(call: Call<VectoService.VectoResponse<Unit>>, t: Throwable) {
                         setFollowButton(false)
                         Log.d("GETFOLLOW", "팔로우 정보 조회 실패 : " + t.message)
-                        Toast.makeText(context, R.string.APIFailToastMessage, Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, R.string.APIErrorToastMessage, Toast.LENGTH_SHORT).show()
                     }
                 })
             }
@@ -173,10 +173,10 @@ class MysearchpostAdapter(private val context: Context) : RecyclerView.Adapter<M
                 call.enqueue(object : Callback<VectoService.VectoResponse<Unit>> {
                     override fun onResponse(call: Call<VectoService.VectoResponse<Unit>>, response: Response<VectoService.VectoResponse<Unit>>) {
                         if (response.isSuccessful) {
-                            if(response.body()!!.code == "S024") {
+                            if(response.body()!!.code == "S025") {
                                 Toast.makeText(context, "${feed.nickName}님 팔로우를 취소하였습니다.", Toast.LENGTH_SHORT).show()
                             }
-                            else if(response.body()!!.code == "S026"){
+                            else if(response.body()!!.code == "S027"){
                                 Toast.makeText(context, "이미 ${feed.nickName}님 팔로우를 취소하였습니다.", Toast.LENGTH_SHORT).show()
                             }
                             followButton.setImageResource(R.drawable.follow_button)
@@ -195,7 +195,7 @@ class MysearchpostAdapter(private val context: Context) : RecyclerView.Adapter<M
                     override fun onFailure(call: Call<VectoService.VectoResponse<Unit>>, t: Throwable) {
                         setFollowButton(false)
                         Log.d("POSTFOLLOWCACEL", "팔로우 해제 실패 : " + t.message)
-                        Toast.makeText(context, R.string.APIFailToastMessage, Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, R.string.APIErrorToastMessage, Toast.LENGTH_SHORT).show()
                     }
                 })
             }
@@ -206,10 +206,10 @@ class MysearchpostAdapter(private val context: Context) : RecyclerView.Adapter<M
                 call.enqueue(object : Callback<VectoService.VectoResponse<Unit>> {
                     override fun onResponse(call: Call<VectoService.VectoResponse<Unit>>, response: Response<VectoService.VectoResponse<Unit>>) {
                         if (response.isSuccessful) {
-                            if(response.body()!!.code == "S023") {
+                            if(response.body()!!.code == "S024") {
                                 Toast.makeText(context, "${feed.nickName}님을 팔로우하기 시작했습니다.", Toast.LENGTH_SHORT).show()
                             }
-                            else if(response.body()!!.code == "S025") {
+                            else if(response.body()!!.code == "S026") {
                                 Toast.makeText(context, "이미 ${feed.nickName}님을 팔로우 중입니다.", Toast.LENGTH_SHORT).show()
                             }
 
@@ -228,7 +228,7 @@ class MysearchpostAdapter(private val context: Context) : RecyclerView.Adapter<M
                     override fun onFailure(call: Call<VectoService.VectoResponse<Unit>>, t: Throwable) {
                         setFollowButton(false)
                         Log.d("POSTFOLLOW", "팔로우 요청 실패 : " + t.message)
-                        Toast.makeText(context, R.string.APIFailToastMessage, Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, R.string.APIErrorToastMessage, Toast.LENGTH_SHORT).show()
                     }
                 })
             }
@@ -431,7 +431,7 @@ class MysearchpostAdapter(private val context: Context) : RecyclerView.Adapter<M
     }
 
     fun addFeedIdData(newData: List<Int>){
-        val startIdx = feedInfo.size
+        val startIdx = feedID.size
         feedID.addAll(newData)
         notifyItemRangeInserted(startIdx, newData.size)
     }
