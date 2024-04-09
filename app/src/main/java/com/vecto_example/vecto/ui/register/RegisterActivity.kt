@@ -1,4 +1,4 @@
-package com.vecto_example.vecto
+package com.vecto_example.vecto.ui.register
 
 import android.content.res.ColorStateList
 import androidx.appcompat.app.AppCompatActivity
@@ -9,10 +9,13 @@ import android.view.View
 import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.viewModels
 import androidx.core.content.ContextCompat
 import androidx.core.widget.addTextChangedListener
 import com.vecto_example.vecto.retrofit.VectoService
 import com.google.android.material.button.MaterialButton
+import com.vecto_example.vecto.R
+import com.vecto_example.vecto.data.repository.UserRepository
 import com.vecto_example.vecto.databinding.ActivityRegisterBinding
 import com.vecto_example.vecto.utils.ValidationUtils
 import retrofit2.Callback
@@ -21,6 +24,10 @@ import retrofit2.Response
 
 class RegisterActivity : AppCompatActivity() {
     private lateinit var binding: ActivityRegisterBinding
+    private val registerViewModel: RegisterViewModel by viewModels {
+        RegisterViewModelFactory(UserRepository(VectoService.create()))
+    }
+
     private lateinit var emailSendButton: MaterialButton
     private var timer: CountDownTimer? = null
 
@@ -53,6 +60,8 @@ class RegisterActivity : AppCompatActivity() {
         editTextPWCheck = binding.editTextCheckPassword
         editTextEmail = binding.editTextEmail
         editTextEmailCode = binding.editTextEmailCode
+
+        initObservers()
 
 
         /*   hasFocus를 사용하여, 작성이 완료되면 상단에 알림을 출력하도록 구현   */
@@ -112,7 +121,7 @@ class RegisterActivity : AppCompatActivity() {
             if(
                 !(checkID() || checkNickname() || checkPW() || checkPWverify() || checkEmail() || checkEmailverify() || idDuplicateFlag || emailDuplicateFlag)
             ){
-                registerRequest(VectoService.RegisterRequest(
+                registerViewModel.registerRequest(VectoService.RegisterRequest(
                     editTextID.text.toString(), editTextPW.text.toString(), "vecto",
                     editTextNickname.text.toString(), editTextEmail.text.toString(), editTextEmailCode.text.toString().toInt()
                 ))
@@ -125,37 +134,28 @@ class RegisterActivity : AppCompatActivity() {
 
     }
 
-
-
-
-
-
-
-    private fun registerRequest(registerRequest: VectoService.RegisterRequest) {
-        val vectoService = VectoService.create()
-
-        val call = vectoService.registerUser(registerRequest)
-        call.enqueue(object : Callback<VectoService.VectoResponse<String>>{
-            override fun onResponse(call: Call<VectoService.VectoResponse<String>>, response: Response<VectoService.VectoResponse<String>>) {
-                if(response.isSuccessful){
-                    Log.d("REGISTER", "성공: ${response.body()}}")
-                    Toast.makeText(this@RegisterActivity, "회원가입 성공 로그인을 진행해주세요.", Toast.LENGTH_SHORT).show()
-                    finish()
-                }
-                else{
-                    Log.d("REGISTER", "성공했으나 서버 오류 ${response.errorBody()?.string()}")
-                    if(response.body()!!.code == "E017")
-                    {
-                        Log.d("REGISTER", "인증번호가 일치하지 않습니다.")
-                        updateText(binding.EmailcodeNotificationText, "인증번호가 일치하지 않습니다.", R.color.red)
+    private fun initObservers() {
+        registerViewModel.registerResult.observe(this){ registerResult ->
+            registerResult.onSuccess {
+                Toast.makeText(this, "회원가입 성공 로그인을 진행해주세요.", Toast.LENGTH_SHORT).show()
+                finish()
+            }.onFailure {
+                when (it.message) {
+                    "E017" -> {
+                        Toast.makeText(this, "인증번호가 만료되었거나 이메일이 존재하지 않습니다.", Toast.LENGTH_SHORT).show()
+                        updateText(binding.EmailcodeNotificationText, "인증번호가 일치하지 않습니다.",
+                            R.color.red
+                        )
+                    }
+                    "ERROR" -> {
+                        Toast.makeText(this, R.string.APIErrorToastMessage, Toast.LENGTH_SHORT).show()
+                    }
+                    else -> {
+                        Toast.makeText(this, "회원가입에 실패하였습니다. 입력한 정보를 확인해주세요.", Toast.LENGTH_SHORT).show()
                     }
                 }
             }
-
-            override fun onFailure(call: Call<VectoService.VectoResponse<String>>, t: Throwable) {
-                Log.d("REGISTER", "실패")
-            }
-        })
+        }
     }
 
 
@@ -203,7 +203,9 @@ class RegisterActivity : AppCompatActivity() {
         sendMail(editTextEmail.text.toString())
 
         emailSendButton.isEnabled = false
-        emailSendButton.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(this, R.color.vecto_disable))
+        emailSendButton.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(this,
+            R.color.vecto_disable
+        ))
 
         timer = object : CountDownTimer(180000, 1000){
             override fun onTick(millisUntilFinished: Long) {
@@ -325,11 +327,15 @@ class RegisterActivity : AppCompatActivity() {
                         }
                         else
                         {
-                            updateText(binding.IdNotificationText, "중복확인을 진행해 주세요.", R.color.vecto_warning)
+                            updateText(binding.IdNotificationText, "중복확인을 진행해 주세요.",
+                                R.color.vecto_warning
+                            )
                         }
                     }
                     Type.NICKNAME -> {//Nickname
-                        updateText(binding.NicknameNotificationText, "사용 가능한 닉네임 입니다.", R.color.green)
+                        updateText(binding.NicknameNotificationText, "사용 가능한 닉네임 입니다.",
+                            R.color.green
+                        )
                     }
                     Type.PASSWORD -> {//PW
                         updateText(binding.PwNotificationText, "사용 가능한 비밀번호 입니다.", R.color.green)
@@ -337,11 +343,15 @@ class RegisterActivity : AppCompatActivity() {
                     Type.EMAIL -> {//Email
                         if(emailDuplicateFlag)
                         {
-                            updateText(binding.EmailNotificationText, "메일을 발송하였습니다. 인증코드를 입력해주세요.", R.color.green)
+                            updateText(binding.EmailNotificationText, "메일을 발송하였습니다. 인증코드를 입력해주세요.",
+                                R.color.green
+                            )
                         }
                         else
                         {
-                            updateText(binding.EmailNotificationText, "이메일 인증을 진행해주세요.", R.color.vecto_warning)
+                            updateText(binding.EmailNotificationText, "이메일 인증을 진행해주세요.",
+                                R.color.vecto_warning
+                            )
                         }
 
                     }
