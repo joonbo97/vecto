@@ -26,11 +26,11 @@ class CommentActivity : AppCompatActivity(), MyCommentAdapter.OnEditActionListen
         CommentViewModelFactory(CommentRepository(VectoService.create()))
     }
 
-    var editcommentId = -1
-    var editcommentPosition = -1
-    var feedID = -1
+    private var editcommentId = -1
+    private var editcommentPosition = -1
+    private var feedID = -1
 
-    var content = ""
+    private var content = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
