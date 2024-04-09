@@ -19,8 +19,8 @@ import retrofit2.Callback
 import retrofit2.Response
 
 class CommentActivity : AppCompatActivity(), MyCommentAdapter.OnEditActionListener {
-    lateinit var binding: ActivityCommentBinding
-    lateinit var myCommentAdapter: MyCommentAdapter
+    private lateinit var binding: ActivityCommentBinding
+    private lateinit var myCommentAdapter: MyCommentAdapter
 
     private val commentViewModel: CommentViewModel by viewModels {
         CommentViewModelFactory(CommentRepository(VectoService.create()))
