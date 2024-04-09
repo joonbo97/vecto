@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
-    <ImageView
+    <!--<ImageView
         android:id="@+id/CommentMenuImage"
         android:layout_width="20dp"
         android:layout_height="0dp"
@@ -18,13 +18,13 @@
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.5" />
+        app:layout_constraintVertical_bias="0.5" />-->
 
     <ImageView
         android:id="@+id/ProfileImage"
         android:layout_width="50dp"
         android:layout_height="50dp"
-        android:layout_marginStart="30dp"
+        android:layout_marginStart="20dp"
         android:layout_marginTop="10dp"
         android:layout_marginBottom="10dp"
         android:src="@drawable/profile_basic"
@@ -36,11 +36,11 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="10dp"
-        android:fontFamily="@font/lineseedkr_bd"
+        android:fontFamily="@font/lineseedkr_rg"
         android:text="닉네임"
         android:textColor="@color/black"
-        android:textSize="17sp"
-        android:layout_marginBottom="4dp"
+        android:textSize="12sp"
+        android:layout_marginBottom="8dp"
         app:layout_constraintBottom_toTopOf="@+id/CommentText"
         app:layout_constraintStart_toEndOf="@+id/ProfileImage" />
 
@@ -48,7 +48,7 @@
         android:id="@+id/CommentTimeText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:alpha="0.7"
+        android:alpha="0.6"
         android:fontFamily="@font/lineseedkr_rg"
         android:text=" · 17시간 전"
         android:textColor="@color/black"
@@ -64,6 +64,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="10dp"
         android:layout_marginBottom="10dp"
+        android:layout_marginEnd="10dp"
         android:fontFamily="@font/lineseedkr_rg"
         android:text="내용입니다."
         android:textColor="@color/black"

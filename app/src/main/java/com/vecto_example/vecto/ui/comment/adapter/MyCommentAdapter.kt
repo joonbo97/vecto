@@ -22,6 +22,7 @@ import com.vecto_example.vecto.dialog.EditDeletePopupWindow
 import com.vecto_example.vecto.dialog.LoginRequestDialog
 import com.vecto_example.vecto.retrofit.VectoService
 import com.vecto_example.vecto.ui.userinfo.UserInfoActivity
+import com.vecto_example.vecto.utils.RequestLoginUtils
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -55,7 +56,7 @@ class MyCommentAdapter(private val context: Context): RecyclerView.Adapter<MyCom
         val commentText: TextView = view.findViewById(R.id.CommentText)
         val likeCount: TextView = view.findViewById(R.id.CommentLikeCountText)
 
-        val menu: ImageView = view.findViewById(R.id.CommentMenuImage)
+        //val menu: ImageView = view.findViewById(R.id.CommentMenuImage)
 
         val constraintLayout: ConstraintLayout = view.findViewById(R.id.constraintLayout)
     }
@@ -95,8 +96,11 @@ class MyCommentAdapter(private val context: Context): RecyclerView.Adapter<MyCom
         /*댓글 닉네임 설정*/
         holder.nicknameText.text = comment.nickName
 
-        /*시간 설정*/
-        holder.timeText.text = " · " + comment.timeDifference
+        /*시간 및 수정 여부 설정*/
+        if(comment.updatedBefore)
+            holder.timeText.text = "   " + comment.timeDifference + " (수정됨)"
+        else
+            holder.timeText.text = "   " + comment.timeDifference
 
         /*댓글 내용 설정*/
         holder.commentText.text = comment.content
@@ -167,18 +171,12 @@ class MyCommentAdapter(private val context: Context): RecyclerView.Adapter<MyCom
 
 
 
-        holder.menu.setOnClickListener {
+        holder.itemView.setOnLongClickListener {
             val editDeletePopupWindow = EditDeletePopupWindow(context,
                 editListener = {
                     if(Auth.loginFlag.value == false)
                     {
-                        val loginRequestDialog = LoginRequestDialog(context)
-                        loginRequestDialog.showDialog()
-                        loginRequestDialog.onOkButtonClickListener = {
-                            val intent = Intent(context, LoginActivity::class.java)
-                            context.startActivity(intent)
-                        }
-
+                        RequestLoginUtils.requestLogin(context)
                         return@EditDeletePopupWindow
                     }
                     else if(editFlag)
@@ -202,11 +200,19 @@ class MyCommentAdapter(private val context: Context): RecyclerView.Adapter<MyCom
 
                 },
                 deleteListener = {
+                    if(Auth.loginFlag.value == false)
+                    {
+                        RequestLoginUtils.requestLogin(context)
+                        return@EditDeletePopupWindow
+                    }
+
                     deleteComment(commentInfo[position].commentId, position)
                 })
 
             // 앵커 뷰를 기준으로 팝업 윈도우 표시
-            editDeletePopupWindow.showPopupWindow(holder.menu)
+            editDeletePopupWindow.showPopupWindow(holder.commentText)
+
+            true
         }
 
     }
