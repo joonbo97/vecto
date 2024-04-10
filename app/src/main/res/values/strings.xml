@@ -20,6 +20,8 @@
     <string name="LoginTextForRegister"><u>회원가입 하기</u></string>
     <string name="APIFailToastMessage">서버오류가 발생하였습니다. 잠시 후 다시 시도해주세요.</string>
     <string name="APIErrorToastMessage">인터넷이 불안정합니다. 잠시후 다시 시도해주세요.</string>
+    <string name="comment_time">  %s</string>
+    <string name="comment_time_edited">  %s (수정됨)</string>
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="title_activity_comment">CommentActivity</string>
     <string name="tmapcategory">
