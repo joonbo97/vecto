@@ -57,6 +57,8 @@ class CommentRepository(private val vectoService: VectoService) {
     }
 
     suspend fun addComment(feedId: Int, content: String): Result<String> {
+        /*   댓글 추가 함수   */
+
         return try {
             val response = vectoService.addComment("Bearer ${Auth.token}", VectoService.CommentRequest(feedId, content))
 
@@ -72,8 +74,57 @@ class CommentRepository(private val vectoService: VectoService) {
             Result.failure(Exception("ERROR"))
         }
     }
+    suspend fun sendCommentLike(commentId: Int): Result<String> {
+        /*   댓글 좋아요 추가 함수   */
+
+        return try {
+            val response = vectoService.sendCommentLike("Bearer ${Auth.token}", commentId)
+
+            if(response.isSuccessful){
+                Log.d("sendCommentLike", "SUCCESS")
+                Result.success("SUCCESS")
+            } else {
+                val errorBody = response.errorBody()?.string()
+                val gson = Gson()
+                val errorResponse: VectoService.VectoResponse<*>? = gson.fromJson(errorBody, VectoService.VectoResponse::class.java)
+
+                Log.d("sendCommentLike", "FAIL: ${response.errorBody()}")
+                Result.failure(Exception(errorResponse!!.code))
+            }
+
+        } catch (e: Exception) {
+            Log.e("sendCommentLike", "ERROR", e)
+            Result.failure(Exception("ERROR"))
+        }
+    }
+
+    suspend fun cancelCommentLike(commentId: Int): Result<String> {
+        /*   댓글 좋아요 취소 함수   */
+
+        return try {
+            val response = vectoService.cancelCommentLike("Bearer ${Auth.token}", commentId)
+
+            if(response.isSuccessful){
+                Log.d("cancelCommentLike", "SUCCESS")
+                Result.success("SUCCESS")
+            } else {
+                val errorBody = response.errorBody()?.string()
+                val gson = Gson()
+                val errorResponse: VectoService.VectoResponse<*>? = gson.fromJson(errorBody, VectoService.VectoResponse::class.java)
+
+                Log.d("cancelCommentLike", "FAIL: ${response.errorBody()}")
+                Result.failure(Exception(errorResponse!!.code))
+            }
+
+        } catch (e: Exception) {
+            Log.e("cancelCommentLike", "ERROR", e)
+            Result.failure(Exception("ERROR"))
+        }
+    }
 
     suspend fun updateComment(updateCommentRequest: VectoService.CommentUpdateRequest): Result<String> {
+        /*   댓글 수정 함수   */
+
         return try {
             val response = vectoService.updateComment("Bearer ${Auth.token}", updateCommentRequest)
 
@@ -90,10 +141,34 @@ class CommentRepository(private val vectoService: VectoService) {
             }
 
         } catch (e: Exception) {
-            Log.e("addComment", "ERROR", e)
+            Log.e("updateComment", "ERROR", e)
             Result.failure(Exception("ERROR"))
         }
 
+    }
+
+    suspend fun deleteComment(commentId: Int): Result<String>  {
+        /*   댓글 삭제 함수   */
+
+        return try {
+            val response = vectoService.deleteComment("Bearer ${Auth.token}", commentId)
+
+            if(response.isSuccessful){
+                Log.d("deleteComment", "SUCCESS")
+                Result.success("SUCCESS")
+            } else {
+                val errorBody = response.errorBody()?.string()
+                val gson = Gson()
+                val errorResponse: VectoService.VectoResponse<*>? = gson.fromJson(errorBody, VectoService.VectoResponse::class.java)
+
+                Log.d("deleteComment", "FAIL: ${response.errorBody()}")
+                Result.failure(Exception(errorResponse!!.code))
+            }
+
+        } catch (e: Exception) {
+            Log.e("deleteComment", "ERROR", e)
+            Result.failure(Exception("ERROR"))
+        }
     }
 
 }
