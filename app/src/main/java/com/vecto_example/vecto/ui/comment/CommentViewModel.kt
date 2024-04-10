@@ -1,13 +1,11 @@
 package com.vecto_example.vecto.ui.comment
 
 import android.util.Log
-import android.widget.Toast
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.vecto_example.vecto.retrofit.VectoService
-import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.launch
 
 class CommentViewModel(private val repository: CommentRepository): ViewModel() {
@@ -30,8 +28,17 @@ class CommentViewModel(private val repository: CommentRepository): ViewModel() {
     private val _addCommentResult = MutableLiveData<Result<String>>()
     val addCommentResult: LiveData<Result<String>> = _addCommentResult
 
+    private val _sendCommentLikeResult = MutableLiveData<Result<String>>()
+    val sendCommentLikeResult: LiveData<Result<String>> = _sendCommentLikeResult
+
+    private val _cancelCommentLikeResult = MutableLiveData<Result<String>>()
+    val cancelCommentLikeResult: LiveData<Result<String>> = _cancelCommentLikeResult
+
     private val _updateCommentResult = MutableLiveData<Result<String>>()
     val updateCommentResult: LiveData<Result<String>> = _updateCommentResult
+
+    private val _deleteCommentResult = MutableLiveData<Result<String>>()
+    val deleteCommentResult: LiveData<Result<String>> = _deleteCommentResult
 
     fun fetchCommentResults(feedId: Int){
         startLoading()
@@ -86,6 +93,28 @@ class CommentViewModel(private val repository: CommentRepository): ViewModel() {
         }
     }
 
+    fun sendCommentLike(commentId: Int) {
+        startCenterLoading()
+        viewModelScope.launch {
+            val sendCommentLikeResponse = repository.sendCommentLike(commentId)
+
+            _sendCommentLikeResult.value = sendCommentLikeResponse
+
+            endLoading()
+        }
+    }
+
+    fun cancelCommentLike(commentId: Int) {
+        startCenterLoading()
+        viewModelScope.launch {
+            val cancelCommentLikeResponse = repository.cancelCommentLike(commentId)
+
+            _cancelCommentLikeResult.value = cancelCommentLikeResponse
+
+            endLoading()
+        }
+    }
+
     fun updateComment(commentUpdateRequest: VectoService.CommentUpdateRequest) {
         startCenterLoading()
         viewModelScope.launch {
@@ -95,6 +124,18 @@ class CommentViewModel(private val repository: CommentRepository): ViewModel() {
 
             endLoading()
         }
+    }
+
+    fun deleteComment(commentInt: Int) {
+        startCenterLoading()
+        viewModelScope.launch {
+            val deleteCommentResponse = repository.deleteComment(commentInt)
+
+            _deleteCommentResult.value = deleteCommentResponse
+
+            endLoading()
+        }
+
     }
 
     fun initSetting(){
