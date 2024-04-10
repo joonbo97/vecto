@@ -4,39 +4,42 @@ import android.content.Context
 import android.content.Intent
 import android.util.Log
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
-import android.widget.ImageView
-import android.widget.TextView
 import android.widget.Toast
-import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
-import com.bumptech.glide.Glide
-import com.vecto_example.vecto.ui.login.LoginActivity
 import com.vecto_example.vecto.R
 import com.vecto_example.vecto.data.Auth
+import com.vecto_example.vecto.databinding.CommentItemBinding
 import com.vecto_example.vecto.dialog.EditDeletePopupWindow
-import com.vecto_example.vecto.dialog.LoginRequestDialog
 import com.vecto_example.vecto.retrofit.VectoService
 import com.vecto_example.vecto.ui.userinfo.UserInfoActivity
+import com.vecto_example.vecto.utils.LoadImageUtils
 import com.vecto_example.vecto.utils.RequestLoginUtils
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 
 class MyCommentAdapter(private val context: Context): RecyclerView.Adapter<MyCommentAdapter.ViewHolder>(){
     val commentInfo = mutableListOf<VectoService.CommentResponse>()
     var editFlag = false
 
-    var selectedPosition = -1
+    var selectedPosition = -1   //댓글 선택 Position
+    var actionPosition = -1     //댓글 좋아요, 삭제 Position
+
+    //댓글 선택 Callback
     interface OnEditActionListener {
         fun onEditAction(commentId: Int, position: Int)
     }
 
+    //댓글 좋아요, 삭제 Callback
+    interface OnCommentActionListener {
+        fun onSendLike(commentId: Int)
+        fun onCancelLike(commentId: Int)
+        fun onDelete(commentId: Int)
+    }
+
     var editActionListener: OnEditActionListener? = null
+    var commentActionListener: OnCommentActionListener? = null
 
     fun cancelEditing() {
         if (selectedPosition != -1) {
@@ -46,88 +49,69 @@ class MyCommentAdapter(private val context: Context): RecyclerView.Adapter<MyCom
         }
     }
 
+    inner class ViewHolder(val binding: CommentItemBinding): RecyclerView.ViewHolder(binding.root) {
+        fun bind(comment: VectoService.CommentResponse) {
+            /*댓글 프사 설정*/
+            LoadImageUtils.loadUserProfileImage(context, binding.ProfileImage, comment.profileUrl)
 
-    inner class ViewHolder(view: View): RecyclerView.ViewHolder(view) {
-        val profileImage: ImageView = view.findViewById(R.id.ProfileImage)
-        val likeImage: ImageView = view.findViewById(R.id.CommentLikeImage)
+            /*댓글 닉네임 설정*/
+            binding.NicknameText.text = comment.nickName
 
-        val nicknameText: TextView = view.findViewById(R.id.NicknameText)
-        val timeText: TextView = view.findViewById(R.id.CommentTimeText)
-        val commentText: TextView = view.findViewById(R.id.CommentText)
-        val likeCount: TextView = view.findViewById(R.id.CommentLikeCountText)
+            /*시간 및 수정 여부 설정*/
+            if (comment.updatedBefore)
+                binding.CommentTimeText.text = context.getString(R.string.comment_time_edited, comment.timeDifference)
+            else
+                binding.CommentTimeText.text = context.getString(R.string.comment_time, comment.timeDifference)
 
-        //val menu: ImageView = view.findViewById(R.id.CommentMenuImage)
 
-        val constraintLayout: ConstraintLayout = view.findViewById(R.id.constraintLayout)
-    }
+            /*댓글 내용 설정*/
+            binding.CommentText.text = comment.content
 
-    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val comment = commentInfo[position]
 
-        // 아이템 선택 상태에 따라 배경색 설정
-        if (selectedPosition == position) {
-            // 선택된 아이템의 배경색 변경
-            holder.constraintLayout.setBackgroundColor(ContextCompat.getColor(context, R.color.vecto_alphagray))
-        } else {
-            // 선택되지 않은 아이템의 배경색을 기본값으로 설정
-            holder.constraintLayout.setBackgroundColor(ContextCompat.getColor(context, R.color.white))
+            /*   리스너 설정   */
+
+            //프로필 사진 클릭
+            binding.ProfileImage.setOnClickListener {
+                val intent = Intent(context, UserInfoActivity::class.java)
+                intent.putExtra("userId", comment.userId)
+                context.startActivity(intent)
+            }
+
+            //좋아요 클릭
+            binding.CommentLikeImage.setOnClickListener {
+                clickLikeAction(comment)
+            }
+            binding.CommentLikeCountText.setOnClickListener {
+                clickLikeAction(comment)
+            }
+
+
+            itemView.setOnLongClickListener {
+
+                if (!editFlag)
+                    showPopupWindow(comment)
+
+                true
+            }
         }
 
-        /*댓글 프사 설정*/
-        if(comment.profileUrl == null)
-        {
-            holder.profileImage.setImageResource(R.drawable.profile_basic)
-        }
-        else
-        {
-            Glide.with(context)
-                .load(comment.profileUrl)
-                .placeholder(R.drawable.profile_basic) // 로딩 중 표시될 이미지
-                .error(R.drawable.profile_basic) // 에러 발생 시 표시될 이미지
-                .circleCrop()
-                .into(holder.profileImage)
-        }
-        holder.profileImage.setOnClickListener {
-            val intent = Intent(context, UserInfoActivity::class.java)
-            intent.putExtra("userId", commentInfo[position].userId)
-            context.startActivity(intent)
-        }
+        //좋아요 클릭 실행 함수
+        private fun clickLikeAction(comment: VectoService.CommentResponse) {
 
-        /*댓글 닉네임 설정*/
-        holder.nicknameText.text = comment.nickName
+            if (Auth.loginFlag.value == false) {
 
-        /*시간 및 수정 여부 설정*/
-        if(comment.updatedBefore)
-            holder.timeText.text = "   " + comment.timeDifference + " (수정됨)"
-        else
-            holder.timeText.text = "   " + comment.timeDifference
+                RequestLoginUtils.requestLogin(context)
 
-        /*댓글 내용 설정*/
-        holder.commentText.text = comment.content
+            } else if (actionPosition == -1) {
 
-        /*댓글 좋아요 설정*/
-        if(comment.likeFlag)
-            holder.likeImage.setImageResource(R.drawable.post_like_on)
-        else
-            holder.likeImage.setImageResource(R.drawable.post_like_off)
-        holder.likeCount.text = comment.commentCount.toString()
-
-
-        fun clickLikeAction() {
-            if(Auth.loginFlag.value == true) {
                 if (comment.likeFlag) {
-                    holder.likeImage.setImageResource(R.drawable.post_like_off)
 
-                    cancelCommentLike(comment.commentId)
-                    comment.likeFlag = false
+                    actionPosition = adapterPosition
+                    commentActionListener?.onCancelLike(comment.commentId)
 
-                    comment.commentCount--
-                    holder.likeCount.text = comment.commentCount.toString()
                 } else {
-                    holder.likeImage.setImageResource(R.drawable.post_like_on)
+
                     val anim = AnimationUtils.loadAnimation(context, R.anim.like_anim)
-                    comment.commentCount++
-                    holder.likeCount.text = comment.commentCount.toString()
 
                     anim.setAnimationListener(object : Animation.AnimationListener {
                         override fun onAnimationStart(animation: Animation?) {}
@@ -135,176 +119,149 @@ class MyCommentAdapter(private val context: Context): RecyclerView.Adapter<MyCom
                         override fun onAnimationRepeat(animation: Animation?) {}
                     })
 
-                    holder.likeImage.startAnimation(anim)
-                    sendCommentLike(comment.commentId)
-                    comment.likeFlag = true
-                }
-            }
-            else {
-                val loginRequestDialog = LoginRequestDialog(context)
-                loginRequestDialog.showDialog()
-                loginRequestDialog.onOkButtonClickListener = {
-                    val intent = Intent(context, LoginActivity::class.java)
-                    context.startActivity(intent)
+                    binding.CommentLikeImage.startAnimation(anim)
+
+                    actionPosition = adapterPosition
+                    commentActionListener?.onSendLike(comment.commentId)
+
                 }
             }
         }
 
+        //PopupWindow 호출 함수
+        private fun showPopupWindow(comment: VectoService.CommentResponse) {
+            selectedPosition = adapterPosition
 
-        holder.likeImage.setOnClickListener {
-            clickLikeAction()
-        }
-        holder.likeCount.setOnClickListener {
-            clickLikeAction()
-        }
+            notifyItemChanged(selectedPosition) //호출 시 배경 변경
 
-        if(selectedPosition != -1 && !editFlag) {
-            holder.constraintLayout.setBackgroundColor(ContextCompat.getColor(context,
-                R.color.white
-            ))
-            selectedPosition = -1
-        }
-        else if(editFlag && selectedPosition == position)
-            holder.constraintLayout.setBackgroundColor(ContextCompat.getColor(context,
-                R.color.vecto_alphagray
-            ))
+            var isClicked = false
 
-
-
-        holder.itemView.setOnLongClickListener {
             val editDeletePopupWindow = EditDeletePopupWindow(context,
                 editListener = {
-                    if(Auth.loginFlag.value == false)
-                    {
+                    isClicked = true
+
+                    if (Auth.loginFlag.value == false) {
                         RequestLoginUtils.requestLogin(context)
+                        dismissPopupWindow()
                         return@EditDeletePopupWindow
-                    }
-                    else if(editFlag)
-                    {
-                        Toast.makeText(context, "한번에 하나의 댓글만 수정할 수 있습니다.", Toast.LENGTH_SHORT).show()
+                    } else if (editFlag) {
+                        Toast.makeText(context, "한번에 하나의 댓글만 수정할 수 있습니다.", Toast.LENGTH_SHORT)
+                            .show()
                         return@EditDeletePopupWindow
-                    }
-                    else if(Auth._userId.value != commentInfo[position].userId)
-                    {
+                    } else if (Auth._userId.value != comment.userId) {
                         Toast.makeText(context, "본인의 댓글만 수정할 수 있습니다.", Toast.LENGTH_SHORT).show()
+                        dismissPopupWindow()
                         return@EditDeletePopupWindow
-                    }
-                    else//로그인이 되어있고, 처음 선택하는 것이며, 본인의 댓글인 경우
+                    } else//로그인이 되어있고, 처음 선택하는 것이며, 본인의 댓글인 경우
                     {
-                        holder.constraintLayout.setBackgroundColor(ContextCompat.getColor(context,
-                            R.color.vecto_alphagray
-                        ))
-                        editActionListener?.onEditAction(comment.commentId, position)
-                        selectedPosition = position
+                        binding.constraintLayout.setBackgroundColor(
+                            ContextCompat.getColor(
+                                context,
+                                R.color.vecto_alphagray
+                            )
+                        )
+                        editActionListener?.onEditAction(comment.commentId, selectedPosition)
                     }
 
                 },
                 deleteListener = {
-                    if(Auth.loginFlag.value == false)
-                    {
+                    isClicked = true
+
+                    if (Auth.loginFlag.value == false) {
                         RequestLoginUtils.requestLogin(context)
+                        dismissPopupWindow()
                         return@EditDeletePopupWindow
                     }
 
-                    deleteComment(commentInfo[position].commentId, position)
+                    actionPosition = selectedPosition   //adaperposition을 쓰지않는 이유는 popup 때문에 adapterposition이 유효한 값을 가지지 않아서
+                    commentActionListener?.onDelete(comment.commentId)
+                    dismissPopupWindow()
+                },
+
+                dismissListener = {
+                    if (!isClicked)  //아무것도 선택하지 않고 닫힐 때만 실행
+                        dismissPopupWindow()
                 })
 
-            // 앵커 뷰를 기준으로 팝업 윈도우 표시
-            editDeletePopupWindow.showPopupWindow(holder.commentText)
-
-            true
+            //뷰를 기준으로 팝업 윈도우 표시
+            editDeletePopupWindow.showPopupWindow(binding.ProfileImage)
         }
 
+        private fun dismissPopupWindow() {
+            if (selectedPosition != -1) {
+                notifyItemChanged(selectedPosition)
+                selectedPosition = -1
+            }
+
+        }
     }
 
-    private fun deleteComment(commentId: Int, position: Int) {
 
-        val vectoService = VectoService.create()
-        Log.d("COMMENTDELETE", commentId.toString())
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+        val comment = commentInfo[position]
+        holder.bind(comment)
 
-        val call = vectoService.deleteComment("Bearer ${Auth.token}", commentId)
-        call.enqueue(object : Callback<VectoService.VectoResponse<Unit>>{
-            override fun onResponse(call: Call<VectoService.VectoResponse<Unit>>, response: Response<VectoService.VectoResponse<Unit>>) {
-                if(response.isSuccessful){
-                    Log.d("COMMENTDELETE", "성공: ${response.body()}")
-                    Toast.makeText(context, "댓글이 삭제되었습니다.", Toast.LENGTH_SHORT).show()
-                    commentInfo.removeAt(position)
-                    notifyDataSetChanged()
-                }
-                else{
-                    Log.d("COMMENTDELETE", "성공했으나 서버 오류 ${response.errorBody()?.string()}")
-                    Toast.makeText(context, "댓글 삭제에 실패하였습니다. 잠시후 시도해주세요.", Toast.LENGTH_SHORT).show()
+        // 아이템 선택 상태에 따라 배경색 설정
+        if (selectedPosition == position) {
+            // 선택된 아이템의 배경색 변경
+            holder.binding.constraintLayout.setBackgroundColor(ContextCompat.getColor(context, R.color.vecto_alphagray))
+        } else {
+            // 선택되지 않은 아이템의 배경색을 기본값으로 설정
+            holder.binding.constraintLayout.setBackgroundColor(ContextCompat.getColor(context, R.color.white))
+        }
 
-                }
-            }
+        /*좋아요 설정*/
+        if(comment.likeFlag)
+            holder.binding.CommentLikeImage.setImageResource(R.drawable.post_like_on)
+        else
+            holder.binding.CommentLikeImage.setImageResource(R.drawable.post_like_off)
 
-            override fun onFailure(call: Call<VectoService.VectoResponse<Unit>>, t: Throwable) {
-                Log.d("COMMENTDELETE", "실패 ${t.message.toString()}" )
-                Toast.makeText(context, R.string.APIErrorToastMessage, Toast.LENGTH_SHORT).show()
-            }
+        /*좋아요 개수 설정*/
+        holder.binding.CommentLikeCountText.text = comment.commentCount.toString()
 
-        })
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val view = LayoutInflater.from(context).inflate(R.layout.comment_item, parent, false)
-        return ViewHolder(view)
+        val binding = CommentItemBinding.inflate(LayoutInflater.from(context), parent, false)
+        return ViewHolder(binding)
     }
 
     override fun getItemCount(): Int {
         return commentInfo.size
     }
 
-    private fun sendCommentLike(commentId: Int) {
-        Log.d("CommentID", commentId.toString())
+    //좋아요 성공시 실행 함수
+    fun sendCommentLikeSuccess(){
 
-        val vectoService = VectoService.create()
+        commentInfo[actionPosition].likeFlag = true
+        commentInfo[actionPosition].commentCount++
 
-        val call = vectoService.sendCommentLike("Bearer ${Auth.token}", commentId)
-        call.enqueue(object : Callback<VectoService.VectoResponse<Unit>> {
-            override fun onResponse(call: Call<VectoService.VectoResponse<Unit>>, response: Response<VectoService.VectoResponse<Unit>>) {
-                if(response.isSuccessful){
-                    Log.d("COMMENTLIKE", "성공: ${response.body()}")
-                }
-                else{
-                    Log.d("COMMENTLIKE", "성공했으나 서버 오류 ${response.errorBody()?.string()}")
-                }
-            }
-
-            override fun onFailure(call: Call<VectoService.VectoResponse<Unit>>, t: Throwable) {
-                Log.d("COMMENTLIKE", "실패 ${t.message.toString()}" )
-            }
-
-        })
+        notifyItemChanged(actionPosition)
     }
 
-    private fun cancelCommentLike(commentId: Int) {
-        val vectoService = VectoService.create()
+    //좋아요 취소 성공시 실행 함수
+    fun cancelCommentLikeSuccess(){
 
-        val call = vectoService.cancelCommentLike("Bearer ${Auth.token}", commentId)
-        call.enqueue(object : Callback<VectoService.VectoResponse<Unit>> {
-            override fun onResponse(call: Call<VectoService.VectoResponse<Unit>>, response: Response<VectoService.VectoResponse<Unit>>) {
-                if(response.isSuccessful){
-                    Log.d("COMMENTLIKE", "성공: ${response.body()}")
-                }
-                else{
-                    Log.d("COMMENTLIKE", "성공했으나 서버 오류 ${response.errorBody()?.string()}")
-                }
-            }
+        commentInfo[actionPosition].likeFlag = false
+        commentInfo[actionPosition].commentCount--
 
-            override fun onFailure(call: Call<VectoService.VectoResponse<Unit>>, t: Throwable) {
-                Log.d("COMMENTLIKE", "실패 ${t.message.toString()}" )
-            }
-
-        })
+        notifyItemChanged(actionPosition)
     }
 
+    //삭제 성공시 실행 함수
+    fun deleteCommentSuccess(){
+        commentInfo.removeAt(actionPosition)
+
+        notifyItemRemoved(actionPosition)
+    }
+
+    //댓글 데이터 추가 함수
     fun addCommentData(newData: List<VectoService.CommentResponse>){
         val startIdx = commentInfo.size
         commentInfo.addAll(newData)
         notifyItemRangeInserted(startIdx, newData.size)
 
-        Log.d("COMMENTSIZE", "${commentInfo.size}")
+        Log.d("MyCommentAdapter", "Adapter Size: ${commentInfo.size}")
     }
 
 }
