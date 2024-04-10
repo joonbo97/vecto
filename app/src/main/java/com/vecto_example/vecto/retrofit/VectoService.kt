@@ -77,31 +77,6 @@ interface VectoService {
         @Path("feedId") feedId: Int,
     ): Call<VectoResponse<Unit>>
 
-    @POST("feed/comment")
-    suspend fun addComment(
-        @Header("Authorization") authorization: String,
-        @Body request: CommentRequest
-    ): Response<VectoResponse<String>>
-
-    @POST("comment/{commentId}/likes")
-    fun sendCommentLike(
-        @Header("Authorization") authorization: String,
-        @Path("commentId") commentId: Int
-    ): Call<VectoResponse<Unit>>
-
-
-    @DELETE("comment/{commentId}/likes")
-    fun cancelCommentLike(
-        @Header("Authorization") authorization: String,
-        @Path("commentId") commentId: Int
-    ): Call<VectoResponse<Unit>>
-
-    @DELETE("feed/comment")
-    fun deleteComment(
-        @Header("Authorization") authorization: String,
-        @Query("commentId") commentId: Int
-    ): Call<VectoResponse<Unit>>
-
     @GET("follow/{userId}")//팔로우 여부 반환 code: S027이면 이미 팔로우 S028이면 안한 상태
     fun getFollow(
         @Header("Authorization") authorization: String,
@@ -125,12 +100,6 @@ interface VectoService {
         @Header("Authorization") authorization: String,
         @Path("feedId") feedId: Int
     ):Call<VectoResponse<Unit>>
-
-    @PATCH("feed/comment")
-    suspend fun updateComment(
-        @Header("Authorization") authorization: String,
-        @Body commentData: CommentUpdateRequest
-    ): Response<VectoResponse<String>>
 
     @PATCH("feed")
     fun updatePost(
@@ -215,6 +184,41 @@ interface VectoService {
         @Path("feedId") feedId: Int,
         @Query("page") page: Int
     ): Response<VectoResponse<CommentListResponse>>
+
+    //댓글 추가
+    @POST("feed/comment")
+    suspend fun addComment(
+        @Header("Authorization") authorization: String,
+        @Body request: CommentRequest
+    ): Response<VectoResponse<String>>
+
+    //댓글 좋아요
+    @POST("comment/{commentId}/likes")
+    suspend fun sendCommentLike(
+        @Header("Authorization") authorization: String,
+        @Path("commentId") commentId: Int
+    ): Response<VectoResponse<Unit>>
+
+    //댓글 좋아요 취소
+    @DELETE("comment/{commentId}/likes")
+    suspend fun cancelCommentLike(
+        @Header("Authorization") authorization: String,
+        @Path("commentId") commentId: Int
+    ): Response<VectoResponse<Unit>>
+
+    //댓글 수정
+    @PATCH("feed/comment")
+    suspend fun updateComment(
+        @Header("Authorization") authorization: String,
+        @Body commentData: CommentUpdateRequest
+    ): Response<VectoResponse<String>>
+
+    //댓글 삭제
+    @DELETE("feed/comment")
+    suspend fun deleteComment(
+        @Header("Authorization") authorization: String,
+        @Query("commentId") commentId: Int
+    ): Response<VectoResponse<Unit>>
 
     /*   Notification 관련   */
     @GET("push/new")
