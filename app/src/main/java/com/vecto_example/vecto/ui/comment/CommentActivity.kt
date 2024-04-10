@@ -15,7 +15,7 @@ import com.vecto_example.vecto.databinding.ActivityCommentBinding
 import com.vecto_example.vecto.retrofit.VectoService
 import com.vecto_example.vecto.utils.RequestLoginUtils
 
-class CommentActivity : AppCompatActivity(), MyCommentAdapter.OnEditActionListener {
+class CommentActivity : AppCompatActivity(), MyCommentAdapter.OnEditActionListener, MyCommentAdapter.OnCommentActionListener {
     private lateinit var binding: ActivityCommentBinding
     private lateinit var myCommentAdapter: MyCommentAdapter
 
@@ -24,7 +24,7 @@ class CommentActivity : AppCompatActivity(), MyCommentAdapter.OnEditActionListen
     }
 
     private var editcommentId = -1
-    private var editcommentPosition = -1
+    private var editcommentPosition = -1    //adapter에서 다른 view를 호출 했을 수도 있기 때문에 현재 수정중인 position을 가지고 있어야함
     private var feedID = -1
 
     private var content = ""
@@ -101,6 +101,28 @@ class CommentActivity : AppCompatActivity(), MyCommentAdapter.OnEditActionListen
             }
         }
 
+        /*   Comment Like Observer   */
+        commentViewModel.sendCommentLikeResult.observe(this) { sendCommentLikeResult ->
+            sendCommentLikeResult.onSuccess {
+                myCommentAdapter.sendCommentLikeSuccess()
+            }.onFailure {
+                Toast.makeText(this, getText(R.string.APIErrorToastMessage), Toast.LENGTH_SHORT).show()
+            }
+
+            myCommentAdapter.actionPosition = -1
+        }
+
+        commentViewModel.cancelCommentLikeResult.observe(this) { cancelCommentLikeResult ->
+            cancelCommentLikeResult.onSuccess {
+                myCommentAdapter.cancelCommentLikeSuccess()
+            }.onFailure {
+                Toast.makeText(this, getText(R.string.APIErrorToastMessage), Toast.LENGTH_SHORT).show()
+            }
+
+            myCommentAdapter.actionPosition = -1
+        }
+
+        /*   Comment Update Observer   */
         commentViewModel.updateCommentResult.observe(this) { updateCommentResult ->
             updateCommentResult.onSuccess {
                 myCommentAdapter.commentInfo[editcommentPosition].content = content
@@ -112,6 +134,18 @@ class CommentActivity : AppCompatActivity(), MyCommentAdapter.OnEditActionListen
                 Toast.makeText(this, getText(R.string.APIErrorToastMessage), Toast.LENGTH_SHORT).show()
             }
 
+        }
+
+        /*   Comment Delete Observer   */
+        commentViewModel.deleteCommentResult.observe(this) { deleteCommentResult ->
+            deleteCommentResult.onSuccess {
+                myCommentAdapter.deleteCommentSuccess()
+                Toast.makeText(this, "댓글이 삭제되었습니다.", Toast.LENGTH_SHORT).show()
+            }.onFailure {
+                Toast.makeText(this, getText(R.string.APIErrorToastMessage), Toast.LENGTH_SHORT).show()
+            }
+
+            myCommentAdapter.actionPosition = -1
         }
 
         /*   로딩 관련 Observer   */
@@ -135,6 +169,7 @@ class CommentActivity : AppCompatActivity(), MyCommentAdapter.OnEditActionListen
 
         myCommentAdapter = MyCommentAdapter(this)
         myCommentAdapter.editActionListener = this
+        myCommentAdapter.commentActionListener = this
         val commentRecyclerView = binding.CommentRecyclerView
         commentRecyclerView.adapter = myCommentAdapter
         commentRecyclerView.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
@@ -209,26 +244,13 @@ class CommentActivity : AppCompatActivity(), MyCommentAdapter.OnEditActionListen
         }
     }
 
-    override fun onEditAction(commentId: Int, position: Int) {
-        binding.EditCommentBox.visibility = View.VISIBLE
-        binding.EditCommentText.visibility = View.VISIBLE
-
-        myCommentAdapter.editFlag = true
-
-        editcommentPosition = position
-        myCommentAdapter.selectedPosition = position
-
-        editcommentId = commentId
-
-        binding.EditContent.hint = "수정할 내용을 작성해 주세요."
-    }
-
     private fun onEditCancelled() {
         clearUI()
 
         Toast.makeText(this, "댓글 수정이 취소 되었습니다.", Toast.LENGTH_SHORT).show()
     }
 
+    //UI 초기화 함수
     private fun clearUI(){
         binding.EditCommentBox.visibility = View.GONE
         binding.EditCommentText.visibility = View.GONE
@@ -243,21 +265,65 @@ class CommentActivity : AppCompatActivity(), MyCommentAdapter.OnEditActionListen
         clearNoneImage()
     }
 
+    //데이터 초기화 함수
     private fun clearData(){
         myCommentAdapter.commentInfo.clear()
         commentViewModel.initSetting()
     }
 
+    //NoneImage 제거 함수
     private fun clearNoneImage() {
         binding.CommentNullImage.visibility = View.GONE
         binding.CommentNullText.visibility = View.GONE
         Log.d("NONE GONE", "NONE IMAGE IS GONE")
     }
 
+    //NoneImage 호출 함수
     private fun setNoneImage() {
         binding.CommentNullImage.visibility = View.VISIBLE
         binding.CommentNullText.visibility = View.VISIBLE
         Log.d("NONE VISIBLE", "NONE IMAGE IS VISIBLE")
+    }
+
+
+    //수정 선택시 실행
+    override fun onEditAction(commentId: Int, position: Int) {
+        binding.EditCommentBox.visibility = View.VISIBLE
+        binding.EditCommentText.visibility = View.VISIBLE
+
+        myCommentAdapter.editFlag = true
+
+        editcommentPosition = position
+        myCommentAdapter.selectedPosition = position
+
+        editcommentId = commentId
+
+        binding.EditContent.hint = "수정할 내용을 작성해 주세요."
+    }
+
+    //좋아요 선택시 실행
+    override fun onSendLike(commentId: Int) {
+        if(!commentViewModel.checkLoading()) {
+            commentViewModel.sendCommentLike(commentId)
+        }
+        else
+            Toast.makeText(this, "이전 작업을 처리 중입니다. 잠시 후 다시 시도해 주세요", Toast.LENGTH_SHORT).show()
+    }
+
+    //좋아요 취소시 실행
+    override fun onCancelLike(commentId: Int) {
+        if(!commentViewModel.checkLoading())
+            commentViewModel.cancelCommentLike(commentId)
+        else
+            Toast.makeText(this, "이전 작업을 처리 중입니다. 잠시 후 다시 시도해 주세요", Toast.LENGTH_SHORT).show()
+    }
+
+    //댓글 삭제시 실행
+    override fun onDelete(commentId: Int) {
+        if(!commentViewModel.checkLoading())
+            commentViewModel.deleteComment(commentId)
+        else
+            Toast.makeText(this, "이전 작업을 처리 중입니다. 잠시 후 다시 시도해 주세요", Toast.LENGTH_SHORT).show()
     }
 
 }
