@@ -227,6 +227,9 @@ class MypostAdapter(private val context: Context): RecyclerView.Adapter<MypostAd
                         deletePostDialog.onOkButtonClickListener = {
                             deletePost(feedID[adapterPosition], adapterPosition)
                         }
+                    },
+                    dismissListener = {
+
                     })
 
                 // 앵커 뷰를 기준으로 팝업 윈도우 표시
