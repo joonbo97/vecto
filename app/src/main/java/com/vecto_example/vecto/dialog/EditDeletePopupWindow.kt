@@ -1,5 +1,6 @@
 package com.vecto_example.vecto.dialog
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
@@ -11,10 +12,12 @@ import com.vecto_example.vecto.R
 class EditDeletePopupWindow (
     private val context: Context,
     private val editListener: () -> Unit,
-    private val deleteListener: () -> Unit
+    private val deleteListener: () -> Unit,
+    private val dismissListener: () -> Unit
 ) {
     private var popupWindow: PopupWindow? = null
 
+    @SuppressLint("InflateParams")
     fun showPopupWindow(anchorView: View) {
         // 레이아웃 인플레이션
         val inflater = context.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
@@ -33,6 +36,10 @@ class EditDeletePopupWindow (
             popupView.findViewById<TextView>(R.id.text_delete).setOnClickListener {
                 deleteListener()
                 dismiss()
+            }
+
+            setOnDismissListener {
+                dismissListener()
             }
 
             // 팝업 윈도우 표시
