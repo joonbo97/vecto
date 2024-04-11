@@ -19,7 +19,7 @@ import com.vecto_example.vecto.ui.detail.FeedDetailActivity
 import com.vecto_example.vecto.ui.userinfo.UserInfoActivity
 import com.vecto_example.vecto.data.Auth
 import com.vecto_example.vecto.dialog.DeletePostDialog
-import com.vecto_example.vecto.dialog.EditDeletePopupWindow
+import com.vecto_example.vecto.popupwindow.EditDeletePopupWindow
 import com.vecto_example.vecto.dialog.LoginRequestDialog
 import com.vecto_example.vecto.retrofit.VectoService
 import com.google.gson.Gson

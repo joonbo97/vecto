@@ -15,7 +15,7 @@ import com.vecto_example.vecto.data.Auth
 import com.vecto_example.vecto.data.repository.FeedRepository
 import com.vecto_example.vecto.data.repository.UserRepository
 import com.vecto_example.vecto.databinding.ActivityUserInfoBinding
-import com.vecto_example.vecto.dialog.ReportPopupWindow
+import com.vecto_example.vecto.popupwindow.ReportPopupWindow
 import com.vecto_example.vecto.dialog.ReportUserDialog
 import com.vecto_example.vecto.retrofit.VectoService
 import com.vecto_example.vecto.ui_bottom.MypostAdapter

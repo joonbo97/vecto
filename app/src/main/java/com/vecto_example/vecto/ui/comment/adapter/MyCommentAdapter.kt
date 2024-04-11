@@ -13,7 +13,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.vecto_example.vecto.R
 import com.vecto_example.vecto.data.Auth
 import com.vecto_example.vecto.databinding.CommentItemBinding
-import com.vecto_example.vecto.dialog.EditDeletePopupWindow
+import com.vecto_example.vecto.popupwindow.EditDeletePopupWindow
 import com.vecto_example.vecto.retrofit.VectoService
 import com.vecto_example.vecto.ui.userinfo.UserInfoActivity
 import com.vecto_example.vecto.utils.LoadImageUtils

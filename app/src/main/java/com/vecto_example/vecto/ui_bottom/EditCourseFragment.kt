@@ -48,7 +48,7 @@ import com.vecto_example.vecto.MyClusterItem
 import com.vecto_example.vecto.R
 import com.vecto_example.vecto.databinding.FragmentEditCourseBinding
 import com.vecto_example.vecto.dialog.CalendarDialog
-import com.vecto_example.vecto.dialog.PlacePopupWindow
+import com.vecto_example.vecto.popupwindow.PlacePopupWindow
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale

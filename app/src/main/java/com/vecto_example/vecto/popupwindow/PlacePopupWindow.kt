@@ -1,11 +1,10 @@
-package com.vecto_example.vecto.dialog
+package com.vecto_example.vecto.popupwindow
 
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.PopupWindow
-import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.vecto_example.vecto.R
 import com.vecto_example.vecto.ui_bottom.MyPlaceAdapter
