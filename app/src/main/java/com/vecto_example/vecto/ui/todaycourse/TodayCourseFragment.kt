@@ -1,4 +1,4 @@
-package com.vecto_example.vecto.ui_bottom
+package com.vecto_example.vecto.ui.todaycourse
 
 import android.Manifest
 import android.app.ActivityManager
@@ -8,23 +8,15 @@ import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewTreeObserver
 import androidx.core.content.ContextCompat
-import androidx.core.content.ContextCompat.getColor
-import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.Preferences
-import androidx.datastore.preferences.core.booleanPreferencesKey
-import androidx.datastore.preferences.core.edit
-import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.ViewModelProvider
 import com.vecto_example.vecto.Actions
 import com.vecto_example.vecto.LocationService
-import com.vecto_example.vecto.MainActivity
-import com.vecto_example.vecto.MainActivity.DataStoreUtils.myDataStore
 import com.vecto_example.vecto.data.model.LocationData
 import com.vecto_example.vecto.data.model.LocationDatabase
 import com.vecto_example.vecto.data.model.VisitData
@@ -32,25 +24,25 @@ import com.vecto_example.vecto.data.model.VisitDatabase
 import com.vecto_example.vecto.dialog.EndServiceDialog
 import com.vecto_example.vecto.dialog.StartServiceDialog
 import com.vecto_example.vecto.ui.guide.activity.GuideActivity
-import com.naver.maps.geometry.LatLng
 import com.naver.maps.map.CameraUpdate
 import com.naver.maps.map.LocationTrackingMode
 import com.naver.maps.map.MapFragment
 import com.naver.maps.map.NaverMap
 import com.naver.maps.map.OnMapReadyCallback
-import com.naver.maps.map.overlay.Marker
-import com.naver.maps.map.overlay.OverlayImage
-import com.naver.maps.map.overlay.PathOverlay
 import com.naver.maps.map.util.FusedLocationSource
 import com.vecto_example.vecto.R
 import com.vecto_example.vecto.databinding.FragmentTodayCourseBinding
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.launch
+import com.vecto_example.vecto.utils.MapMarkerManager
+import com.vecto_example.vecto.utils.MapOverlayManager
 
 
 class TodayCourseFragment : Fragment(), OnMapReadyCallback {
     private lateinit var binding: FragmentTodayCourseBinding
-    private lateinit var mainDataStore: DataStore<Preferences>
+
+    private lateinit var todayCourseViewModel: TodayCourseViewModel
+
+    private lateinit var mapMarkerManager: MapMarkerManager
+    private lateinit var mapOverlayManager: MapOverlayManager
 
     //map설정 관련
     private lateinit var mapView: MapFragment
@@ -60,18 +52,15 @@ class TodayCourseFragment : Fragment(), OnMapReadyCallback {
     private lateinit var locationDataList: MutableList<LocationData>
     private lateinit var visitDataList: MutableList<VisitData>
 
-    //overlay 관련
-    private val visitMarkers = mutableListOf<Marker>()
-    private val pathOverlays = mutableListOf<PathOverlay>()
 
     companion object {
         private const val LOCATION_PERMISSION_REQUEST_CODE = 1000
     }
 
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-        if(context is MainActivity)
-            mainDataStore = MainActivity().myDataStore
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        todayCourseViewModel = ViewModelProvider(this)[TodayCourseViewModel::class.java]
     }
 
     override fun onCreateView(
@@ -80,41 +69,26 @@ class TodayCourseFragment : Fragment(), OnMapReadyCallback {
     ): View {
         binding = FragmentTodayCourseBinding.inflate(inflater, container, false)
 
-        lifecycleScope.launch {
+        permissionCheck()
+        initObservers()
 
-            if(!isGuideFlag() ||
-                ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_DENIED ||
-                ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_DENIED ||
-                ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_DENIED){
-                showGuide()
-                saveGuideFlag(true)
-            }
-            else
-            {
-                initMap()
-            }
-        }
+        initButton()
 
         return binding.root
     }
 
-    var moveValue: Float = 0.0f
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-
+    private fun initButton() {
         val smallButton = binding.ButtonSmall
         val largeButton = binding.ButtonLarge
+        var moveValue = 0.0f
         var serviceFlag = isServiceRunning(LocationService::class.java)
-        var onlyFlag: Boolean = false
+        var onlyFlag = false
 
 
         val layoutListener = ViewTreeObserver.OnGlobalLayoutListener {
-            // 버튼의 크기 정보를 여기에서 가져옵니다.
-            if(onlyFlag == false) {
+            // 버튼의 크기 정보
+            if(!onlyFlag) {
                 moveValue = largeButton.width.toFloat() - smallButton.width.toFloat() - 50f
-                Log.d("TEST", "movevalue : $moveValue")
-                Log.d("TEST", "largeButton : ${largeButton.width.toFloat()}")
-                Log.d("TEST", "smallButton : ${smallButton.width.toFloat()}")
 
                 if (!serviceFlag) {
                     smallButton.animate().translationXBy(moveValue).duration = 0
@@ -172,20 +146,46 @@ class TodayCourseFragment : Fragment(), OnMapReadyCallback {
                 largeButton.isEnabled = true
             }, 1000)
         }
-
     }
 
-    private fun setVistiLoaction() {
-        locationDataList = LocationDatabase(requireContext()).getTodayLocationData()
-        visitDataList = VisitDatabase(requireContext()).getTodayVisitData()
+    private fun initObservers() {
 
-        addPathOverlayForLoacation(locationDataList)
-        for (visitdatalist in visitDataList) {
-            addVisitMarker(visitdatalist)
+        todayCourseViewModel.isPermissionGained.observe(viewLifecycleOwner) {
+            if(!it){
+                showGuide()
+            } else {
+                initMap()
+            }
         }
 
     }
 
+    private fun permissionCheck() {
+        if( ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_DENIED ||
+            ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_DENIED ||
+            ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_DENIED) {
+            todayCourseViewModel.updatePermissionState(false)
+        } else {
+            todayCourseViewModel.updatePermissionState(true)
+        }
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+    }
+
+    /*   오늘 기록된 경로를 불러오는 함수   */
+    private fun setVisitLocation() {
+        locationDataList = LocationDatabase(requireContext()).getTodayLocationData()
+        visitDataList = VisitDatabase(requireContext()).getTodayVisitData()
+
+        mapOverlayManager.addPathOverlayForLocation(locationDataList)
+        for (visitdatalist in visitDataList) {
+            mapMarkerManager.addVisitMarker(visitdatalist)
+        }
+
+    }
 
 
     private fun initMap(){
@@ -195,21 +195,6 @@ class TodayCourseFragment : Fragment(), OnMapReadyCallback {
             }
         locationSource = FusedLocationSource(this, LOCATION_PERMISSION_REQUEST_CODE)
         mapView.getMapAsync(this)
-    }
-
-    private object PreferencesKeys{
-        val guideFlag = booleanPreferencesKey("guide_flag")
-    }
-
-    private suspend fun saveGuideFlag(value: Boolean){
-        mainDataStore.edit{preferences ->
-            preferences[PreferencesKeys.guideFlag] = value
-        }
-    }
-
-    private suspend fun isGuideFlag(): Boolean{
-        val preferences = mainDataStore.data.first()
-        return preferences[PreferencesKeys.guideFlag] ?: false
     }
 
     private fun showGuide(){
@@ -224,7 +209,10 @@ class TodayCourseFragment : Fragment(), OnMapReadyCallback {
         naverMap.moveCamera(CameraUpdate.zoomTo(18.0))
         naverMap.uiSettings.isZoomControlEnabled = false
 
-        setVistiLoaction()
+        mapMarkerManager = MapMarkerManager(naverMap)
+        mapOverlayManager = MapOverlayManager(requireContext(), mapMarkerManager, naverMap)
+
+        setVisitLocation()
     }
 
 
@@ -236,50 +224,6 @@ class TodayCourseFragment : Fragment(), OnMapReadyCallback {
             }
         }
         return false
-    }
-
-
-
-
-
-    private fun addPathOverlayForLoacation(pathPoints: MutableList<LocationData>){
-        val pathLatLng = mutableListOf<LatLng>()
-
-        for(i in 0 until pathPoints.size) {
-            pathLatLng.add(LatLng(pathPoints[i].lat, pathPoints[i].lng))
-        }
-
-        addPathOverlay(pathLatLng)
-    }
-
-    private fun addPathOverlay(pathPoints: MutableList<LatLng>){
-        val pathOverlay = PathOverlay()
-
-        if(pathPoints.size > 1) {
-            pathOverlay.coords = pathPoints
-            pathOverlay.width = 20
-            pathOverlay.color = getColor(requireContext(), R.color.vecto_pathcolor)
-            pathOverlay.patternImage = OverlayImage.fromResource(R.drawable.pathoverlay_pattern)
-            pathOverlay.patternInterval = 50
-            pathOverlay.map = naverMap
-            pathOverlays.add(pathOverlay)
-        }
-    }
-
-    private fun addVisitMarker(visitData: VisitData){
-        val visitMarker = Marker()
-        visitMarker.icon = OverlayImage.fromResource(R.drawable.marker_image)
-
-        if(visitData.name.isNotEmpty()) {
-            visitMarker.position = LatLng(visitData.lat_set, visitData.lng_set)
-        }
-        else {
-            visitMarker.position = LatLng(visitData.lat, visitData.lng)
-        }
-
-        visitMarker.map = naverMap
-
-        visitMarkers.add(visitMarker)
     }
 
 }

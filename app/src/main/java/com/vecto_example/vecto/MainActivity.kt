@@ -1,33 +1,23 @@
 package com.vecto_example.vecto
 
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.os.bundleOf
-import androidx.datastore.preferences.preferencesDataStore
 import androidx.navigation.findNavController
 import androidx.navigation.ui.setupWithNavController
-import com.vecto_example.vecto.MainActivity.DataStoreUtils.myDataStore
 import com.vecto_example.vecto.databinding.ActivityMainBinding
 import com.vecto_example.vecto.ui.comment.CommentActivity
 
 
 class MainActivity : AppCompatActivity() {
     lateinit var binding: ActivityMainBinding
-    object DataStoreUtils {
-        private val Context.dataStore by preferencesDataStore("settings")
-        val Context.myDataStore get() = this.dataStore
-
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
-        val dataStore = applicationContext.myDataStore // Utilizing the DataStore instance here.
 
         val navView = binding.navView
         val navController = findNavController(R.id.nav_host_fragment_activity_main)

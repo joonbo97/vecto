@@ -19,7 +19,7 @@
 
     <fragment
         android:id="@+id/TodayCourseFragment"
-        android:name="com.vecto_example.vecto.ui_bottom.TodayCourseFragment"
+        android:name="com.vecto_example.vecto.ui.todaycourse.TodayCourseFragment"
         android:label="fragment_write"
         tools:layout="@layout/fragment_today_course"/>
 
