@@ -145,8 +145,6 @@ class CalendarDialog (private val context: Context) {//deletepostdialog copy
                 text = i.toString()
                 visibility = View.VISIBLE
 
-                Log.d("TEST", "i: $i, ${firstDayOfWeek + i - 2}")
-
                 if(i in datesWithData){
 
                     this.apply{

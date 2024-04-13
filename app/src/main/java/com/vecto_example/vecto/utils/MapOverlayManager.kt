@@ -1,12 +1,14 @@
 package com.vecto_example.vecto.utils
 
 import android.content.Context
+import android.graphics.Color
 import android.graphics.PointF
 import androidx.core.content.ContextCompat
 import com.naver.maps.geometry.LatLng
 import com.naver.maps.geometry.LatLngBounds
 import com.naver.maps.map.CameraUpdate
 import com.naver.maps.map.NaverMap
+import com.naver.maps.map.overlay.CircleOverlay
 import com.naver.maps.map.overlay.OverlayImage
 import com.naver.maps.map.overlay.PathOverlay
 import com.vecto_example.vecto.R
@@ -16,12 +18,16 @@ import com.vecto_example.vecto.retrofit.VectoService
 
 class MapOverlayManager(private val context: Context, private val mapMarkerManager: MapMarkerManager, private val naverMap: NaverMap) {
     private val pathOverlays = mutableListOf<PathOverlay>()
+    private val circleOverlays = mutableListOf<CircleOverlay>()
 
 
     /*   Overlay, Maker 삭제 함수   */
     fun deleteOverlay() {
-        pathOverlays.forEach{ it.map = null}
+        pathOverlays.forEach{ it.map = null }
         pathOverlays.clear()
+
+        circleOverlays.forEach{ it.map = null }
+        circleOverlays.clear()
 
         mapMarkerManager.deleteMarker()
     }
@@ -72,7 +78,29 @@ class MapOverlayManager(private val context: Context, private val mapMarkerManag
         }
     }
 
+    fun addCircleOverlay(visitData: VisitData){
+        val circleOverlay = CircleOverlay()
+        circleOverlay.center = LatLng(visitData.lat, visitData.lng)
+        circleOverlay.radius = 50.0 // 반지름을 50m로 설정
 
+        if(visitData.name.isEmpty()) {
+            circleOverlay.color = Color.argb(20, 255, 0, 0) // 원의 색상 설정
+        }
+        else {
+            circleOverlay.color = Color.argb(20, 0, 255, 0) // 원의 색상 설정
+        }
+
+        circleOverlay.map = naverMap
+
+        circleOverlays.add(circleOverlay)
+    }
+
+    fun changePathColor() {
+        for(i in 0 until pathOverlays.size) {
+            pathOverlays[i].color = Color.argb(255, 186, 198, 213)
+            pathOverlays[i].outlineColor = Color.argb(255, 186, 198, 213)
+        }
+    }
 
 
 
@@ -91,9 +119,33 @@ class MapOverlayManager(private val context: Context, private val mapMarkerManag
         }
     }
 
+    fun moveCameraForPathOffset(pathPoints: MutableList<LocationData>, offset: Int){
+        if(pathPoints.isNotEmpty()) {
+            val minLat = pathPoints.minOf { it.lat }
+            val maxLat = pathPoints.maxOf { it.lat }
+            val minLng = pathPoints.minOf { it.lng }
+            val maxLng = pathPoints.maxOf { it.lng }
+
+            val bounds = LatLngBounds(LatLng(minLat , minLng), LatLng(maxLat, maxLng))
+            naverMap.moveCamera(CameraUpdate.fitBounds(bounds, 350))
+            val Offset = PointF(0.0f, (-offset).toFloat())
+            naverMap.moveCamera(CameraUpdate.scrollBy(Offset))
+
+        }
+    }
+
     fun moveCameraForVisit(visit: VisitData){
         val targetLatLng = LatLng(visit.lat_set, visit.lng_set)
         val Offset = PointF(0.0f, (-50).toFloat())
+
+        naverMap.moveCamera(CameraUpdate.scrollTo(targetLatLng))
+        naverMap.moveCamera(CameraUpdate.zoomTo(18.0))
+        naverMap.moveCamera(CameraUpdate.scrollBy(Offset))
+    }
+
+    fun moveCameraForVisitOffset(visit: VisitData, offset: Int){
+        val targetLatLng = LatLng(visit.lat_set, visit.lng_set)
+        val Offset = PointF(0.0f, (-offset).toFloat())
 
         naverMap.moveCamera(CameraUpdate.scrollTo(targetLatLng))
         naverMap.moveCamera(CameraUpdate.zoomTo(18.0))

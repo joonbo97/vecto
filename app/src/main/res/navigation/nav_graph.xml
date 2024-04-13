@@ -25,7 +25,7 @@
 
     <fragment
         android:id="@+id/EditCourseFragment"
-        android:name="com.vecto_example.vecto.ui_bottom.EditCourseFragment"
+        android:name="com.vecto_example.vecto.ui.editcourse.EditCourseFragment"
         android:label="fragment_edit_course"
         tools:layout="@layout/fragment_edit_course"/>
 

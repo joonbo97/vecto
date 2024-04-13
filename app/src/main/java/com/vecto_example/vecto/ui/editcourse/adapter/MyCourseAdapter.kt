@@ -1,4 +1,4 @@
-package com.vecto_example.vecto.ui_bottom
+package com.vecto_example.vecto.ui.editcourse.adapter
 
 import android.content.Context
 import android.view.LayoutInflater

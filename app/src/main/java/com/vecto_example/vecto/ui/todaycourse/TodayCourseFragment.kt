@@ -208,7 +208,7 @@ class TodayCourseFragment : Fragment(), OnMapReadyCallback {
         naverMap.moveCamera(CameraUpdate.zoomTo(18.0))
         naverMap.uiSettings.isZoomControlEnabled = false
 
-        mapMarkerManager = MapMarkerManager(naverMap)
+        mapMarkerManager = MapMarkerManager(requireContext(), naverMap)
         mapOverlayManager = MapOverlayManager(requireContext(), mapMarkerManager, naverMap)
 
         setVisitLocation()

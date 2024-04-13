@@ -5,6 +5,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.vecto_example.vecto.data.repository.CommentRepository
 import com.vecto_example.vecto.retrofit.VectoService
 import kotlinx.coroutines.launch
 

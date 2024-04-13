@@ -1,4 +1,4 @@
-package com.vecto_example.vecto.ui.comment
+package com.vecto_example.vecto.data.repository
 
 import android.util.Log
 import com.google.gson.Gson

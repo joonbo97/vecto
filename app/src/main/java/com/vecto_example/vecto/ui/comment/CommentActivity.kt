@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.vecto_example.vecto.ui.comment.adapter.MyCommentAdapter
 import com.vecto_example.vecto.R
 import com.vecto_example.vecto.data.Auth
+import com.vecto_example.vecto.data.repository.CommentRepository
 import com.vecto_example.vecto.databinding.ActivityCommentBinding
 import com.vecto_example.vecto.retrofit.VectoService
 import com.vecto_example.vecto.utils.RequestLoginUtils

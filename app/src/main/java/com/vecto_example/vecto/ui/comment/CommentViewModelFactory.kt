@@ -2,6 +2,7 @@ package com.vecto_example.vecto.ui.comment
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import com.vecto_example.vecto.data.repository.CommentRepository
 
 class CommentViewModelFactory(private val repository: CommentRepository): ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
