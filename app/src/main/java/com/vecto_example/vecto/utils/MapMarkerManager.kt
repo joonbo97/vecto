@@ -10,6 +10,26 @@ import com.vecto_example.vecto.data.model.VisitData
 class MapMarkerManager(private val naverMap: NaverMap) {
     private val visitMarkers = mutableListOf<Marker>()
 
+    fun addVisitMarkerBasic(visitData: VisitData){
+        val visitMarker = Marker()
+
+        if(visitData.name.isNotEmpty())
+            visitMarker.icon = OverlayImage.fromResource(R.drawable.marker_image)
+        else
+            visitMarker.icon = OverlayImage.fromResource(R.drawable.marker_image_off)
+
+        if(visitData.name.isNotEmpty()) {
+            visitMarker.position = LatLng(visitData.lat_set, visitData.lng_set)
+        }
+        else {
+            visitMarker.position = LatLng(visitData.lat, visitData.lng)
+        }
+
+        visitMarker.map = naverMap
+
+        visitMarkers.add(visitMarker)
+    }
+
     fun addVisitMarker(visitData: VisitData){
         val visitMarker = Marker()
 

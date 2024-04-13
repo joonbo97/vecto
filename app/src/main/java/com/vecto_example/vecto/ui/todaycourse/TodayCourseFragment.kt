@@ -70,11 +70,16 @@ class TodayCourseFragment : Fragment(), OnMapReadyCallback {
         binding = FragmentTodayCourseBinding.inflate(inflater, container, false)
 
         permissionCheck()
+
+        return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
         initObservers()
 
         initButton()
-
-        return binding.root
     }
 
     private fun initButton() {
@@ -141,8 +146,7 @@ class TodayCourseFragment : Fragment(), OnMapReadyCallback {
             smallButton.isEnabled = false
             largeButton.isEnabled = false
 
-            Handler(Looper.getMainLooper()).postDelayed({
-                smallButton.isEnabled = true
+            Handler(Looper.getMainLooper()).postDelayed({ smallButton.isEnabled = true
                 largeButton.isEnabled = true
             }, 1000)
         }
@@ -170,11 +174,6 @@ class TodayCourseFragment : Fragment(), OnMapReadyCallback {
         }
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-
-    }
-
     /*   오늘 기록된 경로를 불러오는 함수   */
     private fun setVisitLocation() {
         locationDataList = LocationDatabase(requireContext()).getTodayLocationData()
@@ -182,7 +181,7 @@ class TodayCourseFragment : Fragment(), OnMapReadyCallback {
 
         mapOverlayManager.addPathOverlayForLocation(locationDataList)
         for (visitdatalist in visitDataList) {
-            mapMarkerManager.addVisitMarker(visitdatalist)
+            mapMarkerManager.addVisitMarkerBasic(visitdatalist)
         }
 
     }
