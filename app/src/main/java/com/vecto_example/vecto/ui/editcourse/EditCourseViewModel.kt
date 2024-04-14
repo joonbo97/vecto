@@ -55,6 +55,8 @@ class EditCourseViewModel(private val repository: TMapRepository) : ViewModel() 
 
     lateinit var selectedVisitData: VisitData
 
+    var responsePathData = mutableListOf<LatLng>()
+
     fun recommendRoute(locationDataList: MutableList<LocationData>) {
         startLoading()
 
@@ -180,6 +182,10 @@ class EditCourseViewModel(private val repository: TMapRepository) : ViewModel() 
 
     fun overlayDone(){
         endLoading()
+    }
+
+    fun overlayStart(){
+        startLoading()
     }
 
     private fun setBlock(){
