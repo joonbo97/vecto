@@ -1,4 +1,4 @@
-package com.vecto_example.vecto.ui_bottom
+package com.vecto_example.vecto.ui.write.adapter
 
 import android.content.Context
 import android.view.LayoutInflater
@@ -31,7 +31,7 @@ class MyWriteCourseAdapter(private val context: Context): RecyclerView.Adapter<M
 
 
 
-    override fun onBindViewHolder(holder: MyWriteCourseAdapter.ViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         if(myVisit.size == 1)
             holder.itemImage.setImageResource(R.drawable.write_course_only)
         else
@@ -104,7 +104,7 @@ class MyWriteCourseAdapter(private val context: Context): RecyclerView.Adapter<M
 
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyWriteCourseAdapter.ViewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(context).inflate(R.layout.writecourse_item, parent, false)
         return ViewHolder(view)
     }

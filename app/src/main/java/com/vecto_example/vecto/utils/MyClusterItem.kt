@@ -1,4 +1,4 @@
-package com.vecto_example.vecto
+package com.vecto_example.vecto.utils
 
 import com.naver.maps.geometry.LatLng
 import ted.gun0912.clustering.clustering.TedClusterItem

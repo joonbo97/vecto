@@ -15,7 +15,6 @@ import com.naver.maps.geometry.LatLng
 import com.naver.maps.map.NaverMap
 import com.naver.maps.map.overlay.Marker
 import com.naver.maps.map.overlay.OverlayImage
-import com.vecto_example.vecto.MyClusterItem
 import com.vecto_example.vecto.R
 import com.vecto_example.vecto.data.model.VisitData
 import com.vecto_example.vecto.retrofit.TMapAPIService

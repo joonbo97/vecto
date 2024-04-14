@@ -1,4 +1,4 @@
-package com.vecto_example.vecto.ui_bottom
+package com.vecto_example.vecto.ui.write.adapter
 
 import android.content.Context
 import android.net.Uri

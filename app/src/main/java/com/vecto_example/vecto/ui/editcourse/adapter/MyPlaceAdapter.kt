@@ -1,4 +1,4 @@
-package com.vecto_example.vecto.ui_bottom
+package com.vecto_example.vecto.ui.editcourse.adapter
 
 import android.content.Context
 import android.view.LayoutInflater
@@ -16,7 +16,7 @@ class MyPlaceAdapter(private val context: Context, private val onItemClick: (Str
         val nameText: TextView = view.findViewById(R.id.PlaceNameText)
     }
 
-    override fun onBindViewHolder(holder: MyPlaceAdapter.ViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         holder.nameText.text = nameList[position]
 
         holder.nameText.setOnClickListener{
@@ -26,7 +26,7 @@ class MyPlaceAdapter(private val context: Context, private val onItemClick: (Str
 
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyPlaceAdapter.ViewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(context).inflate(R.layout.place_item, parent, false)
         return ViewHolder(view)
     }

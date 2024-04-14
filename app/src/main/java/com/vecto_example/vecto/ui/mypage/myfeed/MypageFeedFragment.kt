@@ -14,7 +14,7 @@ import com.vecto_example.vecto.data.Auth
 import com.vecto_example.vecto.data.repository.FeedRepository
 import com.vecto_example.vecto.databinding.FragmentMypagePostBinding
 import com.vecto_example.vecto.retrofit.VectoService
-import com.vecto_example.vecto.ui_bottom.MypostAdapter
+import com.vecto_example.vecto.ui.mypage.myfeed.adapter.MypostAdapter
 import com.vecto_example.vecto.utils.LoadImageUtils
 
 class MypageFeedFragment : Fragment() {

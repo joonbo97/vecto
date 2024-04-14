@@ -1,4 +1,4 @@
-package com.vecto_example.vecto
+package com.vecto_example.vecto.service
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -10,6 +10,8 @@ import androidx.core.app.NotificationCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
+import com.vecto_example.vecto.MainActivity
+import com.vecto_example.vecto.R
 import java.time.LocalDateTime
 
 class MyFirebaseMessagingService:  FirebaseMessagingService(){

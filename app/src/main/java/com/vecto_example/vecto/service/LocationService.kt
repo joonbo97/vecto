@@ -1,4 +1,4 @@
-package com.vecto_example.vecto
+package com.vecto_example.vecto.service
 
 
 import android.Manifest
@@ -18,6 +18,7 @@ import com.vecto_example.vecto.data.model.VisitData
 import com.vecto_example.vecto.data.model.VisitDatabase
 import com.google.android.gms.location.*
 import com.naver.maps.geometry.LatLng
+import com.vecto_example.vecto.ui.notification.MapNotification
 import java.time.Duration
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter

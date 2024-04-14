@@ -7,7 +7,7 @@ import android.view.ViewGroup
 import android.widget.PopupWindow
 import androidx.recyclerview.widget.RecyclerView
 import com.vecto_example.vecto.R
-import com.vecto_example.vecto.ui_bottom.MyPlaceAdapter
+import com.vecto_example.vecto.ui.editcourse.adapter.MyPlaceAdapter
 
 class PlacePopupWindow (
     private val context: Context

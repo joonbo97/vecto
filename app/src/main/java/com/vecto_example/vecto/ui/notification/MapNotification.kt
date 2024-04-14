@@ -1,4 +1,4 @@
-package com.vecto_example.vecto
+package com.vecto_example.vecto.ui.notification
 
 import android.app.Notification
 import android.app.NotificationChannel
@@ -7,8 +7,10 @@ import android.app.PendingIntent
 import android.app.PendingIntent.FLAG_UPDATE_CURRENT
 import android.content.Context
 import android.content.Intent
-import android.util.Log
 import androidx.core.app.NotificationCompat
+import com.vecto_example.vecto.service.Actions
+import com.vecto_example.vecto.MainActivity
+import com.vecto_example.vecto.R
 
 object MapNotification {
     const val CHANNEL_ID = "foreground_service_channel"

@@ -53,12 +53,12 @@
             android:exported="false" />
 
         <service
-            android:name=".LocationService"
+            android:name=".service.LocationService"
             android:enabled="true"
             android:exported="false"
             android:foregroundServiceType="location" />
         <service
-            android:name=".MyFirebaseMessagingService"
+            android:name=".service.MyFirebaseMessagingService"
             android:exported="false">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />

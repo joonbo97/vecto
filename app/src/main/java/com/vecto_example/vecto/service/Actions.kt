@@ -1,4 +1,4 @@
-package com.vecto_example.vecto
+package com.vecto_example.vecto.service
 
 object Actions {
     /*  foreground service 를 위한 prefix  */

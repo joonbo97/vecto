@@ -1,4 +1,4 @@
-package com.vecto_example.vecto.ui_bottom
+package com.vecto_example.vecto.ui.write
 
 import android.annotation.SuppressLint
 import android.app.Activity
@@ -49,6 +49,8 @@ import com.naver.maps.map.overlay.PathOverlay
 import com.vecto_example.vecto.R
 import com.vecto_example.vecto.databinding.FragmentWriteBinding
 import com.vecto_example.vecto.dialog.CalendarDialog
+import com.vecto_example.vecto.ui.write.adapter.MyimageAdapter
+import com.vecto_example.vecto.ui.decoration.SpacesItemDecoration
 import com.yalantis.ucrop.UCrop
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody

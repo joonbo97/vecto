@@ -15,8 +15,8 @@ import android.widget.Toast
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.vecto_example.vecto.LocationService
-import com.vecto_example.vecto.VerticalOverlapItemDecoration
+import com.vecto_example.vecto.service.LocationService
+import com.vecto_example.vecto.ui.decoration.VerticalOverlapItemDecoration
 import com.vecto_example.vecto.data.model.LocationData
 import com.vecto_example.vecto.data.model.LocationDatabase
 import com.vecto_example.vecto.data.model.PathData
@@ -30,7 +30,7 @@ import com.naver.maps.map.CameraUpdate
 import com.naver.maps.map.MapFragment
 import com.naver.maps.map.NaverMap
 import com.naver.maps.map.OnMapReadyCallback
-import com.vecto_example.vecto.MyClusterItem
+import com.vecto_example.vecto.utils.MyClusterItem
 import com.vecto_example.vecto.R
 import com.vecto_example.vecto.data.repository.TMapRepository
 import com.vecto_example.vecto.databinding.FragmentEditCourseBinding

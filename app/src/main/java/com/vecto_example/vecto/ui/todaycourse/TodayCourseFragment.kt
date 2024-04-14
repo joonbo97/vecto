@@ -15,8 +15,8 @@ import android.view.ViewGroup
 import android.view.ViewTreeObserver
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
-import com.vecto_example.vecto.Actions
-import com.vecto_example.vecto.LocationService
+import com.vecto_example.vecto.service.Actions
+import com.vecto_example.vecto.service.LocationService
 import com.vecto_example.vecto.data.model.LocationData
 import com.vecto_example.vecto.data.model.LocationDatabase
 import com.vecto_example.vecto.data.model.VisitData

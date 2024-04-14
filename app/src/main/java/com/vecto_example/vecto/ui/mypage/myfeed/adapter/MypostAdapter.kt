@@ -1,4 +1,4 @@
-package com.vecto_example.vecto.ui_bottom
+package com.vecto_example.vecto.ui.mypage.myfeed.adapter
 
 import android.content.Context
 import android.content.Intent
@@ -271,7 +271,7 @@ class MypostAdapter(private val context: Context): RecyclerView.Adapter<MypostAd
     }
 
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MypostAdapter.ViewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(context).inflate(R.layout.mypost_item, parent, false)
         return ViewHolder(view)
     }
@@ -280,7 +280,7 @@ class MypostAdapter(private val context: Context): RecyclerView.Adapter<MypostAd
         return feedInfo.size
     }
 
-    override fun onBindViewHolder(holder: MypostAdapter.ViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val feed = feedInfo[position]
         holder.bind(feed)
     }

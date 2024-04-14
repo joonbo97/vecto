@@ -44,7 +44,7 @@ import com.vecto_example.vecto.dialog.WriteNameEmptyDialog
 import com.vecto_example.vecto.retrofit.NaverSearchApiService
 import com.vecto_example.vecto.retrofit.VectoService
 import com.vecto_example.vecto.ui.login.LoginActivity
-import com.vecto_example.vecto.ui_bottom.SpacesItemDecoration
+import com.vecto_example.vecto.ui.decoration.SpacesItemDecoration
 import com.yalantis.ucrop.UCrop
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
