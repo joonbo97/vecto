@@ -147,17 +147,6 @@ class EditCourseViewModel(private val repository: TMapRepository) : ViewModel() 
         return Duration.between(date1, date2).toMinutes().toInt()
     }
 
-    fun getPreviousDate(selectedDate: String): String {
-        val selectedDateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-        val selectedDateObj = selectedDateFormat.parse(selectedDate)
-        val calendar = Calendar.getInstance()
-        calendar.time = selectedDateObj!!
-        calendar.add(Calendar.DAY_OF_MONTH, -1)
-
-
-        return selectedDateFormat.format(calendar.time)
-    }
-
     fun setDate(date: String?) {
         _date.value = date
 

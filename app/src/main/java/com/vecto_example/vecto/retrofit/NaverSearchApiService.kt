@@ -2,6 +2,7 @@ package com.vecto_example.vecto.retrofit
 
 import com.vecto_example.vecto.BuildConfig
 import retrofit2.Call
+import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
@@ -11,11 +12,11 @@ import retrofit2.http.Query
 interface NaverSearchApiService {
     @Headers("X-NCP-APIGW-API-KEY-ID: ${BuildConfig.NAVER_KEY1}", "X-NCP-APIGW-API-KEY: ${BuildConfig.NAVER_KEY2}")
     @GET("gc")
-    fun reverseGeocode(
+    suspend fun reverseGeocode(
         @Query("coords") coords: String,
         @Query("orders") orders: String, //legalcode,addr,admcode,roadaddr
         @Query("output") output: String,  //output=json
-    ): Call<ReverseGeocodeResponse>
+    ): Response<ReverseGeocodeResponse>
 
     companion object {
         fun create(): NaverSearchApiService {
@@ -30,7 +31,7 @@ interface NaverSearchApiService {
 
     data class ReverseGeocodeResponse(
         val status: Status,
-        val results: List<Result>
+        val results: List<NaverResult>
     )
 
     data class Status(
@@ -39,7 +40,7 @@ interface NaverSearchApiService {
         val message: String
     )
 
-    data class Result(
+    data class NaverResult(
         val name: String,
         // Assuming additional fields based on the example JSON you provided:
         val code: Code?,

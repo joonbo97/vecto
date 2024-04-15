@@ -47,17 +47,17 @@ interface VectoService {
     ): Response<VectoResponse<UserInfoResponse>>
 
     @POST("feed")
-    fun addPost(
+    suspend fun addFeed(
         @Header("Authorization") authorization: String,
         @Body request: PostDataForUpload
-    ): Call<VectoResponse<Int>>
+    ): Response<VectoResponse<Int>>
 
     @Multipart
     @POST("upload/feed")
-    fun uploadImages(
+    suspend fun uploadImages(
         @Header("Authorization") authorization: String,
         @Part images: List<MultipartBody.Part>
-    ): Call<VectoResponse<ImageResponse>>
+    ): Response<VectoResponse<ImageResponse>>
 
     @POST("mail")
     fun sendMail(
@@ -102,10 +102,10 @@ interface VectoService {
     ):Call<VectoResponse<Unit>>
 
     @PATCH("feed")
-    fun updatePost(
+    suspend fun updateFeed(
         @Header("Authorization") authorization: String,
         @Body updatePostData: UpdatePostRequest
-    ): Call<VectoResponse<String>>
+    ): Response<VectoResponse<String>>
 
     @POST("complaint")
     fun postComplaint(

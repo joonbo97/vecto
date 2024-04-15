@@ -1,8 +1,7 @@
-package com.vecto_example.vecto
+package com.vecto_example.vecto.ui.write.adapter
 
 import android.content.Context
 import android.net.Uri
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -10,11 +9,11 @@ import android.view.animation.Animation
 import android.view.animation.AnimationUtils
 import android.widget.ImageView
 import androidx.recyclerview.widget.RecyclerView
-import com.bumptech.glide.Glide
+import com.vecto_example.vecto.R
 
-class MyeditimageAdapter (private val context: Context): RecyclerView.Adapter<MyeditimageAdapter.ViewHolder>(){
+
+class MyImageAdapter (private val context: Context): RecyclerView.Adapter<MyImageAdapter.ViewHolder>(){
     val imageUri = mutableListOf<Uri>()
-    val imageUrl = mutableListOf<String>()
     lateinit var recyclerView: RecyclerView
 
     inner class ViewHolder(view: View): RecyclerView.ViewHolder(view){
@@ -34,26 +33,13 @@ class MyeditimageAdapter (private val context: Context): RecyclerView.Adapter<My
     }
 
     override fun getItemCount(): Int {
-        return imageUri.size + imageUrl.size
+        return imageUri.size
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+        val uri = imageUri[position]
         holder.imageView.clipToOutline = true
-
-        if(position < imageUrl.size)//서버에서 전송받은 URL 세팅
-        {
-            Glide.with(context)
-                .load(imageUrl[position])
-                .placeholder(R.drawable.img_error_01) // 로딩 중 표시될 이미지
-                .error(R.drawable.img_error_01) // 에러 발생 시 표시될 이미지
-                .into(holder.imageView)
-        }
-        else
-        {
-            holder.imageView.setImageURI(imageUri[position - imageUrl.size])
-        }
-
-
+        holder.imageView.setImageURI(uri)
 
         holder.deleteButton.setOnClickListener {
             removeItem(position)
@@ -61,7 +47,7 @@ class MyeditimageAdapter (private val context: Context): RecyclerView.Adapter<My
     }
 
     private fun removeItem(position: Int) {
-        if (position >= 0 && position < imageUri.size + imageUrl.size) {
+        if (position >= 0 && position < imageUri.size) {
             val itemView = recyclerView.findViewHolderForAdapterPosition(position)?.itemView
             val scaleDown = AnimationUtils.loadAnimation(context, R.anim.scale_down)
 
@@ -72,15 +58,7 @@ class MyeditimageAdapter (private val context: Context): RecyclerView.Adapter<My
 
                 override fun onAnimationEnd(animation: Animation?) {
                     // 애니메이션이 완료되면 아이템 제거
-                    if(position < imageUrl.size)//서버에서 전송받은 URL 세팅
-                    {
-                        imageUrl.removeAt(position)
-                    }
-                    else
-                    {
-                        imageUri.removeAt(position - imageUrl.size)
-                    }
-
+                    imageUri.removeAt(position)
                     notifyDataSetChanged()
                     onItemRemovedListener?.onItemRemoved()
                 }

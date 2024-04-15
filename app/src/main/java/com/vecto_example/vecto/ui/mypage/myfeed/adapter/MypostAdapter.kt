@@ -23,7 +23,7 @@ import com.vecto_example.vecto.popupwindow.EditDeletePopupWindow
 import com.vecto_example.vecto.dialog.LoginRequestDialog
 import com.vecto_example.vecto.retrofit.VectoService
 import com.google.gson.Gson
-import com.vecto_example.vecto.EditPostActivity
+import com.vecto_example.vecto.ui.editfeed.EditPostActivity
 import com.vecto_example.vecto.R
 import retrofit2.Call
 import retrofit2.Callback

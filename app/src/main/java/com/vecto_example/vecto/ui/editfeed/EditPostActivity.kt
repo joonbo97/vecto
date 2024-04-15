@@ -1,48 +1,49 @@
-package com.vecto_example.vecto.ui.write
+package com.vecto_example.vecto.ui.editfeed
 
 import android.app.Activity
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
+import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.provider.MediaStore
 import android.util.Log
-import androidx.fragment.app.Fragment
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
 import androidx.core.content.ContextCompat
-import androidx.core.os.bundleOf
-import androidx.fragment.app.viewModels
-import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.vecto_example.vecto.ui.login.LoginActivity
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
+import com.naver.maps.map.CameraUpdate
+import com.naver.maps.map.MapFragment
+import com.naver.maps.map.NaverMap
+import com.naver.maps.map.OnMapReadyCallback
 import com.vecto_example.vecto.MainActivity
+import com.vecto_example.vecto.ui.editfeed.adapter.MyEditImageAdapter
+import com.vecto_example.vecto.R
 import com.vecto_example.vecto.data.Auth
 import com.vecto_example.vecto.data.model.LocationData
 import com.vecto_example.vecto.data.model.LocationDatabase
 import com.vecto_example.vecto.data.model.VisitData
 import com.vecto_example.vecto.data.model.VisitDatabase
+import com.vecto_example.vecto.databinding.ActivityEditPostBinding
+import com.vecto_example.vecto.dialog.CalendarDialog
 import com.vecto_example.vecto.dialog.LoginRequestDialog
 import com.vecto_example.vecto.dialog.WriteBottomDialog
 import com.vecto_example.vecto.dialog.WriteNameEmptyDialog
 import com.vecto_example.vecto.retrofit.NaverSearchApiService
 import com.vecto_example.vecto.retrofit.VectoService
-import com.naver.maps.map.CameraUpdate
-import com.naver.maps.map.MapFragment
-import com.naver.maps.map.NaverMap
-import com.naver.maps.map.OnMapReadyCallback
-import com.vecto_example.vecto.R
-import com.vecto_example.vecto.databinding.FragmentWriteBinding
-import com.vecto_example.vecto.dialog.CalendarDialog
-import com.vecto_example.vecto.ui.write.adapter.MyImageAdapter
+import com.vecto_example.vecto.ui.login.LoginActivity
 import com.vecto_example.vecto.ui.decoration.SpacesItemDecoration
+import com.vecto_example.vecto.ui.write.WriteRepository
+import com.vecto_example.vecto.ui.write.WriteViewModel
+import com.vecto_example.vecto.ui.write.WriteViewModelFactory
 import com.vecto_example.vecto.utils.DateTimeUtils
 import com.vecto_example.vecto.utils.MapMarkerManager
 import com.vecto_example.vecto.utils.MapOverlayManager
@@ -51,18 +52,21 @@ import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.time.LocalDateTime
 
-class WriteFragment : Fragment(), OnMapReadyCallback, CalendarDialog.OnDateSelectedListener {
-    private lateinit var binding: FragmentWriteBinding
+class EditPostActivity : AppCompatActivity(), OnMapReadyCallback, CalendarDialog.OnDateSelectedListener {
+    lateinit var binding: ActivityEditPostBinding
 
     private val writeViewModel: WriteViewModel by viewModels {
         WriteViewModelFactory(WriteRepository(VectoService.create(), NaverSearchApiService.create()))
     }
 
-    private lateinit var myImageAdapter: MyImageAdapter
+    private lateinit var myEditImageAdapter: MyEditImageAdapter
 
     private lateinit var mapView: MapFragment
     private lateinit var naverMap: NaverMap
@@ -80,24 +84,44 @@ class WriteFragment : Fragment(), OnMapReadyCallback, CalendarDialog.OnDateSelec
 
     private var mapSnapshot = mutableListOf<Bitmap>()
     private var imageUri = mutableListOf<Uri>()
+    private var imageUrl = mutableListOf<String>()
 
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
-        binding = FragmentWriteBinding.inflate(inflater, container, false)
+    private var title = ""
+    private var content = ""
 
-        initRecyclerView()
+    private var feedId = -1
+
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        binding = ActivityEditPostBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
+        val typeofFeedInfo = object : TypeToken<VectoService.FeedInfoResponse>() {}.type
+        val feedInfo = Gson().fromJson<VectoService.FeedInfoResponse>(intent.getStringExtra("feedInfoJson"), typeofFeedInfo)
+        locationDataList = feedInfo.location.toMutableList()
+        visitDataList = feedInfo.visit.toMutableList()
+        imageUrl = feedInfo.image.toMutableList()
+        title = feedInfo.title
+        content = feedInfo.content
+
+        writeViewModel.reverseGeocode(visitDataList)
+
+        feedId = intent.getIntExtra("feedId", -1)
+
+        initUI()
+
+        initMap()
+        initRecyclerView(feedInfo)
         initListeners()
         initObservers()
-
-        return binding.root
     }
 
     private fun initObservers() {
         //로딩
-        writeViewModel.isLoading.observe(viewLifecycleOwner){
+        writeViewModel.isLoading.observe(this){
             if(it){
                 binding.progressBar.visibility = View.VISIBLE
                 binding.constraintProgress.visibility = View.VISIBLE
@@ -107,25 +131,27 @@ class WriteFragment : Fragment(), OnMapReadyCallback, CalendarDialog.OnDateSelec
             }
         }
 
-        writeViewModel.mapImageDone.observe(viewLifecycleOwner){
+        writeViewModel.mapImageDone.observe(this){
+            val allImageUrl: List<String> = imageUrl + (writeViewModel.imageUrls.value ?: emptyList())
+
             if(it && imageUri.isEmpty()){   //업로드 할 Normal Image 가 없는 경우
                 writeViewModel.addFeed(
                     VectoService.PostDataForUpload(
                         binding.EditTitle.text.toString(),
                         binding.EditContent.text.toString(),
                         LocalDateTime.now().withNano(0).toString(),
-                        null,
+                        allImageUrl.toMutableList(),
                         locationDataList,
                         writeViewModel.visitDataForWriteList,
                         writeViewModel.mapImageUrls.value?.toMutableList()
-                ))
+                    ))
             } else if(it && writeViewModel.normalImageDone.value == true) { //업로드 할 Normal Image 가 이미 완료된 경우
                 writeViewModel.addFeed(
                     VectoService.PostDataForUpload(
                         binding.EditTitle.text.toString(),
                         binding.EditContent.text.toString(),
                         LocalDateTime.now().withNano(0).toString(),
-                        writeViewModel.imageUrls.value?.toMutableList(),
+                        allImageUrl.toMutableList(),
                         locationDataList,
                         writeViewModel.visitDataForWriteList,
                         writeViewModel.mapImageUrls.value?.toMutableList()
@@ -133,14 +159,16 @@ class WriteFragment : Fragment(), OnMapReadyCallback, CalendarDialog.OnDateSelec
             }
         }
 
-        writeViewModel.normalImageDone.observe(viewLifecycleOwner){
+        writeViewModel.normalImageDone.observe(this){
+            val allImageUrl: List<String> = imageUrl + (writeViewModel.imageUrls.value ?: emptyList())
+
             if(it && (writeViewModel.mapImageDone.value == true)){  //Normal Image 와 지도 이미지 모두 완료된 경우
                 writeViewModel.addFeed(
                     VectoService.PostDataForUpload(
                         binding.EditTitle.text.toString(),
                         binding.EditContent.text.toString(),
                         LocalDateTime.now().withNano(0).toString(),
-                        writeViewModel.imageUrls.value?.toMutableList(),
+                        allImageUrl.toMutableList(),
                         locationDataList,
                         writeViewModel.visitDataForWriteList,
                         writeViewModel.mapImageUrls.value?.toMutableList()
@@ -149,59 +177,77 @@ class WriteFragment : Fragment(), OnMapReadyCallback, CalendarDialog.OnDateSelec
 
         }
 
-        writeViewModel.addFeedResult.observe(viewLifecycleOwner){
+        writeViewModel.addFeedResult.observe(this){
             if(it == "SUCCESS"){
-                Toast.makeText(requireContext(), "게시글 작성이 완료되었습니다.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "게시글 작성이 완료되었습니다.", Toast.LENGTH_SHORT).show()
 
-                (activity as? MainActivity)?.binding?.navView?.selectedItemId = R.id.SearchFragment
+                finish()
             }
         }
 
-        writeViewModel.errorLiveData.observe(viewLifecycleOwner){
+        writeViewModel.errorLiveData.observe(this){
             if(it == "FAIL"){
-                Toast.makeText(requireContext(), getText(R.string.APIFailToastMessage), Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, getText(R.string.APIFailToastMessage), Toast.LENGTH_SHORT).show()
             }
             else if(it == "ERROR"){
-                Toast.makeText(requireContext(), getText(R.string.APIErrorToastMessage), Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, getText(R.string.APIErrorToastMessage), Toast.LENGTH_SHORT).show()
             }
         }
 
-        writeViewModel.errorLiveData.observe(viewLifecycleOwner){
+        writeViewModel.errorLiveData.observe(this){
             if(it == "FAIL"){
-                Toast.makeText(requireContext(), getText(R.string.APIFailToastMessage), Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, getText(R.string.APIFailToastMessage), Toast.LENGTH_SHORT).show()
             }
             else if(it == "ERROR"){
-                Toast.makeText(requireContext(), getText(R.string.APIErrorToastMessage), Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, getText(R.string.APIErrorToastMessage), Toast.LENGTH_SHORT).show()
             }
         }
 
-        writeViewModel.feedErrorLiveData.observe(viewLifecycleOwner){
+        writeViewModel.feedErrorLiveData.observe(this){
             if(it == "FAIL"){
-                Toast.makeText(requireContext(), getText(R.string.APIFailToastMessage), Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, getText(R.string.APIFailToastMessage), Toast.LENGTH_SHORT).show()
             }
             else if(it == "ERROR"){
-                Toast.makeText(requireContext(), getText(R.string.APIErrorToastMessage), Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, getText(R.string.APIErrorToastMessage), Toast.LENGTH_SHORT).show()
             }
         }
 
     }
 
-    private fun initListeners() {
-        binding.PhotoBoxImage.setOnClickListener {
-            openGallery()
-        }
+    private fun initUI() {
+        binding.EditTitle.setText(title)
+        binding.EditContent.setText(content)
 
+
+        binding.naverMapEditPost.visibility = View.VISIBLE
+
+        binding.PhotoIconText.text = "${imageUrl.size}/10"
+
+
+        binding.DeleteButton.visibility = View.VISIBLE
+    }
+
+    private fun initListeners() {
         binding.LocationBoxImage.setOnClickListener {
             initMap()
+            showDatePickerDialog()
+        }
+
+        binding.DeleteButton.setOnClickListener {
+            binding.naverMapEditPost.visibility = View.INVISIBLE
+            binding.DeleteButton.visibility = View.INVISIBLE
+            visitDataList.clear()
+            locationDataList.clear()
+
         }
 
         binding.WriteDoneButton.setOnClickListener {
             if(Auth.loginFlag.value == false)
             {
-                val loginRequestDialog = LoginRequestDialog(requireContext())
+                val loginRequestDialog = LoginRequestDialog(this)
                 loginRequestDialog.showDialog()
                 loginRequestDialog.onOkButtonClickListener = {
-                    val intent = Intent(requireContext(), LoginActivity::class.java)
+                    val intent = Intent(this, LoginActivity::class.java)
                     this.startActivity(intent)
                 }
 
@@ -209,59 +255,73 @@ class WriteFragment : Fragment(), OnMapReadyCallback, CalendarDialog.OnDateSelec
             }
 
             if (binding.EditTitle.text.isEmpty())
-                Toast.makeText(requireContext(), "제목을 입력해주세요.", Toast.LENGTH_SHORT).show()
-            else if (visitDataList.size == 0)
-                Toast.makeText(requireContext(), "경로를 선택해주세요.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "제목을 입력해주세요.", Toast.LENGTH_SHORT).show()
+            else if (visitDataList.size == 0 || locationDataList.size == 0)
+                Toast.makeText(this, "경로를 선택해주세요.", Toast.LENGTH_SHORT).show()
             else {
-                writeViewModel.startLoading()
-
-                takeSnapForMap(VectoService.PostData(binding.EditTitle.text.toString(),
-                        binding.EditContent.text.toString(), LocalDateTime.now().withNano(0).toString(),
-                        null, locationDataList, visitDataList, null)
+                binding.progressBar.visibility = View.VISIBLE
+                binding.constraintProgress.visibility = View.VISIBLE
+                takeSnapForMap(
+                    VectoService.PostData(
+                        binding.EditTitle.text.toString(),
+                        binding.EditContent.text.toString(),
+                        LocalDateTime.now().withNano(0).toString(),
+                        null,
+                        locationDataList,
+                        visitDataList,
+                        null
+                    )
                 )
             }
 
         }
 
+        binding.PhotoBoxImage.setOnClickListener {
+            openGallery()
+        }
+        setGalleryResult()
+        setCropResult()
+
+
         binding.BackButton.setOnClickListener {
-            (activity as? MainActivity)?.updateBottomNavigationSelection(R.id.SearchFragment)
-            val navController = findNavController()
-            navController.navigate(R.id.SearchFragment)
+            finish()
         }
     }
 
-    private fun initRecyclerView() {
-        myImageAdapter = MyImageAdapter(requireContext())
-        myImageAdapter.setOnItemRemovedListener(object : MyImageAdapter.OnItemRemovedListener {
-            override fun onItemRemoved() {
-                binding.PhotoIconText.text = "${myImageAdapter.itemCount}/10"
 
-                imageUri = myImageAdapter.imageUri
+    private fun initRecyclerView(feedInfo: VectoService.FeedInfoResponse) {
+        myEditImageAdapter = MyEditImageAdapter(this)
+        myEditImageAdapter.imageUrl.addAll(feedInfo.image)
+        myEditImageAdapter.notifyDataSetChanged()
+        myEditImageAdapter.setOnItemRemovedListener(object :
+            MyEditImageAdapter.OnItemRemovedListener {
+            override fun onItemRemoved() {
+                binding.PhotoIconText.text = "${myEditImageAdapter.itemCount}/10"
+
+                imageUri = myEditImageAdapter.imageUri
+                imageUrl = myEditImageAdapter.imageUrl
             }
         })
-        binding.WriteRecyclerView.addItemDecoration(SpacesItemDecoration(resources.getDimensionPixelSize(R.dimen.image_margin)))
-        binding.WriteRecyclerView.adapter = myImageAdapter
-        binding.WriteRecyclerView.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
+
+        val writeRecyclerView = binding.EditPostRecyclerView
+        writeRecyclerView.addItemDecoration(SpacesItemDecoration(resources.getDimensionPixelSize(R.dimen.image_margin)))
+        writeRecyclerView.adapter = myEditImageAdapter
+        writeRecyclerView.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
     }
 
     private fun initMap() {
-        mapView = childFragmentManager.findFragmentById(R.id.naver_map_Write) as MapFragment?
+        mapView = supportFragmentManager.findFragmentById(R.id.naver_map_EditPost) as MapFragment?
             ?: MapFragment.newInstance().also {
-                childFragmentManager.beginTransaction().add(R.id.naver_map_Write, it).commit()
+                supportFragmentManager.beginTransaction().add(R.id.naver_map_EditPost, it).commit()
             }
         mapView.getMapAsync(this)
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-
-        setGalleryResult()
-        setCropResult()
-    }
 
 
     private fun showDatePickerDialog(){
-        val calendarDialog = CalendarDialog(requireContext())
+
+        val calendarDialog = CalendarDialog(this)
         calendarDialog.onDateSelectedListener = this
         calendarDialog.showDialog()
     }
@@ -269,25 +329,24 @@ class WriteFragment : Fragment(), OnMapReadyCallback, CalendarDialog.OnDateSelec
     private fun selectVisit(selectedDate: String) = //특정 날짜에 해당하는 방문지를 선택하는 함수
         if(visitDataList.any{ it.name.isEmpty() })//이름항목이 하나라도 비어있을 경우
         {
-            val writeNameEmptyDialog = WriteNameEmptyDialog(requireContext())
+            val writeNameEmptyDialog = WriteNameEmptyDialog(this)
             writeNameEmptyDialog.showDialog()
             writeNameEmptyDialog.onOkButtonClickListener = {
-                (activity as? MainActivity)?.updateBottomNavigationSelection(R.id.EditCourseFragment)
-                val navController = findNavController()
-                val bundle = bundleOf("selectedDateKey" to selectedDate)
-                navController.navigate(R.id.EditCourseFragment, bundle)
+                val intent = Intent(this, MainActivity::class.java)
+                intent.putExtra("editCourse", selectedDate)
+                this.startActivity(intent)
             }
         }
         else//완성된 경우
         {
-            val writeBottomDialog = WriteBottomDialog(requireContext())
+            val writeBottomDialog = WriteBottomDialog(this)
             writeBottomDialog.showDialog(visitDataList) { selectedItems -> //구간을 선택함 (모든 정보 완료)
 
-                binding.naverMapWrite.visibility = View.VISIBLE
+                binding.naverMapEditPost.visibility = View.VISIBLE
                 mapOverlayManager.deleteOverlay()
 
                 //선택한 날짜의 방문지의 처음과 끝까지의 경로
-                locationDataList = LocationDatabase(requireContext()).getBetweenLocationData(selectedItems.first().datetime, selectedItems.last().datetime)
+                locationDataList = LocationDatabase(this).getBetweenLocationData(selectedItems.first().datetime, selectedItems.last().datetime)
 
                 mapOverlayManager.addPathOverlayForLocation(locationDataList)
 
@@ -295,10 +354,10 @@ class WriteFragment : Fragment(), OnMapReadyCallback, CalendarDialog.OnDateSelec
                     mapOverlayManager.moveCameraForVisitUpload(selectedItems[0])
                 else
                     mapOverlayManager.moveCameraForPathUpload(locationDataList)
-                val locationDataforPath = mutableListOf<LocationData>()
+                val locationDataForPath = mutableListOf<LocationData>()
 
                 //location 첫 좌표 넣어줌.
-                locationDataforPath.add(LocationData(selectedItems[0].datetime, selectedItems[0].lat_set, selectedItems[0].lng_set))
+                locationDataForPath.add(LocationData(selectedItems[0].datetime, selectedItems[0].lat_set, selectedItems[0].lng_set))
 
                 for (visitdatalist in selectedItems){
                     mapMarkerManager.addVisitMarkerBasic(visitdatalist)
@@ -310,8 +369,9 @@ class WriteFragment : Fragment(), OnMapReadyCallback, CalendarDialog.OnDateSelec
             }
         }
 
-    private fun changeMapSize(w: Int, h: Int){
-        val params = binding.naverMapWrite.layoutParams
+
+    private fun changeLayout(w: Int, h: Int){
+        val params = binding.naverMapEditPost.layoutParams
 
         val density = resources.displayMetrics.density
         val width = (w * density)
@@ -320,17 +380,17 @@ class WriteFragment : Fragment(), OnMapReadyCallback, CalendarDialog.OnDateSelec
         params.width = width.toInt() // 원하는 가로길이
         params.height = height.toInt() // 원하는 세로 길이
 
-        binding.naverMapWrite.layoutParams = params
+        binding.naverMapEditPost.layoutParams = params
     }
 
     private fun takeSnapForMap(writeData: VectoService.PostData){
         binding.MapImage.visibility = View.INVISIBLE
-        binding.naverMapWrite.visibility = View.VISIBLE
+        binding.naverMapEditPost.visibility = View.VISIBLE
 
         mapSnapshot.clear()
 
 
-        changeMapSize(340, 340)
+        changeLayout(340, 340)
         if(visitDataList.size == 1)
             mapOverlayManager.moveCameraForVisitUpload(visitDataList[0])
         else
@@ -343,7 +403,7 @@ class WriteFragment : Fragment(), OnMapReadyCallback, CalendarDialog.OnDateSelec
         }, 900)
 
         Handler(Looper.getMainLooper()).postDelayed({
-            changeMapSize(340, 170)
+            changeLayout(340, 170)
         }, 1000)
 
         Handler(Looper.getMainLooper()).postDelayed({
@@ -361,11 +421,10 @@ class WriteFragment : Fragment(), OnMapReadyCallback, CalendarDialog.OnDateSelec
 
         Handler(Looper.getMainLooper()).postDelayed({
             binding.MapImage.visibility = View.INVISIBLE
-            binding.naverMapWrite.visibility = View.INVISIBLE
-
-            //uploadMapImage(writeData)
+            binding.naverMapEditPost.visibility = View.INVISIBLE
 
             val mapImageParts = mutableListOf<MultipartBody.Part>()
+
             for (bitmap in mapSnapshot) {
                 val byteArrayOutputStream = ByteArrayOutputStream()
                 bitmap.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream)
@@ -392,19 +451,20 @@ class WriteFragment : Fragment(), OnMapReadyCallback, CalendarDialog.OnDateSelec
             }
 
         }, 2200)
+
+
     }
 
-    /*   Override 관련   */
     override fun onDateSelected(date: String) {
         val previousDate = DateTimeUtils.getPreviousDate(date)
 
-        val filteredData = VisitDatabase(requireContext()).getAllVisitData().filter { visitData ->
+        val filteredData = VisitDatabase(this).getAllVisitData().filter { visitData ->
             val visitDate = visitData.datetime.substring(0, 10)
             val endDate = visitData.endtime.substring(0, 10)
             visitDate == previousDate && endDate == date
         }
 
-        visitDataList = VisitDatabase(requireContext()).getAllVisitData().filter {
+        visitDataList = VisitDatabase(this).getAllVisitData().filter {
             it.datetime.startsWith(date)
         }.toMutableList()
 
@@ -433,17 +493,33 @@ class WriteFragment : Fragment(), OnMapReadyCallback, CalendarDialog.OnDateSelec
         naverMap.uiSettings.isTiltGesturesEnabled = false
         naverMap.uiSettings.isZoomGesturesEnabled = false
 
-        mapMarkerManager = MapMarkerManager(requireContext(), naverMap)
-        mapOverlayManager = MapOverlayManager(requireContext(), mapMarkerManager, naverMap)
+        mapMarkerManager = MapMarkerManager(this, naverMap)
+        mapOverlayManager = MapOverlayManager(this, mapMarkerManager, naverMap)
 
-        showDatePickerDialog()
+        if(locationDataList.isNotEmpty() && visitDataList.isNotEmpty()) {//원본 경로 설정
+            mapOverlayManager.addPathOverlayForLocation(locationDataList)
+
+            if (visitDataList.size == 1)
+                mapOverlayManager.moveCameraForVisitUpload(visitDataList[0])
+            else
+                mapOverlayManager.moveCameraForPathUpload(locationDataList)
+            val locationDataForPath = mutableListOf<LocationData>()
+
+            locationDataForPath.add(
+                LocationData(
+                    visitDataList[0].datetime,
+                    visitDataList[0].lat_set,
+                    visitDataList[0].lng_set
+                )
+            )
+
+            for (visitdatalist in visitDataList) {
+                mapMarkerManager.addVisitMarkerBasic(visitdatalist)
+            }
+        }
     }
 
-
-
     /*   이미지 관련   */
-
-    //사진 추가 박스를 클릭 시, 갤러리를 열어 이미지 선택을 할 수 있도록 함
     private fun openGallery() {
         val intent = Intent(Intent.ACTION_PICK)
         intent.setDataAndType(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, "image/*")
@@ -451,7 +527,6 @@ class WriteFragment : Fragment(), OnMapReadyCallback, CalendarDialog.OnDateSelec
         galleryResultLauncher.launch(intent) // 갤러리 결과를 galleryResultLauncher로 받음
     }
 
-    //갤러리 결과를 받는 galleryResultLauncher 설정
     private fun setGalleryResult() {
         galleryResultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == Activity.RESULT_OK) {
@@ -459,15 +534,14 @@ class WriteFragment : Fragment(), OnMapReadyCallback, CalendarDialog.OnDateSelec
 
                 val totalImage =
                     if (selectedImages != null)
-                        myImageAdapter.itemCount + selectedImages.itemCount
+                        myEditImageAdapter.itemCount + selectedImages.itemCount
                     else
-                        myImageAdapter.itemCount + 1
+                        myEditImageAdapter.itemCount + 1
 
                 if (totalImage > 10) {
-                    Toast.makeText(requireContext(), "최대 10개의 이미지만 선택 가능합니다.", Toast.LENGTH_LONG).show()
+                    Toast.makeText(this, "최대 10개의 이미지만 선택 가능합니다.", Toast.LENGTH_LONG).show()
                     return@registerForActivityResult
                 }
-
 
                 if (selectedImages != null) {
                     for (i in 0 until selectedImages.itemCount) {
@@ -482,25 +556,23 @@ class WriteFragment : Fragment(), OnMapReadyCallback, CalendarDialog.OnDateSelec
         }
     }
 
-    //galleryResultLauncher 로부터 전달 받은 이미지 crop 진행
     private fun startCrop(sourceUri: Uri) {
         val destinationFileName = "cropped_${System.currentTimeMillis()}.jpg"
-        val destinationUri = Uri.fromFile(File(requireContext().cacheDir, destinationFileName))
+        val destinationUri = Uri.fromFile(File(this.cacheDir, destinationFileName))
         val uCropIntent = UCrop.of(sourceUri, destinationUri)
             .withOptions(uCropOptions())
             .withAspectRatio(1f, 1f) // 1:1 비율로 자르기
-            .getIntent(requireContext())
-        cropResultLauncher.launch(uCropIntent)  //Crop 결과를 cropResultLauncher 에게 전달
+            .getIntent(this)
+        cropResultLauncher.launch(uCropIntent)
     }
 
-    //uCrop 옵션
     private fun uCropOptions(): UCrop.Options {
         val options = UCrop.Options()
         // 하단 컨트롤 숨기기
         options.setHideBottomControls(true)
-        options.setStatusBarColor(ContextCompat.getColor(requireContext(), R.color.black))
-        options.setToolbarColor(ContextCompat.getColor(requireContext(), R.color.black))
-        options.setToolbarWidgetColor(ContextCompat.getColor(requireContext(), R.color.white))
+        options.setStatusBarColor(ContextCompat.getColor(this, R.color.black))
+        options.setToolbarColor(ContextCompat.getColor(this, R.color.black))
+        options.setToolbarWidgetColor(ContextCompat.getColor(this, R.color.white))
 
         // 격자 선 숨기기
         options.setCropGridRowCount(0)
@@ -508,13 +580,12 @@ class WriteFragment : Fragment(), OnMapReadyCallback, CalendarDialog.OnDateSelec
         return options
     }
 
-    //Crop 결과를 받는 cropResultLauncher 설정
     private fun setCropResult() {
         cropResultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == Activity.RESULT_OK) {
                 val resultUri = UCrop.getOutput(result.data!!)
                 addImage(resultUri!!)
-                myImageAdapter.notifyDataSetChanged()
+                myEditImageAdapter.notifyDataSetChanged()
             } else if (result.resultCode == UCrop.RESULT_ERROR) {
                 val cropError = UCrop.getError(result.data!!)
                 Log.e("UCrop", "Crop error: $cropError")
@@ -522,11 +593,11 @@ class WriteFragment : Fragment(), OnMapReadyCallback, CalendarDialog.OnDateSelec
         }
     }
 
-    //Crop 된 이미지를 전달 받아 adapter 에 추가 하기 위한 전처리 작업 수행
     private fun addImage(newImageUri: Uri) {
+        Log.d("ASDASD2", "ADDIMAGE 호출")
 
-        if (myImageAdapter.itemCount > 10) {
-            Toast.makeText(requireContext(), "최대 10개의 이미지만 추가 가능합니다.", Toast.LENGTH_LONG).show()
+        if (myEditImageAdapter.itemCount > 10) {
+            Toast.makeText(this, "최대 10개의 이미지만 추가 가능합니다.", Toast.LENGTH_LONG).show()
             return
         }
 
@@ -536,16 +607,15 @@ class WriteFragment : Fragment(), OnMapReadyCallback, CalendarDialog.OnDateSelec
 
 
         // 가장 앞쪽의 ImageView에 새 이미지를 셋팅
-        binding.PhotoIconText.text = "${myImageAdapter.itemCount}/10"
+        binding.PhotoIconText.text = "${myEditImageAdapter.itemCount}/10"
     }
 
-    //이미지 압축을 진행
     private fun compressImage(uri: Uri): ByteArray {
         val outStream = ByteArrayOutputStream()
-        val inputStream = requireContext().contentResolver.openInputStream(uri)
+        val inputStream = this.contentResolver.openInputStream(uri)
 
         if (inputStream == null) {
-            Log.e("WriteFragment", "Failed to open InputStream for the provided Uri: $uri")
+            Log.e("ImageError", "Failed to open InputStream for the provided Uri: $uri")
             return byteArrayOf()  // empty array
         }
 
@@ -553,25 +623,26 @@ class WriteFragment : Fragment(), OnMapReadyCallback, CalendarDialog.OnDateSelec
             val original = BitmapFactory.decodeStream(stream)
 
             if(original == null){
-                Log.e("WriteFragment", "Failed to decode the image from Uri: $uri")
+                Log.e("EditPostActivity", "Failed to decode the image from Uri: $uri")
                 return byteArrayOf()
             }
 
             val resizedImage = Bitmap.createScaledBitmap(original, 1080, 1080, true)
 
             resizedImage.compress(Bitmap.CompressFormat.JPEG, 80, outStream)
+
         }
 
         return outStream.toByteArray()
     }
 
-    //압축된 이미지를 저장 후 adapter 에 저장
     private fun saveCompressedImage(compressedBytes: ByteArray) {
         val filename = "compressed_${System.currentTimeMillis()}.jpeg"
-        val file = File(requireContext().cacheDir, filename)
+        val file = File(this.cacheDir, filename)
         file.outputStream().use { it.write(compressedBytes) }
 
-        imageUri.add(Uri.fromFile(file))
-        myImageAdapter.imageUri.add(Uri.fromFile(file))
+        myEditImageAdapter.imageUri.add(Uri.fromFile(file))
+        imageUri = myEditImageAdapter.imageUri
+
     }
 }

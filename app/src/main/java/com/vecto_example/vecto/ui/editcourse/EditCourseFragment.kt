@@ -37,6 +37,7 @@ import com.vecto_example.vecto.databinding.FragmentEditCourseBinding
 import com.vecto_example.vecto.dialog.CalendarDialog
 import com.vecto_example.vecto.popupwindow.PlacePopupWindow
 import com.vecto_example.vecto.ui.editcourse.adapter.MyCourseAdapter
+import com.vecto_example.vecto.utils.DateTimeUtils
 import com.vecto_example.vecto.utils.MapMarkerManager
 import com.vecto_example.vecto.utils.MapOverlayManager
 import ted.gun0912.clustering.clustering.Cluster
@@ -432,7 +433,7 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
         myCourseAdapter.visitdata.clear()
         myCourseAdapter.pathdata.clear()
 
-        val previousDate = editCourseViewModel.getPreviousDate(selectedDate)
+        val previousDate = DateTimeUtils.getPreviousDate(selectedDate)
 
         val filteredData = VisitDatabase(requireContext()).getAllVisitData().filter { visitData ->
             val visitDate = visitData.datetime.substring(0, 10)

@@ -128,28 +128,48 @@ class MapOverlayManager(private val context: Context, private val mapMarkerManag
 
             val bounds = LatLngBounds(LatLng(minLat , minLng), LatLng(maxLat, maxLng))
             naverMap.moveCamera(CameraUpdate.fitBounds(bounds, 350))
-            val Offset = PointF(0.0f, (-offset).toFloat())
-            naverMap.moveCamera(CameraUpdate.scrollBy(Offset))
+            val offsetPoint = PointF(0.0f, (-offset).toFloat())
+            naverMap.moveCamera(CameraUpdate.scrollBy(offsetPoint))
+
+        }
+    }
+
+    fun moveCameraForPathUpload(pathPoints: MutableList<LocationData>){
+        if(pathPoints.isNotEmpty()) {
+            val minLat = pathPoints.minOf { it.lat }
+            val maxLat = pathPoints.maxOf { it.lat }
+            val minLng = pathPoints.minOf { it.lng }
+            val maxLng = pathPoints.maxOf { it.lng }
+
+            val bounds = LatLngBounds(LatLng(minLat, minLng), LatLng(maxLat, maxLng))
+            naverMap.moveCamera(CameraUpdate.fitBounds(bounds, 50, 150, 50, 50))
 
         }
     }
 
     fun moveCameraForVisit(visit: VisitData){
         val targetLatLng = LatLng(visit.lat_set, visit.lng_set)
-        val Offset = PointF(0.0f, (-50).toFloat())
+        val offset = PointF(0.0f, (-50).toFloat())
 
         naverMap.moveCamera(CameraUpdate.scrollTo(targetLatLng))
         naverMap.moveCamera(CameraUpdate.zoomTo(18.0))
-        naverMap.moveCamera(CameraUpdate.scrollBy(Offset))
+        naverMap.moveCamera(CameraUpdate.scrollBy(offset))
     }
 
     fun moveCameraForVisitOffset(visit: VisitData, offset: Int){
         val targetLatLng = LatLng(visit.lat_set, visit.lng_set)
-        val Offset = PointF(0.0f, (-offset).toFloat())
+        val offset = PointF(0.0f, (-offset).toFloat())
 
         naverMap.moveCamera(CameraUpdate.scrollTo(targetLatLng))
         naverMap.moveCamera(CameraUpdate.zoomTo(18.0))
-        naverMap.moveCamera(CameraUpdate.scrollBy(Offset))
+        naverMap.moveCamera(CameraUpdate.scrollBy(offset))
+    }
+
+    fun moveCameraForVisitUpload(visit: VisitData){
+        val targetLatLng = LatLng(visit.lat_set, visit.lng_set)
+
+        naverMap.moveCamera(CameraUpdate.scrollTo(targetLatLng))
+        naverMap.moveCamera(CameraUpdate.zoomTo(18.0))
     }
 
 }
