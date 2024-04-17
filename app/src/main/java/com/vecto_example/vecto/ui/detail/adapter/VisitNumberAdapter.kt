@@ -1,4 +1,4 @@
-package com.vecto_example.vecto
+package com.vecto_example.vecto.ui.detail.adapter
 
 import android.content.Context
 import android.view.LayoutInflater
@@ -7,24 +7,25 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.vecto_example.vecto.R
 import com.vecto_example.vecto.data.model.VisitData
 
 class VisitNumberAdapter(private val context: Context): RecyclerView.Adapter<VisitNumberAdapter.ViewHolder>() {
     val visitdataList = mutableListOf<VisitData>()
 
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val numberImage: ImageView = view.findViewById(R.id.NumberImage)
+        val visitImage: ImageView = view.findViewById(R.id.VisitImage)
         val titleText: TextView = view.findViewById(R.id.TitleText)
 
 
     }
 
-    override fun onBindViewHolder(holder: VisitNumberAdapter.ViewHolder, position: Int) {
-        holder.numberImage.setImageResource(setImage(position))
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+        holder.visitImage.setImageResource(setImage(position))
         holder.titleText.text = visitdataList[position].name
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VisitNumberAdapter.ViewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(context).inflate(R.layout.post_number_item, parent, false)
         return ViewHolder(view)
     }
@@ -34,19 +35,20 @@ class VisitNumberAdapter(private val context: Context): RecyclerView.Adapter<Vis
     }
 
     private fun setImage(position: Int): Int {
-        when(position)
-        {
-            0 -> return R.drawable.course_number_1
-            1 -> return R.drawable.course_number_2
-            2 -> return R.drawable.course_number_3
-            3 -> return R.drawable.course_number_4
-            4 -> return R.drawable.course_number_5
-            5 -> return R.drawable.course_number_6
-            6 -> return R.drawable.course_number_7
-            7 -> return R.drawable.course_number_8
-            8 -> return R.drawable.course_number_9
-
-            else -> return R.drawable.course_number_1
+        return if(visitdataList.size == 1){
+            R.drawable.detail_only
+        } else {
+            when (position) {
+                0 -> {
+                    R.drawable.detail_top
+                }
+                visitdataList.lastIndex -> {
+                    R.drawable.detail_last
+                }
+                else -> {
+                    R.drawable.detail_mid
+                }
+            }
         }
     }
 }

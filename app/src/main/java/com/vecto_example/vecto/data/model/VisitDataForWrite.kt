@@ -1,6 +1,6 @@
 package com.vecto_example.vecto.data.model
 
-data class VisitDataForWite(
+data class VisitDataForWrite(
     val datetime: String,
     val endtime: String,
     val lat: Double,

@@ -19,7 +19,6 @@ import com.bumptech.glide.Glide
 import com.vecto_example.vecto.ui.comment.CommentActivity
 import com.vecto_example.vecto.ui.login.LoginActivity
 import com.vecto_example.vecto.R
-import com.vecto_example.vecto.VisitNumberAdapter
 import com.vecto_example.vecto.data.Auth
 import com.vecto_example.vecto.data.model.LocationData
 import com.vecto_example.vecto.data.model.VisitData
@@ -59,11 +58,12 @@ class MyFeedDetailAdapter(private val context: Context): RecyclerView.Adapter<My
 
         val contextText: TextView = view.findViewById(R.id.ContentText)
 
-        val likeBox: ImageView = view.findViewById(R.id.LikeBox)
+        //val likeBox: ImageView = view.findViewById(R.id.LikeBox)
         val likeImage: ImageView = view.findViewById(R.id.LikeImage)
         val likeCount: TextView = view.findViewById(R.id.LikeCount)
 
-        val commentBox: ImageView = view.findViewById(R.id.CommentBox)
+        //val commentBox: ImageView = view.findViewById(R.id.CommentBox)
+        val commentImage: ImageView = view.findViewById(R.id.CommentImage)
         val commentCount: TextView = view.findViewById(R.id.CommentCount)
 
         val profileImage: ImageView = view.findViewById(R.id.ProfileImage)
@@ -71,6 +71,9 @@ class MyFeedDetailAdapter(private val context: Context): RecyclerView.Adapter<My
 
         val followButton: ImageView = view.findViewById(R.id.FollowButton)
         val followText: TextView = view.findViewById(R.id.FollowButtonText)
+
+        val textIndicator: TextView = view.findViewById(R.id.topPageNumberText)
+        val textIndicatorBox: ImageView = view.findViewById(R.id.topPageNumberBox)
 
         lateinit var visitNumberAdapter: VisitNumberAdapter
 
@@ -121,12 +124,26 @@ class MyFeedDetailAdapter(private val context: Context): RecyclerView.Adapter<My
         {
             holder.viewPager.visibility = View.GONE
             holder.indicator.visibility = View.GONE
+            holder.textIndicator.visibility = View.GONE
+            holder.textIndicatorBox.visibility = View.GONE
         }
         else {
             holder.viewPager.visibility = View.VISIBLE
             holder.indicator.visibility = View.VISIBLE
+            holder.textIndicator.visibility = View.VISIBLE
+            holder.textIndicatorBox.visibility = View.VISIBLE
+
+            val imagesize = feedInfo[position].image.size
 
             holder.viewPager.adapter = ImageSliderAdapter(context, feedInfo[position].image)
+            holder.viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
+                override fun onPageSelected(position: Int) {
+                    super.onPageSelected(position)
+                    val textToShow = "${position + 1}/${imagesize}"
+                    holder.textIndicator.text = textToShow // 각 ViewHolder의 textIndicator를 업데이트합니다.
+                }
+            })
+
             holder.indicator.setViewPager(holder.viewPager)
         }
 
@@ -147,7 +164,7 @@ class MyFeedDetailAdapter(private val context: Context): RecyclerView.Adapter<My
         else
             holder.likeImage.setImageResource(R.drawable.post_like_off)
 
-        holder.likeBox.setOnClickListener {
+        holder.likeImage.setOnClickListener {
             if(Auth.loginFlag.value == true) {
                 if (feedInfo[position].likeFlag) {
                     holder.likeImage.setImageResource(R.drawable.post_like_off)
@@ -188,7 +205,7 @@ class MyFeedDetailAdapter(private val context: Context): RecyclerView.Adapter<My
         }
 
         /*댓글 설정*/
-        holder.commentBox.setOnClickListener {
+        holder.commentImage.setOnClickListener {
             val intent = Intent(context, CommentActivity::class.java)
             intent.putExtra("feedID", feedID[position])
             context.startActivity(intent)

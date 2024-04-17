@@ -38,5 +38,14 @@ class LoadImageUtils {
                     .into(imageView)
             }
         }
+
+        fun loadImage(context: Context, imageView: ImageView, imageUrl: String?) {
+
+            Glide.with(context)
+                .load(imageUrl)
+                .placeholder(R.drawable.img_error_01) // 로딩 중 표시될 이미지
+                .error(R.drawable.img_error_01) // 에러 발생 시 표시될 이미지
+                .into(imageView)
+        }
     }
 }

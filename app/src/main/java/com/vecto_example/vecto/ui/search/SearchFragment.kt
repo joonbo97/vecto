@@ -11,6 +11,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.EditorInfo
 import android.widget.Toast
 import androidx.fragment.app.viewModels
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
@@ -23,12 +24,13 @@ import com.vecto_example.vecto.data.repository.FeedRepository
 import com.vecto_example.vecto.data.repository.NotificationRepository
 import com.vecto_example.vecto.databinding.FragmentSearchBinding
 import com.vecto_example.vecto.retrofit.VectoService
+import com.vecto_example.vecto.ui.main.MainActivity
 import com.vecto_example.vecto.ui.notification.NotificationViewModel
 import com.vecto_example.vecto.ui.notification.NotificationViewModelFactory
 import com.vecto_example.vecto.ui.search.adapter.MysearchpostAdapter
 import com.vecto_example.vecto.utils.RequestLoginUtils
 
-class SearchFragment : Fragment(){
+class SearchFragment : Fragment(), MainActivity.ScrollToTop{
     /*   다른 사용자의 게시글을 확인 할 수 있는 Search Fragment   */
 
     private lateinit var binding: FragmentSearchBinding
@@ -105,6 +107,18 @@ class SearchFragment : Fragment(){
     private fun initListeners() {
         /*   리스너 초기화 함수   */
 
+        //로고 클릭 이벤트
+        binding.VectoTitleImage.setOnClickListener {
+            clearRecyclerView()
+            clearNoneImage()
+
+            searchViewModel.initSetting()
+
+            queryFlag = false
+
+            getFeed()
+        }
+
         //알림 아이콘 클릭 이벤트
         binding.AlarmIconImage.setOnClickListener {
             if(Auth.loginFlag.value == false)
@@ -119,18 +133,22 @@ class SearchFragment : Fragment(){
 
         //검색 아이콘 클릭 이벤트
         binding.SearchIconImage.setOnClickListener {
-            if(binding.editTextID.text.isEmpty())
+
+
+            if(binding.editTextSearch.text.isEmpty())
             {
                 Toast.makeText(requireContext(), "검색어를 입력해주세요.", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
+
+            startSearch()
 
             clearRecyclerView()
             clearNoneImage()
             searchViewModel.initSetting()
 
             /*   검색 상태 설정   */
-            query = binding.editTextID.text.toString()
+            query = binding.editTextSearch.text.toString()
             mysearchpostAdapter.query = query
             queryFlag = true
 
@@ -138,8 +156,42 @@ class SearchFragment : Fragment(){
             Log.d("getFeed_REQUEST", "By Search")
             getFeed()
 
-            Toast.makeText(requireContext(), "${binding.editTextID.text}에 대한 결과입니다.", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), "${binding.editTextSearch.text}에 대한 결과입니다.", Toast.LENGTH_SHORT).show()
         }
+
+        binding.editTextSearch.setOnEditorActionListener { textView, actionId, event ->
+            if(actionId == EditorInfo.IME_ACTION_SEARCH) {
+                if(binding.editTextSearch.text.isEmpty())
+                {
+                    Toast.makeText(requireContext(), "검색어를 입력해주세요.", Toast.LENGTH_SHORT).show()
+                } else {
+                    startSearch()
+
+                    clearRecyclerView()
+                    clearNoneImage()
+                    searchViewModel.initSetting()
+
+                    /*   검색 상태 설정   */
+                    query = binding.editTextSearch.text.toString()
+                    mysearchpostAdapter.query = query
+                    queryFlag = true
+
+                    /*   게시글 요청   */
+                    Log.d("getFeed_REQUEST", "By Search")
+                    getFeed()
+
+                    Toast.makeText(requireContext(), "${binding.editTextSearch.text}에 대한 결과입니다.", Toast.LENGTH_SHORT).show()
+                }
+                true
+            } else {
+                false
+            }
+        }
+
+    }
+
+    private fun startSearch() {
+
     }
 
     private fun initObservers() {
@@ -204,6 +256,7 @@ class SearchFragment : Fragment(){
         }
 
         searchViewModel.feedIdsLiveData.observe(viewLifecycleOwner) {
+
             searchViewModel.feedIdsLiveData.value?.let {
                 if(mysearchpostAdapter.feedID.isNotEmpty())
                     mysearchpostAdapter.addFeedIdData(searchViewModel.newFeedIds)
@@ -215,9 +268,13 @@ class SearchFragment : Fragment(){
                 Log.d("ADD_ID_DATA", "current FeedId size: ${searchViewModel.feedIdsLiveData.value!!.feedIds.size}")
 
             }
-
+            Log.d("ADD_ID_DATA123123", "current FeedId size: ${searchViewModel.feedIdsLiveData.value!!.feedIds.size}")
             if(queryFlag && searchViewModel.feedIdsLiveData.value?.feedIds.isNullOrEmpty()){
+                Log.d("SET NONEIMAGE", "SET")
+
                 setNoneImage()
+            } else {
+                clearNoneImage()
             }
 
         }
@@ -325,5 +382,9 @@ class SearchFragment : Fragment(){
         context?.let {
             LocalBroadcastManager.getInstance(it).unregisterReceiver(notificationReceiver)
         }
+    }
+
+    override fun scrollToTop() {
+        binding.SearchRecyclerView.smoothScrollToPosition(0)
     }
 }

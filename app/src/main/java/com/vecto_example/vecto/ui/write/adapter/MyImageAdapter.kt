@@ -59,7 +59,7 @@ class MyImageAdapter (private val context: Context): RecyclerView.Adapter<MyImag
                 override fun onAnimationEnd(animation: Animation?) {
                     // 애니메이션이 완료되면 아이템 제거
                     imageUri.removeAt(position)
-                    notifyDataSetChanged()
+                    notifyItemRemoved(position)
                     onItemRemovedListener?.onItemRemoved()
                 }
 

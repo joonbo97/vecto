@@ -11,6 +11,7 @@ import android.widget.ImageView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.vecto_example.vecto.R
+import com.vecto_example.vecto.utils.LoadImageUtils
 
 class MyEditImageAdapter (private val context: Context): RecyclerView.Adapter<MyEditImageAdapter.ViewHolder>(){
     val imageUri = mutableListOf<Uri>()
@@ -42,18 +43,12 @@ class MyEditImageAdapter (private val context: Context): RecyclerView.Adapter<My
 
         if(position < imageUrl.size)//서버에서 전송받은 URL 세팅
         {
-            Glide.with(context)
-                .load(imageUrl[position])
-                .placeholder(R.drawable.img_error_01) // 로딩 중 표시될 이미지
-                .error(R.drawable.img_error_01) // 에러 발생 시 표시될 이미지
-                .into(holder.imageView)
+            LoadImageUtils.loadImage(context, holder.imageView, imageUrl[position])
         }
         else
         {
             holder.imageView.setImageURI(imageUri[position - imageUrl.size])
         }
-
-
 
         holder.deleteButton.setOnClickListener {
             removeItem(position)
@@ -75,13 +70,14 @@ class MyEditImageAdapter (private val context: Context): RecyclerView.Adapter<My
                     if(position < imageUrl.size)//서버에서 전송받은 URL 세팅
                     {
                         imageUrl.removeAt(position)
+                        notifyItemRemoved(position)
                     }
                     else
                     {
                         imageUri.removeAt(position - imageUrl.size)
+                        notifyItemRemoved(position - imageUrl.size)
                     }
 
-                    notifyDataSetChanged()
                     onItemRemovedListener?.onItemRemoved()
                 }
 

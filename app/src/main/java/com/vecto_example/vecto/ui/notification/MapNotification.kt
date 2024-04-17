@@ -9,7 +9,7 @@ import android.content.Context
 import android.content.Intent
 import androidx.core.app.NotificationCompat
 import com.vecto_example.vecto.service.Actions
-import com.vecto_example.vecto.MainActivity
+import com.vecto_example.vecto.ui.main.MainActivity
 import com.vecto_example.vecto.R
 
 object MapNotification {

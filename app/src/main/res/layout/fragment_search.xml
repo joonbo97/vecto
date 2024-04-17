@@ -40,7 +40,7 @@
             app:layout_constraintStart_toStartOf="parent" />
 
         <EditText
-            android:id="@+id/editTextID"
+            android:id="@+id/editTextSearch"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="20dp"
@@ -49,6 +49,7 @@
             android:ems="20"
             android:hint="가고싶은 장소를 검색해보세요."
             android:inputType="text"
+            android:imeOptions="actionSearch"
             android:text=""
             android:textSize="15sp"
             app:layout_constraintBottom_toBottomOf="@+id/SearchBoxImage"

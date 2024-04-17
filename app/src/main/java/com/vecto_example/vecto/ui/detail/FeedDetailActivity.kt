@@ -145,10 +145,19 @@ class FeedDetailActivity : AppCompatActivity(), OnMapReadyCallback {
                 val firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition()
                 val lastVisibleItemPosition = layoutManager.findLastVisibleItemPosition()
 
-                // 아이템의 정보를 가져와서 처리
-                for (position in firstVisibleItemPosition..lastVisibleItemPosition) {
-                    val feedInfo = myFeedDetailAdapter.feedInfo[position]
-                    mapOverlayManager.addOverlayForPost(feedInfo)
+                // 중앙 아이템 인덱스 계산
+                val centerPosition = (firstVisibleItemPosition + lastVisibleItemPosition) / 2
+
+                if(layoutManager.findLastVisibleItemPosition() == myFeedDetailAdapter.feedInfo.lastIndex){
+                    val feedInfo = myFeedDetailAdapter.feedInfo[lastVisibleItemPosition]
+                    mapOverlayManager.addOverlayForPost(feedInfo) // 중앙 아이템 강조
+                }
+                else {
+                    // 중앙 아이템의 정보를 가져와서 처리
+                    if (centerPosition >= 0 && centerPosition < myFeedDetailAdapter.feedInfo.size) {
+                        val feedInfo = myFeedDetailAdapter.feedInfo[centerPosition]
+                        mapOverlayManager.addOverlayForPost(feedInfo) // 중앙 아이템 강조
+                    }
                 }
 
                 if (!recyclerView.canScrollVertically(1)) {

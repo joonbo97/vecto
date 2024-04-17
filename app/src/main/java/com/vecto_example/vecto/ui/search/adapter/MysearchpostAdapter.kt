@@ -34,6 +34,7 @@ class MysearchpostAdapter(private val context: Context) : RecyclerView.Adapter<M
 {
     val feedInfo = mutableListOf<VectoService.FeedInfoResponse>()
     val feedID = mutableListOf<Int>()
+    var followInfo = mutableListOf<Boolean?>()
     var pageNo = 0
     var query = ""
     var likePostFlag = false

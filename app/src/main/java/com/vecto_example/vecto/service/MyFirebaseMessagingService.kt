@@ -10,7 +10,7 @@ import androidx.core.app.NotificationCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
-import com.vecto_example.vecto.MainActivity
+import com.vecto_example.vecto.ui.main.MainActivity
 import com.vecto_example.vecto.R
 import java.time.LocalDateTime
 

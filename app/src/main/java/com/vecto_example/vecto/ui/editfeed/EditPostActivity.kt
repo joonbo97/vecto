@@ -1,6 +1,8 @@
 package com.vecto_example.vecto.ui.editfeed
 
+import android.annotation.SuppressLint
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -24,7 +26,7 @@ import com.naver.maps.map.CameraUpdate
 import com.naver.maps.map.MapFragment
 import com.naver.maps.map.NaverMap
 import com.naver.maps.map.OnMapReadyCallback
-import com.vecto_example.vecto.MainActivity
+import com.vecto_example.vecto.ui.main.MainActivity
 import com.vecto_example.vecto.ui.editfeed.adapter.MyEditImageAdapter
 import com.vecto_example.vecto.R
 import com.vecto_example.vecto.data.Auth
@@ -52,12 +54,8 @@ import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 import java.io.ByteArrayOutputStream
 import java.io.File
-import java.time.LocalDateTime
 
 class EditPostActivity : AppCompatActivity(), OnMapReadyCallback, CalendarDialog.OnDateSelectedListener {
     lateinit var binding: ActivityEditPostBinding
@@ -86,11 +84,13 @@ class EditPostActivity : AppCompatActivity(), OnMapReadyCallback, CalendarDialog
     private var imageUri = mutableListOf<Uri>()
     private var imageUrl = mutableListOf<String>()
 
+    private var uploadStarted = false
 
     private var title = ""
     private var content = ""
-
     private var feedId = -1
+
+
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -111,12 +111,20 @@ class EditPostActivity : AppCompatActivity(), OnMapReadyCallback, CalendarDialog
 
         feedId = intent.getIntExtra("feedId", -1)
 
-        initUI()
+        if(feedId != -1) {
+            initUI()
 
-        initMap()
-        initRecyclerView(feedInfo)
-        initListeners()
-        initObservers()
+            initMap()
+            initRecyclerView(feedInfo)
+            initListeners()
+            initObservers()
+
+            setGalleryResult()
+            setCropResult()
+
+        } else {
+            Toast.makeText(this, "게시글 정보 불러오기에 실패했습니다. 다시 시도해 주세요.", Toast.LENGTH_SHORT).show()
+        }
     }
 
     private fun initObservers() {
@@ -131,26 +139,47 @@ class EditPostActivity : AppCompatActivity(), OnMapReadyCallback, CalendarDialog
             }
         }
 
-        writeViewModel.mapImageDone.observe(this){
+        writeViewModel.isCourseDataLoaded.observe(this){
+            if(it){ //데이터가 불러와져 있으면
+                binding.DeleteButton.visibility = View.VISIBLE
+                binding.naverMapEditPost.visibility = View.VISIBLE
+            } else {
+                binding.DeleteButton.visibility = View.GONE
+                binding.naverMapEditPost.visibility = View.INVISIBLE
+                visitDataList.clear()
+                locationDataList.clear()
+                mapOverlayManager.deleteOverlay()
+            }
+        }
+
+        writeViewModel.mapImageUrls.observe(this){
             val allImageUrl: List<String> = imageUrl + (writeViewModel.imageUrls.value ?: emptyList())
 
-            if(it && imageUri.isEmpty()){   //업로드 할 Normal Image 가 없는 경우
-                writeViewModel.addFeed(
-                    VectoService.PostDataForUpload(
+            Log.d("EditPost", "VISIT DATA SIZE : ${writeViewModel.visitDataForWriteList.size}")
+            Log.d("EditPost", "ORIGINAL IMAGE SIZE: ${imageUrl.size}")
+            Log.d("EditPost", "NEW IMAGE SIZE: ${writeViewModel.imageUrls.value?.size}")
+
+            if(imageUri.isEmpty() && uploadStarted){   //업로드 할 Normal Image 가 없는 경우
+                Log.d("EditPost", "업로드 할 이미지가 없고 지도 이미지 업로드가 완료되었습니다.")
+
+                writeViewModel.updateFeed(
+                    VectoService.UpdatePostRequest(
+                        feedId,
                         binding.EditTitle.text.toString(),
                         binding.EditContent.text.toString(),
-                        LocalDateTime.now().withNano(0).toString(),
                         allImageUrl.toMutableList(),
                         locationDataList,
                         writeViewModel.visitDataForWriteList,
                         writeViewModel.mapImageUrls.value?.toMutableList()
                     ))
-            } else if(it && writeViewModel.normalImageDone.value == true) { //업로드 할 Normal Image 가 이미 완료된 경우
-                writeViewModel.addFeed(
-                    VectoService.PostDataForUpload(
+            } else if(writeViewModel.normalImageDone.value == true && uploadStarted) { //업로드 할 Normal Image 가 이미 완료된 경우
+                Log.d("EditPost", "업로드 할 이미지가 완료되었고 지도 이미지 업로드가 완료되었습니다.")
+
+                writeViewModel.updateFeed(
+                    VectoService.UpdatePostRequest(
+                        feedId,
                         binding.EditTitle.text.toString(),
                         binding.EditContent.text.toString(),
-                        LocalDateTime.now().withNano(0).toString(),
                         allImageUrl.toMutableList(),
                         locationDataList,
                         writeViewModel.visitDataForWriteList,
@@ -159,15 +188,21 @@ class EditPostActivity : AppCompatActivity(), OnMapReadyCallback, CalendarDialog
             }
         }
 
-        writeViewModel.normalImageDone.observe(this){
+        writeViewModel.imageUrls.observe(this){
             val allImageUrl: List<String> = imageUrl + (writeViewModel.imageUrls.value ?: emptyList())
 
-            if(it && (writeViewModel.mapImageDone.value == true)){  //Normal Image 와 지도 이미지 모두 완료된 경우
-                writeViewModel.addFeed(
-                    VectoService.PostDataForUpload(
+            Log.d("EditPost", "VISIT DATA SIZE : ${writeViewModel.visitDataForWriteList.size}")
+            Log.d("EditPost", "ORIGINAL IMAGE SIZE: ${imageUrl.size}")
+            Log.d("EditPost", "NEW IMAGE SIZE: ${writeViewModel.imageUrls.value?.size}")
+
+            if(writeViewModel.mapImageDone.value == true && uploadStarted){  //Normal Image 와 지도 이미지 모두 완료된 경우
+                Log.d("EditPost", "업로드 할 이미지가 있고 지도 이미지 업로드는 완료되었습니다.")
+
+                writeViewModel.updateFeed(
+                    VectoService.UpdatePostRequest(
+                        feedId,
                         binding.EditTitle.text.toString(),
                         binding.EditContent.text.toString(),
-                        LocalDateTime.now().withNano(0).toString(),
                         allImageUrl.toMutableList(),
                         locationDataList,
                         writeViewModel.visitDataForWriteList,
@@ -177,39 +212,24 @@ class EditPostActivity : AppCompatActivity(), OnMapReadyCallback, CalendarDialog
 
         }
 
-        writeViewModel.addFeedResult.observe(this){
+        writeViewModel.updateFeedResult.observe(this){
             if(it == "SUCCESS"){
-                Toast.makeText(this, "게시글 작성이 완료되었습니다.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "게시글 수정이 완료되었습니다.", Toast.LENGTH_SHORT).show()
 
                 finish()
             }
         }
 
         writeViewModel.errorLiveData.observe(this){
-            if(it == "FAIL"){
-                Toast.makeText(this, getText(R.string.APIFailToastMessage), Toast.LENGTH_SHORT).show()
-            }
-            else if(it == "ERROR"){
-                Toast.makeText(this, getText(R.string.APIErrorToastMessage), Toast.LENGTH_SHORT).show()
-            }
-        }
-
-        writeViewModel.errorLiveData.observe(this){
-            if(it == "FAIL"){
-                Toast.makeText(this, getText(R.string.APIFailToastMessage), Toast.LENGTH_SHORT).show()
-            }
-            else if(it == "ERROR"){
-                Toast.makeText(this, getText(R.string.APIErrorToastMessage), Toast.LENGTH_SHORT).show()
-            }
+            sendFailMessage(it, this, "errorLiveData")
         }
 
         writeViewModel.feedErrorLiveData.observe(this){
-            if(it == "FAIL"){
-                Toast.makeText(this, getText(R.string.APIFailToastMessage), Toast.LENGTH_SHORT).show()
-            }
-            else if(it == "ERROR"){
-                Toast.makeText(this, getText(R.string.APIErrorToastMessage), Toast.LENGTH_SHORT).show()
-            }
+            sendFailMessage(it, this, "feedErrorLiveData")
+        }
+
+        writeViewModel.imageErrorLiveData.observe(this){
+            sendFailMessage(it, this, "imageErrorLiveData")
         }
 
     }
@@ -218,27 +238,19 @@ class EditPostActivity : AppCompatActivity(), OnMapReadyCallback, CalendarDialog
         binding.EditTitle.setText(title)
         binding.EditContent.setText(content)
 
-
-        binding.naverMapEditPost.visibility = View.VISIBLE
-
         binding.PhotoIconText.text = "${imageUrl.size}/10"
-
-
-        binding.DeleteButton.visibility = View.VISIBLE
     }
 
     private fun initListeners() {
         binding.LocationBoxImage.setOnClickListener {
-            initMap()
-            showDatePickerDialog()
+            if(writeViewModel.isCourseDataLoaded.value == false) {
+                initMap()
+                showDatePickerDialog()
+            }
         }
 
         binding.DeleteButton.setOnClickListener {
-            binding.naverMapEditPost.visibility = View.INVISIBLE
-            binding.DeleteButton.visibility = View.INVISIBLE
-            visitDataList.clear()
-            locationDataList.clear()
-
+            writeViewModel.deleteCourseData()
         }
 
         binding.WriteDoneButton.setOnClickListener {
@@ -261,17 +273,9 @@ class EditPostActivity : AppCompatActivity(), OnMapReadyCallback, CalendarDialog
             else {
                 binding.progressBar.visibility = View.VISIBLE
                 binding.constraintProgress.visibility = View.VISIBLE
-                takeSnapForMap(
-                    VectoService.PostData(
-                        binding.EditTitle.text.toString(),
-                        binding.EditContent.text.toString(),
-                        LocalDateTime.now().withNano(0).toString(),
-                        null,
-                        locationDataList,
-                        visitDataList,
-                        null
-                    )
-                )
+
+                uploadStarted = true
+                takeSnapForMap()
             }
 
         }
@@ -279,8 +283,6 @@ class EditPostActivity : AppCompatActivity(), OnMapReadyCallback, CalendarDialog
         binding.PhotoBoxImage.setOnClickListener {
             openGallery()
         }
-        setGalleryResult()
-        setCropResult()
 
 
         binding.BackButton.setOnClickListener {
@@ -289,6 +291,7 @@ class EditPostActivity : AppCompatActivity(), OnMapReadyCallback, CalendarDialog
     }
 
 
+    @SuppressLint("NotifyDataSetChanged")
     private fun initRecyclerView(feedInfo: VectoService.FeedInfoResponse) {
         myEditImageAdapter = MyEditImageAdapter(this)
         myEditImageAdapter.imageUrl.addAll(feedInfo.image)
@@ -342,7 +345,6 @@ class EditPostActivity : AppCompatActivity(), OnMapReadyCallback, CalendarDialog
             val writeBottomDialog = WriteBottomDialog(this)
             writeBottomDialog.showDialog(visitDataList) { selectedItems -> //구간을 선택함 (모든 정보 완료)
 
-                binding.naverMapEditPost.visibility = View.VISIBLE
                 mapOverlayManager.deleteOverlay()
 
                 //선택한 날짜의 방문지의 처음과 끝까지의 경로
@@ -370,7 +372,7 @@ class EditPostActivity : AppCompatActivity(), OnMapReadyCallback, CalendarDialog
         }
 
 
-    private fun changeLayout(w: Int, h: Int){
+    private fun changeMapSize(w: Int, h: Int){
         val params = binding.naverMapEditPost.layoutParams
 
         val density = resources.displayMetrics.density
@@ -383,14 +385,14 @@ class EditPostActivity : AppCompatActivity(), OnMapReadyCallback, CalendarDialog
         binding.naverMapEditPost.layoutParams = params
     }
 
-    private fun takeSnapForMap(writeData: VectoService.PostData){
+    private fun takeSnapForMap(){
         binding.MapImage.visibility = View.INVISIBLE
         binding.naverMapEditPost.visibility = View.VISIBLE
 
         mapSnapshot.clear()
 
 
-        changeLayout(340, 340)
+        changeMapSize(340, 340)
         if(visitDataList.size == 1)
             mapOverlayManager.moveCameraForVisitUpload(visitDataList[0])
         else
@@ -403,7 +405,7 @@ class EditPostActivity : AppCompatActivity(), OnMapReadyCallback, CalendarDialog
         }, 900)
 
         Handler(Looper.getMainLooper()).postDelayed({
-            changeLayout(340, 170)
+            changeMapSize(340, 170)
         }, 1000)
 
         Handler(Looper.getMainLooper()).postDelayed({
@@ -452,7 +454,25 @@ class EditPostActivity : AppCompatActivity(), OnMapReadyCallback, CalendarDialog
 
         }, 2200)
 
+    }
 
+    private fun sendFailMessage(message: String, context: Context, type: String) {
+        if(message == "FAIL"){
+            when(type){
+                "errorLiveData" -> {
+                    Toast.makeText(context, "방문지 역지오코딩에 실패하였습니다.", Toast.LENGTH_SHORT).show()
+                }
+                "feedErrorLiveData" -> {
+                    Toast.makeText(context, "게시글 수정에 실패하였습니다.", Toast.LENGTH_SHORT).show()
+                }
+                "imageErrorLiveData" -> {
+                    Toast.makeText(context, "이미지 업로드에 실패하였습니다.", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+        else if(message == "ERROR"){
+            Toast.makeText(context, getText(R.string.APIErrorToastMessage), Toast.LENGTH_SHORT).show()
+        }
     }
 
     override fun onDateSelected(date: String) {

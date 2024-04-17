@@ -6,7 +6,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.vecto_example.vecto.data.model.VisitData
-import com.vecto_example.vecto.data.model.VisitDataForWite
+import com.vecto_example.vecto.data.model.VisitDataForWrite
 import com.vecto_example.vecto.retrofit.VectoService
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -35,15 +35,21 @@ class WriteViewModel(private val repository: WriteRepository): ViewModel() {
     private val _addFeedResult = MutableLiveData<String>()
     val addFeedResult: LiveData<String> = _addFeedResult
 
-    private val address = mutableListOf<String>()
+    private val _updateFeedResult = MutableLiveData<String>()
+    val updateFeedResult: LiveData<String> = _updateFeedResult
 
-    lateinit var visitDataForWriteList: MutableList<VisitDataForWite>
+    private lateinit var address: MutableList<String>
+
+    lateinit var visitDataForWriteList: MutableList<VisitDataForWrite>
 
     private val _mapImageDone = MutableLiveData<Boolean>()
     val mapImageDone: LiveData<Boolean> = _mapImageDone
 
     private val _normalImageDone = MutableLiveData<Boolean>()
     val normalImageDone: LiveData<Boolean> = _normalImageDone
+
+    private val _isCourseDataLoaded = MutableLiveData<Boolean>(false)
+    val isCourseDataLoaded: LiveData<Boolean> = _isCourseDataLoaded
 
     fun uploadImages(type: String, imageParts: List<MultipartBody.Part>) {
 
@@ -102,12 +108,15 @@ class WriteViewModel(private val repository: WriteRepository): ViewModel() {
     }
 
     fun updateFeed(updatePostRequest: VectoService.UpdatePostRequest) {
+        Log.d("UPDATE DATA", "${visitDataForWriteList.size}}")
 
         viewModelScope.launch {
             val updateFeedResponse = repository.updateFeed(updatePostRequest)
 
             updateFeedResponse.onSuccess {
+                _updateFeedResult.postValue("SUCCESS")
 
+                endLoading()
             }.onFailure {
                 _feedErrorLiveData.value = it.message
 
@@ -118,34 +127,41 @@ class WriteViewModel(private val repository: WriteRepository): ViewModel() {
 
     fun reverseGeocode(visitDataList: MutableList<VisitData>) {
 
-        visitDataForWriteList = MutableList(visitDataList.size){ VisitDataForWite("", "", 0.0, 0.0, 0.0, 0.0, 0, "", "") }
+        visitDataForWriteList = MutableList(visitDataList.size){ VisitDataForWrite("", "", 0.0, 0.0, 0.0, 0.0, 0, "", "") }
+        address = MutableList(visitDataList.size) {""}
+        _isCourseDataLoaded.value = true
 
         viewModelScope.launch {
             try {
-                val geocodeList = visitDataList.map{
-                    async { repository.reverseGeocode(it) }
-                }.awaitAll()
+                val geocodeList = visitDataList.map { async { repository.reverseGeocode(it) } }.awaitAll()
 
-                for(i in 0 until visitDataList.size){
-                    geocodeList[i].onSuccess {
-                        if(it.results[0].region?.area1?.name?.isEmpty() == false){
-                            address[i] += it.results[0].region?.area1?.name.toString()
-                            if(it.results[0].region?.area2?.name?.isEmpty() == false){
-                                address[i] += (" " + it.results[0].region?.area2?.name)
-                                if(it.results[0].region?.area3?.name?.isEmpty() == false)
-                                    address[i] += (" " + it.results[0].region?.area3?.name)
+                geocodeList.forEachIndexed { index, result ->
+                    result.onSuccess {
+                        if(it.results[0].region?.area1?.name?.isEmpty() == false) {
+                            address[index] += it.results[0].region?.area1?.name.toString()
+                            if (it.results[0].region?.area2?.name?.isEmpty() == false) {
+                                address[index] += (" " + it.results[0].region?.area2?.name)
+                                if (it.results[0].region?.area3?.name?.isEmpty() == false)
+                                    address[index] += (" " + it.results[0].region?.area3?.name)
                             }
                         }
                     }.onFailure {
-                        address[i] = ""
+                        address[index] = ""
                     }
 
-                    visitDataForWriteList[i] = VisitDataForWite(visitDataList[i].datetime,
-                        visitDataList[i].endtime, visitDataList[i].lat, visitDataList[i].lng,
-                        visitDataList[i].lat_set, visitDataList[i].lng_set, visitDataList[i].staytime,
-                        visitDataList[i].name, address[i])
-                }
+                    visitDataForWriteList[index] = VisitDataForWrite(
+                        datetime = visitDataList[index].datetime,
+                        endtime = visitDataList[index].endtime,
+                        lat = visitDataList[index].lat,
+                        lng = visitDataList[index].lng,
+                        lat_set = visitDataList[index].lat_set,
+                        lng_set = visitDataList[index].lng_set,
+                        staytime = visitDataList[index].staytime,
+                        name = visitDataList[index].name,
+                        address = address[index]
+                    )
 
+                }
             } catch (e: Exception) {
                 if(e.message == "FAIL"){
                     _errorLiveData.value = "FAIL"
@@ -153,34 +169,34 @@ class WriteViewModel(private val repository: WriteRepository): ViewModel() {
                     _errorLiveData.value = "ERROR"
                 }
             }
+
         }
-
-        /*viewModelScope.launch{
-            val reverseGeocodeResponse = repository.reverseGeocode(visitData)
-
-            reverseGeocodeResponse.onSuccess {
-
-            }.onFailure {
-                if(it.message == "FAIL"){
-                    _errorLiveData.value = "FAIL"
-                }else if(it.message == "ERROR"){
-                    _errorLiveData.value = "ERROR"
-                }
-            }
-
-        }*/
 
     }
 
     fun startLoading(){
-        Log.d("STARTLOADING", "START")
+        Log.d("WriteViewModel", "START LOADING")
 
         _isLoading.value = true
     }
 
     private fun endLoading(){
-        Log.d("ENDLOADING", "END")
+        Log.d("WriteViewModel", "END LOADING")
 
         _isLoading.value = false
+    }
+
+    fun deleteCourseData(){
+        Log.d("WriteViewModel", "deleteCourseData")
+
+        _isCourseDataLoaded.value = false
+    }
+
+    fun finishUpload(){
+        _addFeedResult.value = ""
+        visitDataForWriteList.clear()
+        _mapImageUrls.postValue(emptyList())
+        _imageUrls.postValue(emptyList())
+        _isCourseDataLoaded.value = false
     }
 }

@@ -77,7 +77,9 @@ interface TMapAPIService {
     data class Properties(
         val index: Int,
         val name: String,
-        val description: String
+        val description: String,
+        val totalTime: Int,
+        val totalDistance: Int
     )
     data class Feature(
         val type: String,

@@ -23,10 +23,12 @@ class WriteRepository(private val vectoService: VectoService, private val naverS
             }
             else{
                 val errorBody = response.errorBody()?.string()
-                val gson = Gson()
-                val errorResponse: VectoService.VectoResponse<*>? = gson.fromJson(errorBody, VectoService.VectoResponse::class.java)
-                Log.d("uploadImages", "FAIL: ${response.errorBody()}")
-                Result.failure(Exception(errorResponse!!.code))
+                //val gson = Gson()
+                //val errorResponse: VectoService.VectoResponse<*>? = gson.fromJson(errorBody, VectoService.VectoResponse::class.java)
+                Log.d("uploadImages", "FAIL: ${errorBody}")
+                //Log.d("uploadImages", "FAIL: ${response.errorBody()}")
+                //Result.failure(Exception(errorResponse!!.code))
+                Result.failure(Exception("FAIL"))
             }
         } catch (e: Exception) {
             Log.e("uploadImages", "ERROR", e)
@@ -48,7 +50,8 @@ class WriteRepository(private val vectoService: VectoService, private val naverS
                 val errorBody = response.errorBody()?.string()
                 val gson = Gson()
                 val errorResponse: VectoService.VectoResponse<*>? = gson.fromJson(errorBody, VectoService.VectoResponse::class.java)
-                Log.d("addFeed", "FAIL: ${response.errorBody()}")
+                //Log.d("addFeed", "FAIL: ${response.errorBody()}")
+                Log.d("addFeed", "FAIL: ${errorBody}")
                 Result.failure(Exception(errorResponse!!.code))
             }
         } catch (e: Exception) {
