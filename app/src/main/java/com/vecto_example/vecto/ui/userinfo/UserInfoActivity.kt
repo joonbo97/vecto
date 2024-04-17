@@ -18,7 +18,7 @@ import com.vecto_example.vecto.databinding.ActivityUserInfoBinding
 import com.vecto_example.vecto.popupwindow.ReportPopupWindow
 import com.vecto_example.vecto.dialog.ReportUserDialog
 import com.vecto_example.vecto.retrofit.VectoService
-import com.vecto_example.vecto.ui.mypage.myfeed.adapter.MypostAdapter
+import com.vecto_example.vecto.ui.mypage.myfeed.adapter.MyPostAdapter
 import com.vecto_example.vecto.utils.LoadImageUtils
 import retrofit2.Call
 import retrofit2.Callback
@@ -30,9 +30,9 @@ class UserInfoActivity : AppCompatActivity() {
         UserInfoViewModelFactory(FeedRepository(VectoService.create()), UserRepository(VectoService.create()))
     }
 
-    var followFlag: Boolean = false
+    private var followFlag: Boolean = false
 
-    private lateinit var mypostAdapter: MypostAdapter
+    private lateinit var mypostAdapter: MyPostAdapter
 
     private var userId = ""
 
@@ -160,7 +160,7 @@ class UserInfoActivity : AppCompatActivity() {
     }
 
     private fun initRecyclerView(){
-        mypostAdapter = MypostAdapter(this)
+        mypostAdapter = MyPostAdapter(this)
 
         clearRecyclerView()
 

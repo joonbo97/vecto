@@ -14,7 +14,7 @@ import com.vecto_example.vecto.data.Auth
 import com.vecto_example.vecto.data.repository.FeedRepository
 import com.vecto_example.vecto.databinding.FragmentMypagePostBinding
 import com.vecto_example.vecto.retrofit.VectoService
-import com.vecto_example.vecto.ui.mypage.myfeed.adapter.MypostAdapter
+import com.vecto_example.vecto.ui.mypage.myfeed.adapter.MyPostAdapter
 import com.vecto_example.vecto.utils.LoadImageUtils
 
 class MypageFeedFragment : Fragment() {
@@ -23,7 +23,7 @@ class MypageFeedFragment : Fragment() {
         MypageFeedViewModelFactory(FeedRepository(VectoService.create()))
     }
 
-    private lateinit var mypostAdapter: MypostAdapter
+    private lateinit var mypostAdapter: MyPostAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -69,7 +69,7 @@ class MypageFeedFragment : Fragment() {
     }
 
     private fun initRecyclerView() {
-        mypostAdapter = MypostAdapter(requireContext())
+        mypostAdapter = MyPostAdapter(requireContext())
 
         clearRecyclerView()
 

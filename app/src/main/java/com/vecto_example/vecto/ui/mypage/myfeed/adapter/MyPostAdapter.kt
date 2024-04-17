@@ -32,7 +32,7 @@ import java.time.Duration
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
-class MypostAdapter(private val context: Context): RecyclerView.Adapter<MypostAdapter.ViewHolder>()
+class MyPostAdapter(private val context: Context): RecyclerView.Adapter<MyPostAdapter.ViewHolder>()
 {
     val feedInfo = mutableListOf<VectoService.FeedInfoResponse>()
     val feedID = mutableListOf<Int>()
