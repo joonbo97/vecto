@@ -7,9 +7,11 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.vecto_example.vecto.R
 import com.vecto_example.vecto.data.Auth
 import com.vecto_example.vecto.data.repository.FeedRepository
 import com.vecto_example.vecto.databinding.FragmentMypagePostBinding
@@ -123,6 +125,14 @@ class MypageFeedFragment : Fragment() {
                 binding.progressBar.visibility = View.GONE
         }
 
+        /*   오류 관련 Observer   */
+        viewModel.feedErrorLiveData.observe(viewLifecycleOwner) {
+            if(it == "FAIL") {
+                Toast.makeText(requireContext(), "게시글 불러오기에 실패하였습니다. 다시 시도해 주세요.", Toast.LENGTH_SHORT).show()
+            } else if(it == "ERROR") {
+                Toast.makeText(requireContext(), getText(R.string.APIErrorToastMessage), Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 
     @SuppressLint("NotifyDataSetChanged")

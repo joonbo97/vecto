@@ -293,6 +293,14 @@ class SearchFragment : Fragment(), MainActivity.ScrollToTop{
                 binding.progressBar.visibility = View.GONE
         }
 
+        /*   오류 관련 Observer   */
+        searchViewModel.feedErrorLiveData.observe(viewLifecycleOwner) {
+            if(it == "FAIL") {
+                Toast.makeText(requireContext(), "게시글 불러오기에 실패하였습니다. 다시 시도해 주세요.", Toast.LENGTH_SHORT).show()
+            } else if(it == "ERROR") {
+                Toast.makeText(requireContext(), getText(R.string.APIErrorToastMessage), Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 
     private fun initRecyclerView() {

@@ -250,6 +250,14 @@ class UserInfoActivity : AppCompatActivity() {
             }
         }
 
+        userInfoViewModel.feedErrorLiveData.observe(this) {
+            if(it == "FAIL") {
+                Toast.makeText(this, "게시글 불러오기에 실패하였습니다. 다시 시도해 주세요.", Toast.LENGTH_SHORT).show()
+            } else if(it == "ERROR") {
+                Toast.makeText(this, getText(R.string.APIErrorToastMessage), Toast.LENGTH_SHORT).show()
+            }
+        }
+
     }
 
     private fun initRecyclerView(){
