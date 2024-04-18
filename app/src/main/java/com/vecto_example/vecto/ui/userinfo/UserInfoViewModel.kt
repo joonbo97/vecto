@@ -10,7 +10,6 @@ import com.vecto_example.vecto.data.repository.UserRepository
 import com.vecto_example.vecto.retrofit.VectoService
 import com.vecto_example.vecto.utils.ServerResponse
 import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
 
 class UserInfoViewModel(private val repository: FeedRepository, private val userRepository: UserRepository) : ViewModel() {

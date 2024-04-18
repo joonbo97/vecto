@@ -9,7 +9,6 @@ import com.vecto_example.vecto.data.Auth
 import com.vecto_example.vecto.data.repository.FeedRepository
 import com.vecto_example.vecto.retrofit.VectoService
 import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
 
 class MypageFeedViewModel(private val repository: FeedRepository) : ViewModel() {

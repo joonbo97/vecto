@@ -8,7 +8,6 @@ import androidx.lifecycle.viewModelScope
 import com.vecto_example.vecto.data.repository.FeedRepository
 import com.vecto_example.vecto.retrofit.VectoService
 import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
 import java.util.Collections.addAll
 
