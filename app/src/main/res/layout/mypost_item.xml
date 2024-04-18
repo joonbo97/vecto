@@ -60,10 +60,9 @@
     <ImageView
         android:id="@+id/PostMenuImage"
         android:padding="15dp"
-        android:layout_width="60dp"
-        android:layout_height="60dp"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
         android:src="@drawable/post_menu"
-        android:layout_marginTop="10dp"
         app:layout_constraintEnd_toEndOf="@+id/ImageItemBox"
         app:layout_constraintTop_toTopOf="@+id/ImageItemBox" />
 

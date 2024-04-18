@@ -77,23 +77,41 @@ interface VectoService {
         @Path("feedId") feedId: Int,
     ): Call<VectoResponse<Unit>>
 
-    @GET("follow/{userId}")//팔로우 여부 반환 code: S027이면 이미 팔로우 S028이면 안한 상태
+    @GET("follow/{userId}")
     fun getFollow(
         @Header("Authorization") authorization: String,
         @Path("userId") userId: String
     ):Call<VectoResponse<Unit>>
 
-    @POST("follow/{userId}")//팔로우 등록 S023이면 등록 성공
+    @GET("follow/{userId}")
+    suspend fun getFollow2(
+        @Header("Authorization") authorization: String,
+        @Path("userId") userId: String
+    ):Response<VectoResponse<Unit>>
+
+    @POST("follow/{userId}")
     fun sendFollow(
         @Header("Authorization") authorization: String,
         @Path("userId") userId: String
     ):Call<VectoResponse<Unit>>
+
+    @POST("follow/{userId}")
+    suspend fun postFollow2(
+        @Header("Authorization") authorization: String,
+        @Path("userId") userId: String
+    ):Response<VectoResponse<Unit>>
 
     @DELETE("follow/{userId}")
     fun deleteFollow(
         @Header("Authorization") authorization: String,
         @Path("userId") userId: String
     ):Call<VectoResponse<Unit>>
+
+    @DELETE("follow/{userId}")
+    suspend fun deleteFollow2(
+        @Header("Authorization") authorization: String,
+        @Path("userId") userId: String
+    ):Response<VectoResponse<Unit>>
 
     @DELETE("feed/{feedId}")
     fun deleteFeed(
@@ -108,10 +126,10 @@ interface VectoService {
     ): Response<VectoResponse<String>>
 
     @POST("complaint")
-    fun postComplaint(
+    suspend fun postComplaint(
         @Header("Authorization") authorization: String,
         @Body request: ComplaintRequest
-    ): Call<VectoResponse<Unit>>
+    ): Response<VectoResponse<Unit>>
 
     @GET("feed/feeds/personal")
     suspend fun getPersonalFeedList(

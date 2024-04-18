@@ -6,76 +6,106 @@ import com.vecto_example.vecto.retrofit.VectoService
 
 class FeedRepository (private val vectoService: VectoService) {
     /*   Feed 관련 API 함수   */
-    suspend fun getFeedList(pageNo: Int): VectoService.FeedPageResponse {
+    suspend fun getFeedList(pageNo: Int): Result<VectoService.FeedPageResponse> {
         /*   모든 게시물을 최신 순으로 확인 할 수 있는 함수   */
+        return try{
+            val response = vectoService.getFeedList(pageNo)
 
-        val response = vectoService.getFeedList(pageNo)
+            if(response.isSuccessful){
+                Log.d("getFeedList", "SUCCESS: ${response.body()}")
 
-        if(response.isSuccessful){
-            Log.d("get Feed ID", "${response.body()}")
+                Result.success(response.body()!!.result!!)
+            } else {
+                Log.d("getFeedList", "FAIL: ${response.errorBody()}")
 
-            return response.body()!!.result!!
-        }
-        else{
-            throw Exception("Failed: ${response.errorBody()?.string()}")
+                Result.failure(Exception("FAIL"))
+            }
+        } catch (e: Exception) {
+            Log.e("getFeedList", "ERROR", e)
+            Result.failure(Exception("ERROR"))
         }
     }
 
-    suspend fun getPersonalFeedList(isFollowPage: Boolean, pageNo: Int): VectoService.FeedPageResponse {
+    suspend fun getPersonalFeedList(isFollowPage: Boolean, pageNo: Int): Result<VectoService.FeedPageResponse> {
         /*   로그인 시 알고리즘에 맞는 게시물을 요청하는 함수   */
+        return try {
+            val response = vectoService.getPersonalFeedList("Bearer ${Auth.token}", pageNo, isFollowPage)
 
-        val response = vectoService.getPersonalFeedList("Bearer ${Auth.token}", pageNo, isFollowPage)
+            if(response.isSuccessful){
+                Log.d("getPersonalFeedList", "SUCCESS: ${response.body()}")
 
-        if(response.isSuccessful){
-            Log.d("get Personal Feed ID", "${response.body()}")
+                Result.success(response.body()!!.result!!)
+            } else {
+                Log.d("getPersonalFeedList", "FAIL: ${response.errorBody()}")
 
-            return response.body()!!.result!!
-        }
-        else{
-            throw Exception("Failed: ${response.errorBody()?.string()}")
+                Result.failure(Exception("FAIL"))
+            }
+        } catch (e: Exception) {
+            Log.e("getPersonalFeedList", "ERROR", e)
+            Result.failure(Exception("ERROR"))
         }
     }
 
-    suspend fun getSearchFeedList(query: String, pageNo: Int): VectoService.FeedPageResponse {
+    suspend fun getSearchFeedList(query: String, pageNo: Int): Result<VectoService.FeedPageResponse> {
         /*   검색 시 결과에 맞는 게시물을 확인 할 수 있는 함수   */
+        return try {
+            val response = vectoService.getSearchFeedList(pageNo, query)
 
-        val response = vectoService.getSearchFeedList(pageNo, query)
+            if(response.isSuccessful){
+                Log.d("getSearchFeedList", "SUCCESS: ${response.body()}")
 
-        if(response.isSuccessful){
-            Log.d("get Search Feed ID", "${response.body()}")
+                Result.success(response.body()!!.result!!)
+            }
+            else{
+                Log.d("getSearchFeedList", "FAIL: ${response.errorBody()}")
 
-            return response.body()!!.result!!
-        }
-        else{
-            throw Exception("Failed: ${response.errorBody()?.string()}")
+                Result.failure(Exception("FAIL"))
+            }
+        } catch (e: Exception) {
+            Log.e("getSearchFeedList", "ERROR", e)
+            Result.failure(Exception("ERROR"))
         }
     }
 
-    suspend fun getLikeFeedList(pageNo: Int): VectoService.FeedPageResponse {
+    suspend fun getLikeFeedList(pageNo: Int): Result<VectoService.FeedPageResponse> {
         /*   좋아요 누른 게시물 확인   */
-        val response = vectoService.getLikeFeedList(Auth._userId.value.toString(), pageNo)
+        return try {
+            val response = vectoService.getLikeFeedList(Auth._userId.value.toString(), pageNo)
 
-        if(response.isSuccessful){
-            Log.d("get LikeFeed ID", "${response.body()}")
+            if(response.isSuccessful){
+                Log.d("getLikeFeedList", "SUCCESS: ${response.body()}")
 
-            return response.body()!!.result!!
-        }
-        else{
-            throw Exception("Failed: ${response.errorBody()?.string()}")
+                Result.success(response.body()!!.result!!)
+            }
+            else{
+                Log.d("getLikeFeedList", "FAIL: ${response.errorBody()}")
+
+                Result.failure(Exception("FAIL"))
+            }
+        } catch (e:Exception) {
+            Log.e("getLikeFeedList", "ERROR", e)
+            Result.failure(Exception("ERROR"))
         }
     }
 
-    suspend fun getUserFeedList(userId: String, pageNo: Int): VectoService.FeedPageResponse {
+    suspend fun getUserFeedList(userId: String, pageNo: Int): Result<VectoService.FeedPageResponse> {
         /*   사용자가 작성한 게시물 확인   */
-        val response = vectoService.getUserFeedList(userId, pageNo)
+        return try {
+            val response = vectoService.getUserFeedList(userId, pageNo)
 
-        if(response.isSuccessful){
-            Log.d("get UserFeed ID", "${response.body()}")
+            if(response.isSuccessful){
+                Log.d("getUserFeedList", "SUCCESS: ${response.body()}")
 
-            return response.body()!!.result!!
-        }
-        else{
-            throw Exception("Failed: ${response.errorBody()?.string()}")
+                Result.success(response.body()!!.result!!)
+            }
+            else{
+                Log.d("getUserFeedList", "FAIL: ${response.errorBody()}")
+
+                Result.failure(Exception("FAIL"))
+            }
+        } catch (e: Exception) {
+            Log.e("getUserFeedList", "ERROR", e)
+            Result.failure(Exception("ERROR"))
         }
     }
 
@@ -92,7 +122,9 @@ class FeedRepository (private val vectoService: VectoService) {
             return response.body()!!.result!!
         }
         else{
-            throw Exception("Failed: ${response.errorBody()?.string()}")
+            Log.d("getUserFeedList", "FAIL: ${response.errorBody()}")
+
+            throw Exception("FAIL")
         }
     }
 }

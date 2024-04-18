@@ -31,6 +31,10 @@ class MypageLikeFeedViewModel(private val repository: FeedRepository) : ViewMode
     private val _feedInfoLiveData = MutableLiveData<List<VectoService.FeedInfoResponse>>()
     val feedInfoLiveData: LiveData<List<VectoService.FeedInfoResponse>> = _feedInfoLiveData
 
+    private val _feedErrorLiveData = MutableLiveData<String>()
+    val feedErrorLiveData: LiveData<String> = _feedErrorLiveData
+
+
     private fun startLoading(){
         Log.d("STARTLOADING", "START")
 
@@ -50,30 +54,38 @@ class MypageLikeFeedViewModel(private val repository: FeedRepository) : ViewMode
     fun fetchLikeFeedResults(){
         startLoading()
 
-        Log.d("FETCHLIKEFEED", "LOADING")
-
         viewModelScope.launch {
-            try {
-                if(!lastPage) { //마지막 page가 아닐 경우에만 실행
+            val feedListResponse = repository.getLikeFeedList(nextPage)
+
+            feedListResponse.onSuccess { feedPageResponse ->
+                if(!lastPage) {
                     feedIdsLiveData.value?.let { allFeedIds.addAll(it.feedIds) }
                     feedInfoLiveData.value?.let { allFeedInfo.addAll(it) }
 
-                    val feedListResponse = repository.getLikeFeedList(nextPage)
-                    val feedIds = feedListResponse.feedIds  //요청한 pageNo에 해당하는 Feed Ids
+                    val feedInfo = mutableListOf<VectoService.FeedInfoResponse>()
 
-                    val feedInfo = feedIds.map {
-                        async { repository.getFeedInfo(it) }
-                    }.awaitAll()    //모든 feed info 요청이 완료될 때까지 기다림
-
+                    feedPageResponse.feedIds.forEach { feedId ->
+                        val job = async {
+                            try {
+                                repository.getFeedInfo(feedId)
+                            } catch (e: Exception) {
+                                Log.e("fetchLikeFeedResults", "Failed to fetch feed info for ID $feedId", e)
+                                null // 실패한 경우 null 반환
+                            }
+                        }
+                        job.await()?.let {
+                            feedInfo.add(it) // null이 아닌 결과만 추가
+                        }
+                    }
                     _feedInfoLiveData.postValue(feedInfo)   //LiveData 값 변경
-                    _feedIdsLiveData.postValue(feedListResponse)
+                    _feedIdsLiveData.postValue(feedPageResponse)
 
-                    nextPage = feedListResponse.nextPage    //페이지 정보값 변경
-                    lastPage = feedListResponse.lastPage
+                    nextPage = feedPageResponse.nextPage    //페이지 정보값 변경
+                    lastPage = feedPageResponse.lastPage
                 }
-            } catch (e: Exception) {
-                Log.e("fetchLikeFeedResultsError", "Failed to load notifications", e)
-            } finally {
+                endLoading()
+            }.onFailure {
+                _feedErrorLiveData.value = it.message
                 endLoading()
             }
         }

@@ -20,6 +20,7 @@ import com.vecto_example.vecto.dialog.ReportUserDialog
 import com.vecto_example.vecto.retrofit.VectoService
 import com.vecto_example.vecto.ui.mypage.myfeed.adapter.MyPostAdapter
 import com.vecto_example.vecto.utils.LoadImageUtils
+import com.vecto_example.vecto.utils.RequestLoginUtils
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -30,9 +31,7 @@ class UserInfoActivity : AppCompatActivity() {
         UserInfoViewModelFactory(FeedRepository(VectoService.create()), UserRepository(VectoService.create()))
     }
 
-    private var followFlag: Boolean = false
-
-    private lateinit var mypostAdapter: MyPostAdapter
+    private lateinit var myPostAdapter: MyPostAdapter
 
     private var userId = ""
 
@@ -47,8 +46,11 @@ class UserInfoActivity : AppCompatActivity() {
             userInfoViewModel.getUserInfo(it)
             getFeed(it)
 
-            if(userId == Auth._userId.value)
+            if(userId == Auth._userId.value) {
                 binding.MenuIcon.visibility = View.GONE
+                binding.FollowButton.visibility = View.GONE
+                binding.FollowButtonText.visibility = View.GONE
+            }
         }
 
         initRecyclerView()
@@ -83,27 +85,24 @@ class UserInfoActivity : AppCompatActivity() {
                     reportUserDialog.onOkButtonClickListener = { selectedOptionId, detailContent ->
                         when(selectedOptionId) {
                             R.id.radioButton0 -> {
-                                complaintUser("BAD_MANNER", userId, null)
+                                userInfoViewModel.postComplaint(VectoService.ComplaintRequest("BAD_MANNER", userId, null))
                             }
 
                             R.id.radioButton1 -> {
-                                complaintUser("INSULT", userId, null)
+                                userInfoViewModel.postComplaint(VectoService.ComplaintRequest("INSULT", userId, null))
                             }
                             R.id.radioButton2 -> {
-                                complaintUser("SEXUAL_HARASSMENT", userId, null)
+                                userInfoViewModel.postComplaint(VectoService.ComplaintRequest("SEXUAL_HARASSMENT", userId, null))
                             }
                             R.id.radioButton3 -> {
                                 if (detailContent != null) {
-                                    complaintUser("OTHER_PROBLEM", userId, detailContent)
+                                    userInfoViewModel.postComplaint(VectoService.ComplaintRequest("OTHER_PROBLEM", userId, detailContent))
                                 }
                                 else{
-                                    complaintUser("OTHER_PROBLEM", userId, null)
+                                    userInfoViewModel.postComplaint(VectoService.ComplaintRequest("OTHER_PROBLEM", userId, null))
                                 }
                             }
                         }
-
-
-                        Toast.makeText(this@UserInfoActivity, "신고처리 되었습니다. 검토후 조치 예정입니다.", Toast.LENGTH_SHORT).show()
                     }
                 }
             )
@@ -111,18 +110,47 @@ class UserInfoActivity : AppCompatActivity() {
             // 앵커 뷰를 기준으로 팝업 윈도우 표시
             reportPopupWindow.showPopupWindow(binding.MenuIcon)
         }
+
+        binding.FollowButton.setOnClickListener {
+            if(Auth.loginFlag.value == false)
+            {
+                RequestLoginUtils.requestLogin(this)
+                return@setOnClickListener
+            }
+
+            if(!userInfoViewModel.isFollowRequestFinished){
+                Toast.makeText(this, "이전 요청을 처리 중입니다. 잠시 후 다시 시도해 주세요.", Toast.LENGTH_SHORT).show()
+            } else {
+                if(userInfoViewModel.isFollowing.value == null){
+                    userInfoViewModel.getFollow(userId)
+                }
+                else {
+                    if (!userInfoViewModel.isFollowing.value!!) {
+                        userInfoViewModel.postFollow(userId)
+                    } else {
+                        userInfoViewModel.deleteFollow(userId)
+                    }
+                }
+            }
+        }
     }
 
     private fun initObservers() {
+        Auth.loginFlag.observe(this){
+            if(Auth._userId.value == userId){
+                binding.FollowButton.visibility = View.GONE
+                binding.FollowButtonText.visibility = View.GONE
+            }
+        }
         /*   게시글 관련 Observer   */
         userInfoViewModel.feedInfoLiveData.observe(this) {
             //새로운 feed 정보를 받았을 때의 처리
-            mypostAdapter.pageNo = userInfoViewModel.nextPage //다음 page 정보
-            userInfoViewModel.feedInfoLiveData.value?.let { mypostAdapter.addFeedInfoData(it) }   //새로 받은 게시글 정보 추가
+            myPostAdapter.pageNo = userInfoViewModel.nextPage //다음 page 정보
+            userInfoViewModel.feedInfoLiveData.value?.let { myPostAdapter.addFeedInfoData(it) }   //새로 받은 게시글 정보 추가
         }
 
         userInfoViewModel.feedIdsLiveData.observe(this) {
-            userInfoViewModel.feedIdsLiveData.value?.let { mypostAdapter.addFeedIdData(it.feedIds) }
+            userInfoViewModel.feedIdsLiveData.value?.let { myPostAdapter.addFeedIdData(it.feedIds) }
 
             if(userInfoViewModel.allFeedIds.isEmpty() && userInfoViewModel.feedIdsLiveData.value?.feedIds.isNullOrEmpty()){
                 setNoneImage()
@@ -146,7 +174,7 @@ class UserInfoActivity : AppCompatActivity() {
         /*   사용자 정보 Observer   */
         userInfoViewModel.userInfoResult.observe(this) { userInfoResult ->
             userInfoResult.onSuccess {
-                setUserProfile(it)
+
             }.onFailure {
                 if(it.message == "E020"){
                     Toast.makeText(this, "사용자 정보가 존재하지 않습니다.", Toast.LENGTH_SHORT).show()
@@ -157,19 +185,84 @@ class UserInfoActivity : AppCompatActivity() {
             }
         }
 
+        userInfoViewModel.userInfo.observe(this) {
+            if(it.userId.isNotEmpty()) {
+                setUserProfile(it)
+            }
+        }
+
+        /*   Follow 정보 Observer   */
+        userInfoViewModel.isFollowing.observe(this) {
+            setFollowButton(it)
+        }
+
+        userInfoViewModel.getFollowError.observe(this) {
+            if(it == "FAIL"){
+                Toast.makeText(this, "팔로우 정보를 불러오는데 실패하였습니다. 다시 시도해 주세요.", Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(this, getText(R.string.APIErrorToastMessage), Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        userInfoViewModel.postFollowResult.observe(this) {
+            if(it){
+                Toast.makeText(this, "${binding.UserNameText.text} 님을 팔로우하기 시작했습니다.", Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(this, "이미 ${binding.UserNameText.text} 님을 팔로우 중입니다.", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        userInfoViewModel.postFollowError.observe(this) {
+            if(it == "FAIL"){
+                Toast.makeText(this, "팔로우 요청에 실패하였습니다. 다시 시도해 주세요.", Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(this, getText(R.string.APIErrorToastMessage), Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        userInfoViewModel.deleteFollowResult.observe(this) {
+            if(it){
+                Toast.makeText(this, "${binding.UserNameText.text} 님 팔로우를 취소하였습니다.", Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(this, "이미 ${binding.UserNameText.text} 님을 팔로우하지 않습니다.", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        userInfoViewModel.deleteFollowError.observe(this) {
+            if(it == "FAIL"){
+                Toast.makeText(this, "팔로우 취소 요청에 실패하였습니다. 다시 시도해 주세요.", Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(this, getText(R.string.APIErrorToastMessage), Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        userInfoViewModel.postComplaintResult.observe(this) {
+            if(it) {
+                Toast.makeText(this, "신고처리되었습니다. 검토 후 조치 예정입니다.", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        userInfoViewModel.postComplaintError.observe(this) {
+            if(it == "FAIL"){
+                Toast.makeText(this, "신고하기 요청에 실패하였습니다. 다시 시도해 주세요.", Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(this, getText(R.string.APIErrorToastMessage), Toast.LENGTH_SHORT).show()
+            }
+        }
+
     }
 
     private fun initRecyclerView(){
-        mypostAdapter = MyPostAdapter(this)
+        myPostAdapter = MyPostAdapter(this)
 
         clearRecyclerView()
 
-        mypostAdapter.addFeedInfoData(userInfoViewModel.allFeedInfo)
-        mypostAdapter.addFeedIdData(userInfoViewModel.allFeedIds)
+        myPostAdapter.addFeedInfoData(userInfoViewModel.allFeedInfo)
+        myPostAdapter.addFeedIdData(userInfoViewModel.allFeedIds)
 
         val postRecyclerView = binding.UserPostRecyclerView
-        postRecyclerView.adapter = mypostAdapter
-        mypostAdapter.userId = userId
+        postRecyclerView.adapter = myPostAdapter
+        myPostAdapter.userId = userId
         postRecyclerView.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
         postRecyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
@@ -186,9 +279,9 @@ class UserInfoActivity : AppCompatActivity() {
 
     @SuppressLint("NotifyDataSetChanged")
     private fun clearRecyclerView() {
-        mypostAdapter.feedID.clear()
-        mypostAdapter.feedInfo.clear()
-        mypostAdapter.notifyDataSetChanged()
+        myPostAdapter.feedID.clear()
+        myPostAdapter.feedInfo.clear()
+        myPostAdapter.notifyDataSetChanged()
     }
 
     private fun setUserProfile(userinfo: VectoService.UserInfoResponse) {
@@ -210,166 +303,24 @@ class UserInfoActivity : AppCompatActivity() {
 
         binding.FollowingCount.text = userinfo.followingCount.toString()
 
-        binding.FollowButton.setOnClickListener {
-            if(!followFlag) {
-                requestFollow(userinfo.userId)
-                Log.d("TEST", followFlag.toString() + "requestFollow 실행")
-            }
-            else {
-                deleteFollow(userinfo.userId)
-                Log.d("TEST", followFlag.toString() + "deleteFollow 실행")
-
-            }
-
-            binding.FollowButton.postDelayed({
-                binding.FollowButton.isEnabled = true
-            }, 1000)
-        }
-
-
         if(Auth.loginFlag.value == true) {
-            isfollow(userinfo.userId)
-        }
-        else
-        {
-            binding.FollowButton.visibility = View.VISIBLE
-            binding.FollowButtonText.visibility = View.VISIBLE
+            userInfoViewModel.getFollow(userinfo.userId)
         }
     }
 
-    private fun requestFollow(userId: String) {
-        val vectoService = VectoService.create()
-
-        val call = vectoService.sendFollow("Bearer ${Auth.token}", userId)
-        call.enqueue(object : Callback<VectoService.VectoResponse<Unit>> {
-            override fun onResponse(call: Call<VectoService.VectoResponse<Unit>>, response: Response<VectoService.VectoResponse<Unit>>) {
-                if (response.isSuccessful) {
-                    if(response.body()!!.code == "S023") {
-                        setFollowButton(true)
-                        Toast.makeText(this@UserInfoActivity, "${binding.UserNameText.text}님을 팔로우하기 시작했습니다.", Toast.LENGTH_SHORT).show()
-                    }
-
-                    Log.d("POSTFOLLOW", "팔로우 요청 성공 : ${response.body()?.result}")
-                } else {
-                    // 서버 에러 처리
-                    Log.d("POSTFOLLOW", "팔로우 요청 실패 : " + response.errorBody()?.string())
-                    Toast.makeText(this@UserInfoActivity, "팔로우 요청에 실패했습니다. 잠시후 다시 시도해주세요.", Toast.LENGTH_SHORT).show()
-                }
-            }
-
-            override fun onFailure(call: Call<VectoService.VectoResponse<Unit>>, t: Throwable) {
-                setFollowButton(false)
-                Log.d("POSTFOLLOW", "팔로우 요청 실패 : " + t.message)
-                Toast.makeText(this@UserInfoActivity, R.string.APIErrorToastMessage, Toast.LENGTH_SHORT).show()
-            }
-        })
-    }
-
-    private fun deleteFollow(userId: String) {
-        val vectoService = VectoService.create()
-
-        val call = vectoService.deleteFollow("Bearer ${Auth.token}", userId)
-        call.enqueue(object : Callback<VectoService.VectoResponse<Unit>> {
-            override fun onResponse(call: Call<VectoService.VectoResponse<Unit>>, response: Response<VectoService.VectoResponse<Unit>>) {
-                if (response.isSuccessful) {
-                    if(response.body()!!.code == "S026") {
-                        setFollowButton(false)
-
-                        Toast.makeText(this@UserInfoActivity, "${binding.UserNameText.text}님 팔로우를 취소하였습니다.", Toast.LENGTH_SHORT).show()
-                    }
-
-                    Log.d("POSTFOLLOW", "팔로우 요청 성공 : ${response.body()?.result}")
-                } else {
-                    // 서버 에러 처리
-                    Log.d("POSTFOLLOW", "팔로우 요청 실패 : " + response.errorBody()?.string())
-                    Toast.makeText(this@UserInfoActivity, "팔로우 요청에 실패했습니다. 잠시후 다시 시도해주세요.", Toast.LENGTH_SHORT).show()
-                }
-            }
-
-            override fun onFailure(call: Call<VectoService.VectoResponse<Unit>>, t: Throwable) {
-                setFollowButton(false)
-                Log.d("POSTFOLLOW", "팔로우 요청 실패 : " + t.message)
-                Toast.makeText(this@UserInfoActivity, R.string.APIErrorToastMessage, Toast.LENGTH_SHORT).show()
-            }
-        })
-    }
-
-    private fun isfollow(userId: String){
-
-        val vectoService = VectoService.create()
-
-        val call = vectoService.getFollow("Bearer ${Auth.token}", userId)
-        call.enqueue(object : Callback<VectoService.VectoResponse<Unit>> {
-            override fun onResponse(call: Call<VectoService.VectoResponse<Unit>>, response: Response<VectoService.VectoResponse<Unit>>) {
-                if (response.isSuccessful) {
-                    if(response.body()!!.code == "S027")
-                        setFollowButton(true)
-                    else
-                        setFollowButton(false)
-
-                    Log.d("GETFOLLOW", "팔로우 정보 조회 성공 : ${response.body()}")
-                } else {
-                    // 서버 에러 처리
-                    Log.d("GETFOLLOW", "정보 조회 실패 : " + response.errorBody()?.string())
-                }
-            }
-
-            override fun onFailure(call: Call<VectoService.VectoResponse<Unit>>, t: Throwable) {
-                setFollowButton(false)
-                Log.d("GETFOLLOW", "팔로우 정보 조회 실패 : " + t.message)
-                Toast.makeText(this@UserInfoActivity, R.string.APIErrorToastMessage, Toast.LENGTH_SHORT).show()
-            }
-        })
-    }
-
-    private fun complaintUser(type: String, userId: String, content: String?){
-
-        val vectoService = VectoService.create()
-
-        val call = vectoService.postComplaint("Bearer ${Auth.token}", VectoService.ComplaintRequest(type, userId, content))
-        call.enqueue(object : Callback<VectoService.VectoResponse<Unit>> {
-            override fun onResponse(call: Call<VectoService.VectoResponse<Unit>>, response: Response<VectoService.VectoResponse<Unit>>) {
-                if (response.isSuccessful) {
-                    Log.d("complaintUser", "성공 : " + response.body())
-                } else {
-                    // 서버 에러 처리
-                    Log.d("complaintUser", "실패 : " + response.errorBody()?.string())
-                }
-            }
-
-            override fun onFailure(call: Call<VectoService.VectoResponse<Unit>>, t: Throwable) {
-                Log.d("complaintUser", "실패 : " + t.message)
-            }
-        })
-    }
-    private fun setFollowButton(followflag: Boolean){
-        if(Auth._userId.value == userId)
-        {
-            binding.FollowButton.visibility = View.GONE
-            binding.FollowButtonText.visibility = View.GONE
-
-            return
-        }
-
-        if(followflag)//이미 팔로우 한 상태라면
+    private fun setFollowButton(isFollowing: Boolean){
+        if(isFollowing)//이미 팔로우 한 상태라면
         {
             binding.FollowButton.setImageResource(R.drawable.userinfo_following_button)
             binding.FollowButtonText.text = "팔로잉"
-            binding.FollowButtonText.setTextColor(ContextCompat.getColor(this,
-                R.color.vecto_theme_orange
-            ))
-            followFlag = true
+            binding.FollowButtonText.setTextColor(ContextCompat.getColor(this, R.color.vecto_theme_orange))
         }
         else
         {
             binding.FollowButton.setImageResource(R.drawable.userinfo_follow_button)
             binding.FollowButtonText.text = "팔로우"
             binding.FollowButtonText.setTextColor(ContextCompat.getColor(this, R.color.white))
-            followFlag = false
         }
-
-        binding.FollowButton.visibility = View.VISIBLE
-        binding.FollowButtonText.visibility = View.VISIBLE
     }
 
     private fun getFeed(userId: String){

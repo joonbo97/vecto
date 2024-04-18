@@ -121,4 +121,78 @@ class UserRepository (private val vectoService: VectoService) {
             Result.failure(e)
         }
     }
+
+    /*   유저간 interaction 관련   */
+    suspend fun getFollow(userId: String): Result<String> {
+        return try {
+            val response = vectoService.getFollow2("Bearer ${Auth.token}", userId)
+
+            if(response.isSuccessful) {
+                Log.d("getFollow", "SUCCESS: ${response.body()}")
+
+                Result.success(response.body()!!.code)
+            } else {
+                Log.d("getFollow", "FAIL: ${response.errorBody()?.string()}")
+                Result.failure(Exception("FAIL"))
+            }
+        } catch (e: Exception) {
+            Log.e("getFollow", "ERROR", e)
+            Result.failure(Exception("ERROR"))
+        }
+    }
+
+    suspend fun postFollow(userId: String): Result<String> {
+        return try {
+            val response = vectoService.postFollow2("Bearer ${Auth.token}", userId)
+
+            if(response.isSuccessful) {
+                Log.d("postFollow", "SUCCESS: ${response.body()}")
+
+                Result.success(response.body()!!.code)
+            } else {
+                Log.d("postFollow", "FAIL: ${response.errorBody()?.string()}")
+                Result.failure(Exception("FAIL"))
+            }
+        } catch (e: Exception) {
+            Log.e("postFollow", "ERROR", e)
+            Result.failure(Exception("ERROR"))
+        }
+    }
+
+    suspend fun deleteFollow(userId: String): Result<String> {
+        return try {
+            val response = vectoService.deleteFollow2("Bearer ${Auth.token}", userId)
+
+            if(response.isSuccessful) {
+                Log.d("deleteFollow", "SUCCESS: ${response.body()}")
+
+                Result.success(response.body()!!.code)
+            } else {
+                Log.d("deleteFollow", "FAIL: ${response.errorBody()?.string()}")
+                Result.failure(Exception("FAIL"))
+            }
+        } catch (e: Exception) {
+            Log.e("deleteFollow", "ERROR", e)
+            Result.failure(Exception("ERROR"))
+        }
+    }
+
+    //신고 관련
+    suspend fun postComplaint(complaintRequest: VectoService.ComplaintRequest): Result<String> {
+        return try {
+            val response = vectoService.postComplaint("Bearer ${Auth.token}", complaintRequest)
+
+            if(response.isSuccessful) {
+                Log.d("postComplaint", "SUCCESS: ${response.body()}")
+
+                Result.success(response.body()!!.code)
+            } else {
+                Log.d("postComplaint", "FAIL: ${response.errorBody()?.string()}")
+                Result.failure(Exception("FAIL"))
+            }
+        } catch (e: Exception) {
+            Log.e("postComplaint", "ERROR", e)
+            Result.failure(Exception("ERROR"))
+        }
+    }
 }

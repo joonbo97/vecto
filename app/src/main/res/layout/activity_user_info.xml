@@ -31,7 +31,7 @@
             android:layout_width="80dp"
             android:layout_height="30dp"
             android:layout_marginTop="5dp"
-            android:visibility="invisible"
+            android:visibility="visible"
             android:src="@drawable/userinfo_follow_button"
             app:layout_constraintStart_toStartOf="@+id/UserNameText"
             app:layout_constraintTop_toBottomOf="@+id/UserNameText" />
@@ -45,7 +45,7 @@
             android:textColor="@color/white"
             android:layout_marginTop="2dp"
             android:textSize="15sp"
-            android:visibility="invisible"
+            android:visibility="visible"
             app:layout_constraintBottom_toBottomOf="@+id/FollowButton"
             app:layout_constraintEnd_toEndOf="@+id/FollowButton"
             app:layout_constraintHorizontal_bias="0.5"
