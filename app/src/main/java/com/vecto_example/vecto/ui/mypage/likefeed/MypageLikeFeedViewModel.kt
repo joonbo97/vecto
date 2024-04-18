@@ -62,12 +62,15 @@ class MypageLikeFeedViewModel(private val repository: FeedRepository) : ViewMode
                     feedIdsLiveData.value?.let { allFeedIds.addAll(it.feedIds) }
                     feedInfoLiveData.value?.let { allFeedInfo.addAll(it) }
 
+                    val successfulFeedIds = mutableListOf<Int>()
                     val feedInfo = mutableListOf<VectoService.FeedInfoResponse>()
 
                     feedPageResponse.feedIds.forEach { feedId ->
                         val job = async {
                             try {
-                                repository.getFeedInfo(feedId)
+                                repository.getFeedInfo(feedId).also {
+                                    successfulFeedIds.add(feedId)
+                                }
                             } catch (e: Exception) {
                                 Log.e("fetchLikeFeedResults", "Failed to fetch feed info for ID $feedId", e)
                                 null // 실패한 경우 null 반환
@@ -78,7 +81,7 @@ class MypageLikeFeedViewModel(private val repository: FeedRepository) : ViewMode
                         }
                     }
                     _feedInfoLiveData.postValue(feedInfo)   //LiveData 값 변경
-                    _feedIdsLiveData.postValue(feedPageResponse)
+                    _feedIdsLiveData.postValue(feedPageResponse.copy(feedIds = successfulFeedIds))
 
                     nextPage = feedPageResponse.nextPage    //페이지 정보값 변경
                     lastPage = feedPageResponse.lastPage

@@ -10,6 +10,7 @@ import com.vecto_example.vecto.retrofit.VectoService
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
+import java.util.Collections.addAll
 
 class SearchViewModel(private val repository: FeedRepository) : ViewModel() {
     var nextPage: Int = 0
@@ -61,11 +62,14 @@ class SearchViewModel(private val repository: FeedRepository) : ViewModel() {
             feedListResponse.onSuccess { feedPageResponse ->
                 if(!lastPage) {
                     val feedInfo = mutableListOf<VectoService.FeedInfoResponse>()
+                    val successfulFeedIds = mutableListOf<Int>()
 
                     feedPageResponse.feedIds.forEach { feedId ->
                         val job = async {
                             try {
-                                repository.getFeedInfo(feedId)
+                                repository.getFeedInfo(feedId).also {
+                                    successfulFeedIds.add(feedId)
+                                }
                             } catch (e: Exception) {
                                 Log.e("fetchFeedResults", "Failed to fetch feed info for ID $feedId", e)
                                 null // 실패한 경우 null 반환
@@ -88,10 +92,9 @@ class SearchViewModel(private val repository: FeedRepository) : ViewModel() {
                     val updatedFeedIds = _feedIdsLiveData.value?.feedIds?.toMutableList() ?: mutableListOf()
                     updatedFeedIds.addAll(feedPageResponse.feedIds)
 
-                    newFeedIds.clear()
-                    newFeedIds.addAll(feedPageResponse.feedIds)
-
-                    _feedIdsLiveData.postValue(feedPageResponse.copy(feedIds = updatedFeedIds))
+                    _feedIdsLiveData.postValue(feedPageResponse.copy(feedIds = (_feedIdsLiveData.value?.feedIds ?: mutableListOf()).apply {
+                        addAll(successfulFeedIds)
+                    }))
 
                     nextPage = feedPageResponse.nextPage    //페이지 정보값 변경
                     lastPage = feedPageResponse.lastPage
@@ -114,11 +117,14 @@ class SearchViewModel(private val repository: FeedRepository) : ViewModel() {
             feedListResponse.onSuccess { feedPageResponse ->
                 if(!lastPage) {
                     val feedInfo = mutableListOf<VectoService.FeedInfoResponse>()
+                    val successfulFeedIds = mutableListOf<Int>()
 
                     feedPageResponse.feedIds.forEach { feedId ->
                         val job = async {
                             try {
-                                repository.getFeedInfo(feedId)
+                                repository.getFeedInfo(feedId).also {
+                                    successfulFeedIds.add(feedId)
+                                }
                             } catch (e: Exception) {
                                 Log.e("fetchPersonalFeedResults", "Failed to fetch feed info for ID $feedId", e)
                                 null // 실패한 경우 null 반환
@@ -141,10 +147,9 @@ class SearchViewModel(private val repository: FeedRepository) : ViewModel() {
                     val updatedFeedIds = _feedIdsLiveData.value?.feedIds?.toMutableList() ?: mutableListOf()
                     updatedFeedIds.addAll(feedPageResponse.feedIds)
 
-                    newFeedIds.clear()
-                    newFeedIds.addAll(feedPageResponse.feedIds)
-
-                    _feedIdsLiveData.postValue(feedPageResponse.copy(feedIds = updatedFeedIds))
+                    _feedIdsLiveData.postValue(feedPageResponse.copy(feedIds = (_feedIdsLiveData.value?.feedIds ?: mutableListOf()).apply {
+                        addAll(successfulFeedIds)
+                    }))
 
                     nextPage = feedPageResponse.nextPage    //페이지 정보값 변경
                     lastPage = feedPageResponse.lastPage
@@ -167,11 +172,14 @@ class SearchViewModel(private val repository: FeedRepository) : ViewModel() {
             feedListResponse.onSuccess { feedPageResponse ->
                 if(!lastPage) {
                     val feedInfo = mutableListOf<VectoService.FeedInfoResponse>()
+                    val successfulFeedIds = mutableListOf<Int>()
 
                     feedPageResponse.feedIds.forEach { feedId ->
                         val job = async {
                             try {
-                                repository.getFeedInfo(feedId)
+                                repository.getFeedInfo(feedId).also {
+                                    successfulFeedIds.add(feedId)
+                                }
                             } catch (e: Exception) {
                                 Log.e("fetchSearchFeedResults", "Failed to fetch feed info for ID $feedId", e)
                                 null // 실패한 경우 null 반환
@@ -194,10 +202,9 @@ class SearchViewModel(private val repository: FeedRepository) : ViewModel() {
                     val updatedFeedIds = _feedIdsLiveData.value?.feedIds?.toMutableList() ?: mutableListOf()
                     updatedFeedIds.addAll(feedPageResponse.feedIds)
 
-                    newFeedIds.clear()
-                    newFeedIds.addAll(feedPageResponse.feedIds)
-
-                    _feedIdsLiveData.postValue(feedPageResponse.copy(feedIds = updatedFeedIds))
+                    _feedIdsLiveData.postValue(feedPageResponse.copy(feedIds = (_feedIdsLiveData.value?.feedIds ?: mutableListOf()).apply {
+                        addAll(successfulFeedIds)
+                    }))
 
                     nextPage = feedPageResponse.nextPage    //페이지 정보값 변경
                     lastPage = feedPageResponse.lastPage
