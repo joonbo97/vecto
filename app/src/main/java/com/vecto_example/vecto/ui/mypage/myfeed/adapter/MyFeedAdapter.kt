@@ -32,13 +32,20 @@ import java.time.Duration
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
-class MyPostAdapter(private val context: Context): RecyclerView.Adapter<MyPostAdapter.ViewHolder>()
+class MyFeedAdapter(private val context: Context): RecyclerView.Adapter<MyFeedAdapter.ViewHolder>()
 {
     val feedInfo = mutableListOf<VectoService.FeedInfoResponse>()
     val feedID = mutableListOf<Int>()
     var pageNo = 0
     var userId = ""
 
+    interface OnFeedActionListener {
+        fun onPostLike(feedID: Int)
+
+        fun onDeleteLike(feedID: Int)
+    }
+
+    var feedActionListener: OnFeedActionListener? = null
 
     inner class ViewHolder(view: View): RecyclerView.ViewHolder(view) {
 

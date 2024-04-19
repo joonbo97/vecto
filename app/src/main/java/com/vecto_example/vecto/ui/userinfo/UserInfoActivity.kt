@@ -18,20 +18,17 @@ import com.vecto_example.vecto.databinding.ActivityUserInfoBinding
 import com.vecto_example.vecto.popupwindow.ReportPopupWindow
 import com.vecto_example.vecto.dialog.ReportUserDialog
 import com.vecto_example.vecto.retrofit.VectoService
-import com.vecto_example.vecto.ui.mypage.myfeed.adapter.MyPostAdapter
+import com.vecto_example.vecto.ui.mypage.myfeed.adapter.MyFeedAdapter
 import com.vecto_example.vecto.utils.LoadImageUtils
 import com.vecto_example.vecto.utils.RequestLoginUtils
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 
-class UserInfoActivity : AppCompatActivity() {
+class UserInfoActivity : AppCompatActivity(), MyFeedAdapter.OnFeedActionListener{
     lateinit var binding: ActivityUserInfoBinding
     private val userInfoViewModel: UserInfoViewModel by viewModels {
         UserInfoViewModelFactory(FeedRepository(VectoService.create()), UserRepository(VectoService.create()))
     }
 
-    private lateinit var myPostAdapter: MyPostAdapter
+    private lateinit var myFeedAdapter: MyFeedAdapter
 
     private var userId = ""
 
@@ -145,12 +142,12 @@ class UserInfoActivity : AppCompatActivity() {
         /*   게시글 관련 Observer   */
         userInfoViewModel.feedInfoLiveData.observe(this) {
             //새로운 feed 정보를 받았을 때의 처리
-            myPostAdapter.pageNo = userInfoViewModel.nextPage //다음 page 정보
-            userInfoViewModel.feedInfoLiveData.value?.let { myPostAdapter.addFeedInfoData(it) }   //새로 받은 게시글 정보 추가
+            myFeedAdapter.pageNo = userInfoViewModel.nextPage //다음 page 정보
+            userInfoViewModel.feedInfoLiveData.value?.let { myFeedAdapter.addFeedInfoData(it) }   //새로 받은 게시글 정보 추가
         }
 
         userInfoViewModel.feedIdsLiveData.observe(this) {
-            userInfoViewModel.feedIdsLiveData.value?.let { myPostAdapter.addFeedIdData(it.feedIds) }
+            userInfoViewModel.feedIdsLiveData.value?.let { myFeedAdapter.addFeedIdData(it.feedIds) }
 
             if(userInfoViewModel.allFeedIds.isEmpty() && userInfoViewModel.feedIdsLiveData.value?.feedIds.isNullOrEmpty()){
                 setNoneImage()
@@ -261,16 +258,17 @@ class UserInfoActivity : AppCompatActivity() {
     }
 
     private fun initRecyclerView(){
-        myPostAdapter = MyPostAdapter(this)
+        myFeedAdapter = MyFeedAdapter(this)
+        myFeedAdapter.feedActionListener = this
 
         clearRecyclerView()
 
-        myPostAdapter.addFeedInfoData(userInfoViewModel.allFeedInfo)
-        myPostAdapter.addFeedIdData(userInfoViewModel.allFeedIds)
+        myFeedAdapter.addFeedInfoData(userInfoViewModel.allFeedInfo)
+        myFeedAdapter.addFeedIdData(userInfoViewModel.allFeedIds)
 
         val postRecyclerView = binding.UserPostRecyclerView
-        postRecyclerView.adapter = myPostAdapter
-        myPostAdapter.userId = userId
+        postRecyclerView.adapter = myFeedAdapter
+        myFeedAdapter.userId = userId
         postRecyclerView.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
         postRecyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
@@ -287,9 +285,9 @@ class UserInfoActivity : AppCompatActivity() {
 
     @SuppressLint("NotifyDataSetChanged")
     private fun clearRecyclerView() {
-        myPostAdapter.feedID.clear()
-        myPostAdapter.feedInfo.clear()
-        myPostAdapter.notifyDataSetChanged()
+        myFeedAdapter.feedID.clear()
+        myFeedAdapter.feedInfo.clear()
+        myFeedAdapter.notifyDataSetChanged()
     }
 
     private fun setUserProfile(userinfo: VectoService.UserInfoResponse) {
@@ -347,5 +345,13 @@ class UserInfoActivity : AppCompatActivity() {
         binding.NoneImage.visibility = View.GONE
         binding.NoneText.visibility = View.GONE
         Log.d("NONE GONE", "NONE IMAGE IS GONE")
+    }
+
+    override fun onPostLike(feedID: Int) {
+        TODO("Not yet implemented")
+    }
+
+    override fun onDeleteLike(feedID: Int) {
+        TODO("Not yet implemented")
     }
 }

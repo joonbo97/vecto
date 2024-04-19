@@ -16,16 +16,16 @@ import com.vecto_example.vecto.data.Auth
 import com.vecto_example.vecto.data.repository.FeedRepository
 import com.vecto_example.vecto.databinding.FragmentMypagePostBinding
 import com.vecto_example.vecto.retrofit.VectoService
-import com.vecto_example.vecto.ui.mypage.myfeed.adapter.MyPostAdapter
+import com.vecto_example.vecto.ui.mypage.myfeed.adapter.MyFeedAdapter
 import com.vecto_example.vecto.utils.LoadImageUtils
 
-class MypageFeedFragment : Fragment() {
+class MypageFeedFragment : Fragment(), MyFeedAdapter.OnFeedActionListener {
     private lateinit var binding: FragmentMypagePostBinding
     private val viewModel: MypageFeedViewModel by viewModels {
         MypageFeedViewModelFactory(FeedRepository(VectoService.create()))
     }
 
-    private lateinit var mypostAdapter: MyPostAdapter
+    private lateinit var myFeedAdapter: MyFeedAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -71,15 +71,16 @@ class MypageFeedFragment : Fragment() {
     }
 
     private fun initRecyclerView() {
-        mypostAdapter = MyPostAdapter(requireContext())
+        myFeedAdapter = MyFeedAdapter(requireContext())
+        myFeedAdapter.feedActionListener = this
 
         clearRecyclerView()
 
-        mypostAdapter.addFeedInfoData(viewModel.allFeedInfo)
-        mypostAdapter.addFeedIdData(viewModel.allFeedIds)
+        myFeedAdapter.addFeedInfoData(viewModel.allFeedInfo)
+        myFeedAdapter.addFeedIdData(viewModel.allFeedIds)
 
         val mypostRecyclerView = binding.MypostRecyclerView
-        mypostRecyclerView.adapter = mypostAdapter
+        mypostRecyclerView.adapter = myFeedAdapter
         mypostRecyclerView.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
         mypostRecyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
@@ -99,12 +100,12 @@ class MypageFeedFragment : Fragment() {
         /*   게시글 관련 Observer   */
         viewModel.feedInfoLiveData.observe(viewLifecycleOwner) {
             //새로운 feed 정보를 받았을 때의 처리
-            mypostAdapter.pageNo = viewModel.nextPage //다음 page 정보
-            viewModel.feedInfoLiveData.value?.let { mypostAdapter.addFeedInfoData(it) }   //새로 받은 게시글 정보 추가
+            myFeedAdapter.pageNo = viewModel.nextPage //다음 page 정보
+            viewModel.feedInfoLiveData.value?.let { myFeedAdapter.addFeedInfoData(it) }   //새로 받은 게시글 정보 추가
         }
 
         viewModel.feedIdsLiveData.observe(viewLifecycleOwner) {
-            viewModel.feedIdsLiveData.value?.let { mypostAdapter.addFeedIdData(it.feedIds) }
+            viewModel.feedIdsLiveData.value?.let { myFeedAdapter.addFeedIdData(it.feedIds) }
 
             if(viewModel.allFeedIds.isEmpty() && viewModel.feedIdsLiveData.value?.feedIds.isNullOrEmpty()){
                 setNoneImage()
@@ -137,9 +138,9 @@ class MypageFeedFragment : Fragment() {
 
     @SuppressLint("NotifyDataSetChanged")
     private fun clearRecyclerView() {
-        mypostAdapter.feedID.clear()
-        mypostAdapter.feedInfo.clear()
-        mypostAdapter.notifyDataSetChanged()
+        myFeedAdapter.feedID.clear()
+        myFeedAdapter.feedInfo.clear()
+        myFeedAdapter.notifyDataSetChanged()
 
     }
 
@@ -159,6 +160,14 @@ class MypageFeedFragment : Fragment() {
         binding.NoneImage.visibility = View.GONE
         binding.NoneText.visibility = View.GONE
         Log.d("NONE GONE", "NONE IMAGE IS GONE")
+    }
+
+    override fun onPostLike(feedID: Int) {
+        TODO("Not yet implemented")
+    }
+
+    override fun onDeleteLike(feedID: Int) {
+        TODO("Not yet implemented")
     }
 
 }
