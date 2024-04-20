@@ -13,8 +13,8 @@ import kotlinx.coroutines.launch
 
 class MypageFeedViewModel(private val repository: FeedRepository) : ViewModel() {
     var nextPage: Int = 0
-    var lastPage: Boolean = false
-    var followPage: Boolean = true
+    private var lastPage: Boolean = false
+    private var followPage: Boolean = true
 
     val allFeedIds = mutableListOf<Int>()
     val allFeedInfo = mutableListOf<VectoService.FeedInfoResponse>()
@@ -25,6 +25,8 @@ class MypageFeedViewModel(private val repository: FeedRepository) : ViewModel() 
     private val _isLoadingBottom = MutableLiveData<Boolean>()
     val isLoadingBottom: LiveData<Boolean> = _isLoadingBottom
 
+    private var tempLoading = false
+
     private val _feedIdsLiveData = MutableLiveData<VectoService.FeedPageResponse>()
     val feedIdsLiveData: LiveData<VectoService.FeedPageResponse> = _feedIdsLiveData
 
@@ -33,6 +35,17 @@ class MypageFeedViewModel(private val repository: FeedRepository) : ViewModel() 
 
     private val _feedErrorLiveData = MutableLiveData<String>()
     val feedErrorLiveData: LiveData<String> = _feedErrorLiveData
+
+    /*   좋아요   */
+    private val _postFeedLikeResult = MutableLiveData<Result<String>>()
+    val postFeedLikeResult: LiveData<Result<String>> = _postFeedLikeResult
+
+    private val _deleteFeedLikeResult = MutableLiveData<Result<String>>()
+    val deleteFeedLikeResult: LiveData<Result<String>> = _deleteFeedLikeResult
+
+    /*   게시글 삭제   */
+    private val _deleteFeedResult = MutableLiveData<Result<String>>()
+    val deleteFeedResult: LiveData<Result<String>> = _deleteFeedResult
 
 
     private fun startLoading(){
@@ -44,11 +57,16 @@ class MypageFeedViewModel(private val repository: FeedRepository) : ViewModel() 
             _isLoadingBottom.value = true
     }
 
+    private fun startCenterLoading(){
+        _isLoadingCenter.value = true
+    }
+
     private fun endLoading(){
         Log.d("ENDLOADING", "END")
 
         _isLoadingCenter.value = false
         _isLoadingBottom.value = false
+        tempLoading = false
     }
 
     fun fetchUserFeedResults(){
@@ -94,6 +112,41 @@ class MypageFeedViewModel(private val repository: FeedRepository) : ViewModel() 
         }
     }
 
+    fun postFeedLike(feedId: Int) {
+        tempLoading = true
+
+        viewModelScope.launch {
+            val postFeedLikeResponse = repository.postFeedLike(feedId)
+
+            _postFeedLikeResult.value = postFeedLikeResponse
+
+            endLoading()
+        }
+    }
+
+    fun deleteFeedLike(feedId: Int) {
+        tempLoading = true
+
+        viewModelScope.launch {
+            val deleteFeedLikeResponse = repository.deleteFeedLike(feedId)
+
+            _deleteFeedLikeResult.value = deleteFeedLikeResponse
+
+            endLoading()
+        }
+    }
+
+    fun deleteFeed(feedId: Int) {
+        startCenterLoading()
+        viewModelScope.launch {
+            val deleteFeedResponse = repository.deleteFeed(feedId)
+
+            _deleteFeedResult.value = deleteFeedResponse
+
+            endLoading()
+        }
+    }
+
     fun initSetting(){
         nextPage = 0
         lastPage = false
@@ -105,6 +158,6 @@ class MypageFeedViewModel(private val repository: FeedRepository) : ViewModel() 
 
     fun checkLoading(): Boolean{
         //로딩중이 아니라면 false, 로딩중이라면 true
-        return !(isLoadingBottom.value == false && isLoadingCenter.value == false)
+        return !(isLoadingBottom.value == false && isLoadingCenter.value == false && !tempLoading)
     }
 }

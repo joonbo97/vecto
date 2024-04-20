@@ -33,6 +33,8 @@ class UserInfoViewModel(private val repository: FeedRepository, private val user
     private val _isLoadingBottom = MutableLiveData<Boolean>()
     val isLoadingBottom: LiveData<Boolean> = _isLoadingBottom
 
+    private var tempLoading = false
+
     /*   게시글   */
     private val _feedIdsLiveData = MutableLiveData<VectoService.FeedPageResponse>()
     val feedIdsLiveData: LiveData<VectoService.FeedPageResponse> = _feedIdsLiveData
@@ -43,6 +45,17 @@ class UserInfoViewModel(private val repository: FeedRepository, private val user
     /*   사용자 정보   */
     private val _userInfoResult = MutableLiveData<Result<VectoService.UserInfoResponse>>()
     val userInfoResult: LiveData<Result<VectoService.UserInfoResponse>> = _userInfoResult
+
+    /*   좋아요   */
+    private val _postFeedLikeResult = MutableLiveData<Result<String>>()
+    val postFeedLikeResult: LiveData<Result<String>> = _postFeedLikeResult
+
+    private val _deleteFeedLikeResult = MutableLiveData<Result<String>>()
+    val deleteFeedLikeResult: LiveData<Result<String>> = _deleteFeedLikeResult
+
+    /*   게시글 삭제   */
+    private val _deleteFeedResult = MutableLiveData<Result<String>>()
+    val deleteFeedResult: LiveData<Result<String>> = _deleteFeedResult
 
     /*   팔로우   */
     //팔로우 여부
@@ -77,8 +90,6 @@ class UserInfoViewModel(private val repository: FeedRepository, private val user
     private val _feedErrorLiveData = MutableLiveData<String>()
     val feedErrorLiveData: LiveData<String> = _feedErrorLiveData
 
-
-
     private fun startLoading(){
         Log.d("UserInfoViewModel", "Loading Start")
 
@@ -88,11 +99,16 @@ class UserInfoViewModel(private val repository: FeedRepository, private val user
             _isLoadingBottom.value = true
     }
 
+    private fun startCenterLoading(){
+        _isLoadingCenter.value = true
+    }
+
     private fun endLoading(){
         Log.d("UserInfoViewModel", "Loading End")
 
         _isLoadingCenter.value = false
         _isLoadingBottom.value = false
+        tempLoading = false
     }
 
     fun fetchUserFeedResults(userId: String){
@@ -238,6 +254,41 @@ class UserInfoViewModel(private val repository: FeedRepository, private val user
         }
     }
 
+    fun postFeedLike(feedId: Int) {
+        tempLoading = true
+
+        viewModelScope.launch {
+            val postFeedLikeResponse = repository.postFeedLike(feedId)
+
+            _postFeedLikeResult.value = postFeedLikeResponse
+
+            endLoading()
+        }
+    }
+
+    fun deleteFeedLike(feedId: Int) {
+        tempLoading = true
+
+        viewModelScope.launch {
+            val deleteFeedLikeResponse = repository.deleteFeedLike(feedId)
+
+            _deleteFeedLikeResult.value = deleteFeedLikeResponse
+
+            endLoading()
+        }
+    }
+
+    fun deleteFeed(feedId: Int) {
+        startCenterLoading()
+        viewModelScope.launch {
+            val deleteFeedResponse = repository.deleteFeed(feedId)
+
+            _deleteFeedResult.value = deleteFeedResponse
+
+            endLoading()
+        }
+    }
+
     fun initSetting(){
         nextPage = 0
         lastPage = false
@@ -249,6 +300,6 @@ class UserInfoViewModel(private val repository: FeedRepository, private val user
 
     fun checkLoading(): Boolean{
         //로딩중이 아니라면 false, 로딩중이라면 true
-        return !(isLoadingBottom.value == false && isLoadingCenter.value == false)
+        return !(isLoadingBottom.value == false && isLoadingCenter.value == false && !tempLoading)
     }
 }

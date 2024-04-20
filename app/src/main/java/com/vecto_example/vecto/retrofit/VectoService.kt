@@ -21,16 +21,21 @@ import retrofit2.http.Query
 
 interface VectoService {
 
+    /*   사용자 계정 관련   */
+
+    //로그인
     @POST("login")
     suspend fun loginUser(
         @Body request: LoginRequest
     ): Response<VectoResponse<String>>
 
+    //가입
     @POST("user")
     suspend fun registerUser(
         @Body request: RegisterRequest
     ): Response<VectoResponse<String>>
 
+    //ID 중복 체크
     @POST("userId/check")
     fun idCheck(
         @Body request: IdCheckRequest
@@ -41,17 +46,52 @@ interface VectoService {
         @Body request: IdCheckRequest
     ): Response<VectoResponse<Unit>>
 
+    //인증 메일 발송
+    @POST("mail")
+    suspend fun sendMail(
+        @Body request: MailRequest
+    ): Response<VectoResponse<Unit>>
+
+    //사용자 정보 확인
     @GET("user")
     suspend fun getUserInfo(
         @Query("userId") userId: String
     ): Response<VectoResponse<UserInfoResponse>>
 
+    //프로필 이미지 업로드
+    @Multipart
+    @POST("upload/profile")
+    suspend fun uploadImage(
+        @Header("Authorization")
+        authorization: String,
+        @Part image: MultipartBody.Part
+    ): Response<VectoResponse<String>>
+
+    //사용자 정보 변경
+    @PATCH("user")
+    suspend fun updateUserProfile(
+        @Header("Authorization") authorization: String,
+        @Body userData: UserUpdateData
+    ): Response<VectoResponse<String>>
+
+    //사용자 신고
+    @POST("complaint")
+    suspend fun postComplaint(
+        @Header("Authorization") authorization: String,
+        @Body request: ComplaintRequest
+    ): Response<VectoResponse<Unit>>
+
+
+    /*   게시글 관련   */
+
+    //게시글 추가
     @POST("feed")
     suspend fun addFeed(
         @Header("Authorization") authorization: String,
-        @Body request: PostDataForUpload
+        @Body request: FeedDataForUpload
     ): Response<VectoResponse<Int>>
 
+    //이미지 업로드
     @Multipart
     @POST("upload/feed")
     suspend fun uploadImages(
@@ -59,24 +99,98 @@ interface VectoService {
         @Part images: List<MultipartBody.Part>
     ): Response<VectoResponse<ImageResponse>>
 
-    @POST("mail")
-    fun sendMail(
-        @Body request: MailRequest
-    ): Call<VectoResponse<Unit>>
-
+    //게시글 좋아요
     @POST("feed/{feedId}/likes")
     fun sendLike(
         @Header("Authorization") authorization: String,
         @Path("feedId") feedId: Int,
     ): Call<VectoResponse<Unit>>
 
+    @POST("feed/{feedId}/likes")
+    suspend fun postFeedLike(
+        @Header("Authorization") authorization: String,
+        @Path("feedId") feedId: Int,
+    ): Response<VectoResponse<Unit>>
 
+
+    //게시글 좋아요 취소
     @DELETE("feed/{feedId}/likes")
     fun cancelLike(
         @Header("Authorization") authorization: String,
         @Path("feedId") feedId: Int,
     ): Call<VectoResponse<Unit>>
 
+    @DELETE("feed/{feedId}/likes")
+    suspend fun deleteFeedLike(
+        @Header("Authorization") authorization: String,
+        @Path("feedId") feedId: Int,
+    ): Response<VectoResponse<Unit>>
+
+    //게시글 삭제
+    @DELETE("feed/{feedId}")
+    suspend fun deleteFeed(
+        @Header("Authorization") authorization: String,
+        @Path("feedId") feedId: Int
+    ):Response<VectoResponse<Unit>>
+
+    //게시글 수정
+    @PATCH("feed")
+    suspend fun updateFeed(
+        @Header("Authorization") authorization: String,
+        @Body updatePostData: UpdateFeedRequest
+    ): Response<VectoResponse<String>>
+
+    //게시글 정보 확인 (로그인 / 비로그인)
+    @GET("feed/{feedId}")
+    suspend fun getFeedInfo(
+        @Path("feedId") feedId: Int
+    ): Response<VectoResponse<FeedInfoResponse>>
+
+    @POST("feed/{feedId}")
+    suspend fun getFeedInfo(
+        @Header("Authorization") authorization: String,
+        @Path("feedId") feedId: Int
+    ): Response<VectoResponse<FeedInfoResponse>>
+
+    //게시글 목록 조회 (비로그인)
+    @GET("feed/feedList")
+    suspend fun getFeedList(
+        @Query("page") page: Int
+    ): Response<VectoResponse<FeedPageResponse>>
+
+    //게시글 목록 조회 (로그인)
+    @GET("feed/feeds/personal")
+    suspend fun getPersonalFeedList(
+        @Header("Authorization") authorization: String,
+        @Query("page") page: Int,
+        @Query("isFollowPage") isFollowPage: Boolean
+    ): Response<VectoResponse<FeedPageResponse>>
+
+    //게시글 검색 결과 목록 조회
+    @GET("feed/feeds/search")
+    suspend fun getSearchFeedList(
+        @Query("page") page: Int,
+        @Query("q") q: String
+    ): Response<VectoResponse<FeedPageResponse>>
+
+    //좋아요 한 게시글 목록 조회
+    @GET("feed/likes")
+    suspend fun getLikeFeedList(
+        @Query("userId") userId: String,
+        @Query("page") page: Int
+    ): Response<VectoResponse<FeedPageResponse>>
+
+    //특정 사용자 업로드 게시글 조회
+    @GET("feed")
+    suspend fun getUserFeedList(
+        @Query("userId") userId: String,
+        @Query("page") page: Int
+    ): Response<VectoResponse<FeedPageResponse>>
+
+
+    /*   User Interaction 관련   */
+
+    //팔로우 여부 조회
     @GET("follow/{userId}")
     fun getFollow(
         @Header("Authorization") authorization: String,
@@ -89,6 +203,7 @@ interface VectoService {
         @Path("userId") userId: String
     ):Response<VectoResponse<Unit>>
 
+    //팔로우 추가
     @POST("follow/{userId}")
     fun sendFollow(
         @Header("Authorization") authorization: String,
@@ -101,6 +216,7 @@ interface VectoService {
         @Path("userId") userId: String
     ):Response<VectoResponse<Unit>>
 
+    //팔로우 취소
     @DELETE("follow/{userId}")
     fun deleteFollow(
         @Header("Authorization") authorization: String,
@@ -113,78 +229,6 @@ interface VectoService {
         @Path("userId") userId: String
     ):Response<VectoResponse<Unit>>
 
-    @DELETE("feed/{feedId}")
-    fun deleteFeed(
-        @Header("Authorization") authorization: String,
-        @Path("feedId") feedId: Int
-    ):Call<VectoResponse<Unit>>
-
-    @PATCH("feed")
-    suspend fun updateFeed(
-        @Header("Authorization") authorization: String,
-        @Body updatePostData: UpdatePostRequest
-    ): Response<VectoResponse<String>>
-
-    @POST("complaint")
-    suspend fun postComplaint(
-        @Header("Authorization") authorization: String,
-        @Body request: ComplaintRequest
-    ): Response<VectoResponse<Unit>>
-
-    @GET("feed/feeds/personal")
-    suspend fun getPersonalFeedList(
-        @Header("Authorization") authorization: String,
-        @Query("page") page: Int,
-        @Query("isFollowPage") isFollowPage: Boolean
-    ): Response<VectoResponse<FeedPageResponse>>
-
-    @GET("feed/feedList")
-    suspend fun getFeedList(
-        @Query("page") page: Int
-    ): Response<VectoResponse<FeedPageResponse>>
-
-    @GET("feed/feeds/search")
-    suspend fun getSearchFeedList(
-        @Query("page") page: Int,
-        @Query("q") q: String
-    ): Response<VectoResponse<FeedPageResponse>>
-
-    @GET("feed/likes")
-    suspend fun getLikeFeedList(
-        @Query("userId") userId: String,
-        @Query("page") page: Int
-    ): Response<VectoResponse<FeedPageResponse>>
-
-    @GET("feed")
-    suspend fun getUserFeedList(
-        @Query("userId") userId: String,
-        @Query("page") page: Int
-    ): Response<VectoResponse<FeedPageResponse>>
-
-    @GET("feed/{feedId}")
-    suspend fun getFeedInfo(
-        @Path("feedId") feedId: Int
-    ): Response<VectoResponse<FeedInfoResponse>>
-
-    @POST("feed/{feedId}")
-    suspend fun getFeedInfo(
-        @Header("Authorization") authorization: String,
-        @Path("feedId") feedId: Int
-    ): Response<VectoResponse<FeedInfoResponse>>
-
-    @Multipart
-    @POST("upload/profile") //프로필 이미지 업로드
-    suspend fun uploadImage(
-        @Header("Authorization")
-        authorization: String,
-        @Part image: MultipartBody.Part
-    ): Response<VectoResponse<String>>
-
-    @PATCH("user")
-    suspend fun updateUserProfile(
-        @Header("Authorization") authorization: String,
-        @Body userData: UserUpdateData
-    ): Response<VectoResponse<String>>
 
     /*   Comment 관련   */
 
@@ -238,7 +282,9 @@ interface VectoService {
         @Query("commentId") commentId: Int
     ): Response<VectoResponse<Unit>>
 
+
     /*   Notification 관련   */
+
     @GET("push/new")
     suspend fun getNewNotificationFlag(
         @Header("Authorization") authorization: String
@@ -315,17 +361,7 @@ interface VectoService {
         val url: List<String>
     )
 
-    data class PostData(
-        val title: String, //제목
-        val content: String?, //내용
-        val uploadtime: String, //게시 시간
-        var image: MutableList<String>?, //이미지
-        val location: MutableList<LocationData>, //경로 정보
-        val visit: MutableList<VisitData>, //방문지 정보
-        var mapimage: MutableList<String>?
-    )
-
-    data class PostDataForUpload(
+    data class FeedDataForUpload(
         val title: String, //제목
         val content: String?, //내용
         val uploadtime: String, //게시 시간
@@ -386,7 +422,7 @@ interface VectoService {
         val content: String
     )
 
-    data class UpdatePostRequest(
+    data class UpdateFeedRequest(
         val feedId: Int,
         val title: String, //제목
         val content: String?, //내용

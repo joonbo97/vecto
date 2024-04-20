@@ -63,17 +63,18 @@ class UserRepository (private val vectoService: VectoService) {
             val response = vectoService.registerUser(registerRequest)
 
             if(response.isSuccessful){
-                Log.d("REGISTER", "SUCCESS")
+                Log.d("register", "SUCCESS: ${response.body()}")
                 Result.success("SUCCESS")
             } else {
                 val errorBody = response.errorBody()?.string()
                 val gson = Gson()
                 val errorResponse: VectoService.VectoResponse<*>? = gson.fromJson(errorBody, VectoService.VectoResponse::class.java)
 
+                Log.d("register", "FAIL: $errorBody")
                 Result.failure(Exception(errorResponse!!.code))
             }
         } catch (e: Exception) {
-            Log.e("REGISTER", "ERROR", e)
+            Log.e("register", "ERROR", e)
             Result.failure(Exception("ERROR"))
         }
     }
@@ -84,7 +85,7 @@ class UserRepository (private val vectoService: VectoService) {
             val response = vectoService.getUserInfo(userId)
 
             if(response.isSuccessful){
-                Log.d("getUserInfo", "SUCCESS: ${response.body()?.result}")
+                Log.d("getUserInfo", "SUCCESS: ${response.body()}")
 
                 Result.success(response.body()!!.result!!)
             }
@@ -93,32 +94,53 @@ class UserRepository (private val vectoService: VectoService) {
                 val gson = Gson()
                 val errorResponse: VectoService.VectoResponse<*>? = gson.fromJson(errorBody, VectoService.VectoResponse::class.java)
 
-                Log.d("getUserInfo", "FAIL: ${response.errorBody()}")
+                Log.d("getUserInfo", "FAIL: $errorBody")
                 Result.failure(Exception(errorResponse!!.code))
             }
         } catch (e: Exception) {
             Log.e("getUserInfo", "ERROR", e)
-            Result.failure(e)
+            Result.failure(Exception("ERROR"))
         }
     }
 
-    suspend fun checkUserId(userId: String): Result<Boolean>{
+    suspend fun checkUserId(userId: String): Result<String>{
         return try{
             val response = vectoService.idCheck2(VectoService.IdCheckRequest(userId))
             if (response.isSuccessful) {
-                Result.success(true)
+                Log.d("checkUserId", "SUCCESS: ${response.body()}")
+                Result.success("SUCCESS")
             } else {
-                if(response.code() == 400){
-                    Log.d("ID_CHECK", "IS DUPLICATED ID")
-                    Result.success(false)
-                } else {
-                    Log.d("ID_CHECK", "성공했으나 서버 오류")
-                    Result.failure(Exception("서버오류"))
-                }
+                val errorBody = response.errorBody()?.string()
+                val gson = Gson()
+                val errorResponse: VectoService.VectoResponse<*>? = gson.fromJson(errorBody, VectoService.VectoResponse::class.java)
+
+                Log.d("checkUserId", "FAIL: $errorBody")
+                Result.failure(Exception(errorResponse!!.code))
             }
         } catch (e: Exception) {
-            Log.d("ID_CHECK", "실패")
-            Result.failure(e)
+            Log.e("checkUserId", "ERROR", e)
+            Result.failure(Exception("ERROR"))
+        }
+    }
+
+    //인증 메일 발송
+    suspend fun sendMail(email: String): Result<String>{
+        return try {
+            val response = vectoService.sendMail(VectoService.MailRequest(email))
+            if (response.isSuccessful) {
+                Log.d("sendMail", "SUCCESS: ${response.body()}")
+                Result.success("SUCCESS")
+            } else {
+                val errorBody = response.errorBody()?.string()
+                val gson = Gson()
+                val errorResponse: VectoService.VectoResponse<*>? = gson.fromJson(errorBody, VectoService.VectoResponse::class.java)
+
+                Log.d("sendMail", "FAIL: $errorBody")
+                Result.failure(Exception(errorResponse!!.code))
+            }
+        } catch (e: Exception) {
+            Log.e("sendMail", "ERROR", e)
+            Result.failure(Exception("ERROR"))
         }
     }
 

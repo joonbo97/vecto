@@ -112,6 +112,39 @@ class MypageFeedFragment : Fragment(), MyFeedAdapter.OnFeedActionListener {
             }
         }
 
+        /*   게시글 좋아요   */
+        viewModel.postFeedLikeResult.observe(viewLifecycleOwner) { postFeedLikeResult ->
+            postFeedLikeResult.onSuccess {
+                myFeedAdapter.postFeedLikeSuccess()
+            }.onFailure {
+                Toast.makeText(requireContext(), getText(R.string.APIErrorToastMessage), Toast.LENGTH_SHORT).show()
+            }
+
+            myFeedAdapter.actionPosition = -1
+        }
+
+        viewModel.deleteFeedLikeResult.observe(viewLifecycleOwner) { deleteFeedLikeResult ->
+            deleteFeedLikeResult.onSuccess {
+                myFeedAdapter.deleteFeedLikeSuccess()
+            }.onFailure {
+                Toast.makeText(requireContext(), getText(R.string.APIErrorToastMessage), Toast.LENGTH_SHORT).show()
+            }
+
+            myFeedAdapter.actionPosition = -1
+        }
+
+        /*   게시글 삭제   */
+        viewModel.deleteFeedResult.observe(viewLifecycleOwner) { deleteFeedResult ->
+            deleteFeedResult.onSuccess {
+                myFeedAdapter.deleteFeedSuccess()
+                Toast.makeText(requireContext(), "게시글 삭제가 완료되었습니다.", Toast.LENGTH_SHORT).show()
+            }.onFailure {
+                Toast.makeText(requireContext(), getText(R.string.APIErrorToastMessage), Toast.LENGTH_SHORT).show()
+            }
+
+            myFeedAdapter.actionPosition = -1
+        }
+
         /*   로딩 관련 Observer   */
         viewModel.isLoadingCenter.observe(viewLifecycleOwner) {
             if(it)
@@ -163,11 +196,24 @@ class MypageFeedFragment : Fragment(), MyFeedAdapter.OnFeedActionListener {
     }
 
     override fun onPostLike(feedID: Int) {
-        TODO("Not yet implemented")
+        if(!viewModel.checkLoading())
+            viewModel.postFeedLike(feedID)
+        else
+            Toast.makeText(requireContext(), "이전 작업을 처리 중입니다. 잠시 후 다시 시도해 주세요", Toast.LENGTH_SHORT).show()
     }
 
     override fun onDeleteLike(feedID: Int) {
-        TODO("Not yet implemented")
+        if(!viewModel.checkLoading())
+            viewModel.deleteFeedLike(feedID)
+        else
+            Toast.makeText(requireContext(), "이전 작업을 처리 중입니다. 잠시 후 다시 시도해 주세요", Toast.LENGTH_SHORT).show()
+    }
+
+    override fun onDeleteFeed(feedID: Int) {
+        if(!viewModel.checkLoading())
+            viewModel.deleteFeed(feedID)
+        else
+            Toast.makeText(requireContext(), "이전 작업을 처리 중입니다. 잠시 후 다시 시도해 주세요", Toast.LENGTH_SHORT).show()
     }
 
 }

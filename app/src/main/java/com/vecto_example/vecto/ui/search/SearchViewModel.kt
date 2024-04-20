@@ -87,13 +87,12 @@ class SearchViewModel(private val repository: FeedRepository) : ViewModel() {
 
                     _feedInfoLiveData.postValue(updatedFeedInfo)
 
-                    // 기존 Feed ID 리스트에 새로운 ID 추가
-                    val updatedFeedIds = _feedIdsLiveData.value?.feedIds?.toMutableList() ?: mutableListOf()
-                    updatedFeedIds.addAll(feedPageResponse.feedIds)
-
                     _feedIdsLiveData.postValue(feedPageResponse.copy(feedIds = (_feedIdsLiveData.value?.feedIds ?: mutableListOf()).apply {
                         addAll(successfulFeedIds)
                     }))
+
+                    newFeedIds.clear()
+                    newFeedIds.addAll(successfulFeedIds)
 
                     nextPage = feedPageResponse.nextPage    //페이지 정보값 변경
                     lastPage = feedPageResponse.lastPage
@@ -142,13 +141,12 @@ class SearchViewModel(private val repository: FeedRepository) : ViewModel() {
 
                     _feedInfoLiveData.postValue(updatedFeedInfo)
 
-                    // 기존 Feed ID 리스트에 새로운 ID 추가
-                    val updatedFeedIds = _feedIdsLiveData.value?.feedIds?.toMutableList() ?: mutableListOf()
-                    updatedFeedIds.addAll(feedPageResponse.feedIds)
-
                     _feedIdsLiveData.postValue(feedPageResponse.copy(feedIds = (_feedIdsLiveData.value?.feedIds ?: mutableListOf()).apply {
                         addAll(successfulFeedIds)
                     }))
+
+                    newFeedIds.clear()
+                    newFeedIds.addAll(successfulFeedIds)
 
                     nextPage = feedPageResponse.nextPage    //페이지 정보값 변경
                     lastPage = feedPageResponse.lastPage
@@ -197,13 +195,12 @@ class SearchViewModel(private val repository: FeedRepository) : ViewModel() {
 
                     _feedInfoLiveData.postValue(updatedFeedInfo)
 
-                    // 기존 Feed ID 리스트에 새로운 ID 추가
-                    val updatedFeedIds = _feedIdsLiveData.value?.feedIds?.toMutableList() ?: mutableListOf()
-                    updatedFeedIds.addAll(feedPageResponse.feedIds)
-
                     _feedIdsLiveData.postValue(feedPageResponse.copy(feedIds = (_feedIdsLiveData.value?.feedIds ?: mutableListOf()).apply {
                         addAll(successfulFeedIds)
                     }))
+
+                    newFeedIds.clear()
+                    newFeedIds.addAll(successfulFeedIds)
 
                     nextPage = feedPageResponse.nextPage    //페이지 정보값 변경
                     lastPage = feedPageResponse.lastPage
@@ -225,7 +222,7 @@ class SearchViewModel(private val repository: FeedRepository) : ViewModel() {
         followPage = true
 
         _feedInfoLiveData.postValue(emptyList())
-        _feedIdsLiveData.postValue(VectoService.FeedPageResponse(0, emptyList(), false, true))
+        _feedIdsLiveData.postValue(VectoService.FeedPageResponse(0, emptyList(), lastPage = false, followPage = true))
 
         newFeedIds.clear()
         newFeedInfo.clear()

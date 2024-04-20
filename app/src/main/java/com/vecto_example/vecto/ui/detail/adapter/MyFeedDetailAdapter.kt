@@ -75,11 +75,10 @@ class MyFeedDetailAdapter(private val context: Context): RecyclerView.Adapter<My
         val textIndicator: TextView = view.findViewById(R.id.topPageNumberText)
         val textIndicatorBox: ImageView = view.findViewById(R.id.topPageNumberBox)
 
-        lateinit var visitNumberAdapter: VisitNumberAdapter
+        private var visitNumberAdapter: VisitNumberAdapter = VisitNumberAdapter(context)
 
         init {
             // 내부 RecyclerView 설정
-            visitNumberAdapter = VisitNumberAdapter(context)
             numberRecyclerView.adapter = visitNumberAdapter
             numberRecyclerView.layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
         }

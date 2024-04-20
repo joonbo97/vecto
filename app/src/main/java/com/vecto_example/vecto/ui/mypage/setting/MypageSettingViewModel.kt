@@ -18,7 +18,10 @@ class MypageSettingViewModel (private val repository: UserRepository): ViewModel
     private val _updateResult = MutableLiveData<Result<String>>()
     val updateResult: LiveData<Result<String>> = _updateResult
 
-    val idDuplicateFlag = MutableLiveData<Result<Boolean>>()
+    private val _idDuplicateResult = MutableLiveData<Result<String>>()
+    val idDuplicateResult: LiveData<Result<String>> = _idDuplicateResult
+
+    var idCheckFinished = false
 
     enum class Type {
         ID, NICKNAME, PASSWORD
@@ -52,7 +55,7 @@ class MypageSettingViewModel (private val repository: UserRepository): ViewModel
         viewModelScope.launch {
             val result = repository.checkUserId(userId)
 
-            idDuplicateFlag.value = result
+            _idDuplicateResult.value = result
         }
     }
 

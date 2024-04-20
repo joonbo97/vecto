@@ -21,6 +21,7 @@ import com.vecto_example.vecto.data.repository.UserRepository
 import com.vecto_example.vecto.databinding.FragmentMypageSettingBinding
 import com.vecto_example.vecto.retrofit.VectoService
 import com.vecto_example.vecto.utils.LoadImageUtils
+import com.vecto_example.vecto.utils.ServerResponse
 import com.yalantis.ucrop.UCrop
 import java.io.File
 
@@ -75,6 +76,7 @@ class MypageSettingFragment : Fragment() {
     private fun initUI() {
         binding.editTextID.setText(Auth._userId.value.toString())
         binding.editTextNickname.setText(Auth._nickName.value.toString())
+        binding.emailText.text = Auth.email.toString()
     }
 
     private fun initObservers() {
@@ -87,20 +89,22 @@ class MypageSettingFragment : Fragment() {
             binding.UserNameText.text = Auth._nickName.value
         }
 
-        viewModel.idDuplicateFlag.observe(viewLifecycleOwner) {
-            it.onSuccess { isDuplicate ->
-                if(isDuplicate){
-                    Toast.makeText(requireContext(), "사용 가능한 아이디 입니다.", Toast.LENGTH_SHORT).show()
+        viewModel.idDuplicateResult.observe(viewLifecycleOwner) {
+            it.onSuccess {
 
-                }
-                else {
-                    binding.editTextID.isEnabled = true
+                viewModel.idCheckFinished = true
+                Toast.makeText(requireContext(), "사용 가능한 아이디 입니다.", Toast.LENGTH_SHORT).show()
+            }.onFailure { failException ->
+                viewModel.idCheckFinished = false
+                binding.editTextID.isEnabled = true
+
+                if(failException.message == ServerResponse.FAIL_DUPLICATED_USERID.code){
                     Toast.makeText(requireContext(), "중복된 아이디입니다.", Toast.LENGTH_SHORT).show()
                 }
-            }
-                .onFailure {
+                else {
                     Toast.makeText(requireContext(), getText(R.string.APIErrorToastMessage), Toast.LENGTH_SHORT).show()
                 }
+            }
         }
 
 
@@ -149,7 +153,7 @@ class MypageSettingFragment : Fragment() {
 
             if(binding.editTextID.text.toString() != Auth._userId.value.toString())//ID변경이 있는 경우
             {
-                if(viewModel.idDuplicateFlag.value?.getOrNull() == true) {
+                if(viewModel.idCheckFinished) {
                     if(viewModel.checkValidation(MypageSettingViewModel.Type.ID, binding.editTextID.text.toString())){
                         newID = binding.editTextID.text.toString()
                     }

@@ -163,7 +163,7 @@ class EditPostActivity : AppCompatActivity(), OnMapReadyCallback, CalendarDialog
                 Log.d("EditPost", "업로드 할 이미지가 없고 지도 이미지 업로드가 완료되었습니다.")
 
                 writeViewModel.updateFeed(
-                    VectoService.UpdatePostRequest(
+                    VectoService.UpdateFeedRequest(
                         feedId,
                         binding.EditTitle.text.toString(),
                         binding.EditContent.text.toString(),
@@ -176,7 +176,7 @@ class EditPostActivity : AppCompatActivity(), OnMapReadyCallback, CalendarDialog
                 Log.d("EditPost", "업로드 할 이미지가 완료되었고 지도 이미지 업로드가 완료되었습니다.")
 
                 writeViewModel.updateFeed(
-                    VectoService.UpdatePostRequest(
+                    VectoService.UpdateFeedRequest(
                         feedId,
                         binding.EditTitle.text.toString(),
                         binding.EditContent.text.toString(),
@@ -199,7 +199,7 @@ class EditPostActivity : AppCompatActivity(), OnMapReadyCallback, CalendarDialog
                 Log.d("EditPost", "업로드 할 이미지가 있고 지도 이미지 업로드는 완료되었습니다.")
 
                 writeViewModel.updateFeed(
-                    VectoService.UpdatePostRequest(
+                    VectoService.UpdateFeedRequest(
                         feedId,
                         binding.EditTitle.text.toString(),
                         binding.EditContent.text.toString(),

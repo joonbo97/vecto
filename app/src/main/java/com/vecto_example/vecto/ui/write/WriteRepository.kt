@@ -36,11 +36,11 @@ class WriteRepository(private val vectoService: VectoService, private val naverS
         }
     }
 
-    suspend fun addFeed(postDataForUpload: VectoService.PostDataForUpload): Result<Int> {
+    suspend fun addFeed(feedDataForUpload: VectoService.FeedDataForUpload): Result<Int> {
         /*   게시글 업로드   */
 
         return try {
-            val response = vectoService.addFeed("Bearer ${Auth.token}", postDataForUpload)
+            val response = vectoService.addFeed("Bearer ${Auth.token}", feedDataForUpload)
 
             if(response.isSuccessful){
                 Log.d("addFeed", "SUCCESS: ${response.body()}")
@@ -60,11 +60,11 @@ class WriteRepository(private val vectoService: VectoService, private val naverS
         }
     }
 
-    suspend fun updateFeed(updatePostRequest: VectoService.UpdatePostRequest): Result<String> {
+    suspend fun updateFeed(updateFeedRequest: VectoService.UpdateFeedRequest): Result<String> {
         /*   게시글 수정   */
 
         return try {
-            val response = vectoService.updateFeed("Bearer ${Auth.token}", updatePostRequest)
+            val response = vectoService.updateFeed("Bearer ${Auth.token}", updateFeedRequest)
 
             if(response.isSuccessful){
                 Log.d("updateFeed", "SUCCESS: ${response.body()}")

@@ -12,6 +12,9 @@ enum class ServerResponse(val code:String) {
 
 
     /*   ERROR   */
+    FAIL_DUPLICATED_USERID("E018"),         //ID 중복
+    FAIL_DUPLICATED_EMAIL("E019"),          //메일 중복
+    FAIL_EMAILCODE_INVALID("E017"),         //인증 코드 오류
 
 
 }

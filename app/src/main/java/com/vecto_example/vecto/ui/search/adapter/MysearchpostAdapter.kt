@@ -267,6 +267,10 @@ class MysearchpostAdapter(private val context: Context) : RecyclerView.Adapter<M
             commentCount.text = feed.commentCount.toString()
 
             fun clickLikeAction() {
+                Log.d("CHECKCHECK", "adapterposition: ${adapterPosition}")
+                Log.d("CHECKCHECK", "feedIDsize: ${feedID.size}")
+                Log.d("CHECKCHECK", "feedInfosize: ${feedInfo.size}")
+
                 if(Auth.loginFlag.value == true) {
                     if (feed.likeFlag) {
                         likeIcon.setImageResource(R.drawable.post_like_off)

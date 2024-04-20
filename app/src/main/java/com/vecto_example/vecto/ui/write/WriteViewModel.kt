@@ -89,10 +89,10 @@ class WriteViewModel(private val repository: WriteRepository): ViewModel() {
         }
     }
 
-    fun addFeed(postDataForUpload: VectoService.PostDataForUpload) {
+    fun addFeed(feedDataForUpload: VectoService.FeedDataForUpload) {
 
         viewModelScope.launch{
-            val addFeedResponse = repository.addFeed(postDataForUpload)
+            val addFeedResponse = repository.addFeed(feedDataForUpload)
 
             addFeedResponse.onSuccess {
                 _addFeedResult.postValue("SUCCESS")
@@ -107,11 +107,11 @@ class WriteViewModel(private val repository: WriteRepository): ViewModel() {
 
     }
 
-    fun updateFeed(updatePostRequest: VectoService.UpdatePostRequest) {
+    fun updateFeed(updateFeedRequest: VectoService.UpdateFeedRequest) {
         Log.d("UPDATE DATA", "${visitDataForWriteList.size}}")
 
         viewModelScope.launch {
-            val updateFeedResponse = repository.updateFeed(updatePostRequest)
+            val updateFeedResponse = repository.updateFeed(updateFeedRequest)
 
             updateFeedResponse.onSuccess {
                 _updateFeedResult.postValue("SUCCESS")

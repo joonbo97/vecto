@@ -130,7 +130,7 @@ class WriteFragment : Fragment(), OnMapReadyCallback, CalendarDialog.OnDateSelec
         writeViewModel.mapImageUrls.observe(viewLifecycleOwner){
             if(imageUri.isEmpty() && uploadStarted){   //업로드 할 Normal Image 가 없는 경우
                 writeViewModel.addFeed(
-                    VectoService.PostDataForUpload(
+                    VectoService.FeedDataForUpload(
                         binding.EditTitle.text.toString(),
                         binding.EditContent.text.toString(),
                         LocalDateTime.now().withNano(0).toString(),
@@ -141,7 +141,7 @@ class WriteFragment : Fragment(), OnMapReadyCallback, CalendarDialog.OnDateSelec
                 ))
             } else if(writeViewModel.normalImageDone.value == true && uploadStarted) { //업로드 할 Normal Image 가 이미 완료된 경우
                 writeViewModel.addFeed(
-                    VectoService.PostDataForUpload(
+                    VectoService.FeedDataForUpload(
                         binding.EditTitle.text.toString(),
                         binding.EditContent.text.toString(),
                         LocalDateTime.now().withNano(0).toString(),
@@ -156,7 +156,7 @@ class WriteFragment : Fragment(), OnMapReadyCallback, CalendarDialog.OnDateSelec
         writeViewModel.imageUrls.observe(viewLifecycleOwner){
             if((writeViewModel.mapImageDone.value == true && uploadStarted)){  //Normal Image 와 지도 이미지 모두 완료된 경우
                 writeViewModel.addFeed(
-                    VectoService.PostDataForUpload(
+                    VectoService.FeedDataForUpload(
                         binding.EditTitle.text.toString(),
                         binding.EditContent.text.toString(),
                         LocalDateTime.now().withNano(0).toString(),

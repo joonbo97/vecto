@@ -26,6 +26,8 @@ class CommentViewModel(private val repository: CommentRepository): ViewModel() {
     private val _isLoadingBottom = MutableLiveData<Boolean>()
     val isLoadingBottom: LiveData<Boolean> = _isLoadingBottom
 
+    private var tempLoading = false
+
     private val _addCommentResult = MutableLiveData<Result<String>>()
     val addCommentResult: LiveData<Result<String>> = _addCommentResult
 
@@ -95,7 +97,7 @@ class CommentViewModel(private val repository: CommentRepository): ViewModel() {
     }
 
     fun sendCommentLike(commentId: Int) {
-        startCenterLoading()
+        tempLoading = true
         viewModelScope.launch {
             val sendCommentLikeResponse = repository.sendCommentLike(commentId)
 
@@ -106,7 +108,7 @@ class CommentViewModel(private val repository: CommentRepository): ViewModel() {
     }
 
     fun cancelCommentLike(commentId: Int) {
-        startCenterLoading()
+        tempLoading = true
         viewModelScope.launch {
             val cancelCommentLikeResponse = repository.cancelCommentLike(commentId)
 
@@ -150,7 +152,7 @@ class CommentViewModel(private val repository: CommentRepository): ViewModel() {
 
     fun checkLoading(): Boolean{
         //로딩중이 아니라면 false, 로딩중이라면 true
-        return !(isLoadingBottom.value == false && isLoadingCenter.value == false)
+        return !(isLoadingBottom.value == false && isLoadingCenter.value == false && !tempLoading)
     }
 
     private fun startLoading(){
@@ -166,7 +168,6 @@ class CommentViewModel(private val repository: CommentRepository): ViewModel() {
         Log.d("STARTLOADING", "START")
 
         _isLoadingCenter.value = true
-
     }
 
     private fun endLoading(){
@@ -174,6 +175,7 @@ class CommentViewModel(private val repository: CommentRepository): ViewModel() {
 
         _isLoadingCenter.value = false
         _isLoadingBottom.value = false
+        tempLoading = false
     }
 
 }

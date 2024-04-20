@@ -8,23 +8,21 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
-import android.widget.ImageView
-import android.widget.TextView
 import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
-import com.bumptech.glide.Glide
 import com.vecto_example.vecto.ui.comment.CommentActivity
-import com.vecto_example.vecto.ui.login.LoginActivity
 import com.vecto_example.vecto.ui.detail.FeedDetailActivity
 import com.vecto_example.vecto.ui.userinfo.UserInfoActivity
 import com.vecto_example.vecto.data.Auth
 import com.vecto_example.vecto.dialog.DeletePostDialog
 import com.vecto_example.vecto.popupwindow.EditDeletePopupWindow
-import com.vecto_example.vecto.dialog.LoginRequestDialog
 import com.vecto_example.vecto.retrofit.VectoService
 import com.google.gson.Gson
 import com.vecto_example.vecto.ui.editfeed.EditPostActivity
 import com.vecto_example.vecto.R
+import com.vecto_example.vecto.databinding.MypostItemBinding
+import com.vecto_example.vecto.utils.LoadImageUtils
+import com.vecto_example.vecto.utils.RequestLoginUtils
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -39,174 +37,80 @@ class MyFeedAdapter(private val context: Context): RecyclerView.Adapter<MyFeedAd
     var pageNo = 0
     var userId = ""
 
+    var actionPosition = -1
+
     interface OnFeedActionListener {
         fun onPostLike(feedID: Int)
 
         fun onDeleteLike(feedID: Int)
+
+        fun onDeleteFeed(feedID: Int)
     }
 
     var feedActionListener: OnFeedActionListener? = null
 
-    inner class ViewHolder(view: View): RecyclerView.ViewHolder(view) {
-
-        private val titleText: TextView = view.findViewById(R.id.TitleText)
-        private val profileImage: ImageView = view.findViewById(R.id.ProfileImage)
-        private val nicknameText: TextView = view.findViewById(R.id.NicknameText)
-        private val posttimeText: TextView = view.findViewById(R.id.PostTimeText)
-
-        private val postImage: ImageView = view.findViewById(R.id.Image)
-
-        private val courseTime: TextView = view.findViewById(R.id.TotalTimeText)
-
-        private val likeCount: TextView = view.findViewById(R.id.LikeCountText)
-        private val likeIcon: ImageView = view.findViewById(R.id.LikeImage)
-        private val commentCount: TextView = view.findViewById(R.id.CommentCountText)
-
-
-        private val likeTouch: ImageView = view.findViewById(R.id.LikeTouchImage)
-        private val commentTouch: ImageView = view.findViewById(R.id.CommentTouchImage)
-
-
-        private val mapSmall: ImageView = view.findViewById(R.id.MapImageSmall)
-        private val mapLarge: ImageView = view.findViewById(R.id.MapImageLarge)
-
-        private val menu: ImageView = view.findViewById(R.id.PostMenuImage)
-
-
+    inner class ViewHolder(val binding: MypostItemBinding): RecyclerView.ViewHolder(binding.root) {
         fun bind(feed: VectoService.FeedInfoResponse) {
-            Log.d("FEED", "FeedImage Size: ${feed.image.size}")
-            //이미지가 있는지 여부를 확인하여 style을 결정
+
+            //이미지가 있는지 여부를 확인하여 style을 결정 하고 이미지 설정
             if (feed.image.isEmpty()) {//2:1 mapImage [1]
-                mapLarge.visibility = View.VISIBLE
-                mapSmall.visibility = View.INVISIBLE
-                postImage.visibility = View.INVISIBLE
+                binding.MapImageLarge.visibility = View.VISIBLE
+                binding.MapImageSmall.visibility = View.INVISIBLE
+                binding.Image.visibility = View.INVISIBLE
 
-                Glide.with(context)
-                    .load(feed.mapImage[1])
-                    .error(R.drawable.error_image) // 에러 발생 시 표시될 이미지
-                    .into(mapLarge)
-
+                LoadImageUtils.loadImage(context, binding.MapImageLarge, feed.mapImage[1])
             } else {//1:1 mapImage[0]
-                mapLarge.visibility = View.INVISIBLE
-                mapSmall.visibility = View.VISIBLE
-                postImage.visibility = View.VISIBLE
+                binding.MapImageLarge.visibility = View.INVISIBLE
+                binding.MapImageSmall.visibility = View.VISIBLE
+                binding.Image.visibility = View.VISIBLE
 
-                Glide.with(context)
-                    .load(feed.mapImage[0])
-                    .error(R.drawable.error_image) // 에러 발생 시 표시될 이미지
-                    .into(mapSmall)
-
-                Glide.with(context)
-                    .load(feed.image[0])
-                    .error(R.drawable.error_image) // 에러 발생 시 표시될 이미지
-                    .into(postImage)
+                LoadImageUtils.loadImage(context, binding.MapImageSmall, feed.mapImage[0])
+                LoadImageUtils.loadImage(context, binding.Image, feed.image[0])
             }
 
-            titleText.text = feed.title
+            /*   게시글 데이터 설정   */
+            binding.TitleText.text = feed.title //제목
+            LoadImageUtils.loadUserProfileImage(context, binding.ProfileImage, feed.userProfile)    //프로필 이미지
+            binding.NicknameText.text = feed.nickName   //닉네임
+            binding.PostTimeText.text = feed.timeDifference //업로드 시간
+            binding.LikeCountText.text = feed.likeCount.toString()
+            binding.CommentCountText.text = feed.commentCount.toString()
 
+            /*   자신의 게시글이 아닌 경우, 게시글 메뉴 숨김   */
             if(Auth._userId.value != feedInfo[adapterPosition].userId) {
-                menu.visibility = View.GONE
+                binding.PostMenuImage.visibility = View.GONE
             }
 
-            if(feed.userProfile != null)
-            {
-                Glide.with(context)
-                    .load(feed.userProfile)
-                    .error(R.drawable.profile_basic) // 에러 발생 시 표시될 이미지
-                    .circleCrop()
-                    .into(profileImage)
-            }
-            else
-                profileImage.setImageResource(R.drawable.profile_basic)
-
-            nicknameText.text = feed.nickName
-            posttimeText.text = feed.timeDifference
-
-
-            if(feed.likeFlag)
-                likeIcon.setImageResource(R.drawable.post_like_on)
-            else
-                likeIcon.setImageResource(R.drawable.post_like_off)
-
-            likeCount.text = feed.likeCount.toString()
-            commentCount.text = feed.commentCount.toString()
-
-            fun clickLikeAction() {
-                if(Auth.loginFlag.value == true) {
-                    if (feed.likeFlag) {
-                        likeIcon.setImageResource(R.drawable.post_like_off)
-
-                        cancelLike(feedID[adapterPosition])
-                        feed.likeFlag = false
-
-                        feed.likeCount--
-                        likeCount.text = feed.likeCount.toString()
-                    } else {
-                        likeIcon.setImageResource(R.drawable.post_like_on)
-                        val anim = AnimationUtils.loadAnimation(context, R.anim.like_anim)
-                        feed.likeCount++
-                        likeCount.text = feed.likeCount.toString()
-
-                        anim.setAnimationListener(object : Animation.AnimationListener {
-                            override fun onAnimationStart(animation: Animation?) {}
-
-                            override fun onAnimationEnd(animation: Animation?) {
-                            }
-
-                            override fun onAnimationRepeat(animation: Animation?) {}
-                        })
-
-                        likeIcon.startAnimation(anim)
-                        sendLike(feedID[adapterPosition])
-                        feed.likeFlag = true
-                    }
-                }
-                else {
-                    val loginRequestDialog = LoginRequestDialog(context)
-                    loginRequestDialog.showDialog()
-                    loginRequestDialog.onOkButtonClickListener = {
-                        val intent = Intent(context, LoginActivity::class.java)
-                        context.startActivity(intent)
-                    }
-                }
-            }
-
-            profileImage.setOnClickListener {
+            binding.UserTouchImage.setOnClickListener {
                 val intent = Intent(context, UserInfoActivity::class.java)
                 intent.putExtra("userId", feedInfo[adapterPosition].userId)
                 context.startActivity(intent)
             }
 
-            nicknameText.setOnClickListener {
-                val intent = Intent(context, UserInfoActivity::class.java)
-                intent.putExtra("userId", feedInfo[adapterPosition].userId)
-                context.startActivity(intent)
+            binding.LikeTouchImage.setOnClickListener {
+                clickLikeAction(feedInfo[adapterPosition])
             }
 
-            likeTouch.setOnClickListener {
-                clickLikeAction()
-            }
-
-            commentTouch.setOnClickListener {
+            binding.CommentTouchImage.setOnClickListener {
                 val intent = Intent(context, CommentActivity::class.java)
                 intent.putExtra("feedID", feedID[adapterPosition])
                 context.startActivity(intent)
             }
 
 
-            val FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")
+            val format = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")
 
-            val date1 = LocalDateTime.parse(feed.visit.first().datetime, FORMAT)
-            val date2 = LocalDateTime.parse(feed.visit.last().datetime, FORMAT)
+            val date1 = LocalDateTime.parse(feed.visit.first().datetime, format)
+            val date2 = LocalDateTime.parse(feed.visit.last().datetime, format)
 
             val minutesPassed = Duration.between(date1, date2).toMinutes().toInt()
 
             if(minutesPassed < 60)
             {
-                courseTime.text = "약 1시간 이내 코스"
+                binding.TotalTimeText.text = "약 1시간 이내 코스"
             }
             else{
-                courseTime.text = "약 ${minutesPassed/60}시간 코스"
+                binding.TotalTimeText.text = "약 ${minutesPassed/60}시간 코스"
             }
 
             itemView.setOnClickListener {
@@ -219,7 +123,7 @@ class MyFeedAdapter(private val context: Context): RecyclerView.Adapter<MyFeedAd
                 context.startActivity(intent)
             }
 
-            menu.setOnClickListener {
+            binding.PostMenuImage.setOnClickListener {
                 val editDeletePopupWindow = EditDeletePopupWindow(context,
                     editListener = {
                         val intent = Intent(context, EditPostActivity::class.java).apply {
@@ -232,7 +136,8 @@ class MyFeedAdapter(private val context: Context): RecyclerView.Adapter<MyFeedAd
                         val deletePostDialog = DeletePostDialog(context)
                         deletePostDialog.showDialog()
                         deletePostDialog.onOkButtonClickListener = {
-                            deletePost(feedID[adapterPosition], adapterPosition)
+                            actionPosition = adapterPosition
+                            feedActionListener?.onDeleteFeed(feedID[adapterPosition])
                         }
                     },
                     dismissListener = {
@@ -240,47 +145,44 @@ class MyFeedAdapter(private val context: Context): RecyclerView.Adapter<MyFeedAd
                     })
 
                 // 앵커 뷰를 기준으로 팝업 윈도우 표시
-                editDeletePopupWindow.showPopupWindow(menu)
+                editDeletePopupWindow.showPopupWindow(binding.PostMenuImage)
             }
-
-
         }
 
-    }
+        //좋아요 클릭시 실행 함수
+        private fun clickLikeAction(feed: VectoService.FeedInfoResponse) {
 
-    private fun deletePost(feedid: Int, position: Int) {
-        val vectoService = VectoService.create()
-
-        val call = vectoService.deleteFeed("Bearer ${Auth.token}", feedid)
-        call.enqueue(object : Callback<VectoService.VectoResponse<Unit>> {
-            override fun onResponse(call: Call<VectoService.VectoResponse<Unit>>, response: Response<VectoService.VectoResponse<Unit>>) {
-                if (response.isSuccessful) {
-
-                    Log.d("DELETEPOSST", "게시글 삭제 성공 : ${response.body()?.result}")
-                    Toast.makeText(context, "게시글 삭제가 완료되었습니다.", Toast.LENGTH_SHORT).show()
-
-                    feedID.removeAt(position)
-                    feedInfo.removeAt(position)
-                    notifyItemRemoved(position)
-
+            if(Auth.loginFlag.value == true && actionPosition == -1) {
+                if (feed.likeFlag) {
+                    actionPosition = adapterPosition
+                    feedActionListener?.onDeleteLike(feedID[adapterPosition])
                 } else {
-                    // 서버 에러 처리
-                    Log.d("DELETEPOSST", "게시글 삭제 요청 실패 : " + response.errorBody()?.string())
-                    Toast.makeText(context, "게시글 삭제 요청에 실패했습니다. 잠시후 다시 시도해주세요.", Toast.LENGTH_SHORT).show()
+                    val anim = AnimationUtils.loadAnimation(context, R.anim.like_anim)
+
+                    anim.setAnimationListener(object : Animation.AnimationListener {
+                        override fun onAnimationStart(animation: Animation?) {}
+                        override fun onAnimationEnd(animation: Animation?) {}
+                        override fun onAnimationRepeat(animation: Animation?) {}
+                    })
+
+                    binding.LikeImage.startAnimation(anim)
+
+                    actionPosition = adapterPosition
+                    feedActionListener?.onPostLike(feedID[adapterPosition])
+
                 }
             }
-
-            override fun onFailure(call: Call<VectoService.VectoResponse<Unit>>, t: Throwable) {
-                Log.d("DELETEPOSST", "게시글 삭제 요청 실패 : " + t.message)
-                Toast.makeText(context, R.string.APIErrorToastMessage, Toast.LENGTH_SHORT).show()
+            else {
+                RequestLoginUtils.requestLogin(context)
             }
-        })
+
+        }
     }
 
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val view = LayoutInflater.from(context).inflate(R.layout.mypost_item, parent, false)
-        return ViewHolder(view)
+        val binding = MypostItemBinding.inflate(LayoutInflater.from(context), parent, false)
+        return ViewHolder(binding)
     }
 
     override fun getItemCount(): Int {
@@ -290,49 +192,37 @@ class MyFeedAdapter(private val context: Context): RecyclerView.Adapter<MyFeedAd
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val feed = feedInfo[position]
         holder.bind(feed)
+
+        /*   좋아요 설정   */
+        if(feed.likeFlag)
+            holder.binding.LikeImage.setImageResource(R.drawable.post_like_on)
+        else
+            holder.binding.LikeImage.setImageResource(R.drawable.post_like_off)
     }
 
-    private fun sendLike(feedID: Int) {
-        val vectoService = VectoService.create()
+    //좋아요 성공 시 실행 함수
+    fun postFeedLikeSuccess() {
+        feedInfo[actionPosition].likeFlag = true
+        feedInfo[actionPosition].likeCount++
 
-        val call = vectoService.sendLike("Bearer ${Auth.token}", feedID)
-        call.enqueue(object : Callback<VectoService.VectoResponse<Unit>> {
-            override fun onResponse(call: Call<VectoService.VectoResponse<Unit>>, response: Response<VectoService.VectoResponse<Unit>>) {
-                if(response.isSuccessful){
-                    Log.d("LIKE", "성공: ${response.body()}")
-                }
-                else{
-                    Log.d("LIKE", "성공했으나 서버 오류 ${response.errorBody()?.string()}")
-                }
-            }
-
-            override fun onFailure(call: Call<VectoService.VectoResponse<Unit>>, t: Throwable) {
-                Log.d("LIKE", "실패 ${t.message.toString()}" )
-            }
-
-        })
+        notifyItemChanged(actionPosition)
     }
 
-    private fun cancelLike(feedID: Int) {
-        val vectoService = VectoService.create()
+    //좋아요 삭제 성공 시 실행 함수
+    fun deleteFeedLikeSuccess() {
+        feedInfo[actionPosition].likeFlag = false
+        feedInfo[actionPosition].likeCount--
 
-        val call = vectoService.cancelLike("Bearer ${Auth.token}", feedID)
-        call.enqueue(object : Callback<VectoService.VectoResponse<Unit>> {
-            override fun onResponse(call: Call<VectoService.VectoResponse<Unit>>, response: Response<VectoService.VectoResponse<Unit>>) {
-                if(response.isSuccessful){
-                    Log.d("LIKE", "성공: ${response.body()}")
-                }
-                else{
-                    Log.d("LIKE", "성공했으나 서버 오류 ${response.errorBody()?.string()}")
-                }
-            }
-
-            override fun onFailure(call: Call<VectoService.VectoResponse<Unit>>, t: Throwable) {
-                Log.d("LIKE", "실패 ${t.message.toString()}" )
-            }
-
-        })
+        notifyItemChanged(actionPosition)
     }
+
+    //게시글 삭제 성공 시 실행 함수
+    fun deleteFeedSuccess() {
+        feedInfo.removeAt(actionPosition)
+
+        notifyItemRemoved(actionPosition)
+    }
+
 
     fun addFeedInfoData(newData: List<VectoService.FeedInfoResponse>) {
         //데이터 추가 함수
@@ -346,4 +236,6 @@ class MyFeedAdapter(private val context: Context): RecyclerView.Adapter<MyFeedAd
         feedID.addAll(newData)
         notifyItemRangeInserted(startIdx, newData.size)
     }
+
+
 }

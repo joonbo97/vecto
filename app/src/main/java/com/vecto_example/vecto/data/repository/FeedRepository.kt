@@ -16,7 +16,7 @@ class FeedRepository (private val vectoService: VectoService) {
 
                 Result.success(response.body()!!.result!!)
             } else {
-                Log.d("getFeedList", "FAIL: ${response.errorBody()}")
+                Log.d("getFeedList", "FAIL: ${response.errorBody()?.string()}")
 
                 Result.failure(Exception("FAIL"))
             }
@@ -36,7 +36,7 @@ class FeedRepository (private val vectoService: VectoService) {
 
                 Result.success(response.body()!!.result!!)
             } else {
-                Log.d("getPersonalFeedList", "FAIL: ${response.errorBody()}")
+                Log.d("getPersonalFeedList", "FAIL: ${response.errorBody()?.string()}")
 
                 Result.failure(Exception("FAIL"))
             }
@@ -57,7 +57,7 @@ class FeedRepository (private val vectoService: VectoService) {
                 Result.success(response.body()!!.result!!)
             }
             else{
-                Log.d("getSearchFeedList", "FAIL: ${response.errorBody()}")
+                Log.d("getSearchFeedList", "FAIL: ${response.errorBody()?.string()}")
 
                 Result.failure(Exception("FAIL"))
             }
@@ -78,7 +78,7 @@ class FeedRepository (private val vectoService: VectoService) {
                 Result.success(response.body()!!.result!!)
             }
             else{
-                Log.d("getLikeFeedList", "FAIL: ${response.errorBody()}")
+                Log.d("getLikeFeedList", "FAIL: ${response.errorBody()?.string()}")
 
                 Result.failure(Exception("FAIL"))
             }
@@ -99,7 +99,7 @@ class FeedRepository (private val vectoService: VectoService) {
                 Result.success(response.body()!!.result!!)
             }
             else{
-                Log.d("getUserFeedList", "FAIL: ${response.errorBody()}")
+                Log.d("getUserFeedList", "FAIL: ${response.errorBody()?.string()}")
 
                 Result.failure(Exception("FAIL"))
             }
@@ -127,4 +127,62 @@ class FeedRepository (private val vectoService: VectoService) {
             throw Exception("FAIL")
         }
     }
+
+    suspend fun postFeedLike(feedId: Int): Result<String> {
+        /*   게시글 좋아요 추가 함수   */
+        return try {
+            val response = vectoService.postFeedLike("Bearer ${Auth.token}", feedId)
+
+            if(response.isSuccessful){
+                Log.d("postFeedLike", "SUCCESS")
+                Result.success("SUCCESS")
+            } else {
+                Log.d("postFeedLike", "FAIL: ${response.errorBody()?.string()}")
+
+                Result.failure(Exception("FAIL"))
+            }
+        } catch (e: Exception) {
+            Log.e("postFeedLike", "ERROR", e)
+            Result.failure(Exception("ERROR"))
+        }
+    }
+
+    suspend fun deleteFeedLike(feedId: Int): Result<String> {
+        /*   게시글 좋아요 삭제 함수   */
+        return try {
+            val response = vectoService.deleteFeedLike("Bearer ${Auth.token}", feedId)
+
+            if(response.isSuccessful){
+                Log.d("deleteFeedLike", "SUCCESS")
+                Result.success("SUCCESS")
+            } else {
+                Log.d("deleteFeedLike", "FAIL: ${response.errorBody()?.string()}")
+
+                Result.failure(Exception("FAIL"))
+            }
+        } catch (e: Exception) {
+            Log.e("deleteFeedLike", "ERROR", e)
+            Result.failure(Exception("ERROR"))
+        }
+    }
+
+    suspend fun deleteFeed(feedId: Int): Result<String> {
+        /*   게시글 삭제 함수   */
+        return try {
+            val response = vectoService.deleteFeed("Bearer ${Auth.token}", feedId)
+
+            if(response.isSuccessful){
+                Log.d("deleteFeed", "SUCCESS")
+                Result.success("SUCCESS")
+            } else {
+                Log.d("deleteFeed", "FAIL: ${response.errorBody()?.string()}")
+
+                Result.failure(Exception("FAIL"))
+            }
+        } catch (e: Exception) {
+            Log.e("deleteFeed", "ERROR", e)
+            Result.failure(Exception("ERROR"))
+        }
+    }
+
 }

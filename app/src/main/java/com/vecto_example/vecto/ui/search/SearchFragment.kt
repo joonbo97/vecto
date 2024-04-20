@@ -242,12 +242,7 @@ class SearchFragment : Fragment(), MainActivity.ScrollToTop{
                 Log.d("BEFOREADD_INFO_DATA", "current adaper FeedInfo size: ${mysearchpostAdapter.feedInfo.size}")
                 Log.d("BEFOREADD_INFO_DATA", "current FeedInfo size: ${searchViewModel.feedInfoLiveData.value!!.size}")
 
-                if(mysearchpostAdapter.feedInfo.isNotEmpty())
-                    mysearchpostAdapter.addFeedInfoData(searchViewModel.newFeedInfo)
-                else {
-                    mysearchpostAdapter.feedInfo.clear()
-                    mysearchpostAdapter.addFeedInfoData(it)
-                }
+                mysearchpostAdapter.addFeedInfoData(searchViewModel.newFeedInfo)
 
                 Log.d("ADD_INFO_DATA", "current adaper FeedInfo size: ${mysearchpostAdapter.feedInfo.size}")
                 Log.d("ADD_INFO_DATA", "current FeedInfo size: ${searchViewModel.feedInfoLiveData.value!!.size}")
@@ -258,18 +253,13 @@ class SearchFragment : Fragment(), MainActivity.ScrollToTop{
         searchViewModel.feedIdsLiveData.observe(viewLifecycleOwner) {
 
             searchViewModel.feedIdsLiveData.value?.let {
-                if(mysearchpostAdapter.feedID.isNotEmpty())
-                    mysearchpostAdapter.addFeedIdData(searchViewModel.newFeedIds)
-                else{
-                    mysearchpostAdapter.feedID.clear()
-                    mysearchpostAdapter.addFeedIdData(it.feedIds)
-                }
+                mysearchpostAdapter.addFeedIdData(searchViewModel.newFeedIds)
                 Log.d("ADD_ID_DATA", "current adaper FeedId size: ${mysearchpostAdapter.feedID.size}")
                 Log.d("ADD_ID_DATA", "current FeedId size: ${searchViewModel.feedIdsLiveData.value!!.feedIds.size}")
 
             }
-            Log.d("ADD_ID_DATA123123", "current FeedId size: ${searchViewModel.feedIdsLiveData.value!!.feedIds.size}")
-            if(queryFlag && searchViewModel.feedIdsLiveData.value?.feedIds.isNullOrEmpty()){
+
+            if(queryFlag && mysearchpostAdapter.feedID.isEmpty() && !searchViewModel.checkLoading()){
                 Log.d("SET NONEIMAGE", "SET")
 
                 setNoneImage()
