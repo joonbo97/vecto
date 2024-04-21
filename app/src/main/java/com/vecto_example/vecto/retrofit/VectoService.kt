@@ -37,12 +37,7 @@ interface VectoService {
 
     //ID 중복 체크
     @POST("userId/check")
-    fun idCheck(
-        @Body request: IdCheckRequest
-    ): Call<VectoResponse<Unit>>
-
-    @POST("userId/check")
-    suspend fun idCheck2(
+    suspend fun checkIdDuplicate(
         @Body request: IdCheckRequest
     ): Response<VectoResponse<Unit>>
 
@@ -256,14 +251,14 @@ interface VectoService {
 
     //댓글 좋아요
     @POST("comment/{commentId}/likes")
-    suspend fun sendCommentLike(
+    suspend fun postCommentLike(
         @Header("Authorization") authorization: String,
         @Path("commentId") commentId: Int
     ): Response<VectoResponse<Unit>>
 
     //댓글 좋아요 취소
     @DELETE("comment/{commentId}/likes")
-    suspend fun cancelCommentLike(
+    suspend fun deleteCommentLike(
         @Header("Authorization") authorization: String,
         @Path("commentId") commentId: Int
     ): Response<VectoResponse<Unit>>

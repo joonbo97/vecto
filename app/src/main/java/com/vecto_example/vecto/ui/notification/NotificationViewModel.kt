@@ -10,8 +10,8 @@ import com.vecto_example.vecto.retrofit.VectoService
 import kotlinx.coroutines.launch
 
 class NotificationViewModel (private val repository: NotificationRepository): ViewModel() {
-    var nextPage: Int = 0
-    var lastPage: Boolean = false
+    private var nextPage: Int = 0
+    private var lastPage: Boolean = false
 
     private val _isLoadingCenter = MutableLiveData<Boolean>()
     val isLoadingCenter: LiveData<Boolean> = _isLoadingCenter
@@ -58,7 +58,7 @@ class NotificationViewModel (private val repository: NotificationRepository): Vi
     }
 
     private fun startLoading(){
-        Log.d("STARTLOADING", "START")
+        Log.d("NotificationViewModel", "START_LOADING")
 
         if(nextPage == 0)   //처음 실행하는 경우 center 로딩
             _isLoadingCenter.value = true
@@ -67,14 +67,13 @@ class NotificationViewModel (private val repository: NotificationRepository): Vi
     }
 
     private fun endLoading(){
-        Log.d("ENDLOADING", "END")
+        Log.d("NotificationViewModel", "END_LOADING")
 
         _isLoadingCenter.value = false
         _isLoadingBottom.value = false
     }
 
     fun checkLoading(): Boolean{
-        //로딩중이 아니라면 false, 로딩중이라면 true
         return !(isLoadingBottom.value == false && isLoadingCenter.value == false)
     }
 }

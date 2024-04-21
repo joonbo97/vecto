@@ -2,8 +2,6 @@ package com.vecto_example.vecto.data.repository
 
 import android.util.Log
 import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
-import com.vecto_example.vecto.R
 import com.vecto_example.vecto.data.Auth
 import com.vecto_example.vecto.retrofit.VectoService
 import okhttp3.MultipartBody
@@ -105,7 +103,7 @@ class UserRepository (private val vectoService: VectoService) {
 
     suspend fun checkUserId(userId: String): Result<String>{
         return try{
-            val response = vectoService.idCheck2(VectoService.IdCheckRequest(userId))
+            val response = vectoService.checkIdDuplicate(VectoService.IdCheckRequest(userId))
             if (response.isSuccessful) {
                 Log.d("checkUserId", "SUCCESS: ${response.body()}")
                 Result.success("SUCCESS")

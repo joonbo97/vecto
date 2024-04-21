@@ -78,7 +78,7 @@ class CommentRepository(private val vectoService: VectoService) {
         /*   댓글 좋아요 추가 함수   */
 
         return try {
-            val response = vectoService.sendCommentLike("Bearer ${Auth.token}", commentId)
+            val response = vectoService.postCommentLike("Bearer ${Auth.token}", commentId)
 
             if(response.isSuccessful){
                 Log.d("sendCommentLike", "SUCCESS")
@@ -102,7 +102,7 @@ class CommentRepository(private val vectoService: VectoService) {
         /*   댓글 좋아요 취소 함수   */
 
         return try {
-            val response = vectoService.cancelCommentLike("Bearer ${Auth.token}", commentId)
+            val response = vectoService.deleteCommentLike("Bearer ${Auth.token}", commentId)
 
             if(response.isSuccessful){
                 Log.d("cancelCommentLike", "SUCCESS")
