@@ -12,12 +12,17 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 
 class MypageFeedViewModel(private val repository: FeedRepository) : ViewModel() {
+    /**
+     *
+     * IS Deprecated
+     *
+     */
+
     var nextPage: Int = 0
     private var lastPage: Boolean = false
     private var followPage: Boolean = true
 
-    val allFeedIds = mutableListOf<Int>()
-    val allFeedInfo = mutableListOf<VectoService.FeedInfoResponse>()
+    val allFeedInfo = mutableListOf<VectoService.FeedInfo>()
 
     private val _isLoadingCenter = MutableLiveData<Boolean>()
     val isLoadingCenter: LiveData<Boolean> = _isLoadingCenter
@@ -27,11 +32,8 @@ class MypageFeedViewModel(private val repository: FeedRepository) : ViewModel() 
 
     private var tempLoading = false
 
-    private val _feedIdsLiveData = MutableLiveData<VectoService.FeedPageResponse>()
-    val feedIdsLiveData: LiveData<VectoService.FeedPageResponse> = _feedIdsLiveData
-
-    private val _feedInfoLiveData = MutableLiveData<List<VectoService.FeedInfoResponse>>()
-    val feedInfoLiveData: LiveData<List<VectoService.FeedInfoResponse>> = _feedInfoLiveData
+    private val _feedInfoLiveData = MutableLiveData<VectoService.FeedPageResponse>()
+    val feedInfoLiveData: LiveData<VectoService.FeedPageResponse> = _feedInfoLiveData
 
     private val _feedErrorLiveData = MutableLiveData<String>()
     val feedErrorLiveData: LiveData<String> = _feedErrorLiveData
@@ -77,29 +79,8 @@ class MypageFeedViewModel(private val repository: FeedRepository) : ViewModel() 
 
             feedListResponse.onSuccess { feedPageResponse ->
                 if(!lastPage) {
-                    feedIdsLiveData.value?.let { allFeedIds.addAll(it.feedIds) }
-                    feedInfoLiveData.value?.let { allFeedInfo.addAll(it) }
-
-                    val successfulFeedIds = mutableListOf<Int>()
-                    val feedInfo = mutableListOf<VectoService.FeedInfoResponse>()
-
-                    feedPageResponse.feedIds.forEach { feedId ->
-                        val job = async {
-                            try {
-                                repository.getFeedInfo(feedId).also {
-                                    successfulFeedIds.add(feedId)
-                                }
-                            } catch (e: Exception) {
-                                Log.e("fetchUserFeedResults", "Failed to fetch feed info for ID $feedId", e)
-                                null // 실패한 경우 null 반환
-                            }
-                        }
-                        job.await()?.let {
-                            feedInfo.add(it) // null이 아닌 결과만 추가
-                        }
-                    }
-                    _feedInfoLiveData.postValue(feedInfo)   //LiveData 값 변경
-                    _feedIdsLiveData.postValue(feedPageResponse.copy(feedIds = successfulFeedIds))
+                    allFeedInfo.addAll(feedPageResponse.feeds)
+                    _feedInfoLiveData.postValue(feedPageResponse)
 
                     nextPage = feedPageResponse.nextPage    //페이지 정보값 변경
                     lastPage = feedPageResponse.lastPage
@@ -152,7 +133,6 @@ class MypageFeedViewModel(private val repository: FeedRepository) : ViewModel() 
         lastPage = false
         followPage = true
 
-        allFeedIds.clear()
         allFeedInfo.clear()
     }
 

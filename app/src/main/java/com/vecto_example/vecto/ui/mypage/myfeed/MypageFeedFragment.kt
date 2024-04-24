@@ -14,15 +14,19 @@ import androidx.recyclerview.widget.RecyclerView
 import com.vecto_example.vecto.R
 import com.vecto_example.vecto.data.Auth
 import com.vecto_example.vecto.data.repository.FeedRepository
+import com.vecto_example.vecto.data.repository.UserRepository
 import com.vecto_example.vecto.databinding.FragmentMypagePostBinding
 import com.vecto_example.vecto.retrofit.VectoService
 import com.vecto_example.vecto.ui.mypage.myfeed.adapter.MyFeedAdapter
+import com.vecto_example.vecto.ui.userinfo.UserInfoViewModel
+import com.vecto_example.vecto.ui.userinfo.UserInfoViewModelFactory
 import com.vecto_example.vecto.utils.LoadImageUtils
 
 class MypageFeedFragment : Fragment(), MyFeedAdapter.OnFeedActionListener {
     private lateinit var binding: FragmentMypagePostBinding
-    private val viewModel: MypageFeedViewModel by viewModels {
-        MypageFeedViewModelFactory(FeedRepository(VectoService.create()))
+
+    private val viewModel: UserInfoViewModel by viewModels {
+        UserInfoViewModelFactory(FeedRepository(VectoService.create()), UserRepository(VectoService.create()))
     }
 
     private lateinit var myFeedAdapter: MyFeedAdapter
@@ -54,7 +58,6 @@ class MypageFeedFragment : Fragment(), MyFeedAdapter.OnFeedActionListener {
             if(!viewModel.checkLoading()){
 
                 viewModel.initSetting()
-                clearRecyclerView()
                 clearNoneImage()
 
                 getFeed()
@@ -71,16 +74,12 @@ class MypageFeedFragment : Fragment(), MyFeedAdapter.OnFeedActionListener {
     }
 
     private fun initRecyclerView() {
-        myFeedAdapter = MyFeedAdapter(requireContext())
+        myFeedAdapter = MyFeedAdapter()
         myFeedAdapter.feedActionListener = this
-
-        clearRecyclerView()
-
-        myFeedAdapter.addFeedInfoData(viewModel.allFeedInfo)
-        myFeedAdapter.addFeedIdData(viewModel.allFeedIds)
 
         val mypostRecyclerView = binding.MypostRecyclerView
         mypostRecyclerView.adapter = myFeedAdapter
+
         mypostRecyclerView.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
         mypostRecyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
@@ -96,19 +95,24 @@ class MypageFeedFragment : Fragment(), MyFeedAdapter.OnFeedActionListener {
         })
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     private fun initObservers() {
         /*   게시글 관련 Observer   */
         viewModel.feedInfoLiveData.observe(viewLifecycleOwner) {
             //새로운 feed 정보를 받았을 때의 처리
-            myFeedAdapter.pageNo = viewModel.nextPage //다음 page 정보
-            viewModel.feedInfoLiveData.value?.let { myFeedAdapter.addFeedInfoData(it) }   //새로 받은 게시글 정보 추가
-        }
+            if(viewModel.firstFlag){
+                myFeedAdapter.feedInfo = viewModel.allFeedInfo
+                myFeedAdapter.lastSize = 0
 
-        viewModel.feedIdsLiveData.observe(viewLifecycleOwner) {
-            viewModel.feedIdsLiveData.value?.let { myFeedAdapter.addFeedIdData(it.feedIds) }
+                myFeedAdapter.notifyDataSetChanged()
+            } else {
+                myFeedAdapter.addFeedInfoData()
+            }
 
-            if(viewModel.allFeedIds.isEmpty() && viewModel.feedIdsLiveData.value?.feedIds.isNullOrEmpty()){
+            if(viewModel.allFeedInfo.isEmpty()){
                 setNoneImage()
+            } else {
+                clearNoneImage()
             }
         }
 
@@ -169,16 +173,8 @@ class MypageFeedFragment : Fragment(), MyFeedAdapter.OnFeedActionListener {
         }
     }
 
-    @SuppressLint("NotifyDataSetChanged")
-    private fun clearRecyclerView() {
-        myFeedAdapter.feedID.clear()
-        myFeedAdapter.feedInfo.clear()
-        myFeedAdapter.notifyDataSetChanged()
-
-    }
-
     private fun getFeed() {
-        viewModel.fetchUserFeedResults()
+        viewModel.fetchUserFeedResults(Auth._userId.value.toString())
         Log.d("getFeed", "My Feed")
     }
 

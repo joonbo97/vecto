@@ -22,25 +22,27 @@ import com.vecto_example.vecto.R
 import com.vecto_example.vecto.data.Auth
 import com.vecto_example.vecto.data.repository.FeedRepository
 import com.vecto_example.vecto.data.repository.NotificationRepository
+import com.vecto_example.vecto.data.repository.UserRepository
 import com.vecto_example.vecto.databinding.FragmentSearchBinding
 import com.vecto_example.vecto.retrofit.VectoService
 import com.vecto_example.vecto.ui.main.MainActivity
 import com.vecto_example.vecto.ui.notification.NotificationViewModel
 import com.vecto_example.vecto.ui.notification.NotificationViewModelFactory
-import com.vecto_example.vecto.ui.search.adapter.MysearchpostAdapter
+import com.vecto_example.vecto.ui.search.adapter.FeedAdapter
 import com.vecto_example.vecto.utils.RequestLoginUtils
 
-class SearchFragment : Fragment(), MainActivity.ScrollToTop{
+class SearchFragment : Fragment(), MainActivity.ScrollToTop, FeedAdapter.OnFeedActionListener {
     /*   다른 사용자의 게시글을 확인 할 수 있는 Search Fragment   */
 
     private lateinit var binding: FragmentSearchBinding
     private val searchViewModel: SearchViewModel by viewModels {
-        SearchViewModelFactory(FeedRepository(VectoService.create()))
+        SearchViewModelFactory(FeedRepository(VectoService.create()), UserRepository(VectoService.create()))
     }
     private val notificationViewModel: NotificationViewModel by viewModels {
         NotificationViewModelFactory(NotificationRepository(VectoService.create()))
     }
-    private lateinit var mysearchpostAdapter: MysearchpostAdapter
+    private lateinit var feedAdapter: FeedAdapter
+
     private lateinit var notificationReceiver: BroadcastReceiver
 
     private var query = ""
@@ -69,7 +71,6 @@ class SearchFragment : Fragment(), MainActivity.ScrollToTop{
             if(!searchViewModel.checkLoading()){//로딩중이 아니라면
 
                 searchViewModel.initSetting()
-                clearRecyclerView()
                 clearNoneImage()
 
                 Log.d("getFeed_REQUEST", "By Refresh")
@@ -77,6 +78,20 @@ class SearchFragment : Fragment(), MainActivity.ScrollToTop{
             }
 
             swipeRefreshLayout.isRefreshing = false
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        initUI()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+
+        context?.let {
+            LocalBroadcastManager.getInstance(it).unregisterReceiver(notificationReceiver)
         }
     }
 
@@ -97,19 +112,11 @@ class SearchFragment : Fragment(), MainActivity.ScrollToTop{
         }
     }
 
-    private fun initUI() {
-        /*   UI 초기화 함수   */
-        if(Auth.loginFlag.value == true){
-            notificationViewModel.getNewNotificationFlag()
-        }
-    }
-
     private fun initListeners() {
         /*   리스너 초기화 함수   */
 
         //로고 클릭 이벤트
         binding.VectoTitleImage.setOnClickListener {
-            clearRecyclerView()
             clearNoneImage()
 
             searchViewModel.initSetting()
@@ -133,55 +140,13 @@ class SearchFragment : Fragment(), MainActivity.ScrollToTop{
 
         //검색 아이콘 클릭 이벤트
         binding.SearchIconImage.setOnClickListener {
-
-
-            if(binding.editTextSearch.text.isEmpty())
-            {
-                Toast.makeText(requireContext(), "검색어를 입력해주세요.", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
-
-            startSearch()
-
-            clearRecyclerView()
-            clearNoneImage()
-            searchViewModel.initSetting()
-
-            /*   검색 상태 설정   */
-            query = binding.editTextSearch.text.toString()
-            mysearchpostAdapter.query = query
-            queryFlag = true
-
-            /*   게시글 요청   */
-            Log.d("getFeed_REQUEST", "By Search")
-            getFeed()
-
-            Toast.makeText(requireContext(), "${binding.editTextSearch.text}에 대한 결과입니다.", Toast.LENGTH_SHORT).show()
+            startSearchRequest()
         }
 
-        binding.editTextSearch.setOnEditorActionListener { textView, actionId, event ->
+        binding.editTextSearch.setOnEditorActionListener { _, actionId, _ ->
             if(actionId == EditorInfo.IME_ACTION_SEARCH) {
-                if(binding.editTextSearch.text.isEmpty())
-                {
-                    Toast.makeText(requireContext(), "검색어를 입력해주세요.", Toast.LENGTH_SHORT).show()
-                } else {
-                    startSearch()
+                startSearchRequest()
 
-                    clearRecyclerView()
-                    clearNoneImage()
-                    searchViewModel.initSetting()
-
-                    /*   검색 상태 설정   */
-                    query = binding.editTextSearch.text.toString()
-                    mysearchpostAdapter.query = query
-                    queryFlag = true
-
-                    /*   게시글 요청   */
-                    Log.d("getFeed_REQUEST", "By Search")
-                    getFeed()
-
-                    Toast.makeText(requireContext(), "${binding.editTextSearch.text}에 대한 결과입니다.", Toast.LENGTH_SHORT).show()
-                }
                 true
             } else {
                 false
@@ -190,10 +155,7 @@ class SearchFragment : Fragment(), MainActivity.ScrollToTop{
 
     }
 
-    private fun startSearch() {
-
-    }
-
+    @SuppressLint("NotifyDataSetChanged")
     private fun initObservers() {
         /*   알림 아이콘 관련 Observer   */
         notificationViewModel.newNotificationFlag.observe(viewLifecycleOwner) {
@@ -218,9 +180,9 @@ class SearchFragment : Fragment(), MainActivity.ScrollToTop{
             initUI()
 
             if(Auth.loginFlag.value != searchViewModel.originLoginFlag) {
-                Log.d("LOGINFLAG", "LOGINFLAG IS CHANGED: ${Auth.loginFlag.value}")
+                if(searchViewModel.originLoginFlag == null)
+                    searchViewModel.originLoginFlag = false
 
-                clearRecyclerView()
                 clearNoneImage()
 
                 searchViewModel.initSetting()
@@ -230,43 +192,26 @@ class SearchFragment : Fragment(), MainActivity.ScrollToTop{
                 Log.d("getFeed_REQUEST", "By loginFlag Change")
                 getFeed()   //로그인 상태 변경시 게시글 다시 불러옴
 
-                searchViewModel.originLoginFlag = Auth.loginFlag.value!!
+                searchViewModel.originLoginFlag = Auth.loginFlag.value
             }
         }
 
         /*   게시글 관련 Observer   */
         searchViewModel.feedInfoLiveData.observe(viewLifecycleOwner) {
-            //새로운 feed 정보를 받았을 때의 처리
-            mysearchpostAdapter.pageNo = searchViewModel.nextPage //다음 page 정보
-            searchViewModel.feedInfoLiveData.value?.let {
-                Log.d("BEFOREADD_INFO_DATA", "current adaper FeedInfo size: ${mysearchpostAdapter.feedInfo.size}")
-                Log.d("BEFOREADD_INFO_DATA", "current FeedInfo size: ${searchViewModel.feedInfoLiveData.value!!.size}")
+            if(searchViewModel.firstFlag) {
+                feedAdapter.feedInfoWithFollow = searchViewModel.allFeedInfo
+                feedAdapter.lastSize = 0
 
-                mysearchpostAdapter.addFeedInfoData(searchViewModel.newFeedInfo)
-
-                Log.d("ADD_INFO_DATA", "current adaper FeedInfo size: ${mysearchpostAdapter.feedInfo.size}")
-                Log.d("ADD_INFO_DATA", "current FeedInfo size: ${searchViewModel.feedInfoLiveData.value!!.size}")
-            }   //새로 받은 게시글 정보 추가
-
-        }
-
-        searchViewModel.feedIdsLiveData.observe(viewLifecycleOwner) {
-
-            searchViewModel.feedIdsLiveData.value?.let {
-                mysearchpostAdapter.addFeedIdData(searchViewModel.newFeedIds)
-                Log.d("ADD_ID_DATA", "current adaper FeedId size: ${mysearchpostAdapter.feedID.size}")
-                Log.d("ADD_ID_DATA", "current FeedId size: ${searchViewModel.feedIdsLiveData.value!!.feedIds.size}")
-
+                feedAdapter.notifyDataSetChanged()
             }
+            else
+                feedAdapter.addFeedData()
 
-            if(queryFlag && mysearchpostAdapter.feedID.isEmpty() && !searchViewModel.checkLoading()){
-                Log.d("SET NONEIMAGE", "SET")
-
+            if(queryFlag && searchViewModel.allFeedInfo.isEmpty() && !searchViewModel.checkLoading()){
                 setNoneImage()
             } else {
                 clearNoneImage()
             }
-
         }
 
         /*   로딩 관련 Observer   */
@@ -283,6 +228,61 @@ class SearchFragment : Fragment(), MainActivity.ScrollToTop{
                 binding.progressBar.visibility = View.GONE
         }
 
+        /*   게시물 상호 작용 관련 Observer   */
+
+        /*   게시글 좋아요   */
+        searchViewModel.postFeedLikeResult.observe(viewLifecycleOwner) { postFeedLikeResult ->
+            if(feedAdapter.actionPosition != -1)
+            {
+                postFeedLikeResult.onSuccess {
+                    feedAdapter.postFeedLikeSuccess()
+                }.onFailure {
+                    Toast.makeText(requireContext(), getText(R.string.APIErrorToastMessage), Toast.LENGTH_SHORT).show()
+                }
+
+                feedAdapter.actionPosition = -1
+            }
+        }
+
+        searchViewModel.deleteFeedLikeResult.observe(viewLifecycleOwner) { deleteFeedLikeResult ->
+            if(feedAdapter.actionPosition != -1) {
+                deleteFeedLikeResult.onSuccess {
+                    feedAdapter.deleteFeedLikeSuccess()
+                }.onFailure {
+                    Toast.makeText(requireContext(), getText(R.string.APIErrorToastMessage), Toast.LENGTH_SHORT).show()
+                }
+
+                feedAdapter.actionPosition = -1
+            }
+        }
+
+        //팔로우
+        searchViewModel.postFollowResult.observe(viewLifecycleOwner) {
+            if(feedAdapter.actionPosition != -1) {
+                if (it) {
+                    feedAdapter.postFollowSuccess()
+                    Toast.makeText(requireContext(), "${searchViewModel.allFeedInfo[feedAdapter.actionPosition].feedInfo.nickName} 님을 팔로우하기 시작했습니다.", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(requireContext(), "이미 ${searchViewModel.allFeedInfo[feedAdapter.actionPosition].feedInfo.nickName} 님을 팔로우 중입니다.", Toast.LENGTH_SHORT).show()
+                }
+
+                feedAdapter.actionPosition = -1
+            }
+        }
+
+        searchViewModel.deleteFollowResult.observe(viewLifecycleOwner) {
+            if(feedAdapter.actionPosition != -1) {
+                if (it) {
+                    feedAdapter.deleteFollowSuccess()
+                    Toast.makeText(requireContext(), "${searchViewModel.allFeedInfo[feedAdapter.actionPosition].feedInfo.nickName} 님 팔로우를 취소하였습니다.", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(requireContext(), "이미 ${searchViewModel.allFeedInfo[feedAdapter.actionPosition].feedInfo.nickName} 님을 팔로우하지 않습니다.", Toast.LENGTH_SHORT).show()
+                }
+
+                feedAdapter.actionPosition = -1
+            }
+        }
+
         /*   오류 관련 Observer   */
         searchViewModel.feedErrorLiveData.observe(viewLifecycleOwner) {
             if(it == "FAIL") {
@@ -291,14 +291,49 @@ class SearchFragment : Fragment(), MainActivity.ScrollToTop{
                 Toast.makeText(requireContext(), getText(R.string.APIErrorToastMessage), Toast.LENGTH_SHORT).show()
             }
         }
+
+        searchViewModel.followErrorLiveData.observe(viewLifecycleOwner) {
+            if(it == "FAIL") {
+                Toast.makeText(requireContext(), "팔로우 정보 불러오기에 실패하였습니다.", Toast.LENGTH_SHORT).show()
+            } else if(it == "ERROR") {
+                Toast.makeText(requireContext(), getText(R.string.APIErrorToastMessage), Toast.LENGTH_SHORT).show()
+            }
+
+        }
+
+        searchViewModel.postFollowError.observe(viewLifecycleOwner) {
+            if(feedAdapter.actionPosition != -1) {
+                if (it == "FAIL") {
+                    Toast.makeText(requireContext(), "팔로우 요청에 실패하였습니다. 다시 시도해 주세요.", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(requireContext(), getText(R.string.APIErrorToastMessage), Toast.LENGTH_SHORT).show()
+                }
+
+                feedAdapter.actionPosition = -1
+            }
+        }
+
+        searchViewModel.deleteFollowError.observe(viewLifecycleOwner) {
+            if(feedAdapter.actionPosition != -1) {
+                if (it == "FAIL") {
+                    Toast.makeText(requireContext(), "팔로우 취소 요청에 실패하였습니다. 다시 시도해 주세요.", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(requireContext(), getText(R.string.APIErrorToastMessage), Toast.LENGTH_SHORT).show()
+                }
+
+                feedAdapter.actionPosition = -1
+            }
+        }
     }
 
     private fun initRecyclerView() {
         /*   Recycler 초기화 함수   */
-        mysearchpostAdapter = MysearchpostAdapter(requireContext())
+        feedAdapter = FeedAdapter()
+        feedAdapter.feedActionListener = this
 
         val searchRecyclerView = binding.SearchRecyclerView
-        searchRecyclerView.adapter = mysearchpostAdapter
+        searchRecyclerView.adapter = feedAdapter
+
         searchRecyclerView.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
         searchRecyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             //RecyclerView 하단에 도달 하면, 새로운 Page 글을 불러옴
@@ -318,15 +353,61 @@ class SearchFragment : Fragment(), MainActivity.ScrollToTop{
         })
     }
 
-    @SuppressLint("NotifyDataSetChanged")
-    private fun clearRecyclerView() {
-        Log.d("CLEAR_RECYCLERVIEW", "CLEAR")
+    private fun getFeed() {
+        if(!searchViewModel.checkLoading()){//로딩중이 아니라면
 
-        mysearchpostAdapter.feedID.clear()
-        mysearchpostAdapter.feedInfo.clear()
-        mysearchpostAdapter.notifyDataSetChanged()
+            //게시글 요청 함수
+            if(queryFlag) { //검색 요청인 경우
+                searchViewModel.getFeedList(queryFlag, query)
+                Log.d("getFeed", "Query")
+            }
+            else{
+                if(Auth.loginFlag.value == false) {   //로그인 X인 경우
+                    searchViewModel.getFeedList(queryFlag, "Normal")
+                    Log.d("getFeed", "Normal")
+                }
+                else{
+                    searchViewModel.getFeedList(queryFlag, "Personal")
+                    Log.d("getFeed", "Personal")
+                }
+            }
+        }
     }
 
+    override fun scrollToTop() {
+        binding.SearchRecyclerView.smoothScrollToPosition(0)
+    }
+
+    //검색 작업 수행
+    private fun startSearchRequest() {
+        if(binding.editTextSearch.text.isEmpty())
+        {
+            Toast.makeText(requireContext(), "검색어를 입력해주세요.", Toast.LENGTH_SHORT).show()
+        } else {
+            clearNoneImage()
+            searchViewModel.initSetting()
+
+            /*   검색 상태 설정   */
+            query = binding.editTextSearch.text.toString()
+            queryFlag = true
+
+            /*   게시글 요청   */
+            Log.d("getFeed_REQUEST", "By Search")
+            getFeed()
+
+            Toast.makeText(requireContext(), "${binding.editTextSearch.text}에 대한 결과입니다.", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    /*   UI 설정   */
+
+    private fun initUI() {
+        if(Auth.loginFlag.value == true){
+            notificationViewModel.getNewNotificationFlag()
+        }
+    }
+
+    // 검색 결과 None 이미지
     private fun clearNoneImage() {
         binding.NoneImage.visibility = View.GONE
         binding.NoneText.visibility = View.GONE
@@ -338,51 +419,42 @@ class SearchFragment : Fragment(), MainActivity.ScrollToTop{
         binding.NoneText.visibility = View.VISIBLE
     }
 
-    private fun getFeed() {
-        if(!searchViewModel.checkLoading()){//로딩중이 아니라면
-
-            //게시글 요청 함수
-            if(queryFlag) { //검색 요청인 경우
-                searchViewModel.fetchSearchFeedResults(query)
-                Log.d("getFeed", "Query")
-            }
-            else{
-                if(Auth.loginFlag.value == false) {   //로그인 X인 경우
-                    searchViewModel.fetchFeedResults()
-                    Log.d("getFeed", "Normal")
-                }
-                else{
-                    searchViewModel.fetchPersonalFeedResults()
-                    Log.d("getFeed", "Personal")
-                }
-            }
-        }
 
 
-    }
-
-    override fun onResume() {
-        super.onResume()
-
-        searchViewModel.newFeedIds.clear()
-        searchViewModel.newFeedInfo.clear()
-
-        initUI()
-
-
-
-        Log.d("RESUME", "adapter size ID: ${mysearchpostAdapter.feedID.size}, INFO: ${mysearchpostAdapter.feedInfo.size}")
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-
-        context?.let {
-            LocalBroadcastManager.getInstance(it).unregisterReceiver(notificationReceiver)
+    /*   Adapter CallBack 관련   */
+    override fun onPostFeedLike(feedId: Int) {
+        if(!searchViewModel.checkLoading()) {
+            searchViewModel.postFeedLike(feedId)
+        } else {
+            Toast.makeText(requireContext(), "이전 작업을 처리 중입니다. 잠시 후 다시 시도해 주세요", Toast.LENGTH_SHORT).show()
+            feedAdapter.actionPosition = -1
         }
     }
 
-    override fun scrollToTop() {
-        binding.SearchRecyclerView.smoothScrollToPosition(0)
+    override fun onDeleteFeedLike(feedId: Int) {
+        if(!searchViewModel.checkLoading()) {
+            searchViewModel.deleteFeedLike(feedId)
+        } else {
+            Toast.makeText(requireContext(), "이전 작업을 처리 중입니다. 잠시 후 다시 시도해 주세요", Toast.LENGTH_SHORT).show()
+            feedAdapter.actionPosition = -1
+        }
+    }
+
+    override fun onPostFollow(userId: String) {
+        if(!searchViewModel.checkLoading()) {
+            searchViewModel.postFollow(userId)
+        } else {
+            Toast.makeText(requireContext(), "이전 작업을 처리 중입니다. 잠시 후 다시 시도해 주세요", Toast.LENGTH_SHORT).show()
+            feedAdapter.actionPosition = -1
+        }
+    }
+
+    override fun onDeleteFollow(userId: String) {
+        if(!searchViewModel.checkLoading()) {
+            searchViewModel.deleteFollow(userId)
+        } else {
+            Toast.makeText(requireContext(), "이전 작업을 처리 중입니다. 잠시 후 다시 시도해 주세요", Toast.LENGTH_SHORT).show()
+            feedAdapter.actionPosition = -1
+        }
     }
 }

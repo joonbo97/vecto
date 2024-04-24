@@ -16,7 +16,7 @@ import com.vecto_example.vecto.data.Auth
 import com.vecto_example.vecto.data.repository.FeedRepository
 import com.vecto_example.vecto.databinding.FragmentMypageLikepostBinding
 import com.vecto_example.vecto.retrofit.VectoService
-import com.vecto_example.vecto.ui.search.adapter.MysearchpostAdapter
+import com.vecto_example.vecto.ui.search.adapter.MySearchFeedAdapter
 import com.vecto_example.vecto.utils.LoadImageUtils
 
 class MypageLikeFeedFragment : Fragment() {
@@ -25,7 +25,7 @@ class MypageLikeFeedFragment : Fragment() {
         MypageLikeFeedViewModelFactory(FeedRepository(VectoService.create()))
     }
 
-    private lateinit var mysearchpostAdapter: MysearchpostAdapter
+    private lateinit var mySearchFeedAdapter: MySearchFeedAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -68,16 +68,15 @@ class MypageLikeFeedFragment : Fragment() {
     }
 
     private fun initRecyclerView() {
-        mysearchpostAdapter = MysearchpostAdapter(requireContext())
+        mySearchFeedAdapter = MySearchFeedAdapter(requireContext())
 
         clearRecyclerView()
 
-        mysearchpostAdapter.addFeedInfoData(viewModel.allFeedInfo)
-        mysearchpostAdapter.addFeedIdData(viewModel.allFeedIds)
+        /*mysearchpostAdapter.addFeedInfoData(viewModel.allFeedInfo)*/
 
 
         val likepostRecyclerView = binding.LikePostRecyclerView
-        likepostRecyclerView.adapter = mysearchpostAdapter
+        likepostRecyclerView.adapter = mySearchFeedAdapter
         likepostRecyclerView.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
         likepostRecyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
@@ -96,16 +95,14 @@ class MypageLikeFeedFragment : Fragment() {
         /*   게시글 관련 Observer   */
         viewModel.feedInfoLiveData.observe(viewLifecycleOwner) {
             //새로운 feed 정보를 받았을 때의 처리
-            mysearchpostAdapter.pageNo = viewModel.nextPage //다음 page 정보
+            mySearchFeedAdapter.pageNo = viewModel.nextPage //다음 page 정보
+/*
             viewModel.feedInfoLiveData.value?.let { mysearchpostAdapter.addFeedInfoData(it) }   //새로 받은 게시글 정보 추가
-        }
+*/
 
-        viewModel.feedIdsLiveData.observe(viewLifecycleOwner) {
-            viewModel.feedIdsLiveData.value?.let { mysearchpostAdapter.addFeedIdData(it.feedIds) }
-
-            if(viewModel.allFeedIds.isEmpty() && viewModel.feedIdsLiveData.value?.feedIds.isNullOrEmpty()){
+           /* if(viewModel.allFeedIds.isEmpty() && viewModel.feedIdsLiveData.value?.feeds.isNullOrEmpty()){
                 setNoneImage()
-            }
+            }*/
         }
 
         /*   로딩 관련 Observer   */
@@ -134,9 +131,8 @@ class MypageLikeFeedFragment : Fragment() {
 
     @SuppressLint("NotifyDataSetChanged")
     private fun clearRecyclerView() {
-        mysearchpostAdapter.feedID.clear()
-        mysearchpostAdapter.feedInfo.clear()
-        mysearchpostAdapter.notifyDataSetChanged()
+        mySearchFeedAdapter.feedInfo.clear()
+        mySearchFeedAdapter.notifyDataSetChanged()
 
     }
 

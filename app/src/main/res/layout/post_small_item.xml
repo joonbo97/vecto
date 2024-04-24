@@ -22,6 +22,15 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <ImageView
+        android:id="@+id/UserTouchImage"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintStart_toStartOf="@+id/ProfileImage"
+        app:layout_constraintTop_toTopOf="@+id/ProfileImage"
+        app:layout_constraintBottom_toBottomOf="@+id/ProfileImage"
+        app:layout_constraintEnd_toEndOf="@+id/NicknameText"/>
+
+    <ImageView
         android:id="@+id/ProfileImage"
         android:layout_width="50dp"
         android:layout_height="50dp"
@@ -89,7 +98,7 @@
         android:layout_height="0dp"
         android:layout_marginStart="20dp"
         android:layout_marginTop="84dp"
-        android:src="@drawable/empty_image"
+        android:src="@drawable/error_image"
         app:layout_constraintDimensionRatio="1:1"
         app:layout_constraintEnd_toStartOf="@+id/Image"
         app:layout_constraintStart_toStartOf="parent"
@@ -102,7 +111,7 @@
         android:layout_marginStart="20dp"
         android:layout_marginTop="84dp"
         android:layout_marginEnd="20dp"
-        android:src="@drawable/empty_image"
+        android:src="@drawable/error_image"
         android:visibility="gone"
         app:layout_constraintDimensionRatio="2:1"
         app:layout_constraintEnd_toEndOf="parent"
@@ -116,7 +125,7 @@
         android:layout_height="0dp"
         android:layout_marginTop="84dp"
         android:layout_marginEnd="20dp"
-        android:src="@drawable/empty_image"
+        android:src="@drawable/error_image"
         app:layout_constraintDimensionRatio="1:1"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/guideline2"

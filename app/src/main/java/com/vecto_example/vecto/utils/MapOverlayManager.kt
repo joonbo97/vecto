@@ -60,7 +60,7 @@ class MapOverlayManager(private val context: Context, private val mapMarkerManag
     }
 
     /*   다음 게시물 Overlay 생성 함수   */
-    fun addOverlayForPost(feedInfo: VectoService.FeedInfoResponse) {
+    fun addOverlayForPost(feedInfo: VectoService.FeedInfo) {
         deleteOverlay()
 
         for(i in 0 until feedInfo.visit.size)

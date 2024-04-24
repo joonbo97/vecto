@@ -143,20 +143,21 @@ class UserRepository (private val vectoService: VectoService) {
     }
 
     /*   유저간 interaction 관련   */
-    suspend fun getFollow(userId: String): Result<String> {
+
+    suspend fun getFollowRelation(userIdList: List<String>): Result<VectoService.FollowResponse> {
         return try {
-            val response = vectoService.getFollow2("Bearer ${Auth.token}", userId)
+            val response = vectoService.getFollowRelation("Bearer ${Auth.token}", VectoService.UserIdList(userIdList))
 
             if(response.isSuccessful) {
-                Log.d("getFollow", "SUCCESS: ${response.body()}")
+                Log.d("getFollowRelation", "SUCCESS: ${response.body()}")
 
-                Result.success(response.body()!!.code)
+                Result.success(response.body()!!.result!!)
             } else {
-                Log.d("getFollow", "FAIL: ${response.errorBody()?.string()}")
+                Log.d("getFollowRelation", "FAIL: ${response.errorBody()?.string()}")
                 Result.failure(Exception("FAIL"))
             }
         } catch (e: Exception) {
-            Log.e("getFollow", "ERROR", e)
+            Log.e("getFollowRelation", "ERROR", e)
             Result.failure(Exception("ERROR"))
         }
     }

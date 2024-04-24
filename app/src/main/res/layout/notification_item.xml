@@ -21,13 +21,15 @@
 
     <TextView
         android:id="@+id/notificationText"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="30dp"
         android:fontFamily="@font/lineseedkr_bd"
         android:text="알림입니다."
         android:textColor="@color/black"
         android:textSize="12sp"
+        android:layout_marginEnd="20dp"
+        app:layout_constraintEnd_toStartOf="@+id/PostTimeText"
         app:layout_constraintBottom_toBottomOf="@+id/notificationBox"
         app:layout_constraintStart_toStartOf="@+id/notificationBox"
         app:layout_constraintTop_toTopOf="@+id/notificationBox"

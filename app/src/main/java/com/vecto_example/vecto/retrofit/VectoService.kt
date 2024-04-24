@@ -135,19 +135,20 @@ interface VectoService {
         @Body updatePostData: UpdateFeedRequest
     ): Response<VectoResponse<String>>
 
-    //게시글 정보 확인 (로그인 / 비로그인)
+    //게시글 정보 확인 (비 로그인)
     @GET("feed/{feedId}")
     suspend fun getFeedInfo(
         @Path("feedId") feedId: Int
     ): Response<VectoResponse<FeedInfoResponse>>
 
+    //게시글 정보 확인 (로그인)
     @POST("feed/{feedId}")
     suspend fun getFeedInfo(
         @Header("Authorization") authorization: String,
         @Path("feedId") feedId: Int
     ): Response<VectoResponse<FeedInfoResponse>>
 
-    //게시글 목록 조회 (비로그인)
+    //게시글 목록 조회 (비 로그인)
     @GET("feed/feedList")
     suspend fun getFeedList(
         @Query("page") page: Int
@@ -161,9 +162,17 @@ interface VectoService {
         @Query("isFollowPage") isFollowPage: Boolean
     ): Response<VectoResponse<FeedPageResponse>>
 
-    //게시글 검색 결과 목록 조회
+    //게시글 검색 결과 목록 조회 (비 로그인)
     @GET("feed/feeds/search")
     suspend fun getSearchFeedList(
+        @Query("page") page: Int,
+        @Query("q") q: String
+    ): Response<VectoResponse<FeedPageResponse>>
+
+    //게시글 검색 결과 목록 조회 (로그인)
+    @POST("feed/feeds/search")
+    suspend fun postSearchFeedList(
+        @Header("Authorization") authorization: String,
         @Query("page") page: Int,
         @Query("q") q: String
     ): Response<VectoResponse<FeedPageResponse>>
@@ -171,13 +180,21 @@ interface VectoService {
     //좋아요 한 게시글 목록 조회
     @GET("feed/likes")
     suspend fun getLikeFeedList(
+        @Header("Authorization") authorization: String,
+        @Query("page") page: Int
+    ): Response<VectoResponse<FeedPageResponse>>
+
+    //특정 사용자 업로드 게시글 조회 (비 로그인)
+    @GET("feed/user")
+    suspend fun getUserFeedList(
         @Query("userId") userId: String,
         @Query("page") page: Int
     ): Response<VectoResponse<FeedPageResponse>>
 
-    //특정 사용자 업로드 게시글 조회
-    @GET("feed")
-    suspend fun getUserFeedList(
+    //특정 사용자 업로드 게시글 조회 (로그인)
+    @POST("feed/user")
+    suspend fun postUserFeedList(
+        @Header("Authorization") authorization: String,
         @Query("userId") userId: String,
         @Query("page") page: Int
     ): Response<VectoResponse<FeedPageResponse>>
@@ -192,11 +209,11 @@ interface VectoService {
         @Path("userId") userId: String
     ):Call<VectoResponse<Unit>>
 
-    @GET("follow/{userId}")
-    suspend fun getFollow2(
+    @POST("follow")
+    suspend fun getFollowRelation(
         @Header("Authorization") authorization: String,
-        @Path("userId") userId: String
-    ):Response<VectoResponse<Unit>>
+        @Body userIds: UserIdList
+    ):Response<VectoResponse<FollowResponse>>
 
     //팔로우 추가
     @POST("follow/{userId}")
@@ -347,7 +364,7 @@ interface VectoService {
 
     data class FeedPageResponse(
         val nextPage: Int,
-        val feedIds: List<Int>,
+        val feeds: List<FeedInfo>,
         val lastPage: Boolean,
         val followPage: Boolean
     )
@@ -365,6 +382,29 @@ interface VectoService {
         val visit: MutableList<VisitDataForWrite>, //방문지 정보
         var mapimage: MutableList<String>?
     )
+
+    data class FeedInfo(
+        val feedId: Int,
+        val title: String,
+        val content: String,
+        val timeDifference: String,
+        val image: List<String>,
+        val location: List<LocationData>,
+        val visit: List<VisitData>,
+        var likeCount: Int,
+        val commentCount: Int,
+        val nickName: String,
+        val userProfile: String?,
+        val userId: String,
+        val mapImage: List<String>,
+        var likeFlag: Boolean
+    )
+
+    data class FeedInfoWithFollow(
+        val feedInfo: FeedInfo,
+        var isFollowing: Boolean
+    )
+
 
     data class FeedInfoResponse(
         val title: String,
@@ -446,6 +486,19 @@ interface VectoService {
         val fromUserId: String,
         val content: String,
         val timeDifference: String
+    )
+
+    data class UserIdList(
+        val userId: List<String>
+    )
+
+    data class FollowResponse(
+        val followRelations: List<FollowRelation>
+    )
+
+    data class FollowRelation(
+        val userId: String,
+        val relation: String
     )
 
 }

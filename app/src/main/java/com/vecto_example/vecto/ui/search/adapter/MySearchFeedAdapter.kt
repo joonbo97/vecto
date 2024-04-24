@@ -12,6 +12,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.ContextCompat
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.vecto_example.vecto.ui.comment.CommentActivity
@@ -23,6 +24,7 @@ import com.vecto_example.vecto.dialog.LoginRequestDialog
 import com.vecto_example.vecto.retrofit.VectoService
 import com.google.gson.Gson
 import com.vecto_example.vecto.R
+import com.vecto_example.vecto.utils.DiffUtilCallback
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -30,10 +32,9 @@ import java.time.Duration
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
-class MysearchpostAdapter(private val context: Context) : RecyclerView.Adapter<MysearchpostAdapter.ViewHolder>()
+class MySearchFeedAdapter(private val context: Context) : ListAdapter<VectoService.FeedInfo, MySearchFeedAdapter.ViewHolder>(DiffUtilCallback.diffUtil)
 {
-    val feedInfo = mutableListOf<VectoService.FeedInfoResponse>()
-    val feedID = mutableListOf<Int>()
+    val feedInfo = mutableListOf<VectoService.FeedInfo>()
     var followInfo = mutableListOf<Boolean?>()
     var pageNo = 0
     var query = ""
@@ -67,7 +68,7 @@ class MysearchpostAdapter(private val context: Context) : RecyclerView.Adapter<M
         private val mapLarge: ImageView = view.findViewById(R.id.MapImageLarge)
 
 
-        fun bind(feed: VectoService.FeedInfoResponse) {
+        fun bind(feed: VectoService.FeedInfo) {
             Log.d("FEED", "FeedImage Size: ${feed.image.size}")
             //이미지가 있는지 여부를 확인하여 style을 결정
             if (feed.image.isEmpty()) {//2:1 mapImage [1]
@@ -267,15 +268,12 @@ class MysearchpostAdapter(private val context: Context) : RecyclerView.Adapter<M
             commentCount.text = feed.commentCount.toString()
 
             fun clickLikeAction() {
-                Log.d("CHECKCHECK", "adapterposition: ${adapterPosition}")
-                Log.d("CHECKCHECK", "feedIDsize: ${feedID.size}")
-                Log.d("CHECKCHECK", "feedInfosize: ${feedInfo.size}")
 
                 if(Auth.loginFlag.value == true) {
                     if (feed.likeFlag) {
                         likeIcon.setImageResource(R.drawable.post_like_off)
 
-                        cancelLike(feedID[adapterPosition])
+                        cancelLike(feedInfo[adapterPosition].feedId)
                         feed.likeFlag = false
 
                         feed.likeCount--
@@ -296,7 +294,7 @@ class MysearchpostAdapter(private val context: Context) : RecyclerView.Adapter<M
                         })
 
                         likeIcon.startAnimation(anim)
-                        sendLike(feedID[adapterPosition])
+                        sendLike(feedInfo[adapterPosition].feedId)
                         feed.likeFlag = true
                     }
                 }
@@ -323,10 +321,9 @@ class MysearchpostAdapter(private val context: Context) : RecyclerView.Adapter<M
 
             commentTouch.setOnClickListener {
                 Log.d("FEEDINFOSIZE", "${feedInfo.size}")
-                Log.d("FEEDIDSIZE", "${feedID.size}")
 
                 val intent = Intent(context, CommentActivity::class.java)
-                intent.putExtra("feedID", feedID[adapterPosition])
+                intent.putExtra("feedID", feedInfo[adapterPosition].feedId)
                 context.startActivity(intent)
             }
 
@@ -349,7 +346,6 @@ class MysearchpostAdapter(private val context: Context) : RecyclerView.Adapter<M
             itemView.setOnClickListener {
                 val intent = Intent(context, FeedDetailActivity::class.java).apply {
                     putExtra("feedInfoListJson", Gson().toJson(feedInfo))
-                    putExtra("feedIDListJson", Gson().toJson(feedID))
                     putExtra("position", adapterPosition)
                     putExtra("query", query)
                     putExtra("pageNo", pageNo)
@@ -428,16 +424,10 @@ class MysearchpostAdapter(private val context: Context) : RecyclerView.Adapter<M
         })
     }
 
-    fun addFeedInfoData(newData: List<VectoService.FeedInfoResponse>) {
+    fun addFeedInfoData(newData: List<VectoService.FeedInfo>) {
         //데이터 추가 함수
         val startIdx = feedInfo.size
         feedInfo.addAll(newData)
-        notifyItemRangeInserted(startIdx, newData.size)
-    }
-
-    fun addFeedIdData(newData: List<Int>){
-        val startIdx = feedID.size
-        feedID.addAll(newData)
         notifyItemRangeInserted(startIdx, newData.size)
     }
 }

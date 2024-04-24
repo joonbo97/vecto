@@ -170,32 +170,26 @@ class FeedDetailActivity : AppCompatActivity(), OnMapReadyCallback {
 
         // Intent에서 JSON 문자열을 가져와 리스트로 변환
         val feedInfo = intent.getStringExtra("feedInfoListJson")
-        val feedID = intent.getStringExtra("feedIDListJson")
         val position = intent.getIntExtra("position", -1)
         pageNo = intent.getIntExtra("pageNo", -1)
         viewModel.nextPage = pageNo
         val intentQuery = intent.getStringExtra("query")
-        val intentUserId = intent.getStringExtra("userId")
         likePostFlag = intent.getBooleanExtra("likePostFlag", false)
 
         if(!intentQuery.isNullOrEmpty()){
             query = intentQuery
         }
-        if(!intentUserId.isNullOrEmpty()){
+        /*if(!intentUserId.isNullOrEmpty()){
             userId = intentUserId
-        }
+        }*/
 
 
         // JSON 문자열을 객체 리스트로 변환
-        val typeOfFeedInfoList = object : TypeToken<List<VectoService.FeedInfoResponse>>() {}.type
-        val feedInfoList = Gson().fromJson<List<VectoService.FeedInfoResponse>>(feedInfo, typeOfFeedInfoList)
-
-        val typeOfFeedIDList = object : TypeToken<List<Int>>() {}.type
-        val feedIDList = Gson().fromJson<List<Int>>(feedID, typeOfFeedIDList)
+        val typeOfFeedInfoList = object : TypeToken<List<VectoService.FeedInfo>>() {}.type
+        val feedInfoList = Gson().fromJson<List<VectoService.FeedInfo>>(feedInfo, typeOfFeedInfoList)
 
         // 어댑터에 데이터 설정
-        myFeedDetailAdapter.feedInfo.addAll(feedInfoList)
-        myFeedDetailAdapter.feedID.addAll(feedIDList)
+        myFeedDetailAdapter.addFeedInfoData(feedInfoList)
         myFeedDetailAdapter.notifyDataSetChanged()
 
         if(position != -1)
@@ -218,11 +212,7 @@ class FeedDetailActivity : AppCompatActivity(), OnMapReadyCallback {
         viewModel.feedInfoLiveData.observe(this) {
             //새로운 feed 정보를 받았을 때의 처리
             pageNo = viewModel.nextPage //다음 page 정보
-            viewModel.feedInfoLiveData.value?.let { myFeedDetailAdapter.addFeedInfoData(it) }   //새로 받은 게시글 정보 추가
-        }
-
-        viewModel.feedIdsLiveData.observe(this) {
-            viewModel.feedIdsLiveData.value?.let { myFeedDetailAdapter.addFeedIdData(it.feedIds) }
+            viewModel.feedInfoLiveData.value?.let { myFeedDetailAdapter.addFeedInfoData(it.feeds) }   //새로 받은 게시글 정보 추가
         }
 
         /*   로딩 관련 Observer   */
@@ -252,7 +242,6 @@ class FeedDetailActivity : AppCompatActivity(), OnMapReadyCallback {
     @SuppressLint("NotifyDataSetChanged")
     private fun clearRecyclerView() {
         if(::myFeedDetailAdapter.isInitialized) {
-            myFeedDetailAdapter.feedID.clear()
             myFeedDetailAdapter.feedInfo.clear()
             myFeedDetailAdapter.notifyDataSetChanged()
             Log.d("CLEAR TEST", "RecyclerView is Cleared")

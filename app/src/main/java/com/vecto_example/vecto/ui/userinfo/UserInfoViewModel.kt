@@ -5,11 +5,11 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.vecto_example.vecto.data.Auth
 import com.vecto_example.vecto.data.repository.FeedRepository
 import com.vecto_example.vecto.data.repository.UserRepository
 import com.vecto_example.vecto.retrofit.VectoService
 import com.vecto_example.vecto.utils.ServerResponse
-import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 
 class UserInfoViewModel(private val repository: FeedRepository, private val userRepository: UserRepository) : ViewModel() {
@@ -20,11 +20,10 @@ class UserInfoViewModel(private val repository: FeedRepository, private val user
     private val _userInfo = MutableLiveData<VectoService.UserInfoResponse>()
     val userInfo: LiveData<VectoService.UserInfoResponse> = _userInfo
 
+    var firstFlag = true
+
     private var lastPage: Boolean = false
     private var followPage: Boolean = true
-
-    val allFeedIds = mutableListOf<Int>()
-    val allFeedInfo = mutableListOf<VectoService.FeedInfoResponse>()
 
     /*   로딩   */
     private val _isLoadingCenter = MutableLiveData<Boolean>()
@@ -36,11 +35,10 @@ class UserInfoViewModel(private val repository: FeedRepository, private val user
     private var tempLoading = false
 
     /*   게시글   */
-    private val _feedIdsLiveData = MutableLiveData<VectoService.FeedPageResponse>()
-    val feedIdsLiveData: LiveData<VectoService.FeedPageResponse> = _feedIdsLiveData
+    private val _feedInfoLiveData = MutableLiveData<VectoService.FeedPageResponse>()
+    val feedInfoLiveData: LiveData<VectoService.FeedPageResponse> = _feedInfoLiveData
 
-    private val _feedInfoLiveData = MutableLiveData<List<VectoService.FeedInfoResponse>>()
-    val feedInfoLiveData: LiveData<List<VectoService.FeedInfoResponse>> = _feedInfoLiveData
+    val allFeedInfo = mutableListOf<VectoService.FeedInfo>()
 
     /*   사용자 정보   */
     private val _userInfoResult = MutableLiveData<Result<VectoService.UserInfoResponse>>()
@@ -75,8 +73,8 @@ class UserInfoViewModel(private val repository: FeedRepository, private val user
     val postComplaintResult: LiveData<Boolean> = _postComplaintResult
 
     /*   에러   */
-    private val _getFollowError = MutableLiveData<String>()
-    val getFollowError: LiveData<String> = _getFollowError
+    private val _getFollowRelationError = MutableLiveData<String>()
+    val getFollowRelationError: LiveData<String> = _getFollowRelationError
 
     private val _postFollowError = MutableLiveData<String>()
     val postFollowError: LiveData<String> = _postFollowError
@@ -108,44 +106,31 @@ class UserInfoViewModel(private val repository: FeedRepository, private val user
 
         _isLoadingCenter.value = false
         _isLoadingBottom.value = false
+
         tempLoading = false
     }
 
     fun fetchUserFeedResults(userId: String){
-        startLoading()
+        if(!lastPage)
+            startLoading()
 
         viewModelScope.launch {
-            val feedListResponse = repository.getUserFeedList(userId, nextPage)
+            val feedListResponse: Result<VectoService.FeedPageResponse>
+
+            if(Auth.loginFlag.value == true)
+                feedListResponse = repository.postUserFeedList(userId, nextPage)
+            else
+                feedListResponse = repository.getUserFeedList(userId, nextPage)
 
             feedListResponse.onSuccess { feedPageResponse ->
                 if(!lastPage) {
-                    feedIdsLiveData.value?.let { allFeedIds.addAll(it.feedIds) }
-                    feedInfoLiveData.value?.let { allFeedInfo.addAll(it) }
-
-                    val successfulFeedIds = mutableListOf<Int>()
-                    val feedInfo = mutableListOf<VectoService.FeedInfoResponse>()
-
-                    feedPageResponse.feedIds.forEach { feedId ->
-                        val job = async {
-                            try {
-                                repository.getFeedInfo(feedId).also {
-                                    successfulFeedIds.add(feedId)
-                                }
-                            } catch (e: Exception) {
-                                Log.e("fetchUserFeedResults", "Failed to fetch feed info for ID $feedId", e)
-                                null // 실패한 경우 null 반환
-                            }
-                        }
-                        job.await()?.let {
-                            feedInfo.add(it) // null이 아닌 결과만 추가
-                        }
-                    }
-                    _feedInfoLiveData.postValue(feedInfo)   //LiveData 값 변경
-                    _feedIdsLiveData.postValue(feedPageResponse.copy(feedIds = successfulFeedIds))
+                    allFeedInfo.addAll(feedPageResponse.feeds)
+                    _feedInfoLiveData.postValue(feedPageResponse)
 
                     nextPage = feedPageResponse.nextPage    //페이지 정보값 변경
                     lastPage = feedPageResponse.lastPage
                     followPage = feedPageResponse.followPage
+
                 }
                 endLoading()
             }.onFailure {
@@ -156,6 +141,7 @@ class UserInfoViewModel(private val repository: FeedRepository, private val user
     }
 
     fun getUserInfo(userId: String){
+
         viewModelScope.launch {
             val userInfoResponse = userRepository.getUserInfo(userId)
 
@@ -168,20 +154,22 @@ class UserInfoViewModel(private val repository: FeedRepository, private val user
         }
     }
 
-    fun getFollow(userId: String) {
+    fun checkFollow(userId: String) {
+        val userIdList = mutableListOf<String>()
+        userIdList.add(userId)
 
         viewModelScope.launch {
-            val followResponse = userRepository.getFollow(userId)
+            val followResponse = userRepository.getFollowRelation(userIdList)
 
-            followResponse.onSuccess {
-                if(it == ServerResponse.SUCCESS_GETFOLLOW_FOLLOWING.code)
-                    _isFollowing.value = true
-                else if(it == ServerResponse.SUCCESS_GETFOLLOW_UNFOLLOWING.code)
-                    _isFollowing.value = false
+            followResponse.onSuccess { followStatuses ->
+
+                _isFollowing.value = followStatuses.followRelations[0].relation == "followed" || followStatuses.followRelations[0].relation == "all"
+
             }.onFailure {
-                _getFollowError.value = it.message
+                _getFollowRelationError.value = it.message
             }
         }
+
     }
 
     fun postFollow(userId: String) {
@@ -294,7 +282,8 @@ class UserInfoViewModel(private val repository: FeedRepository, private val user
         lastPage = false
         followPage = true
 
-        allFeedIds.clear()
+        firstFlag = true
+
         allFeedInfo.clear()
     }
 

@@ -15,8 +15,7 @@ class MypageLikeFeedViewModel(private val repository: FeedRepository) : ViewMode
     var lastPage: Boolean = false
     var followPage: Boolean = true
 
-    val allFeedIds = mutableListOf<Int>()
-    val allFeedInfo = mutableListOf<VectoService.FeedInfoResponse>()
+    val allFeedInfo = mutableListOf<VectoService.FeedPageResponse>()
 
     private val _isLoadingCenter = MutableLiveData<Boolean>()
     val isLoadingCenter: LiveData<Boolean> = _isLoadingCenter
@@ -24,11 +23,8 @@ class MypageLikeFeedViewModel(private val repository: FeedRepository) : ViewMode
     private val _isLoadingBottom = MutableLiveData<Boolean>()
     val isLoadingBottom: LiveData<Boolean> = _isLoadingBottom
 
-    private val _feedIdsLiveData = MutableLiveData<VectoService.FeedPageResponse>()
-    val feedIdsLiveData: LiveData<VectoService.FeedPageResponse> = _feedIdsLiveData
-
-    private val _feedInfoLiveData = MutableLiveData<List<VectoService.FeedInfoResponse>>()
-    val feedInfoLiveData: LiveData<List<VectoService.FeedInfoResponse>> = _feedInfoLiveData
+    private val _feedInfoLiveData = MutableLiveData<VectoService.FeedPageResponse>()
+    val feedInfoLiveData: LiveData<VectoService.FeedPageResponse> = _feedInfoLiveData
 
     private val _feedErrorLiveData = MutableLiveData<String>()
     val feedErrorLiveData: LiveData<String> = _feedErrorLiveData
@@ -58,7 +54,7 @@ class MypageLikeFeedViewModel(private val repository: FeedRepository) : ViewMode
 
             feedListResponse.onSuccess { feedPageResponse ->
                 if(!lastPage) {
-                    feedIdsLiveData.value?.let { allFeedIds.addAll(it.feedIds) }
+                    /*feedIdsLiveData.value?.let { allFeedIds.addAll(it.feedIds) }
                     feedInfoLiveData.value?.let { allFeedInfo.addAll(it) }
 
                     val successfulFeedIds = mutableListOf<Int>()
@@ -79,8 +75,7 @@ class MypageLikeFeedViewModel(private val repository: FeedRepository) : ViewMode
                             feedInfo.add(it) // null이 아닌 결과만 추가
                         }
                     }
-                    _feedInfoLiveData.postValue(feedInfo)   //LiveData 값 변경
-                    _feedIdsLiveData.postValue(feedPageResponse.copy(feedIds = successfulFeedIds))
+                    _feedInfoLiveData.postValue(feedInfo)   //LiveData 값 변경*/
 
                     nextPage = feedPageResponse.nextPage    //페이지 정보값 변경
                     lastPage = feedPageResponse.lastPage
@@ -98,7 +93,6 @@ class MypageLikeFeedViewModel(private val repository: FeedRepository) : ViewMode
         lastPage = false
         followPage = true
 
-        allFeedIds.clear()
         allFeedInfo.clear()
     }
 

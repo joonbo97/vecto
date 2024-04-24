@@ -90,6 +90,8 @@ class CommentActivity : AppCompatActivity(), MyCommentAdapter.OnEditActionListen
                 clearData()
                 clearUI()
 
+                loadComment(feedID)
+
                 Toast.makeText(this, "댓글을 등록하였습니다.", Toast.LENGTH_SHORT).show()
             }.onFailure {
                 if (it.message == "FAIL") {

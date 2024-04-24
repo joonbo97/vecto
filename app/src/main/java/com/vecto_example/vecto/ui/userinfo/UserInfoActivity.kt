@@ -24,6 +24,7 @@ import com.vecto_example.vecto.utils.RequestLoginUtils
 
 class UserInfoActivity : AppCompatActivity(), MyFeedAdapter.OnFeedActionListener{
     lateinit var binding: ActivityUserInfoBinding
+
     private val userInfoViewModel: UserInfoViewModel by viewModels {
         UserInfoViewModelFactory(FeedRepository(VectoService.create()), UserRepository(VectoService.create()))
     }
@@ -31,6 +32,7 @@ class UserInfoActivity : AppCompatActivity(), MyFeedAdapter.OnFeedActionListener
     private lateinit var myFeedAdapter: MyFeedAdapter
 
     private var userId = ""
+    private var originalLoginFlag = Auth.loginFlag.value
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,6 +43,8 @@ class UserInfoActivity : AppCompatActivity(), MyFeedAdapter.OnFeedActionListener
         intent.getStringExtra("userId")?.let {
             userId = it
             userInfoViewModel.getUserInfo(it)
+
+            Log.d("UserInfoActivity", "Init getFeed")
             getFeed(it)
 
             if(userId == Auth._userId.value) {
@@ -54,15 +58,15 @@ class UserInfoActivity : AppCompatActivity(), MyFeedAdapter.OnFeedActionListener
         initObservers()
         initListeners()
 
-
         val swipeRefreshLayout = binding.swipeRefreshLayout
         swipeRefreshLayout.setOnRefreshListener {
 
             if(!userInfoViewModel.checkLoading()){
+
                 userInfoViewModel.initSetting()
-                clearRecyclerView()
                 clearNoneImage()
 
+                Log.d("UserInfoActivity", "By Swipe getFeed")
                 getFeed(userId)
             }
 
@@ -112,79 +116,64 @@ class UserInfoActivity : AppCompatActivity(), MyFeedAdapter.OnFeedActionListener
             if(Auth.loginFlag.value == false)
             {
                 RequestLoginUtils.requestLogin(this)
-                return@setOnClickListener
-            }
-
-            if(!userInfoViewModel.isFollowRequestFinished){
-                Toast.makeText(this, "이전 요청을 처리 중입니다. 잠시 후 다시 시도해 주세요.", Toast.LENGTH_SHORT).show()
             } else {
-                if(userInfoViewModel.isFollowing.value == null){
-                    userInfoViewModel.getFollow(userId)
-                }
-                else {
-                    if (!userInfoViewModel.isFollowing.value!!) {
-                        userInfoViewModel.postFollow(userId)
+                if (!userInfoViewModel.isFollowRequestFinished) {
+                    Toast.makeText(this, "이전 요청을 처리 중입니다. 잠시 후 다시 시도해 주세요.", Toast.LENGTH_SHORT)
+                        .show()
+                } else {
+                    if (userInfoViewModel.isFollowing.value == null) {  //이전 팔로우 정보 확인 실패한 경우
+                        userInfoViewModel.checkFollow(userId)
                     } else {
-                        userInfoViewModel.deleteFollow(userId)
+                        if (!userInfoViewModel.isFollowing.value!!) {
+                            userInfoViewModel.postFollow(userId)
+                        } else {
+                            userInfoViewModel.deleteFollow(userId)
+                        }
                     }
                 }
             }
+
         }
+
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     private fun initObservers() {
+
         Auth.loginFlag.observe(this){
             if(Auth._userId.value == userId){
                 binding.FollowButton.visibility = View.GONE
                 binding.FollowButtonText.visibility = View.GONE
             }
+
+            if(Auth.loginFlag.value != originalLoginFlag) {
+
+                userInfoViewModel.initSetting()
+
+                Log.d("UserInfoActivity", "LoginFlag Observer getFeed")
+                getFeed(userId)
+
+                originalLoginFlag = Auth.loginFlag.value
+
+            }
         }
+
         /*   게시글 관련 Observer   */
         userInfoViewModel.feedInfoLiveData.observe(this) {
-            //새로운 feed 정보를 받았을 때의 처리
-            myFeedAdapter.pageNo = userInfoViewModel.nextPage //다음 page 정보
-            userInfoViewModel.feedInfoLiveData.value?.let { myFeedAdapter.addFeedInfoData(it) }   //새로 받은 게시글 정보 추가
-        }
+            if(userInfoViewModel.firstFlag) {
+                myFeedAdapter.feedInfo = userInfoViewModel.allFeedInfo
+                myFeedAdapter.lastSize = 0
 
-        userInfoViewModel.feedIdsLiveData.observe(this) {
-            userInfoViewModel.feedIdsLiveData.value?.let { myFeedAdapter.addFeedIdData(it.feedIds) }
+                myFeedAdapter.notifyDataSetChanged()
+            } else {
+                myFeedAdapter.addFeedInfoData()
+            }
 
-            if(userInfoViewModel.allFeedIds.isEmpty() && userInfoViewModel.feedIdsLiveData.value?.feedIds.isNullOrEmpty()){
+            if(userInfoViewModel.allFeedInfo.isEmpty()){
                 setNoneImage()
+            } else {
+                clearNoneImage()
             }
-        }
-
-        /*   게시글 좋아요   */
-        userInfoViewModel.postFeedLikeResult.observe(this) { postFeedLikeResult ->
-            postFeedLikeResult.onSuccess {
-                myFeedAdapter.postFeedLikeSuccess()
-            }.onFailure {
-                Toast.makeText(this, getText(R.string.APIErrorToastMessage), Toast.LENGTH_SHORT).show()
-            }
-
-            myFeedAdapter.actionPosition = -1
-        }
-
-        userInfoViewModel.deleteFeedLikeResult.observe(this) { deleteFeedLikeResult ->
-            deleteFeedLikeResult.onSuccess {
-                myFeedAdapter.deleteFeedLikeSuccess()
-            }.onFailure {
-                Toast.makeText(this, getText(R.string.APIErrorToastMessage), Toast.LENGTH_SHORT).show()
-            }
-
-            myFeedAdapter.actionPosition = -1
-        }
-
-        /*   게시글 삭제   */
-        userInfoViewModel.deleteFeedResult.observe(this) { deleteFeedResult ->
-            deleteFeedResult.onSuccess {
-                myFeedAdapter.deleteFeedSuccess()
-                Toast.makeText(this, "게시글 삭제가 완료되었습니다.", Toast.LENGTH_SHORT).show()
-            }.onFailure {
-                Toast.makeText(this, getText(R.string.APIErrorToastMessage), Toast.LENGTH_SHORT).show()
-            }
-
-            myFeedAdapter.actionPosition = -1
         }
 
         /*   로딩 관련 Observer   */
@@ -221,17 +210,42 @@ class UserInfoActivity : AppCompatActivity(), MyFeedAdapter.OnFeedActionListener
             }
         }
 
+        /*   게시글 좋아요 Observer   */
+        userInfoViewModel.postFeedLikeResult.observe(this) { postFeedLikeResult ->
+            postFeedLikeResult.onSuccess {
+                myFeedAdapter.postFeedLikeSuccess()
+            }.onFailure {
+                Toast.makeText(this, getText(R.string.APIErrorToastMessage), Toast.LENGTH_SHORT).show()
+            }
+
+            myFeedAdapter.actionPosition = -1
+        }
+
+        userInfoViewModel.deleteFeedLikeResult.observe(this) { deleteFeedLikeResult ->
+            deleteFeedLikeResult.onSuccess {
+                myFeedAdapter.deleteFeedLikeSuccess()
+            }.onFailure {
+                Toast.makeText(this, getText(R.string.APIErrorToastMessage), Toast.LENGTH_SHORT).show()
+            }
+
+            myFeedAdapter.actionPosition = -1
+        }
+
+        /*   게시글 삭제   */
+        userInfoViewModel.deleteFeedResult.observe(this) { deleteFeedResult ->
+            deleteFeedResult.onSuccess {
+                myFeedAdapter.deleteFeedSuccess()
+                Toast.makeText(this, "게시글 삭제가 완료되었습니다.", Toast.LENGTH_SHORT).show()
+            }.onFailure {
+                Toast.makeText(this, getText(R.string.APIErrorToastMessage), Toast.LENGTH_SHORT).show()
+            }
+
+            myFeedAdapter.actionPosition = -1
+        }
+
         /*   Follow 정보 Observer   */
         userInfoViewModel.isFollowing.observe(this) {
             setFollowButton(it)
-        }
-
-        userInfoViewModel.getFollowError.observe(this) {
-            if(it == "FAIL"){
-                Toast.makeText(this, "팔로우 정보를 불러오는데 실패하였습니다. 다시 시도해 주세요.", Toast.LENGTH_SHORT).show()
-            } else {
-                Toast.makeText(this, getText(R.string.APIErrorToastMessage), Toast.LENGTH_SHORT).show()
-            }
         }
 
         userInfoViewModel.postFollowResult.observe(this) {
@@ -239,14 +253,6 @@ class UserInfoActivity : AppCompatActivity(), MyFeedAdapter.OnFeedActionListener
                 Toast.makeText(this, "${binding.UserNameText.text} 님을 팔로우하기 시작했습니다.", Toast.LENGTH_SHORT).show()
             } else {
                 Toast.makeText(this, "이미 ${binding.UserNameText.text} 님을 팔로우 중입니다.", Toast.LENGTH_SHORT).show()
-            }
-        }
-
-        userInfoViewModel.postFollowError.observe(this) {
-            if(it == "FAIL"){
-                Toast.makeText(this, "팔로우 요청에 실패하였습니다. 다시 시도해 주세요.", Toast.LENGTH_SHORT).show()
-            } else {
-                Toast.makeText(this, getText(R.string.APIErrorToastMessage), Toast.LENGTH_SHORT).show()
             }
         }
 
@@ -258,17 +264,36 @@ class UserInfoActivity : AppCompatActivity(), MyFeedAdapter.OnFeedActionListener
             }
         }
 
-        userInfoViewModel.deleteFollowError.observe(this) {
+        /*   신고 Observer   */
+        userInfoViewModel.postComplaintResult.observe(this) {
+            if(it) {
+                Toast.makeText(this, "신고처리되었습니다. 검토 후 조치 예정입니다.", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        /*   오류 관련 Observer   */
+
+        userInfoViewModel.getFollowRelationError.observe(this) {
             if(it == "FAIL"){
-                Toast.makeText(this, "팔로우 취소 요청에 실패하였습니다. 다시 시도해 주세요.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "팔로우 정보를 불러오는데 실패하였습니다. 다시 시도해 주세요.", Toast.LENGTH_SHORT).show()
             } else {
                 Toast.makeText(this, getText(R.string.APIErrorToastMessage), Toast.LENGTH_SHORT).show()
             }
         }
 
-        userInfoViewModel.postComplaintResult.observe(this) {
-            if(it) {
-                Toast.makeText(this, "신고처리되었습니다. 검토 후 조치 예정입니다.", Toast.LENGTH_SHORT).show()
+        userInfoViewModel.postFollowError.observe(this) {
+            if(it == "FAIL"){
+                Toast.makeText(this, "팔로우 요청에 실패하였습니다. 다시 시도해 주세요.", Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(this, getText(R.string.APIErrorToastMessage), Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        userInfoViewModel.deleteFollowError.observe(this) {
+            if(it == "FAIL"){
+                Toast.makeText(this, "팔로우 취소 요청에 실패하였습니다. 다시 시도해 주세요.", Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(this, getText(R.string.APIErrorToastMessage), Toast.LENGTH_SHORT).show()
             }
         }
 
@@ -291,17 +316,12 @@ class UserInfoActivity : AppCompatActivity(), MyFeedAdapter.OnFeedActionListener
     }
 
     private fun initRecyclerView(){
-        myFeedAdapter = MyFeedAdapter(this)
+        myFeedAdapter = MyFeedAdapter()
         myFeedAdapter.feedActionListener = this
-
-        clearRecyclerView()
-
-        myFeedAdapter.addFeedInfoData(userInfoViewModel.allFeedInfo)
-        myFeedAdapter.addFeedIdData(userInfoViewModel.allFeedIds)
 
         val postRecyclerView = binding.UserPostRecyclerView
         postRecyclerView.adapter = myFeedAdapter
-        myFeedAdapter.userId = userId
+
         postRecyclerView.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
         postRecyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
@@ -309,6 +329,7 @@ class UserInfoActivity : AppCompatActivity(), MyFeedAdapter.OnFeedActionListener
 
                 if(!recyclerView.canScrollVertically(1)) {
                     if(!userInfoViewModel.checkLoading()){
+                        Log.d("UserInfoActivity", "By ScrollListener getFeed")
                         getFeed(userId)
                     }
                 }
@@ -316,13 +337,11 @@ class UserInfoActivity : AppCompatActivity(), MyFeedAdapter.OnFeedActionListener
         })
     }
 
-    @SuppressLint("NotifyDataSetChanged")
-    private fun clearRecyclerView() {
-        myFeedAdapter.feedID.clear()
-        myFeedAdapter.feedInfo.clear()
-        myFeedAdapter.notifyDataSetChanged()
+    private fun getFeed(userId: String){
+        userInfoViewModel.fetchUserFeedResults(userId)
     }
 
+    //사용자 정보 설정
     private fun setUserProfile(userinfo: VectoService.UserInfoResponse) {
         binding.UserNameText.text = userinfo.nickName
 
@@ -343,27 +362,31 @@ class UserInfoActivity : AppCompatActivity(), MyFeedAdapter.OnFeedActionListener
         binding.FollowingCount.text = userinfo.followingCount.toString()
 
         if(Auth.loginFlag.value == true) {
-            userInfoViewModel.getFollow(userinfo.userId)
+            userInfoViewModel.checkFollow(userinfo.userId)
         }
     }
 
+    //팔로우 버튼 설정
     private fun setFollowButton(isFollowing: Boolean){
-        if(isFollowing)//이미 팔로우 한 상태라면
+        if(!isFollowing)
         {
             binding.FollowButton.setImageResource(R.drawable.userinfo_following_button)
-            binding.FollowButtonText.text = "팔로잉"
+            binding.FollowButtonText.text = "팔로우"
             binding.FollowButtonText.setTextColor(ContextCompat.getColor(this, R.color.vecto_theme_orange))
         }
         else
         {
             binding.FollowButton.setImageResource(R.drawable.userinfo_follow_button)
-            binding.FollowButtonText.text = "팔로우"
+            binding.FollowButtonText.text = "팔로잉"
             binding.FollowButtonText.setTextColor(ContextCompat.getColor(this, R.color.white))
         }
     }
 
-    private fun getFeed(userId: String){
-        userInfoViewModel.fetchUserFeedResults(userId)
+    //결과 None 이미지
+    private fun clearNoneImage() {
+        binding.NoneImage.visibility = View.GONE
+        binding.NoneText.visibility = View.GONE
+        Log.d("NONE GONE", "NONE IMAGE IS GONE")
     }
 
     private fun setNoneImage() {
@@ -373,31 +396,32 @@ class UserInfoActivity : AppCompatActivity(), MyFeedAdapter.OnFeedActionListener
         Log.d("NONE SET", "NONE IMAGE SET")
     }
 
-
-    private fun clearNoneImage() {
-        binding.NoneImage.visibility = View.GONE
-        binding.NoneText.visibility = View.GONE
-        Log.d("NONE GONE", "NONE IMAGE IS GONE")
-    }
+    /*   Adapter CallBack 관련   */
 
     override fun onPostLike(feedID: Int) {
         if(!userInfoViewModel.checkLoading())
             userInfoViewModel.postFeedLike(feedID)
-        else
+        else{
             Toast.makeText(this, "이전 작업을 처리 중입니다. 잠시 후 다시 시도해 주세요", Toast.LENGTH_SHORT).show()
+            myFeedAdapter.actionPosition = -1
+        }
     }
 
     override fun onDeleteLike(feedID: Int) {
         if(!userInfoViewModel.checkLoading())
             userInfoViewModel.deleteFeedLike(feedID)
-        else
+        else {
             Toast.makeText(this, "이전 작업을 처리 중입니다. 잠시 후 다시 시도해 주세요", Toast.LENGTH_SHORT).show()
+            myFeedAdapter.actionPosition = -1
+        }
     }
 
     override fun onDeleteFeed(feedID: Int) {
         if(!userInfoViewModel.checkLoading())
             userInfoViewModel.deleteFeed(feedID)
-        else
+        else{
             Toast.makeText(this, "이전 작업을 처리 중입니다. 잠시 후 다시 시도해 주세요", Toast.LENGTH_SHORT).show()
+            myFeedAdapter.actionPosition = -1
+        }
     }
 }

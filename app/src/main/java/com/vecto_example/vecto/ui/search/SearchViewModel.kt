@@ -5,20 +5,26 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.vecto_example.vecto.data.Auth
 import com.vecto_example.vecto.data.repository.FeedRepository
+import com.vecto_example.vecto.data.repository.UserRepository
 import com.vecto_example.vecto.retrofit.VectoService
+import com.vecto_example.vecto.utils.ServerResponse
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import java.util.Collections.addAll
 
-class SearchViewModel(private val repository: FeedRepository) : ViewModel() {
+class SearchViewModel(private val repository: FeedRepository, private val userRepository: UserRepository) : ViewModel() {
     var nextPage: Int = 0
-    var lastPage: Boolean = false
-    var followPage: Boolean = true
+    private var lastPage: Boolean = false
+    private var followPage: Boolean = true
     var originLoginFlag: Boolean? = null
 
-    var newFeedIds = mutableListOf<Int>()
-    var newFeedInfo = mutableListOf<VectoService.FeedInfoResponse>()
+    var firstFlag = true
+
+    private var tempLoading = false
+
+    var allFeedInfo = mutableListOf<VectoService.FeedInfoWithFollow>()
 
     private val _isLoadingCenter = MutableLiveData(false)
     val isLoadingCenter: LiveData<Boolean> = _isLoadingCenter
@@ -26,14 +32,37 @@ class SearchViewModel(private val repository: FeedRepository) : ViewModel() {
     private val _isLoadingBottom = MutableLiveData(false)
     val isLoadingBottom: LiveData<Boolean> = _isLoadingBottom
 
-    private val _feedIdsLiveData = MutableLiveData<VectoService.FeedPageResponse>()
-    val feedIdsLiveData: LiveData<VectoService.FeedPageResponse> = _feedIdsLiveData
+    private val _feedInfoLiveData = MutableLiveData<VectoService.FeedPageResponse>()
+    val feedInfoLiveData: LiveData<VectoService.FeedPageResponse> = _feedInfoLiveData
 
-    private val _feedInfoLiveData = MutableLiveData<List<VectoService.FeedInfoResponse>>()
-    val feedInfoLiveData: LiveData<List<VectoService.FeedInfoResponse>> = _feedInfoLiveData
+    /*   좋아요   */
+    private val _postFeedLikeResult = MutableLiveData<Result<String>>()
+    val postFeedLikeResult: LiveData<Result<String>> = _postFeedLikeResult
+
+    private val _deleteFeedLikeResult = MutableLiveData<Result<String>>()
+    val deleteFeedLikeResult: LiveData<Result<String>> = _deleteFeedLikeResult
+
+    //팔로우 요청
+    private val _postFollowResult = MutableLiveData<Boolean>()
+    val postFollowResult: LiveData<Boolean> = _postFollowResult
+
+    //팔로우 취소
+    private val _deleteFollowResult = MutableLiveData<Boolean>()
+    val deleteFollowResult: LiveData<Boolean> = _deleteFollowResult
+
+    /*   에러   */
 
     private val _feedErrorLiveData = MutableLiveData<String>()
     val feedErrorLiveData: LiveData<String> = _feedErrorLiveData
+
+    private val _followErrorLiveData = MutableLiveData<String>()
+    val followErrorLiveData: LiveData<String> = _followErrorLiveData
+
+    private val _postFollowError = MutableLiveData<String>()
+    val postFollowError: LiveData<String> = _postFollowError
+
+    private val _deleteFollowError = MutableLiveData<String>()
+    val deleteFollowError: LiveData<String> = _deleteFollowError
 
 
     private fun startLoading(){
@@ -50,165 +79,160 @@ class SearchViewModel(private val repository: FeedRepository) : ViewModel() {
 
         _isLoadingCenter.value = false
         _isLoadingBottom.value = false
+
+        tempLoading = false
     }
 
-    fun fetchFeedResults(){
-        startLoading()
+    fun getFeedList(queryFlag: Boolean, type: String){
+        if(!lastPage)
+            startLoading()
 
         viewModelScope.launch {
-            val feedListResponse = repository.getFeedList(nextPage)
+            val feedListResponse: Result<VectoService.FeedPageResponse>
 
-            feedListResponse.onSuccess { feedPageResponse ->
-                if(!lastPage) {
-                    val feedInfo = mutableListOf<VectoService.FeedInfoResponse>()
-                    val successfulFeedIds = mutableListOf<Int>()
+            if(queryFlag){
+                if(Auth.loginFlag.value == true)
+                    feedListResponse = repository.postSearchFeedList(type, nextPage)
+                else
+                    feedListResponse = repository.getSearchFeedList(type, nextPage)
 
-                    feedPageResponse.feedIds.forEach { feedId ->
-                        val job = async {
-                            try {
-                                repository.getFeedInfo(feedId).also {
-                                    successfulFeedIds.add(feedId)
-                                }
-                            } catch (e: Exception) {
-                                Log.e("fetchFeedResults", "Failed to fetch feed info for ID $feedId", e)
-                                null // 실패한 경우 null 반환
-                            }
-                        }
-                        job.await()?.let {
-                            feedInfo.add(it) // null이 아닌 결과만 추가
-                        }
+                addFeedInfoData(feedListResponse)
+            }else if(type == "Normal"){
+                feedListResponse = repository.getFeedList(nextPage)
+
+                addFeedInfoData(feedListResponse)
+            } else if(type == "Personal"){
+                feedListResponse = repository.getPersonalFeedList(followPage, nextPage)
+
+                addFeedInfoData(feedListResponse)
+            }
+        }
+    }
+
+    private fun checkFollow(newFeedInfoWithFollow: List<VectoService.FeedInfoWithFollow>, feedPageResponse: VectoService.FeedPageResponse){
+        Log.d("SearchViewModel", "checkFollow")
+
+        if(Auth.loginFlag.value == true){
+            val userIdList = newFeedInfoWithFollow.map {
+                it.feedInfo.userId
+            }
+            viewModelScope.launch {
+                val followResponse = userRepository.getFollowRelation(userIdList)
+
+                followResponse.onSuccess { followStatuses ->
+
+                    for(i in 0 until followStatuses.followRelations.size){
+                        if(followStatuses.followRelations[i].relation == "followed" || followStatuses.followRelations[i].relation == "all")
+                            newFeedInfoWithFollow[i].isFollowing = true
                     }
-                    // 기존 데이터에 새로운 데이터 추가
-                    val updatedFeedInfo = _feedInfoLiveData.value?.toMutableList() ?: mutableListOf()
-                    updatedFeedInfo.addAll(feedInfo)
 
-                    newFeedInfo.clear()
-                    newFeedInfo.addAll(feedInfo)
+                    allFeedInfo.addAll(newFeedInfoWithFollow)
+                    _feedInfoLiveData.postValue(feedPageResponse)
 
-                    _feedInfoLiveData.postValue(updatedFeedInfo)
+                    endLoading()
+                }.onFailure {
+                    allFeedInfo.addAll(newFeedInfoWithFollow)
+                    _feedInfoLiveData.postValue(feedPageResponse)
 
-                    _feedIdsLiveData.postValue(feedPageResponse.copy(feedIds = (_feedIdsLiveData.value?.feedIds ?: mutableListOf()).apply {
-                        addAll(successfulFeedIds)
-                    }))
-
-                    newFeedIds.clear()
-                    newFeedIds.addAll(successfulFeedIds)
-
-                    nextPage = feedPageResponse.nextPage    //페이지 정보값 변경
-                    lastPage = feedPageResponse.lastPage
-                    followPage = feedPageResponse.followPage
+                    _followErrorLiveData.value = it.message
+                    endLoading()
                 }
+            }
+
+        } else {
+
+
+            allFeedInfo.addAll(newFeedInfoWithFollow)
+            _feedInfoLiveData.postValue(feedPageResponse)
+
+            endLoading()
+        }
+    }
+
+    private fun addFeedInfoData(feedListResponse: Result<VectoService.FeedPageResponse>){
+        feedListResponse.onSuccess { feedPageResponse ->
+            if(!lastPage) {
+                val newFeedInfoWithFollow = feedPageResponse.feeds.map { feedInfo ->
+                    VectoService.FeedInfoWithFollow(feedInfo, false)
+                }
+
+                checkFollow(newFeedInfoWithFollow, feedPageResponse)
+
+                nextPage = feedPageResponse.nextPage    //페이지 정보값 변경
+                lastPage = feedPageResponse.lastPage
+                followPage = feedPageResponse.followPage
+            }
+
+            endLoading()
+        }.onFailure {
+            _feedErrorLiveData.value = it.message
+            endLoading()
+        }
+    }
+
+    fun postFeedLike(feedId: Int) {
+        tempLoading = true
+
+        viewModelScope.launch {
+            val postFeedLikeResponse = repository.postFeedLike(feedId)
+
+            _postFeedLikeResult.value = postFeedLikeResponse
+
+            endLoading()
+        }
+    }
+
+    fun deleteFeedLike(feedId: Int) {
+        tempLoading = true
+
+        viewModelScope.launch {
+            val deleteFeedLikeResponse = repository.deleteFeedLike(feedId)
+
+            _deleteFeedLikeResult.value = deleteFeedLikeResponse
+
+            endLoading()
+        }
+    }
+
+    fun postFollow(userId: String) {
+        tempLoading = true
+
+        viewModelScope.launch {
+            val followResponse = userRepository.postFollow(userId)
+
+            followResponse.onSuccess {
+                if(it == ServerResponse.SUCCESS_POSTFOLLOW.code){
+                    _postFollowResult.value = true
+                } else if(it == ServerResponse.SUCCESS_ALREADY_POSTFOLLOW.code) {
+                    _postFollowResult.value = false
+                }
+
                 endLoading()
             }.onFailure {
-                _feedErrorLiveData.value = it.message
+                _postFollowError.value = it.message
+
                 endLoading()
             }
         }
     }
 
-    fun fetchPersonalFeedResults(){
-        startLoading()
+    fun deleteFollow(userId: String) {
+        tempLoading = true
 
         viewModelScope.launch {
-            val feedListResponse = repository.getPersonalFeedList(followPage, nextPage)
+            val followResponse = userRepository.deleteFollow(userId)
 
-            feedListResponse.onSuccess { feedPageResponse ->
-                if(!lastPage) {
-                    val feedInfo = mutableListOf<VectoService.FeedInfoResponse>()
-                    val successfulFeedIds = mutableListOf<Int>()
-
-                    feedPageResponse.feedIds.forEach { feedId ->
-                        val job = async {
-                            try {
-                                repository.getFeedInfo(feedId).also {
-                                    successfulFeedIds.add(feedId)
-                                }
-                            } catch (e: Exception) {
-                                Log.e("fetchPersonalFeedResults", "Failed to fetch feed info for ID $feedId", e)
-                                null // 실패한 경우 null 반환
-                            }
-                        }
-                        job.await()?.let {
-                            feedInfo.add(it) // null이 아닌 결과만 추가
-                        }
-                    }
-                    // 기존 데이터에 새로운 데이터 추가
-                    val updatedFeedInfo = _feedInfoLiveData.value?.toMutableList() ?: mutableListOf()
-                    updatedFeedInfo.addAll(feedInfo)
-
-                    newFeedInfo.clear()
-                    newFeedInfo.addAll(feedInfo)
-
-                    _feedInfoLiveData.postValue(updatedFeedInfo)
-
-                    _feedIdsLiveData.postValue(feedPageResponse.copy(feedIds = (_feedIdsLiveData.value?.feedIds ?: mutableListOf()).apply {
-                        addAll(successfulFeedIds)
-                    }))
-
-                    newFeedIds.clear()
-                    newFeedIds.addAll(successfulFeedIds)
-
-                    nextPage = feedPageResponse.nextPage    //페이지 정보값 변경
-                    lastPage = feedPageResponse.lastPage
-                    followPage = feedPageResponse.followPage
+            followResponse.onSuccess {
+                if(it == ServerResponse.SUCCESS_DELETEFOLLOW.code){
+                    _deleteFollowResult.value = true
+                } else if(it == ServerResponse.SUCCESS_ALREADY_DELETEFOLLOW.code) {
+                    _deleteFollowResult.value = false
                 }
+
                 endLoading()
             }.onFailure {
-                _feedErrorLiveData.value = it.message
-                endLoading()
-            }
-        }
-    }
+                _deleteFollowError.value = it.message
 
-    fun fetchSearchFeedResults(query: String){
-        startLoading()
-
-        viewModelScope.launch {
-            val feedListResponse = repository.getSearchFeedList(query, nextPage)
-
-            feedListResponse.onSuccess { feedPageResponse ->
-                if(!lastPage) {
-                    val feedInfo = mutableListOf<VectoService.FeedInfoResponse>()
-                    val successfulFeedIds = mutableListOf<Int>()
-
-                    feedPageResponse.feedIds.forEach { feedId ->
-                        val job = async {
-                            try {
-                                repository.getFeedInfo(feedId).also {
-                                    successfulFeedIds.add(feedId)
-                                }
-                            } catch (e: Exception) {
-                                Log.e("fetchSearchFeedResults", "Failed to fetch feed info for ID $feedId", e)
-                                null // 실패한 경우 null 반환
-                            }
-                        }
-                        job.await()?.let {
-                            feedInfo.add(it) // null이 아닌 결과만 추가
-                        }
-                    }
-                    // 기존 데이터에 새로운 데이터 추가
-                    val updatedFeedInfo = _feedInfoLiveData.value?.toMutableList() ?: mutableListOf()
-                    updatedFeedInfo.addAll(feedInfo)
-
-                    newFeedInfo.clear()
-                    newFeedInfo.addAll(feedInfo)
-
-                    _feedInfoLiveData.postValue(updatedFeedInfo)
-
-                    _feedIdsLiveData.postValue(feedPageResponse.copy(feedIds = (_feedIdsLiveData.value?.feedIds ?: mutableListOf()).apply {
-                        addAll(successfulFeedIds)
-                    }))
-
-                    newFeedIds.clear()
-                    newFeedIds.addAll(successfulFeedIds)
-
-                    nextPage = feedPageResponse.nextPage    //페이지 정보값 변경
-                    lastPage = feedPageResponse.lastPage
-                    followPage = feedPageResponse.followPage
-                }
-                endLoading()
-            }.onFailure {
-                _feedErrorLiveData.value = it.message
                 endLoading()
             }
         }
@@ -221,15 +245,13 @@ class SearchViewModel(private val repository: FeedRepository) : ViewModel() {
         lastPage = false
         followPage = true
 
-        _feedInfoLiveData.postValue(emptyList())
-        _feedIdsLiveData.postValue(VectoService.FeedPageResponse(0, emptyList(), lastPage = false, followPage = true))
+        firstFlag =true
 
-        newFeedIds.clear()
-        newFeedInfo.clear()
+        allFeedInfo.clear()
     }
 
     fun checkLoading(): Boolean{
         //로딩중이 아니라면 false, 로딩중이라면 true
-        return !(isLoadingBottom.value == false && isLoadingCenter.value == false)
+        return !(isLoadingBottom.value == false && isLoadingCenter.value == false && !tempLoading)
     }
 }

@@ -33,8 +33,7 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 class MyFeedDetailAdapter(private val context: Context): RecyclerView.Adapter<MyFeedDetailAdapter.ViewHolder>() {
-    val feedInfo = mutableListOf<VectoService.FeedInfoResponse>()
-    val feedID = mutableListOf<Int>()
+    val feedInfo = mutableListOf<VectoService.FeedInfo>()
 
     lateinit var visitdata: List<VisitData>
     lateinit var locationdata: List<LocationData>
@@ -168,7 +167,7 @@ class MyFeedDetailAdapter(private val context: Context): RecyclerView.Adapter<My
                 if (feedInfo[position].likeFlag) {
                     holder.likeImage.setImageResource(R.drawable.post_like_off)
 
-                    cancelLike(feedID[position])
+                    cancelLike(feedInfo[position].feedId)
                     feedInfo[position].likeFlag = false
 
                     feedInfo[position].likeCount--
@@ -189,7 +188,7 @@ class MyFeedDetailAdapter(private val context: Context): RecyclerView.Adapter<My
                     })
 
                     holder.likeImage.startAnimation(anim)
-                    sendLike(feedID[position])
+                    sendLike(feedInfo[position].feedId)
                     feedInfo[position].likeFlag = true
                 }
             }
@@ -206,7 +205,7 @@ class MyFeedDetailAdapter(private val context: Context): RecyclerView.Adapter<My
         /*댓글 설정*/
         holder.commentImage.setOnClickListener {
             val intent = Intent(context, CommentActivity::class.java)
-            intent.putExtra("feedID", feedID[position])
+            intent.putExtra("feedID", feedInfo[position].feedId)
             context.startActivity(intent)
         }
 
@@ -429,16 +428,10 @@ class MyFeedDetailAdapter(private val context: Context): RecyclerView.Adapter<My
         }
     }
 
-    fun addFeedInfoData(newData: List<VectoService.FeedInfoResponse>) {
+    fun addFeedInfoData(newData: List<VectoService.FeedInfo>) {
         //데이터 추가 함수
         val startIdx = feedInfo.size
         feedInfo.addAll(newData)
-        notifyItemRangeInserted(startIdx, newData.size)
-    }
-
-    fun addFeedIdData(newData: List<Int>){
-        val startIdx = feedInfo.size
-        feedID.addAll(newData)
         notifyItemRangeInserted(startIdx, newData.size)
     }
 

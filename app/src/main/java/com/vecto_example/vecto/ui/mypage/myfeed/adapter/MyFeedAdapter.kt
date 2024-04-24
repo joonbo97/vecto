@@ -21,6 +21,7 @@ import com.google.gson.Gson
 import com.vecto_example.vecto.ui.editfeed.EditPostActivity
 import com.vecto_example.vecto.R
 import com.vecto_example.vecto.databinding.MypostItemBinding
+import com.vecto_example.vecto.utils.DateTimeUtils
 import com.vecto_example.vecto.utils.LoadImageUtils
 import com.vecto_example.vecto.utils.RequestLoginUtils
 import retrofit2.Call
@@ -30,14 +31,12 @@ import java.time.Duration
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
-class MyFeedAdapter(private val context: Context): RecyclerView.Adapter<MyFeedAdapter.ViewHolder>()
+class MyFeedAdapter(): RecyclerView.Adapter<MyFeedAdapter.ViewHolder>()
 {
-    val feedInfo = mutableListOf<VectoService.FeedInfoResponse>()
-    val feedID = mutableListOf<Int>()
-    var pageNo = 0
-    var userId = ""
-
     var actionPosition = -1
+    var feedInfo = mutableListOf<VectoService.FeedInfo>()
+    var lastSize = 0
+
 
     interface OnFeedActionListener {
         fun onPostLike(feedID: Int)
@@ -50,114 +49,105 @@ class MyFeedAdapter(private val context: Context): RecyclerView.Adapter<MyFeedAd
     var feedActionListener: OnFeedActionListener? = null
 
     inner class ViewHolder(val binding: MypostItemBinding): RecyclerView.ViewHolder(binding.root) {
-        fun bind(feed: VectoService.FeedInfoResponse) {
+        fun bind(feed: VectoService.FeedInfo) {
 
-            //이미지가 있는지 여부를 확인하여 style을 결정 하고 이미지 설정
-            if (feed.image.isEmpty()) {//2:1 mapImage [1]
+            /*   사용자 정보   */
+            LoadImageUtils.loadUserProfileImage(itemView.context, binding.ProfileImage, feed.userProfile)    //프로필 이미지
+            binding.NicknameText.text = feed.nickName   //닉네임
+
+            /*   게시글   */
+
+            //이미지 존재 확인 후 스타일 결정
+            if (feed.image.isEmpty()) {
                 binding.MapImageLarge.visibility = View.VISIBLE
+
                 binding.MapImageSmall.visibility = View.INVISIBLE
                 binding.Image.visibility = View.INVISIBLE
 
-                LoadImageUtils.loadImage(context, binding.MapImageLarge, feed.mapImage[1])
-            } else {//1:1 mapImage[0]
+                LoadImageUtils.loadImage(itemView.context, binding.MapImageLarge, feed.mapImage[1])
+            } else {
                 binding.MapImageLarge.visibility = View.INVISIBLE
+
                 binding.MapImageSmall.visibility = View.VISIBLE
                 binding.Image.visibility = View.VISIBLE
 
-                LoadImageUtils.loadImage(context, binding.MapImageSmall, feed.mapImage[0])
-                LoadImageUtils.loadImage(context, binding.Image, feed.image[0])
+                LoadImageUtils.loadImage(itemView.context, binding.MapImageSmall, feed.mapImage[0])
+                LoadImageUtils.loadImage(itemView.context, binding.Image, feed.image[0])
             }
 
-            /*   게시글 데이터 설정   */
             binding.TitleText.text = feed.title //제목
-            LoadImageUtils.loadUserProfileImage(context, binding.ProfileImage, feed.userProfile)    //프로필 이미지
-            binding.NicknameText.text = feed.nickName   //닉네임
             binding.PostTimeText.text = feed.timeDifference //업로드 시간
-            binding.LikeCountText.text = feed.likeCount.toString()
-            binding.CommentCountText.text = feed.commentCount.toString()
+            binding.TotalTimeText.text = DateTimeUtils.getCourseTime(feed.visit.first().datetime, feed.visit.last().datetime)
 
-            /*   자신의 게시글이 아닌 경우, 게시글 메뉴 숨김   */
+            /*   게시글 메뉴   */
             if(Auth._userId.value != feedInfo[adapterPosition].userId) {
                 binding.PostMenuImage.visibility = View.GONE
             }
 
-            binding.UserTouchImage.setOnClickListener {
-                val intent = Intent(context, UserInfoActivity::class.java)
-                intent.putExtra("userId", feedInfo[adapterPosition].userId)
-                context.startActivity(intent)
+            else {
+                binding.PostMenuImage.setOnClickListener {
+                    val editDeletePopupWindow = EditDeletePopupWindow(itemView.context,
+                        editListener = {
+                            val intent = Intent(itemView.context, EditPostActivity::class.java).apply {
+                                putExtra("feedInfoJson", Gson().toJson(feedInfo[adapterPosition]))
+                                putExtra("feedId", feedInfo[adapterPosition].feedId)
+                            }
+                            itemView.context.startActivity(intent)
+                        },
+                        deleteListener = {
+                            val deletePostDialog = DeletePostDialog(itemView.context)
+                            deletePostDialog.showDialog()
+                            deletePostDialog.onOkButtonClickListener = {
+                                actionPosition = adapterPosition
+                                feedActionListener?.onDeleteFeed(feedInfo[adapterPosition].feedId)
+                            }
+                        },
+                        dismissListener = {
+
+                        })
+
+                    // 앵커 뷰를 기준으로 팝업 윈도우 표시
+                    editDeletePopupWindow.showPopupWindow(binding.PostMenuImage)
+                }
             }
+
+            /*   좋아요   */
+            if(feed.likeFlag)
+                binding.LikeImage.setImageResource(R.drawable.post_like_on)
+            else
+                binding.LikeImage.setImageResource(R.drawable.post_like_off)
+
+            binding.LikeCountText.text = feed.likeCount.toString()
 
             binding.LikeTouchImage.setOnClickListener {
                 clickLikeAction(feedInfo[adapterPosition])
             }
 
+            /*   댓글   */
+            binding.CommentCountText.text = feed.commentCount.toString()
+
             binding.CommentTouchImage.setOnClickListener {
-                val intent = Intent(context, CommentActivity::class.java)
-                intent.putExtra("feedID", feedID[adapterPosition])
-                context.startActivity(intent)
-            }
-
-
-            val format = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")
-
-            val date1 = LocalDateTime.parse(feed.visit.first().datetime, format)
-            val date2 = LocalDateTime.parse(feed.visit.last().datetime, format)
-
-            val minutesPassed = Duration.between(date1, date2).toMinutes().toInt()
-
-            if(minutesPassed < 60)
-            {
-                binding.TotalTimeText.text = "약 1시간 이내 코스"
-            }
-            else{
-                binding.TotalTimeText.text = "약 ${minutesPassed/60}시간 코스"
+                val intent = Intent(itemView.context, CommentActivity::class.java)
+                intent.putExtra("feedID", feedInfo[adapterPosition].feedId)
+                itemView.context.startActivity(intent)
             }
 
             itemView.setOnClickListener {
-                val intent = Intent(context, FeedDetailActivity::class.java).apply {
+                val intent = Intent(itemView.context, FeedDetailActivity::class.java).apply {
                     putExtra("feedInfoListJson", Gson().toJson(feedInfo))
-                    putExtra("feedIDListJson", Gson().toJson(feedID))
-                    putExtra("userId", userId)
-                    putExtra("pageNo", pageNo)
                 }
-                context.startActivity(intent)
-            }
-
-            binding.PostMenuImage.setOnClickListener {
-                val editDeletePopupWindow = EditDeletePopupWindow(context,
-                    editListener = {
-                        val intent = Intent(context, EditPostActivity::class.java).apply {
-                            putExtra("feedInfoJson", Gson().toJson(feedInfo[adapterPosition]))
-                            putExtra("feedId", feedID[adapterPosition])
-                        }
-                        context.startActivity(intent)
-                    },
-                    deleteListener = {
-                        val deletePostDialog = DeletePostDialog(context)
-                        deletePostDialog.showDialog()
-                        deletePostDialog.onOkButtonClickListener = {
-                            actionPosition = adapterPosition
-                            feedActionListener?.onDeleteFeed(feedID[adapterPosition])
-                        }
-                    },
-                    dismissListener = {
-
-                    })
-
-                // 앵커 뷰를 기준으로 팝업 윈도우 표시
-                editDeletePopupWindow.showPopupWindow(binding.PostMenuImage)
+                itemView.context.startActivity(intent)
             }
         }
 
         //좋아요 클릭시 실행 함수
-        private fun clickLikeAction(feed: VectoService.FeedInfoResponse) {
+        private fun clickLikeAction(feed: VectoService.FeedInfo) {
 
             if(Auth.loginFlag.value == true && actionPosition == -1) {
                 if (feed.likeFlag) {
-                    actionPosition = adapterPosition
-                    feedActionListener?.onDeleteLike(feedID[adapterPosition])
+                    feedActionListener?.onDeleteLike(feedInfo[adapterPosition].feedId)
                 } else {
-                    val anim = AnimationUtils.loadAnimation(context, R.anim.like_anim)
+                    val anim = AnimationUtils.loadAnimation(itemView.context, R.anim.like_anim)
 
                     anim.setAnimationListener(object : Animation.AnimationListener {
                         override fun onAnimationStart(animation: Animation?) {}
@@ -167,13 +157,13 @@ class MyFeedAdapter(private val context: Context): RecyclerView.Adapter<MyFeedAd
 
                     binding.LikeImage.startAnimation(anim)
 
-                    actionPosition = adapterPosition
-                    feedActionListener?.onPostLike(feedID[adapterPosition])
-
+                    feedActionListener?.onPostLike(feedInfo[adapterPosition].feedId)
                 }
+
+                actionPosition = adapterPosition
             }
             else {
-                RequestLoginUtils.requestLogin(context)
+                RequestLoginUtils.requestLogin(itemView.context)
             }
 
         }
@@ -181,7 +171,7 @@ class MyFeedAdapter(private val context: Context): RecyclerView.Adapter<MyFeedAd
 
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val binding = MypostItemBinding.inflate(LayoutInflater.from(context), parent, false)
+        val binding = MypostItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return ViewHolder(binding)
     }
 
@@ -192,50 +182,42 @@ class MyFeedAdapter(private val context: Context): RecyclerView.Adapter<MyFeedAd
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val feed = feedInfo[position]
         holder.bind(feed)
-
-        /*   좋아요 설정   */
-        if(feed.likeFlag)
-            holder.binding.LikeImage.setImageResource(R.drawable.post_like_on)
-        else
-            holder.binding.LikeImage.setImageResource(R.drawable.post_like_off)
     }
 
     //좋아요 성공 시 실행 함수
     fun postFeedLikeSuccess() {
-        feedInfo[actionPosition].likeFlag = true
-        feedInfo[actionPosition].likeCount++
+        if(actionPosition != -1) {
+            feedInfo[actionPosition].likeFlag = true
+            feedInfo[actionPosition].likeCount++
 
-        notifyItemChanged(actionPosition)
+            notifyItemChanged(actionPosition)
+        }
     }
 
     //좋아요 삭제 성공 시 실행 함수
     fun deleteFeedLikeSuccess() {
-        feedInfo[actionPosition].likeFlag = false
-        feedInfo[actionPosition].likeCount--
+        if(actionPosition != -1) {
+            feedInfo[actionPosition].likeFlag = false
+            feedInfo[actionPosition].likeCount--
 
-        notifyItemChanged(actionPosition)
+            notifyItemChanged(actionPosition)
+        }
     }
 
     //게시글 삭제 성공 시 실행 함수
     fun deleteFeedSuccess() {
-        feedInfo.removeAt(actionPosition)
+        if(actionPosition != -1) {
+            feedInfo.removeAt(actionPosition)
 
-        notifyItemRemoved(actionPosition)
+            notifyItemRemoved(actionPosition)
+        }
     }
 
 
-    fun addFeedInfoData(newData: List<VectoService.FeedInfoResponse>) {
-        //데이터 추가 함수
-        val startIdx = feedInfo.size
-        feedInfo.addAll(newData)
-        notifyItemRangeInserted(startIdx, newData.size)
-    }
+    fun addFeedInfoData() {
+        notifyItemRangeInserted(lastSize, feedInfo.size)
 
-    fun addFeedIdData(newData: List<Int>){
-        val startIdx = feedInfo.size
-        feedID.addAll(newData)
-        notifyItemRangeInserted(startIdx, newData.size)
+        lastSize = feedInfo.size
     }
-
 
 }

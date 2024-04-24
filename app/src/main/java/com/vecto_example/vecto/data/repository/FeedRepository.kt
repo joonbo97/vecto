@@ -67,6 +67,27 @@ class FeedRepository (private val vectoService: VectoService) {
         }
     }
 
+    suspend fun postSearchFeedList(query: String, pageNo: Int): Result<VectoService.FeedPageResponse> {
+        /*   검색 시 결과에 맞는 게시물을 확인 할 수 있는 함수   */
+        return try {
+            val response = vectoService.postSearchFeedList("Bearer ${Auth.token}", pageNo, query)
+
+            if(response.isSuccessful){
+                Log.d("postSearchFeedList", "SUCCESS: ${response.body()}")
+
+                Result.success(response.body()!!.result!!)
+            }
+            else{
+                Log.d("postSearchFeedList", "FAIL: ${response.errorBody()?.string()}")
+
+                Result.failure(Exception("FAIL"))
+            }
+        } catch (e: Exception) {
+            Log.e("postSearchFeedList", "ERROR", e)
+            Result.failure(Exception("ERROR"))
+        }
+    }
+
     suspend fun getLikeFeedList(pageNo: Int): Result<VectoService.FeedPageResponse> {
         /*   좋아요 누른 게시물 확인   */
         return try {
@@ -89,7 +110,7 @@ class FeedRepository (private val vectoService: VectoService) {
     }
 
     suspend fun getUserFeedList(userId: String, pageNo: Int): Result<VectoService.FeedPageResponse> {
-        /*   사용자가 작성한 게시물 확인   */
+        /*   사용자가 작성한 게시물 확인 (비 로그인)   */
         return try {
             val response = vectoService.getUserFeedList(userId, pageNo)
 
@@ -105,6 +126,27 @@ class FeedRepository (private val vectoService: VectoService) {
             }
         } catch (e: Exception) {
             Log.e("getUserFeedList", "ERROR", e)
+            Result.failure(Exception("ERROR"))
+        }
+    }
+
+    suspend fun postUserFeedList(userId: String, pageNo: Int): Result<VectoService.FeedPageResponse> {
+        /*   사용자가 작성한 게시물 확인 (로그인)   */
+        return try {
+            val response = vectoService.postUserFeedList("Bearer ${Auth.token}", userId, pageNo)
+
+            if(response.isSuccessful){
+                Log.d("postUserFeedList", "SUCCESS: ${response.body()}")
+
+                Result.success(response.body()!!.result!!)
+            }
+            else{
+                Log.d("postUserFeedList", "FAIL: ${response.errorBody()?.string()}")
+
+                Result.failure(Exception("FAIL"))
+            }
+        } catch (e: Exception) {
+            Log.e("postUserFeedList", "ERROR", e)
             Result.failure(Exception("ERROR"))
         }
     }

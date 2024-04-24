@@ -50,10 +50,11 @@
         android:layout_height="wrap_content"
         android:alpha="0.6"
         android:fontFamily="@font/lineseedkr_rg"
-        android:text=" · 17시간 전"
+        android:text="17시간 전"
         android:textColor="@color/black"
         android:textSize="12sp"
         android:layout_marginBottom="8dp"
+        android:layout_marginStart="5dp"
         app:layout_constraintBottom_toTopOf="@+id/CommentText"
         app:layout_constraintStart_toEndOf="@+id/NicknameText" />
 
