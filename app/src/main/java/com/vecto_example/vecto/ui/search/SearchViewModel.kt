@@ -15,25 +15,28 @@ import kotlinx.coroutines.launch
 import java.util.Collections.addAll
 
 class SearchViewModel(private val repository: FeedRepository, private val userRepository: UserRepository) : ViewModel() {
-    var nextPage: Int = 0
-    private var lastPage: Boolean = false
-    private var followPage: Boolean = true
-    var originLoginFlag: Boolean? = null
+    var originLoginFlag: Boolean? = null    //초기 로그인 상태 (처음 get Feed 위해 null 할당)
 
-    var firstFlag = true
+    var firstFlag = true    //처음 게시글 정보를 받아볼 경우 확인을 위한 Flag
 
-    private var tempLoading = false
-
-    var allFeedInfo = mutableListOf<VectoService.FeedInfoWithFollow>()
-
+    /*   Loading 관련   */
     private val _isLoadingCenter = MutableLiveData(false)
     val isLoadingCenter: LiveData<Boolean> = _isLoadingCenter
 
     private val _isLoadingBottom = MutableLiveData(false)
     val isLoadingBottom: LiveData<Boolean> = _isLoadingBottom
 
+    private var tempLoading = false
+
+    /*   게시글 정보   */
+    private var nextPage: Int = 0
+    private var lastPage: Boolean = false
+    private var followPage: Boolean = true
+
     private val _feedInfoLiveData = MutableLiveData<VectoService.FeedPageResponse>()
     val feedInfoLiveData: LiveData<VectoService.FeedPageResponse> = _feedInfoLiveData
+
+    var allFeedInfo = mutableListOf<VectoService.FeedInfoWithFollow>()
 
     /*   좋아요   */
     private val _postFeedLikeResult = MutableLiveData<Result<String>>()
@@ -51,22 +54,24 @@ class SearchViewModel(private val repository: FeedRepository, private val userRe
     val deleteFollowResult: LiveData<Boolean> = _deleteFollowResult
 
     /*   에러   */
-
+    //피드 정보 요청 오류
     private val _feedErrorLiveData = MutableLiveData<String>()
     val feedErrorLiveData: LiveData<String> = _feedErrorLiveData
 
+    //팔로우 정보 조회 실패
     private val _followErrorLiveData = MutableLiveData<String>()
     val followErrorLiveData: LiveData<String> = _followErrorLiveData
 
+    //팔로우 요청 실패
     private val _postFollowError = MutableLiveData<String>()
     val postFollowError: LiveData<String> = _postFollowError
 
+    //팔로우 삭제 요청 실패
     private val _deleteFollowError = MutableLiveData<String>()
     val deleteFollowError: LiveData<String> = _deleteFollowError
 
-
     private fun startLoading(){
-        Log.d("STARTLOADING", "START")
+        Log.d("SearchViewModel", "Start Loading")
 
         if(nextPage == 0)   //처음 실행하는 경우 center 로딩
             _isLoadingCenter.value = true
@@ -75,7 +80,7 @@ class SearchViewModel(private val repository: FeedRepository, private val userRe
     }
 
     private fun endLoading(){
-        Log.d("ENDLOADING", "END")
+        Log.d("SearchViewModel", "End Loading")
 
         _isLoadingCenter.value = false
         _isLoadingBottom.value = false
@@ -88,24 +93,29 @@ class SearchViewModel(private val repository: FeedRepository, private val userRe
             startLoading()
 
         viewModelScope.launch {
-            val feedListResponse: Result<VectoService.FeedPageResponse>
+            if(!lastPage) {
 
-            if(queryFlag){
-                if(Auth.loginFlag.value == true)
-                    feedListResponse = repository.postSearchFeedList(type, nextPage)
-                else
-                    feedListResponse = repository.getSearchFeedList(type, nextPage)
+                val feedListResponse: Result<VectoService.FeedPageResponse>
 
-                addFeedInfoData(feedListResponse)
-            }else if(type == "Normal"){
-                feedListResponse = repository.getFeedList(nextPage)
+                if(queryFlag){
+                    if(Auth.loginFlag.value == true)
+                        feedListResponse = repository.postSearchFeedList(type, nextPage)
+                    else
+                        feedListResponse = repository.getSearchFeedList(type, nextPage)
 
-                addFeedInfoData(feedListResponse)
-            } else if(type == "Personal"){
-                feedListResponse = repository.getPersonalFeedList(followPage, nextPage)
+                    addFeedInfoData(feedListResponse)
+                }else if(type == "Normal"){
+                    feedListResponse = repository.getFeedList(nextPage)
 
-                addFeedInfoData(feedListResponse)
+                    addFeedInfoData(feedListResponse)
+                } else if(type == "Personal"){
+                    feedListResponse = repository.getPersonalFeedList(followPage, nextPage)
+
+                    addFeedInfoData(feedListResponse)
+                }
+
             }
+
         }
     }
 
@@ -151,19 +161,16 @@ class SearchViewModel(private val repository: FeedRepository, private val userRe
 
     private fun addFeedInfoData(feedListResponse: Result<VectoService.FeedPageResponse>){
         feedListResponse.onSuccess { feedPageResponse ->
-            if(!lastPage) {
-                val newFeedInfoWithFollow = feedPageResponse.feeds.map { feedInfo ->
-                    VectoService.FeedInfoWithFollow(feedInfo, false)
-                }
 
-                checkFollow(newFeedInfoWithFollow, feedPageResponse)
-
-                nextPage = feedPageResponse.nextPage    //페이지 정보값 변경
-                lastPage = feedPageResponse.lastPage
-                followPage = feedPageResponse.followPage
+            val newFeedInfoWithFollow = feedPageResponse.feeds.map { feedInfo ->
+                VectoService.FeedInfoWithFollow(feedInfo, false)
             }
 
-            endLoading()
+            checkFollow(newFeedInfoWithFollow, feedPageResponse)
+
+            nextPage = feedPageResponse.nextPage    //페이지 정보값 변경
+            lastPage = feedPageResponse.lastPage
+            followPage = feedPageResponse.followPage
         }.onFailure {
             _feedErrorLiveData.value = it.message
             endLoading()
@@ -245,7 +252,7 @@ class SearchViewModel(private val repository: FeedRepository, private val userRe
         lastPage = false
         followPage = true
 
-        firstFlag =true
+        firstFlag = true
 
         allFeedInfo.clear()
     }

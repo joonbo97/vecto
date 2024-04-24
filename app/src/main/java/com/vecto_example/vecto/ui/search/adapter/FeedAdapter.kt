@@ -221,6 +221,7 @@ class FeedAdapter(): RecyclerView.Adapter<FeedAdapter.ViewHolder>() {
     }
 
     fun addFeedData(){
+        Log.d("FeedAdapter", "addFeedData")
         notifyItemRangeInserted(lastSize, feedInfoWithFollow.size)
 
         lastSize = feedInfoWithFollow.size

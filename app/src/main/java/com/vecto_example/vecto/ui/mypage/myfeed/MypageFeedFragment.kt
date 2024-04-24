@@ -1,6 +1,7 @@
 package com.vecto_example.vecto.ui.mypage.myfeed
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -11,12 +12,14 @@ import android.widget.Toast
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.gson.Gson
 import com.vecto_example.vecto.R
 import com.vecto_example.vecto.data.Auth
 import com.vecto_example.vecto.data.repository.FeedRepository
 import com.vecto_example.vecto.data.repository.UserRepository
 import com.vecto_example.vecto.databinding.FragmentMypagePostBinding
 import com.vecto_example.vecto.retrofit.VectoService
+import com.vecto_example.vecto.ui.detail.FeedDetailActivity
 import com.vecto_example.vecto.ui.mypage.myfeed.adapter.MyFeedAdapter
 import com.vecto_example.vecto.ui.userinfo.UserInfoViewModel
 import com.vecto_example.vecto.ui.userinfo.UserInfoViewModelFactory
@@ -73,15 +76,16 @@ class MypageFeedFragment : Fragment(), MyFeedAdapter.OnFeedActionListener {
         binding.UserNameText.text = Auth._nickName.value
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     private fun initRecyclerView() {
         myFeedAdapter = MyFeedAdapter()
         myFeedAdapter.feedActionListener = this
 
-        val mypostRecyclerView = binding.MypostRecyclerView
-        mypostRecyclerView.adapter = myFeedAdapter
+        val myFeedRecyclerView = binding.MyFeedRecyclerView
+        myFeedRecyclerView.adapter = myFeedAdapter
 
-        mypostRecyclerView.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
-        mypostRecyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+        myFeedRecyclerView.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
+        myFeedRecyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 super.onScrolled(recyclerView, dx, dy)
 
@@ -93,6 +97,11 @@ class MypageFeedFragment : Fragment(), MyFeedAdapter.OnFeedActionListener {
                 }
             }
         })
+
+        if(viewModel.allFeedInfo.isNotEmpty()){
+            myFeedAdapter.feedInfo = viewModel.allFeedInfo
+            myFeedAdapter.notifyDataSetChanged()
+        }
     }
 
     @SuppressLint("NotifyDataSetChanged")
@@ -102,9 +111,10 @@ class MypageFeedFragment : Fragment(), MyFeedAdapter.OnFeedActionListener {
             //새로운 feed 정보를 받았을 때의 처리
             if(viewModel.firstFlag){
                 myFeedAdapter.feedInfo = viewModel.allFeedInfo
-                myFeedAdapter.lastSize = 0
+                myFeedAdapter.lastSize = viewModel.allFeedInfo.size
 
                 myFeedAdapter.notifyDataSetChanged()
+                viewModel.firstFlag = false
             } else {
                 myFeedAdapter.addFeedInfoData()
             }
@@ -210,6 +220,27 @@ class MypageFeedFragment : Fragment(), MyFeedAdapter.OnFeedActionListener {
             viewModel.deleteFeed(feedID)
         else
             Toast.makeText(requireContext(), "이전 작업을 처리 중입니다. 잠시 후 다시 시도해 주세요", Toast.LENGTH_SHORT).show()
+    }
+
+    override fun onItemViewClick(position: Int) {
+        var subList = viewModel.allFeedInfo.subList(position, viewModel.allFeedInfo.size)
+        if(subList.size > 10) {
+            subList = subList.subList(0, 10)
+        }
+
+        val feedInfoWithFollowList = subList.map {
+            VectoService.FeedInfoWithFollow(feedInfo = it, isFollowing = false)  // 모든 isFollowing 값을 false로 설정
+        }
+
+        val intent = Intent(requireContext(), FeedDetailActivity::class.java).apply {
+            putExtra("feedInfoListJson", Gson().toJson(feedInfoWithFollowList))
+            putExtra("type", "MyFeed")
+            putExtra("nextPage", viewModel.nextPage)
+            putExtra("followPage", viewModel.followPage)
+            putExtra("lastPage", viewModel.lastPage)
+        }
+
+        requireContext().startActivity(intent)
     }
 
 }

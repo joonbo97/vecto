@@ -22,8 +22,8 @@ class UserInfoViewModel(private val repository: FeedRepository, private val user
 
     var firstFlag = true
 
-    private var lastPage: Boolean = false
-    private var followPage: Boolean = true
+    var lastPage: Boolean = false
+    var followPage: Boolean = true
 
     /*   로딩   */
     private val _isLoadingCenter = MutableLiveData<Boolean>()
@@ -115,27 +115,31 @@ class UserInfoViewModel(private val repository: FeedRepository, private val user
             startLoading()
 
         viewModelScope.launch {
-            val feedListResponse: Result<VectoService.FeedPageResponse>
+            if(!lastPage){
 
-            if(Auth.loginFlag.value == true)
-                feedListResponse = repository.postUserFeedList(userId, nextPage)
-            else
-                feedListResponse = repository.getUserFeedList(userId, nextPage)
+                val feedListResponse: Result<VectoService.FeedPageResponse>
 
-            feedListResponse.onSuccess { feedPageResponse ->
-                if(!lastPage) {
-                    allFeedInfo.addAll(feedPageResponse.feeds)
-                    _feedInfoLiveData.postValue(feedPageResponse)
+                if(Auth.loginFlag.value == true)
+                    feedListResponse = repository.postUserFeedList(userId, nextPage)
+                else
+                    feedListResponse = repository.getUserFeedList(userId, nextPage)
 
-                    nextPage = feedPageResponse.nextPage    //페이지 정보값 변경
-                    lastPage = feedPageResponse.lastPage
-                    followPage = feedPageResponse.followPage
+                feedListResponse.onSuccess { feedPageResponse ->
+                    if(!lastPage) {
+                        allFeedInfo.addAll(feedPageResponse.feeds)
+                        _feedInfoLiveData.postValue(feedPageResponse)
 
+                        nextPage = feedPageResponse.nextPage    //페이지 정보값 변경
+                        lastPage = feedPageResponse.lastPage
+                        followPage = feedPageResponse.followPage
+
+                    }
+                    endLoading()
+                }.onFailure {
+                    _feedErrorLiveData.value = it.message
+                    endLoading()
                 }
-                endLoading()
-            }.onFailure {
-                _feedErrorLiveData.value = it.message
-                endLoading()
+
             }
         }
     }

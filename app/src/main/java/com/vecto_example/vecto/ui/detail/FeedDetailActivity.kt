@@ -169,12 +169,19 @@ class FeedDetailActivity : AppCompatActivity(), OnMapReadyCallback {
 
 
         // Intent에서 JSON 문자열을 가져와 리스트로 변환
-        val feedInfo = intent.getStringExtra("feedInfoListJson")
+        //val feedInfoWithFollow = intent.getStringExtra("feedInfoListJson")
         val position = intent.getIntExtra("position", -1)
         pageNo = intent.getIntExtra("pageNo", -1)
         viewModel.nextPage = pageNo
         val intentQuery = intent.getStringExtra("query")
         likePostFlag = intent.getBooleanExtra("likePostFlag", false)
+
+        // 인텐트로부터 값 가져오기
+        val feedInfoWithFollowIntent = intent.getStringExtra("feedInfoListJson")
+        val type = intent.getStringExtra("type")
+        val nextPage = intent.getIntExtra("nextPage", 0)
+        val followPage = intent.getBooleanExtra("followPage", false)
+        val lastPage = intent.getBooleanExtra("lastPage", false)
 
         if(!intentQuery.isNullOrEmpty()){
             query = intentQuery
@@ -185,10 +192,10 @@ class FeedDetailActivity : AppCompatActivity(), OnMapReadyCallback {
 
 
         // JSON 문자열을 객체 리스트로 변환
-        val typeOfFeedInfoList = object : TypeToken<List<VectoService.FeedInfo>>() {}.type
-        val feedInfoList = Gson().fromJson<List<VectoService.FeedInfo>>(feedInfo, typeOfFeedInfoList)
+        val typeOfFeedInfoList = object : TypeToken<List<VectoService.FeedInfoWithFollow>>() {}.type
+        val feedInfoWithFollow = Gson().fromJson<List<VectoService.FeedInfoWithFollow>>(feedInfoWithFollowIntent, typeOfFeedInfoList)
 
-        // 어댑터에 데이터 설정
+        // Adapter 데이터 설정
         myFeedDetailAdapter.addFeedInfoData(feedInfoList)
         myFeedDetailAdapter.notifyDataSetChanged()
 

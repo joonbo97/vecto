@@ -32,15 +32,15 @@ import com.vecto_example.vecto.ui.search.adapter.FeedAdapter
 import com.vecto_example.vecto.utils.RequestLoginUtils
 
 class SearchFragment : Fragment(), MainActivity.ScrollToTop, FeedAdapter.OnFeedActionListener {
-    /*   다른 사용자의 게시글을 확인 할 수 있는 Search Fragment   */
-
     private lateinit var binding: FragmentSearchBinding
+
     private val searchViewModel: SearchViewModel by viewModels {
         SearchViewModelFactory(FeedRepository(VectoService.create()), UserRepository(VectoService.create()))
     }
     private val notificationViewModel: NotificationViewModel by viewModels {
         NotificationViewModelFactory(NotificationRepository(VectoService.create()))
     }
+
     private lateinit var feedAdapter: FeedAdapter
 
     private lateinit var notificationReceiver: BroadcastReceiver
@@ -200,9 +200,10 @@ class SearchFragment : Fragment(), MainActivity.ScrollToTop, FeedAdapter.OnFeedA
         searchViewModel.feedInfoLiveData.observe(viewLifecycleOwner) {
             if(searchViewModel.firstFlag) {
                 feedAdapter.feedInfoWithFollow = searchViewModel.allFeedInfo
-                feedAdapter.lastSize = 0
+                feedAdapter.lastSize = searchViewModel.allFeedInfo.size
 
                 feedAdapter.notifyDataSetChanged()
+                searchViewModel.firstFlag = false
             }
             else
                 feedAdapter.addFeedData()
@@ -326,6 +327,7 @@ class SearchFragment : Fragment(), MainActivity.ScrollToTop, FeedAdapter.OnFeedA
         }
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     private fun initRecyclerView() {
         /*   Recycler 초기화 함수   */
         feedAdapter = FeedAdapter()
@@ -351,6 +353,11 @@ class SearchFragment : Fragment(), MainActivity.ScrollToTop, FeedAdapter.OnFeedA
 
             }
         })
+
+        if(searchViewModel.allFeedInfo.isNotEmpty()){
+            feedAdapter.feedInfoWithFollow = searchViewModel.allFeedInfo
+            feedAdapter.notifyDataSetChanged()
+        }
     }
 
     private fun getFeed() {

@@ -162,9 +162,10 @@ class UserInfoActivity : AppCompatActivity(), MyFeedAdapter.OnFeedActionListener
         userInfoViewModel.feedInfoLiveData.observe(this) {
             if(userInfoViewModel.firstFlag) {
                 myFeedAdapter.feedInfo = userInfoViewModel.allFeedInfo
-                myFeedAdapter.lastSize = 0
+                myFeedAdapter.lastSize = userInfoViewModel.allFeedInfo.size
 
                 myFeedAdapter.notifyDataSetChanged()
+                userInfoViewModel.firstFlag = false
             } else {
                 myFeedAdapter.addFeedInfoData()
             }
@@ -423,5 +424,9 @@ class UserInfoActivity : AppCompatActivity(), MyFeedAdapter.OnFeedActionListener
             Toast.makeText(this, "이전 작업을 처리 중입니다. 잠시 후 다시 시도해 주세요", Toast.LENGTH_SHORT).show()
             myFeedAdapter.actionPosition = -1
         }
+    }
+
+    override fun onItemViewClick(position: Int) {
+        TODO("Not yet implemented")
     }
 }

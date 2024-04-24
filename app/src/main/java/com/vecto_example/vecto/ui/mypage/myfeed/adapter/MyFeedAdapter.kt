@@ -44,6 +44,8 @@ class MyFeedAdapter(): RecyclerView.Adapter<MyFeedAdapter.ViewHolder>()
         fun onDeleteLike(feedID: Int)
 
         fun onDeleteFeed(feedID: Int)
+
+        fun onItemViewClick(position: Int)
     }
 
     var feedActionListener: OnFeedActionListener? = null
@@ -133,10 +135,7 @@ class MyFeedAdapter(): RecyclerView.Adapter<MyFeedAdapter.ViewHolder>()
             }
 
             itemView.setOnClickListener {
-                val intent = Intent(itemView.context, FeedDetailActivity::class.java).apply {
-                    putExtra("feedInfoListJson", Gson().toJson(feedInfo))
-                }
-                itemView.context.startActivity(intent)
+                feedActionListener?.onItemViewClick(adapterPosition)
             }
         }
 

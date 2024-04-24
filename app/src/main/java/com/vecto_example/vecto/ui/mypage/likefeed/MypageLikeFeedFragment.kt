@@ -14,18 +14,21 @@ import androidx.recyclerview.widget.RecyclerView
 import com.vecto_example.vecto.R
 import com.vecto_example.vecto.data.Auth
 import com.vecto_example.vecto.data.repository.FeedRepository
+import com.vecto_example.vecto.data.repository.UserRepository
 import com.vecto_example.vecto.databinding.FragmentMypageLikepostBinding
 import com.vecto_example.vecto.retrofit.VectoService
+import com.vecto_example.vecto.ui.search.adapter.FeedAdapter
 import com.vecto_example.vecto.ui.search.adapter.MySearchFeedAdapter
 import com.vecto_example.vecto.utils.LoadImageUtils
 
-class MypageLikeFeedFragment : Fragment() {
+class MypageLikeFeedFragment : Fragment(), FeedAdapter.OnFeedActionListener {
     lateinit var binding: FragmentMypageLikepostBinding
+
     private val viewModel: MypageLikeFeedViewModel by viewModels {
-        MypageLikeFeedViewModelFactory(FeedRepository(VectoService.create()))
+        MypageLikeFeedViewModelFactory(FeedRepository(VectoService.create()), UserRepository(VectoService.create()))
     }
 
-    private lateinit var mySearchFeedAdapter: MySearchFeedAdapter
+    private lateinit var feedAdapter: FeedAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -50,59 +53,34 @@ class MypageLikeFeedFragment : Fragment() {
             if(!viewModel.checkLoading()){
 
                 viewModel.initSetting()
-                clearRecyclerView()
                 clearNoneImage()
 
                 getFeed()
             }
 
             swipeRefreshLayout.isRefreshing = false
-
         }
     }
 
-    private fun initUI() {
-        LoadImageUtils.loadProfileImage(requireContext(), binding.ProfileImage)
-
-        binding.UserNameText.text = Auth._nickName.value
-    }
-
-    private fun initRecyclerView() {
-        mySearchFeedAdapter = MySearchFeedAdapter(requireContext())
-
-        clearRecyclerView()
-
-        /*mysearchpostAdapter.addFeedInfoData(viewModel.allFeedInfo)*/
-
-
-        val likepostRecyclerView = binding.LikePostRecyclerView
-        likepostRecyclerView.adapter = mySearchFeedAdapter
-        likepostRecyclerView.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
-        likepostRecyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
-            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                super.onScrolled(recyclerView, dx, dy)
-
-                if (!recyclerView.canScrollVertically(1)) {
-                    if(!viewModel.checkLoading()){
-                        getFeed()
-                    }
-                }
-            }
-        })
-    }
-
+    @SuppressLint("NotifyDataSetChanged")
     private fun initObservers() {
         /*   게시글 관련 Observer   */
         viewModel.feedInfoLiveData.observe(viewLifecycleOwner) {
-            //새로운 feed 정보를 받았을 때의 처리
-            mySearchFeedAdapter.pageNo = viewModel.nextPage //다음 page 정보
-/*
-            viewModel.feedInfoLiveData.value?.let { mysearchpostAdapter.addFeedInfoData(it) }   //새로 받은 게시글 정보 추가
-*/
+            if(viewModel.firstFlag) {
+                feedAdapter.feedInfoWithFollow = viewModel.allFeedInfo
+                feedAdapter.lastSize = viewModel.allFeedInfo.size
 
-           /* if(viewModel.allFeedIds.isEmpty() && viewModel.feedIdsLiveData.value?.feeds.isNullOrEmpty()){
+                feedAdapter.notifyDataSetChanged()
+                viewModel.firstFlag = false
+            } else {
+                feedAdapter.addFeedData()
+            }
+
+            if(viewModel.allFeedInfo.isEmpty()){
                 setNoneImage()
-            }*/
+            } else {
+                clearNoneImage()
+            }
         }
 
         /*   로딩 관련 Observer   */
@@ -119,6 +97,61 @@ class MypageLikeFeedFragment : Fragment() {
                 binding.progressBar.visibility = View.GONE
         }
 
+        /*   게시물 상호 작용 관련 Observer   */
+
+        /*   게시글 좋아요   */
+        viewModel.postFeedLikeResult.observe(viewLifecycleOwner) { postFeedLikeResult ->
+            if(feedAdapter.actionPosition != -1)
+            {
+                postFeedLikeResult.onSuccess {
+                    feedAdapter.postFeedLikeSuccess()
+                }.onFailure {
+                    Toast.makeText(requireContext(), getText(R.string.APIErrorToastMessage), Toast.LENGTH_SHORT).show()
+                }
+
+                feedAdapter.actionPosition = -1
+            }
+        }
+
+        viewModel.deleteFeedLikeResult.observe(viewLifecycleOwner) { deleteFeedLikeResult ->
+            if(feedAdapter.actionPosition != -1) {
+                deleteFeedLikeResult.onSuccess {
+                    feedAdapter.deleteFeedLikeSuccess()
+                }.onFailure {
+                    Toast.makeText(requireContext(), getText(R.string.APIErrorToastMessage), Toast.LENGTH_SHORT).show()
+                }
+
+                feedAdapter.actionPosition = -1
+            }
+        }
+
+        //팔로우
+        viewModel.postFollowResult.observe(viewLifecycleOwner) {
+            if(feedAdapter.actionPosition != -1) {
+                if (it) {
+                    feedAdapter.postFollowSuccess()
+                    Toast.makeText(requireContext(), "${viewModel.allFeedInfo[feedAdapter.actionPosition].feedInfo.nickName} 님을 팔로우하기 시작했습니다.", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(requireContext(), "이미 ${viewModel.allFeedInfo[feedAdapter.actionPosition].feedInfo.nickName} 님을 팔로우 중입니다.", Toast.LENGTH_SHORT).show()
+                }
+
+                feedAdapter.actionPosition = -1
+            }
+        }
+
+        viewModel.deleteFollowResult.observe(viewLifecycleOwner) {
+            if(feedAdapter.actionPosition != -1) {
+                if (it) {
+                    feedAdapter.deleteFollowSuccess()
+                    Toast.makeText(requireContext(), "${viewModel.allFeedInfo[feedAdapter.actionPosition].feedInfo.nickName} 님 팔로우를 취소하였습니다.", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(requireContext(), "이미 ${viewModel.allFeedInfo[feedAdapter.actionPosition].feedInfo.nickName} 님을 팔로우하지 않습니다.", Toast.LENGTH_SHORT).show()
+                }
+
+                feedAdapter.actionPosition = -1
+            }
+        }
+
         /*   오류 관련 Observer   */
         viewModel.feedErrorLiveData.observe(viewLifecycleOwner) {
             if(it == "FAIL") {
@@ -127,20 +160,81 @@ class MypageLikeFeedFragment : Fragment() {
                 Toast.makeText(requireContext(), getText(R.string.APIErrorToastMessage), Toast.LENGTH_SHORT).show()
             }
         }
+
+        viewModel.followErrorLiveData.observe(viewLifecycleOwner) {
+            if(it == "FAIL") {
+                Toast.makeText(requireContext(), "팔로우 정보 불러오기에 실패하였습니다.", Toast.LENGTH_SHORT).show()
+            } else if(it == "ERROR") {
+                Toast.makeText(requireContext(), getText(R.string.APIErrorToastMessage), Toast.LENGTH_SHORT).show()
+            }
+
+        }
+
+        viewModel.postFollowError.observe(viewLifecycleOwner) {
+            if(feedAdapter.actionPosition != -1) {
+                if (it == "FAIL") {
+                    Toast.makeText(requireContext(), "팔로우 요청에 실패하였습니다. 다시 시도해 주세요.", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(requireContext(), getText(R.string.APIErrorToastMessage), Toast.LENGTH_SHORT).show()
+                }
+
+                feedAdapter.actionPosition = -1
+            }
+        }
+
+        viewModel.deleteFollowError.observe(viewLifecycleOwner) {
+            if(feedAdapter.actionPosition != -1) {
+                if (it == "FAIL") {
+                    Toast.makeText(requireContext(), "팔로우 취소 요청에 실패하였습니다. 다시 시도해 주세요.", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(requireContext(), getText(R.string.APIErrorToastMessage), Toast.LENGTH_SHORT).show()
+                }
+
+                feedAdapter.actionPosition = -1
+            }
+        }
     }
 
     @SuppressLint("NotifyDataSetChanged")
-    private fun clearRecyclerView() {
-        mySearchFeedAdapter.feedInfo.clear()
-        mySearchFeedAdapter.notifyDataSetChanged()
+    private fun initRecyclerView() {
+        feedAdapter = FeedAdapter()
+        feedAdapter.feedActionListener = this
 
+        val likePostRecyclerView = binding.LikePostRecyclerView
+        likePostRecyclerView.adapter = feedAdapter
+
+        likePostRecyclerView.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
+        likePostRecyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                super.onScrolled(recyclerView, dx, dy)
+
+                if (!recyclerView.canScrollVertically(1)) {
+                    if(!viewModel.checkLoading()){
+                        getFeed()
+                    }
+                }
+            }
+        })
+
+        if(viewModel.allFeedInfo.isNotEmpty()){
+            feedAdapter.feedInfoWithFollow = viewModel.allFeedInfo
+            feedAdapter.notifyDataSetChanged()
+        }
     }
 
     private fun getFeed() {
-        viewModel.fetchLikeFeedResults()
+        viewModel.getLikeFeedList()
         Log.d("getFeed", "Like Feed")
     }
 
+    /*   UI 설정   */
+    private fun initUI() {
+        LoadImageUtils.loadProfileImage(requireContext(), binding.ProfileImage)
+
+        binding.UserNameText.text = Auth._nickName.value
+    }
+
+    //좋아요 게시물 None 이미지
     private fun setNoneImage() {
         binding.NoneImage.visibility = View.VISIBLE
         binding.NoneText.visibility = View.VISIBLE
@@ -154,4 +248,40 @@ class MypageLikeFeedFragment : Fragment() {
         Log.d("NONE GONE", "NONE IMAGE IS GONE")
     }
 
+    /*   Adapter CallBack 관련   */
+    override fun onPostFeedLike(feedId: Int) {
+        if(!viewModel.checkLoading()) {
+            viewModel.postFeedLike(feedId)
+        } else {
+            Toast.makeText(requireContext(), "이전 작업을 처리 중입니다. 잠시 후 다시 시도해 주세요", Toast.LENGTH_SHORT).show()
+            feedAdapter.actionPosition = -1
+        }
+    }
+
+    override fun onDeleteFeedLike(feedId: Int) {
+        if(!viewModel.checkLoading()) {
+            viewModel.deleteFeedLike(feedId)
+        } else {
+            Toast.makeText(requireContext(), "이전 작업을 처리 중입니다. 잠시 후 다시 시도해 주세요", Toast.LENGTH_SHORT).show()
+            feedAdapter.actionPosition = -1
+        }
+    }
+
+    override fun onPostFollow(userId: String) {
+        if(!viewModel.checkLoading()) {
+            viewModel.postFollow(userId)
+        } else {
+            Toast.makeText(requireContext(), "이전 작업을 처리 중입니다. 잠시 후 다시 시도해 주세요", Toast.LENGTH_SHORT).show()
+            feedAdapter.actionPosition = -1
+        }
+    }
+
+    override fun onDeleteFollow(userId: String) {
+        if(!viewModel.checkLoading()) {
+            viewModel.deleteFollow(userId)
+        } else {
+            Toast.makeText(requireContext(), "이전 작업을 처리 중입니다. 잠시 후 다시 시도해 주세요", Toast.LENGTH_SHORT).show()
+            feedAdapter.actionPosition = -1
+        }
+    }
 }
