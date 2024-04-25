@@ -88,6 +88,11 @@ class SearchFragment : Fragment(), MainActivity.ScrollToTop, FeedAdapter.OnFeedA
         super.onResume()
 
         initUI()
+
+        if(feedAdapter.feedInfoWithFollow.size != searchViewModel.allFeedInfo.size){
+            feedAdapter.feedInfoWithFollow = searchViewModel.allFeedInfo
+            feedAdapter.notifyDataSetChanged()
+        }
     }
 
     override fun onDestroyView() {

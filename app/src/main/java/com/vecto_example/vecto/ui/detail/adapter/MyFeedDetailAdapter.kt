@@ -52,6 +52,8 @@ class MyFeedDetailAdapter(): RecyclerView.Adapter<MyFeedDetailAdapter.ViewHolder
                 binding.topPageNumberText.visibility = View.GONE
                 binding.topPageNumberBox.visibility = View.GONE
 
+                binding.viewPager.adapter = ImageSliderAdapter(itemView.context, feedInfoWithFollow.feedInfo.image)
+
                 binding.indicator.setViewPager(binding.viewPager)   //하나일 경우 indicator만 설정
             } else {
                 binding.viewPager.visibility = View.VISIBLE
