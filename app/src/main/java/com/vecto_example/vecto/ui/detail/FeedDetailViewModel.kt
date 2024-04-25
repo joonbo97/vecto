@@ -7,7 +7,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.vecto_example.vecto.data.repository.FeedRepository
 import com.vecto_example.vecto.retrofit.VectoService
-import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 
 class FeedDetailViewModel(private val repository: FeedRepository) : ViewModel() {
@@ -119,7 +118,7 @@ class FeedDetailViewModel(private val repository: FeedRepository) : ViewModel() 
         startLoading()
 
         viewModelScope.launch {
-            val feedListResponse = repository.getLikeFeedList(nextPage)
+            val feedListResponse = repository.postLikeFeedList(nextPage)
 
             feedListResponse.onSuccess { feedPageResponse ->
                 if(!lastPage) {

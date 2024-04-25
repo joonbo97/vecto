@@ -5,12 +5,10 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.vecto_example.vecto.data.Auth
 import com.vecto_example.vecto.data.repository.FeedRepository
 import com.vecto_example.vecto.data.repository.UserRepository
 import com.vecto_example.vecto.retrofit.VectoService
 import com.vecto_example.vecto.utils.ServerResponse
-import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 
 class MypageLikeFeedViewModel(private val repository: FeedRepository, private val userRepository: UserRepository) : ViewModel() {
@@ -91,7 +89,7 @@ class MypageLikeFeedViewModel(private val repository: FeedRepository, private va
             startLoading()
 
         viewModelScope.launch {
-            val feedListResponse = repository.getLikeFeedList(nextPage)
+            val feedListResponse = repository.postLikeFeedList(nextPage)
 
             feedListResponse.onSuccess {
                 val newFeedInfoWithFollow = it.feeds.map { feedInfo ->

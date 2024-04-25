@@ -196,7 +196,7 @@ class FeedDetailActivity : AppCompatActivity(), OnMapReadyCallback {
         val feedInfoWithFollow = Gson().fromJson<List<VectoService.FeedInfoWithFollow>>(feedInfoWithFollowIntent, typeOfFeedInfoList)
 
         // Adapter 데이터 설정
-        myFeedDetailAdapter.addFeedInfoData(feedInfoList)
+        //myFeedDetailAdapter.addFeedInfoData(feedInfoList)
         myFeedDetailAdapter.notifyDataSetChanged()
 
         if(position != -1)

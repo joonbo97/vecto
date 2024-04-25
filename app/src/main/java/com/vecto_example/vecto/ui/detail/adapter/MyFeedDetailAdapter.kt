@@ -22,6 +22,7 @@ import com.vecto_example.vecto.R
 import com.vecto_example.vecto.data.Auth
 import com.vecto_example.vecto.data.model.LocationData
 import com.vecto_example.vecto.data.model.VisitData
+import com.vecto_example.vecto.databinding.PostDetailItemBinding
 import com.vecto_example.vecto.dialog.LoginRequestDialog
 import com.vecto_example.vecto.retrofit.VectoService
 import me.relex.circleindicator.CircleIndicator3
@@ -32,20 +33,41 @@ import java.time.Duration
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
-class MyFeedDetailAdapter(private val context: Context): RecyclerView.Adapter<MyFeedDetailAdapter.ViewHolder>() {
-    val feedInfo = mutableListOf<VectoService.FeedInfo>()
+class MyFeedDetailAdapter(): RecyclerView.Adapter<MyFeedDetailAdapter.ViewHolder>() {
+    val feedInfoWithFollow = mutableListOf<VectoService.FeedInfoWithFollow>()
 
-    lateinit var visitdata: List<VisitData>
-    lateinit var locationdata: List<LocationData>
+    inner class ViewHolder(val binding: PostDetailItemBinding): RecyclerView.ViewHolder(binding.root) {
+        fun bind(feedInfoWithFollow: VectoService.FeedInfoWithFollow) {
 
-    interface OnItemViewedListener {
-        fun onItemViewed(feedInfo: VectoService.FeedInfoResponse)
-    }
+            /*   이미지 설정   */
+            if(feedInfoWithFollow.feedInfo.image.isEmpty())
+            {
+                binding.view_pager.visibility = View.GONE
+                binding.indicator.visibility = View.GONE
+                holder.textIndicator.visibility = View.GONE
+                holder.textIndicatorBox.visibility = View.GONE
+            }
+            else {
+                holder.viewPager.visibility = View.VISIBLE
+                holder.indicator.visibility = View.VISIBLE
+                holder.textIndicator.visibility = View.VISIBLE
+                holder.textIndicatorBox.visibility = View.VISIBLE
 
-    var onItemViewedListener: OnItemViewedListener? = null
+                val imagesize = feedInfo[position].image.size
 
+                holder.viewPager.adapter = ImageSliderAdapter(context, feedInfo[position].image)
+                holder.viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
+                    override fun onPageSelected(position: Int) {
+                        super.onPageSelected(position)
+                        val textToShow = "${position + 1}/${imagesize}"
+                        holder.textIndicator.text = textToShow // 각 ViewHolder의 textIndicator를 업데이트합니다.
+                    }
+                })
 
-    inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+                holder.indicator.setViewPager(holder.viewPager)
+            }
+        }
+
         val viewPager: ViewPager2 = view.findViewById(R.id.view_pager)
         val indicator: CircleIndicator3 = view.findViewById(R.id.indicator)
 
@@ -116,34 +138,6 @@ class MyFeedDetailAdapter(private val context: Context): RecyclerView.Adapter<My
 
         /*넘버링 이미지 설정*/
         holder.bindVisitData(feedInfo[position].visit)
-
-        /*이미지 설정*/
-        if(feedInfo[position].image.isEmpty())
-        {
-            holder.viewPager.visibility = View.GONE
-            holder.indicator.visibility = View.GONE
-            holder.textIndicator.visibility = View.GONE
-            holder.textIndicatorBox.visibility = View.GONE
-        }
-        else {
-            holder.viewPager.visibility = View.VISIBLE
-            holder.indicator.visibility = View.VISIBLE
-            holder.textIndicator.visibility = View.VISIBLE
-            holder.textIndicatorBox.visibility = View.VISIBLE
-
-            val imagesize = feedInfo[position].image.size
-
-            holder.viewPager.adapter = ImageSliderAdapter(context, feedInfo[position].image)
-            holder.viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
-                override fun onPageSelected(position: Int) {
-                    super.onPageSelected(position)
-                    val textToShow = "${position + 1}/${imagesize}"
-                    holder.textIndicator.text = textToShow // 각 ViewHolder의 textIndicator를 업데이트합니다.
-                }
-            })
-
-            holder.indicator.setViewPager(holder.viewPager)
-        }
 
         /*내용 설정*/
         if(feedInfo[position].content.isEmpty())
@@ -370,8 +364,8 @@ class MyFeedDetailAdapter(private val context: Context): RecyclerView.Adapter<My
 
     }
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val view = LayoutInflater.from(context).inflate(R.layout.post_detail_item, parent, false)
-        return ViewHolder(view)
+        val binding = PostDetailItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        return ViewHolder(binding)
     }
 
     override fun getItemCount(): Int {
@@ -417,15 +411,6 @@ class MyFeedDetailAdapter(private val context: Context): RecyclerView.Adapter<My
             }
 
         })
-    }
-
-    private fun loginDialog(){
-        val loginRequestDialog = LoginRequestDialog(context)
-        loginRequestDialog.showDialog()
-        loginRequestDialog.onOkButtonClickListener = {
-            val intent = Intent(context, LoginActivity::class.java)
-            context.startActivity(intent)
-        }
     }
 
     fun addFeedInfoData(newData: List<VectoService.FeedInfo>) {

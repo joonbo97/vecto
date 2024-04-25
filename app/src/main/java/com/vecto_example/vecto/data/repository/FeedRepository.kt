@@ -88,10 +88,10 @@ class FeedRepository (private val vectoService: VectoService) {
         }
     }
 
-    suspend fun getLikeFeedList(pageNo: Int): Result<VectoService.FeedPageResponse> {
+    suspend fun postLikeFeedList(pageNo: Int): Result<VectoService.FeedPageResponse> {
         /*   좋아요 누른 게시물 확인   */
         return try {
-            val response = vectoService.getLikeFeedList("Bearer ${Auth.token}", pageNo)
+            val response = vectoService.postLikeFeedList("Bearer ${Auth.token}", pageNo)
 
             if(response.isSuccessful){
                 Log.d("getLikeFeedList", "SUCCESS: ${response.body()}")

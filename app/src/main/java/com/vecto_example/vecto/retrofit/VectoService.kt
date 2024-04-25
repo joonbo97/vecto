@@ -178,8 +178,8 @@ interface VectoService {
     ): Response<VectoResponse<FeedPageResponse>>
 
     //좋아요 한 게시글 목록 조회
-    @GET("feed/likes")
-    suspend fun getLikeFeedList(
+    @POST("feed/likes")
+    suspend fun postLikeFeedList(
         @Header("Authorization") authorization: String,
         @Query("page") page: Int
     ): Response<VectoResponse<FeedPageResponse>>
