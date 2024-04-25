@@ -24,9 +24,9 @@ class MypageLikeFeedViewModel(private val repository: FeedRepository, private va
     private var tempLoading = false
 
     /*   게시글 정보   */
-    private var nextPage: Int = 0
-    private var lastPage: Boolean = false
-    private var followPage: Boolean = true
+    var nextPage: Int = 0
+    var lastPage: Boolean = false
+    var followPage: Boolean = true
 
     private val _feedInfoLiveData = MutableLiveData<VectoService.FeedPageResponse>()
     val feedInfoLiveData: LiveData<VectoService.FeedPageResponse> = _feedInfoLiveData

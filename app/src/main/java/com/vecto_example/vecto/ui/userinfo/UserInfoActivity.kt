@@ -1,6 +1,7 @@
 package com.vecto_example.vecto.ui.userinfo
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
@@ -10,6 +11,7 @@ import androidx.activity.viewModels
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.gson.Gson
 import com.vecto_example.vecto.R
 import com.vecto_example.vecto.data.Auth
 import com.vecto_example.vecto.data.repository.FeedRepository
@@ -18,7 +20,9 @@ import com.vecto_example.vecto.databinding.ActivityUserInfoBinding
 import com.vecto_example.vecto.popupwindow.ReportPopupWindow
 import com.vecto_example.vecto.dialog.ReportUserDialog
 import com.vecto_example.vecto.retrofit.VectoService
+import com.vecto_example.vecto.ui.detail.FeedDetailActivity
 import com.vecto_example.vecto.ui.mypage.myfeed.adapter.MyFeedAdapter
+import com.vecto_example.vecto.utils.FeedDetailType
 import com.vecto_example.vecto.utils.LoadImageUtils
 import com.vecto_example.vecto.utils.RequestLoginUtils
 
@@ -421,12 +425,33 @@ class UserInfoActivity : AppCompatActivity(), MyFeedAdapter.OnFeedActionListener
         if(!userInfoViewModel.checkLoading())
             userInfoViewModel.deleteFeed(feedID)
         else{
-            Toast.makeText(this, "이전 작업을 처리 중입니다. 잠시 후 다시 시도해 주세요", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "이전 작업을 처리중 입니다. 잠시 후 다시 시도해 주세요", Toast.LENGTH_SHORT).show()
             myFeedAdapter.actionPosition = -1
         }
     }
 
     override fun onItemViewClick(position: Int) {
-        TODO("Not yet implemented")
+        var subList = userInfoViewModel.allFeedInfo.subList(position, userInfoViewModel.allFeedInfo.size)
+        if(subList.size > 10) {
+            subList = subList.subList(0, 10)
+        }
+
+        val feedInfoWithFollowList = subList.map {
+            VectoService.FeedInfoWithFollow(feedInfo = it, isFollowing = userInfoViewModel.isFollowing.value!!)  // 모든 isFollowing 값을 false로 설정
+        }
+
+        val intent = Intent(this, FeedDetailActivity::class.java).apply {
+            putExtra("feedInfoListJson", Gson().toJson(feedInfoWithFollowList))
+            putExtra("type", FeedDetailType.INTENT_USERINFO.code)
+            putExtra("query", "")
+            putExtra("nextPage", userInfoViewModel.nextPage)
+            putExtra("followPage", userInfoViewModel.followPage)
+            putExtra("lastPage", userInfoViewModel.lastPage)
+        }
+
+        if(!userInfoViewModel.checkLoading())
+            this.startActivity(intent)
+        else
+            Toast.makeText(this, "이전 작업을 처리중 입니다. 잠시 후 다시 시도해 주세요.", Toast.LENGTH_SHORT).show()
     }
 }

@@ -34,6 +34,8 @@ class FeedAdapter(): RecyclerView.Adapter<FeedAdapter.ViewHolder>() {
         fun onPostFollow(userId: String)
 
         fun onDeleteFollow(userId: String)
+
+        fun onItemClick(position: Int)
     }
 
     var feedActionListener: OnFeedActionListener? = null
@@ -120,6 +122,10 @@ class FeedAdapter(): RecyclerView.Adapter<FeedAdapter.ViewHolder>() {
                 val intent = Intent(itemView.context, CommentActivity::class.java)
                 intent.putExtra("feedID", feedInfoWithFollow.feedInfo.feedId)
                 itemView.context.startActivity(intent)
+            }
+
+            itemView.setOnClickListener {
+                feedActionListener?.onItemClick(adapterPosition)
             }
         }
 
@@ -222,7 +228,7 @@ class FeedAdapter(): RecyclerView.Adapter<FeedAdapter.ViewHolder>() {
 
     fun addFeedData(){
         Log.d("FeedAdapter", "addFeedData")
-        notifyItemRangeInserted(lastSize, feedInfoWithFollow.size)
+        notifyItemRangeInserted(lastSize, (feedInfoWithFollow.size - lastSize))
 
         lastSize = feedInfoWithFollow.size
     }

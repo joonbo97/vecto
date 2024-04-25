@@ -17,6 +17,7 @@ import androidx.fragment.app.viewModels
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.gson.Gson
 import com.vecto_example.vecto.ui.notification.NotificationActivity
 import com.vecto_example.vecto.R
 import com.vecto_example.vecto.data.Auth
@@ -25,10 +26,12 @@ import com.vecto_example.vecto.data.repository.NotificationRepository
 import com.vecto_example.vecto.data.repository.UserRepository
 import com.vecto_example.vecto.databinding.FragmentSearchBinding
 import com.vecto_example.vecto.retrofit.VectoService
+import com.vecto_example.vecto.ui.detail.FeedDetailActivity
 import com.vecto_example.vecto.ui.main.MainActivity
 import com.vecto_example.vecto.ui.notification.NotificationViewModel
 import com.vecto_example.vecto.ui.notification.NotificationViewModelFactory
 import com.vecto_example.vecto.ui.search.adapter.FeedAdapter
+import com.vecto_example.vecto.utils.FeedDetailType
 import com.vecto_example.vecto.utils.RequestLoginUtils
 
 class SearchFragment : Fragment(), MainActivity.ScrollToTop, FeedAdapter.OnFeedActionListener {
@@ -337,6 +340,7 @@ class SearchFragment : Fragment(), MainActivity.ScrollToTop, FeedAdapter.OnFeedA
         searchRecyclerView.adapter = feedAdapter
 
         searchRecyclerView.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
+        searchRecyclerView.itemAnimator = null
         searchRecyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             //RecyclerView 하단에 도달 하면, 새로운 Page 글을 불러옴
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
@@ -464,4 +468,31 @@ class SearchFragment : Fragment(), MainActivity.ScrollToTop, FeedAdapter.OnFeedA
             feedAdapter.actionPosition = -1
         }
     }
+
+    override fun onItemClick(position: Int) {
+        var subList = searchViewModel.allFeedInfo.subList(position, searchViewModel.allFeedInfo.size)
+        if(subList.size > 10) {
+            subList = subList.subList(0, 10)
+        }
+
+
+        val intent = Intent(requireContext(), FeedDetailActivity::class.java).apply {
+            putExtra("feedInfoListJson", Gson().toJson(subList))
+            if(queryFlag) {
+                putExtra("type", FeedDetailType.INTENT_QUERY.code)
+                putExtra("query", query)
+            }
+            else {
+                putExtra("type", FeedDetailType.INTENT_NORMAL.code)
+                putExtra("query", "")
+            }
+            putExtra("nextPage", searchViewModel.nextPage)
+            putExtra("followPage", searchViewModel.followPage)
+            putExtra("lastPage", searchViewModel.lastPage)
+        }
+
+        if(!searchViewModel.checkLoading())
+            this.startActivity(intent)
+        else
+            Toast.makeText(requireContext(), "이전 작업을 처리중 입니다. 잠시 후 다시 시도해 주세요.", Toast.LENGTH_SHORT).show()    }
 }

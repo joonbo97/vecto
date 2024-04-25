@@ -1,40 +1,39 @@
 package com.vecto_example.vecto.ui.detail.adapter
 
-import android.content.Context
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.animation.Animation
-import android.view.animation.AnimationUtils
-import android.widget.ImageView
-import android.widget.TextView
-import android.widget.Toast
-import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
-import com.bumptech.glide.Glide
 import com.vecto_example.vecto.ui.comment.CommentActivity
-import com.vecto_example.vecto.ui.login.LoginActivity
 import com.vecto_example.vecto.R
-import com.vecto_example.vecto.data.Auth
-import com.vecto_example.vecto.data.model.LocationData
 import com.vecto_example.vecto.data.model.VisitData
 import com.vecto_example.vecto.databinding.PostDetailItemBinding
-import com.vecto_example.vecto.dialog.LoginRequestDialog
 import com.vecto_example.vecto.retrofit.VectoService
-import me.relex.circleindicator.CircleIndicator3
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
-import java.time.Duration
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
+import com.vecto_example.vecto.utils.DateTimeUtils
+import com.vecto_example.vecto.utils.LoadImageUtils
 
 class MyFeedDetailAdapter(): RecyclerView.Adapter<MyFeedDetailAdapter.ViewHolder>() {
-    val feedInfoWithFollow = mutableListOf<VectoService.FeedInfoWithFollow>()
+    var actionPosition = -1
+    var feedInfoWithFollow = mutableListOf<VectoService.FeedInfoWithFollow>()
+    var lastSize = 0
+
+    interface OnFeedActionListener {
+        fun onPostFeedLike(feedId: Int)
+
+        fun onDeleteFeedLike(feedId: Int)
+
+        fun onPostFollow(userId: String)
+
+        fun onDeleteFollow(userId: String)
+    }
+
+    var feedActionListener: OnFeedActionListener? = null
+
 
     inner class ViewHolder(val binding: PostDetailItemBinding): RecyclerView.ViewHolder(binding.root) {
         fun bind(feedInfoWithFollow: VectoService.FeedInfoWithFollow) {
@@ -42,68 +41,98 @@ class MyFeedDetailAdapter(): RecyclerView.Adapter<MyFeedDetailAdapter.ViewHolder
             /*   이미지 설정   */
             if(feedInfoWithFollow.feedInfo.image.isEmpty())
             {
-                binding.view_pager.visibility = View.GONE
+                binding.viewPager.visibility = View.GONE
                 binding.indicator.visibility = View.GONE
-                holder.textIndicator.visibility = View.GONE
-                holder.textIndicatorBox.visibility = View.GONE
+                binding.topPageNumberText.visibility = View.GONE
+                binding.topPageNumberBox.visibility = View.GONE
             }
-            else {
-                holder.viewPager.visibility = View.VISIBLE
-                holder.indicator.visibility = View.VISIBLE
-                holder.textIndicator.visibility = View.VISIBLE
-                holder.textIndicatorBox.visibility = View.VISIBLE
+            else if(feedInfoWithFollow.feedInfo.image.size == 1){
+                binding.viewPager.visibility = View.VISIBLE
+                binding.indicator.visibility = View.VISIBLE
+                binding.topPageNumberText.visibility = View.GONE
+                binding.topPageNumberBox.visibility = View.GONE
 
-                val imagesize = feedInfo[position].image.size
+                binding.indicator.setViewPager(binding.viewPager)   //하나일 경우 indicator만 설정
+            } else {
+                binding.viewPager.visibility = View.VISIBLE
+                binding.indicator.visibility = View.VISIBLE
+                binding.topPageNumberText.visibility = View.VISIBLE
+                binding.topPageNumberBox.visibility = View.VISIBLE
 
-                holder.viewPager.adapter = ImageSliderAdapter(context, feedInfo[position].image)
-                holder.viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
+                val imageSize = feedInfoWithFollow.feedInfo.image.size
+
+                binding.viewPager.adapter = ImageSliderAdapter(itemView.context, feedInfoWithFollow.feedInfo.image)
+                binding.viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
                     override fun onPageSelected(position: Int) {
                         super.onPageSelected(position)
-                        val textToShow = "${position + 1}/${imagesize}"
-                        holder.textIndicator.text = textToShow // 각 ViewHolder의 textIndicator를 업데이트합니다.
+                        val textToShow = "${position + 1}/${imageSize}"
+                        binding.topPageNumberText.text = textToShow // 각 ViewHolder의 textIndicator를 업데이트합니다.
                     }
                 })
 
-                holder.indicator.setViewPager(holder.viewPager)
+                binding.indicator.setViewPager(binding.viewPager)
             }
+
+            /*   게시글 설정   */
+            binding.TitleText.text = feedInfoWithFollow.feedInfo.title  //제목 설정
+
+            binding.TotalTimeText.text = DateTimeUtils.getCourseTime(   //소요 시간 설정
+                feedInfoWithFollow.feedInfo.visit.first().datetime,
+                feedInfoWithFollow.feedInfo.visit.last().datetime)
+
+            binding.PostTimeText.text = feedInfoWithFollow.feedInfo.timeDifference  //업로드 시간
+
+            if(feedInfoWithFollow.feedInfo.content.isEmpty()){   //내용
+                binding.ContentText.visibility = View.GONE
+            } else {
+                binding.ContentText.visibility = View.VISIBLE
+                binding.ContentText.text = feedInfoWithFollow.feedInfo.content
+            }
+
+            /*   게시글 작성자 설정   */
+            LoadImageUtils.loadUserProfileImage(itemView.context, binding.ProfileImage, feedInfoWithFollow.feedInfo.userProfile)
+
+            binding.UserNameText.text = feedInfoWithFollow.feedInfo.nickName
+
+            /*   방문지 목록 설정   */
+            bindVisitData(feedInfoWithFollow.feedInfo.visit)
+
+            /*   좋아요 설정   */
+            binding.LikeCount.text = feedInfoWithFollow.feedInfo.likeCount.toString()
+
+            if(feedInfoWithFollow.feedInfo.likeFlag)
+                binding.LikeImage.setImageResource(R.drawable.post_like_on)
+            else
+                binding.LikeImage.setImageResource(R.drawable.post_like_off)
+
+            /*   댓글 설정   */
+            binding.CommentCount.text = feedInfoWithFollow.feedInfo.commentCount.toString()
+
+            binding.CommentTouchImage.setOnClickListener {
+                val intent = Intent(itemView.context, CommentActivity::class.java)
+                intent.putExtra("feedID", feedInfoWithFollow.feedInfo.feedId)
+                itemView.context.startActivity(intent)
+            }
+
+            /*   팔로우 설정   */
+            if(feedInfoWithFollow.isFollowing){
+
+            } else {
+
+            }
+
         }
 
-        val viewPager: ViewPager2 = view.findViewById(R.id.view_pager)
-        val indicator: CircleIndicator3 = view.findViewById(R.id.indicator)
-
-        val titleText: TextView = view.findViewById(R.id.TitleText)
-        val totalTimeText: TextView = view.findViewById(R.id.TotalTimeText)
-        val postTimeText: TextView = view.findViewById(R.id.PostTimeText)
-
-        val numberRecyclerView: RecyclerView = view.findViewById(R.id.PostDetailRecyclerView)
-
-        val contextText: TextView = view.findViewById(R.id.ContentText)
-
-        //val likeBox: ImageView = view.findViewById(R.id.LikeBox)
-        val likeImage: ImageView = view.findViewById(R.id.LikeImage)
-        val likeCount: TextView = view.findViewById(R.id.LikeCount)
-
-        //val commentBox: ImageView = view.findViewById(R.id.CommentBox)
-        val commentImage: ImageView = view.findViewById(R.id.CommentImage)
-        val commentCount: TextView = view.findViewById(R.id.CommentCount)
-
-        val profileImage: ImageView = view.findViewById(R.id.ProfileImage)
-        val userNamveText: TextView = view.findViewById(R.id.UserNameText)
-
-        val followButton: ImageView = view.findViewById(R.id.FollowButton)
-        val followText: TextView = view.findViewById(R.id.FollowButtonText)
-
-        val textIndicator: TextView = view.findViewById(R.id.topPageNumberText)
-        val textIndicatorBox: ImageView = view.findViewById(R.id.topPageNumberBox)
-
-        private var visitNumberAdapter: VisitNumberAdapter = VisitNumberAdapter(context)
+        private var visitNumberAdapter: VisitNumberAdapter = VisitNumberAdapter(itemView.context)
 
         init {
             // 내부 RecyclerView 설정
-            numberRecyclerView.adapter = visitNumberAdapter
-            numberRecyclerView.layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
+            binding.PostDetailRecyclerView.adapter = visitNumberAdapter
+            binding.PostDetailRecyclerView.layoutManager = LinearLayoutManager(
+                itemView.context, LinearLayoutManager.VERTICAL, false)
         }
 
+        @SuppressLint("NotifyDataSetChanged")
         fun bindVisitData(visitDataList: List<VisitData>) {
             // VisitNumberAdapter에 데이터 전달 및 업데이트
             visitNumberAdapter.visitdataList.clear()
@@ -113,255 +142,7 @@ class MyFeedDetailAdapter(): RecyclerView.Adapter<MyFeedDetailAdapter.ViewHolder
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        /*제목 설정*/
-        holder.titleText.text = feedInfo[position].title
-
-        /*코스 시간 설정*/
-        val FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")
-
-        val date1 = LocalDateTime.parse(feedInfo[position].visit.first().datetime, FORMAT)
-        val date2 = LocalDateTime.parse(feedInfo[position].visit.last().datetime, FORMAT)
-
-        val minutesPassed = Duration.between(date1, date2).toMinutes().toInt()
-
-        var followFlag: Boolean = false
-
-        if(minutesPassed < 60)
-        {
-            holder.totalTimeText.text = "약 1시간 이내 코스"
-        }
-        else{
-            holder.totalTimeText.text = "약 ${minutesPassed/60}시간 코스"
-        }
-
-        holder.postTimeText.text = feedInfo[position].timeDifference
-
-        /*넘버링 이미지 설정*/
-        holder.bindVisitData(feedInfo[position].visit)
-
-        /*내용 설정*/
-        if(feedInfo[position].content.isEmpty())
-        {
-            holder.contextText.visibility = View.GONE
-        }
-        else
-        {
-            holder.contextText.text = feedInfo[position].content
-        }
-
-        /*좋아요 설정*/
-        holder.likeCount.text = feedInfo[position].likeCount.toString()
-        if(feedInfo[position].likeFlag)
-            holder.likeImage.setImageResource(R.drawable.post_like_on)
-        else
-            holder.likeImage.setImageResource(R.drawable.post_like_off)
-
-        holder.likeImage.setOnClickListener {
-            if(Auth.loginFlag.value == true) {
-                if (feedInfo[position].likeFlag) {
-                    holder.likeImage.setImageResource(R.drawable.post_like_off)
-
-                    cancelLike(feedInfo[position].feedId)
-                    feedInfo[position].likeFlag = false
-
-                    feedInfo[position].likeCount--
-                    holder.likeCount.text = feedInfo[position].likeCount.toString()
-                } else {
-                    holder.likeImage.setImageResource(R.drawable.post_like_on)
-                    val anim = AnimationUtils.loadAnimation(context, R.anim.like_anim)
-                    feedInfo[position].likeCount++
-                    holder.likeCount.text = feedInfo[position].likeCount.toString()
-
-                    anim.setAnimationListener(object : Animation.AnimationListener {
-                        override fun onAnimationStart(animation: Animation?) {}
-
-                        override fun onAnimationEnd(animation: Animation?) {
-                        }
-
-                        override fun onAnimationRepeat(animation: Animation?) {}
-                    })
-
-                    holder.likeImage.startAnimation(anim)
-                    sendLike(feedInfo[position].feedId)
-                    feedInfo[position].likeFlag = true
-                }
-            }
-            else {
-                val loginRequestDialog = LoginRequestDialog(context)
-                loginRequestDialog.showDialog()
-                loginRequestDialog.onOkButtonClickListener = {
-                    val intent = Intent(context, LoginActivity::class.java)
-                    context.startActivity(intent)
-                }
-            }
-        }
-
-        /*댓글 설정*/
-        holder.commentImage.setOnClickListener {
-            val intent = Intent(context, CommentActivity::class.java)
-            intent.putExtra("feedID", feedInfo[position].feedId)
-            context.startActivity(intent)
-        }
-
-        holder.commentCount.text = feedInfo[position].commentCount.toString()
-
-        /*작성자 프로필 설정*/
-        if(feedInfo[position].userProfile != null)
-        {
-            Glide.with(context)
-                .load(feedInfo[position].userProfile)
-                .placeholder(R.drawable.profile_basic) // 로딩 중 표시될 이미지
-                .error(R.drawable.profile_basic) // 에러 발생 시 표시될 이미지
-                .circleCrop()
-                .into(holder.profileImage)
-        }
-        else
-            holder.profileImage.setImageResource(R.drawable.profile_basic)
-
-        /*작성자 닉네임 설정*/
-        holder.userNamveText.text = feedInfo[position].nickName
-
-        /*팔로우 버튼 설정*/
-        fun setFollowButton(flag: Boolean){
-            if(flag)
-            {
-                holder.followButton.setImageResource(R.drawable.detail_following_button)
-                holder.followText.text = "팔로잉"
-                holder.followText.setTextColor(ContextCompat.getColor(context, R.color.detail_gray))
-                followFlag = true
-            }
-            else
-            {
-                holder.followButton.setImageResource(R.drawable.detail_follow_button)
-                holder.followText.text = "팔로우"
-                holder.followText.setTextColor(ContextCompat.getColor(context, R.color.white))
-                followFlag = false
-            }
-        }
-
-        fun isfollow(userId: String) {
-            val vectoService = VectoService.create()
-
-            val call = vectoService.getFollow("Bearer ${Auth.token}", userId)
-            call.enqueue(object : Callback<VectoService.VectoResponse<Unit>> {
-                override fun onResponse(call: Call<VectoService.VectoResponse<Unit>>, response: Response<VectoService.VectoResponse<Unit>>) {
-                    if (response.isSuccessful) {
-                        if(response.body()!!.code == "S027")
-                            setFollowButton(true)
-                        else
-                            setFollowButton(false)
-
-                        Log.d("GETFOLLOW", "팔로우 정보 조회 성공 : ${response.body()?.result}")
-                    } else {
-                        // 서버 에러 처리
-                        Log.d("GETFOLLOW", "정보 조회 실패 : " + response.errorBody()?.string())
-                    }
-                }
-
-                override fun onFailure(call: Call<VectoService.VectoResponse<Unit>>, t: Throwable) {
-                    setFollowButton(false)
-                    Log.d("GETFOLLOW", "팔로우 정보 조회 실패 : " + t.message)
-                    Toast.makeText(context, R.string.APIErrorToastMessage, Toast.LENGTH_SHORT).show()
-                }
-            })
-        }
-        if(Auth.loginFlag.value == true)
-            isfollow(feedInfo[position].userId)
-
-        holder.followButton.setOnClickListener {
-            holder.followButton.isEnabled = false
-
-            fun deleteFollow(userId: String) {
-                val vectoService = VectoService.create()
-
-                val call = vectoService.deleteFollow("Bearer ${Auth.token}", userId)
-                call.enqueue(object : Callback<VectoService.VectoResponse<Unit>> {
-                    override fun onResponse(call: Call<VectoService.VectoResponse<Unit>>, response: Response<VectoService.VectoResponse<Unit>>) {
-                        if (response.isSuccessful) {
-                            if(response.body()!!.code == "S024") {
-                                Toast.makeText(context, "${feedInfo[holder.adapterPosition].nickName}님 팔로우를 취소하였습니다.", Toast.LENGTH_SHORT).show()
-                            }
-                            else if(response.body()!!.code == "S026"){
-
-                                Toast.makeText(context, "이미 ${feedInfo[holder.adapterPosition].nickName}님 팔로우를 취소하였습니다.", Toast.LENGTH_SHORT).show()
-                            }
-                            holder.followButton.setImageResource(R.drawable.detail_follow_button)
-                            holder.followText.text = "팔로우"
-                            holder.followText.setTextColor(ContextCompat.getColor(context,
-                                R.color.white
-                            ))
-                            followFlag = false
-
-                            Log.d("POSTFOLLOWCACEL", "팔로우 해제 성공 : ${response.body()}")
-                        } else {
-                            // 서버 에러 처리
-                            Log.d("POSTFOLLOWCACEL", "팔로우 해제 실패 : " + response.errorBody()?.string())
-                            Toast.makeText(context, "팔로우 취소 요청이 실패했습니다. 잠시후 다시 시도해주세요.", Toast.LENGTH_SHORT).show()
-                        }
-                    }
-
-                    override fun onFailure(call: Call<VectoService.VectoResponse<Unit>>, t: Throwable) {
-
-                        Log.d("POSTFOLLOWCACEL", "팔로우 해제 실패 : " + t.message)
-                        Toast.makeText(context, R.string.APIErrorToastMessage, Toast.LENGTH_SHORT).show()
-                    }
-                })
-            }
-            fun requestFollow(userId: String) {
-                val vectoService = VectoService.create()
-
-                val call = vectoService.sendFollow("Bearer ${Auth.token}", userId)
-                call.enqueue(object : Callback<VectoService.VectoResponse<Unit>> {
-                    override fun onResponse(call: Call<VectoService.VectoResponse<Unit>>, response: Response<VectoService.VectoResponse<Unit>>) {
-                        if (response.isSuccessful) {
-                            if(response.body()!!.code == "S023") {
-                                Toast.makeText(context, "${feedInfo[holder.adapterPosition].nickName}님을 팔로우하기 시작했습니다.", Toast.LENGTH_SHORT).show()
-                            }
-                            else if(response.body()!!.code == "S025") {
-                                Toast.makeText(context, "이미 ${feedInfo[holder.adapterPosition].nickName}님을 팔로우 중입니다.", Toast.LENGTH_SHORT).show()
-                            }
-                            holder.followButton.setImageResource(R.drawable.detail_following_button)
-                            holder.followText.text = "팔로잉"
-                            holder.followText.setTextColor(ContextCompat.getColor(context,
-                                R.color.detail_gray
-                            ))
-                            followFlag = true
-
-                            Log.d("POSTFOLLOW", "팔로우 요청 성공 : ${response.body()?.result}")
-                        } else {
-                            // 서버 에러 처리
-                            Log.d("POSTFOLLOW", "팔로우 요청 실패 : " + response.errorBody()?.string())
-                            Toast.makeText(context, "팔로우 요청에 실패했습니다. 잠시후 다시 시도해주세요.", Toast.LENGTH_SHORT).show()
-                        }
-                    }
-                    override fun onFailure(call: Call<VectoService.VectoResponse<Unit>>, t: Throwable) {
-                        Log.d("POSTFOLLOW", "팔로우 요청 실패 : " + t.message)
-                        Toast.makeText(context, R.string.APIErrorToastMessage, Toast.LENGTH_SHORT).show()
-                    }
-                })
-            }
-
-            if(Auth.loginFlag.value == false) {
-                loginDialog()
-                return@setOnClickListener
-            }
-
-            holder.followButton.isEnabled = false
-            if(!followFlag)
-            {
-                requestFollow(feedInfo[position].userId)
-            }
-            else
-            {
-                deleteFollow(feedInfo[position].userId)
-            }
-
-            holder.followButton.postDelayed({
-                holder.followButton.isEnabled = true
-            }, 1000)
-        }
-
-
+        holder.bind(feedInfoWithFollow[position])
     }
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val binding = PostDetailItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
@@ -369,55 +150,30 @@ class MyFeedDetailAdapter(): RecyclerView.Adapter<MyFeedDetailAdapter.ViewHolder
     }
 
     override fun getItemCount(): Int {
-        return feedInfo.size
-    }
-    private fun sendLike(feedID: Int) {
-        val vectoService = VectoService.create()
-
-        val call = vectoService.sendLike("Bearer ${Auth.token}", feedID)
-        call.enqueue(object : Callback<VectoService.VectoResponse<Unit>> {
-            override fun onResponse(call: Call<VectoService.VectoResponse<Unit>>, response: Response<VectoService.VectoResponse<Unit>>) {
-                if(response.isSuccessful){
-                    Log.d("LIKE", "성공: ${response.body()}")
-                }
-                else{
-                    Log.d("LIKE", "성공했으나 서버 오류 ${response.errorBody()?.string()}")
-                }
-            }
-
-            override fun onFailure(call: Call<VectoService.VectoResponse<Unit>>, t: Throwable) {
-                Log.d("LIKE", "실패 ${t.message.toString()}" )
-            }
-
-        })
+        return feedInfoWithFollow.size
     }
 
-    private fun cancelLike(feedID: Int) {
-        val vectoService = VectoService.create()
+    fun addFeedData(){
+        Log.d("MyFeedDetailAdapter", "addFeedData")
+        notifyItemRangeInserted(lastSize, (feedInfoWithFollow.size - lastSize))
+        Log.d("MyFeedDetailAdapter", "${lastSize}, ${feedInfoWithFollow.size}")
 
-        val call = vectoService.cancelLike("Bearer ${Auth.token}", feedID)
-        call.enqueue(object : Callback<VectoService.VectoResponse<Unit>> {
-            override fun onResponse(call: Call<VectoService.VectoResponse<Unit>>, response: Response<VectoService.VectoResponse<Unit>>) {
-                if(response.isSuccessful){
-                    Log.d("LIKE", "성공: ${response.body()}")
-                }
-                else{
-                    Log.d("LIKE", "성공했으나 서버 오류 ${response.errorBody()?.string()}")
-                }
-            }
-
-            override fun onFailure(call: Call<VectoService.VectoResponse<Unit>>, t: Throwable) {
-                Log.d("LIKE", "실패 ${t.message.toString()}" )
-            }
-
-        })
+        lastSize = feedInfoWithFollow.size
     }
 
-    fun addFeedInfoData(newData: List<VectoService.FeedInfo>) {
-        //데이터 추가 함수
-        val startIdx = feedInfo.size
-        feedInfo.addAll(newData)
-        notifyItemRangeInserted(startIdx, newData.size)
+    fun postFeedLikeSuccess() {
+        TODO("Not yet implemented")
     }
 
+    fun deleteFeedLikeSuccess() {
+        TODO("Not yet implemented")
+    }
+
+    fun postFollowSuccess() {
+        TODO("Not yet implemented")
+    }
+
+    fun deleteFollowSuccess() {
+        TODO("Not yet implemented")
+    }
 }

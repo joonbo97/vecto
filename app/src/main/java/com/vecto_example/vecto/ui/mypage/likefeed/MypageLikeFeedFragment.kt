@@ -1,6 +1,7 @@
 package com.vecto_example.vecto.ui.mypage.likefeed
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -11,14 +12,17 @@ import android.widget.Toast
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.gson.Gson
 import com.vecto_example.vecto.R
 import com.vecto_example.vecto.data.Auth
 import com.vecto_example.vecto.data.repository.FeedRepository
 import com.vecto_example.vecto.data.repository.UserRepository
 import com.vecto_example.vecto.databinding.FragmentMypageLikepostBinding
 import com.vecto_example.vecto.retrofit.VectoService
+import com.vecto_example.vecto.ui.detail.FeedDetailActivity
 import com.vecto_example.vecto.ui.search.adapter.FeedAdapter
 import com.vecto_example.vecto.ui.search.adapter.MySearchFeedAdapter
+import com.vecto_example.vecto.utils.FeedDetailType
 import com.vecto_example.vecto.utils.LoadImageUtils
 
 class MypageLikeFeedFragment : Fragment(), FeedAdapter.OnFeedActionListener {
@@ -283,5 +287,26 @@ class MypageLikeFeedFragment : Fragment(), FeedAdapter.OnFeedActionListener {
             Toast.makeText(requireContext(), "이전 작업을 처리 중입니다. 잠시 후 다시 시도해 주세요", Toast.LENGTH_SHORT).show()
             feedAdapter.actionPosition = -1
         }
+    }
+
+    override fun onItemClick(position: Int) {
+        var subList = viewModel.allFeedInfo.subList(position, viewModel.allFeedInfo.size)
+        if(subList.size > 10) {
+            subList = subList.subList(0, 10)
+        }
+
+        val intent = Intent(requireContext(), FeedDetailActivity::class.java).apply {
+            putExtra("feedInfoListJson", Gson().toJson(subList))
+            putExtra("type", FeedDetailType.INTENT_LIKE.code)
+            putExtra("query", "")
+            putExtra("nextPage", viewModel.nextPage)
+            putExtra("followPage", viewModel.followPage)
+            putExtra("lastPage", viewModel.lastPage)
+        }
+
+        if(!viewModel.checkLoading())
+            this.startActivity(intent)
+        else
+            Toast.makeText(requireContext(), "이전 작업을 처리중 입니다. 잠시 후 다시 시도해 주세요.", Toast.LENGTH_SHORT).show()
     }
 }

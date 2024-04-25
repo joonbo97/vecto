@@ -25,6 +25,7 @@ import com.vecto_example.vecto.ui.detail.adapter.MyFeedDetailAdapter
 import com.vecto_example.vecto.R
 import com.vecto_example.vecto.data.Auth
 import com.vecto_example.vecto.data.repository.FeedRepository
+import com.vecto_example.vecto.data.repository.UserRepository
 import com.vecto_example.vecto.databinding.ActivityPostDetailBinding
 import com.vecto_example.vecto.utils.MapMarkerManager
 import com.vecto_example.vecto.utils.MapOverlayManager
@@ -35,7 +36,7 @@ class FeedDetailActivity : AppCompatActivity(), OnMapReadyCallback {
     private lateinit var mapOverlayManager: MapOverlayManager
 
     private val viewModel: FeedDetailViewModel by viewModels {
-        FeedDetailViewModelFactory(FeedRepository(VectoService.create()))
+        FeedDetailViewModelFactory(FeedRepository(VectoService.create()), UserRepository(VectoService.create()))
     }
 
     private lateinit var myFeedDetailAdapter: MyFeedDetailAdapter
@@ -44,14 +45,7 @@ class FeedDetailActivity : AppCompatActivity(), OnMapReadyCallback {
     private lateinit var mapView: MapFragment
     private lateinit var naverMap: NaverMap
 
-    private var likePostFlag = false
-
-    var userId = ""
-    var query = ""
-    var pageNo = 0
-
     var lastY = 0f
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -132,11 +126,14 @@ class FeedDetailActivity : AppCompatActivity(), OnMapReadyCallback {
         mapMarkerManager = MapMarkerManager(this, naverMap)
         mapOverlayManager = MapOverlayManager(this, mapMarkerManager, naverMap)
 
-        myFeedDetailAdapter = MyFeedDetailAdapter(this)
-        val postDetailRecyclerView = binding.PostDetailRecyclerView
-        postDetailRecyclerView.adapter = myFeedDetailAdapter
-        postDetailRecyclerView.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
-        postDetailRecyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+        myFeedDetailAdapter = MyFeedDetailAdapter()
+        binding.PostDetailRecyclerView.adapter = myFeedDetailAdapter
+
+        setViewModelData()
+
+        binding.PostDetailRecyclerView.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
+        binding.PostDetailRecyclerView.itemAnimator = null
+        binding.PostDetailRecyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 super.onScrolled(recyclerView, dx, dy)
                 val layoutManager = recyclerView.layoutManager as LinearLayoutManager
@@ -149,91 +146,161 @@ class FeedDetailActivity : AppCompatActivity(), OnMapReadyCallback {
                 // 중앙 아이템 인덱스 계산
                 val centerPosition = (firstVisibleItemPosition + lastVisibleItemPosition) / 2
 
-                if(layoutManager.findLastVisibleItemPosition() == myFeedDetailAdapter.feedInfo.lastIndex){
-                    val feedInfo = myFeedDetailAdapter.feedInfo[lastVisibleItemPosition]
-                    mapOverlayManager.addOverlayForPost(feedInfo) // 중앙 아이템 강조
+                if(layoutManager.findLastVisibleItemPosition() == myFeedDetailAdapter.feedInfoWithFollow.lastIndex){
+                    val feedInfo = myFeedDetailAdapter.feedInfoWithFollow[lastVisibleItemPosition]
+                    mapOverlayManager.addOverlayForPost(feedInfo.feedInfo) // 중앙 아이템 강조
                 }
                 else {
                     // 중앙 아이템의 정보를 가져와서 처리
-                    if (centerPosition >= 0 && centerPosition < myFeedDetailAdapter.feedInfo.size) {
-                        val feedInfo = myFeedDetailAdapter.feedInfo[centerPosition]
-                        mapOverlayManager.addOverlayForPost(feedInfo) // 중앙 아이템 강조
+                    if (centerPosition >= 0 && centerPosition < myFeedDetailAdapter.feedInfoWithFollow.size) {
+                        val feedInfo = myFeedDetailAdapter.feedInfoWithFollow[centerPosition]
+                        mapOverlayManager.addOverlayForPost(feedInfo.feedInfo) // 중앙 아이템 강조
                     }
                 }
 
                 if (!recyclerView.canScrollVertically(1)) {
-                    getFeed()
+                    if(!viewModel.checkLoading() && myFeedDetailAdapter.lastSize == viewModel.allFeedInfo.size) {
+                        Log.d("asd", "getFeed 호출")
+                        getFeed()
+                    }
                 }
             }
         })
 
 
-        // Intent에서 JSON 문자열을 가져와 리스트로 변환
-        //val feedInfoWithFollow = intent.getStringExtra("feedInfoListJson")
-        val position = intent.getIntExtra("position", -1)
-        pageNo = intent.getIntExtra("pageNo", -1)
-        viewModel.nextPage = pageNo
-        val intentQuery = intent.getStringExtra("query")
-        likePostFlag = intent.getBooleanExtra("likePostFlag", false)
+    }
 
+    @SuppressLint("NotifyDataSetChanged")
+    private fun setViewModelData() {
         // 인텐트로부터 값 가져오기
         val feedInfoWithFollowIntent = intent.getStringExtra("feedInfoListJson")
         val type = intent.getStringExtra("type")
+        val query = intent.getStringExtra("query")
         val nextPage = intent.getIntExtra("nextPage", 0)
         val followPage = intent.getBooleanExtra("followPage", false)
         val lastPage = intent.getBooleanExtra("lastPage", false)
-
-        if(!intentQuery.isNullOrEmpty()){
-            query = intentQuery
-        }
-        /*if(!intentUserId.isNullOrEmpty()){
-            userId = intentUserId
-        }*/
-
 
         // JSON 문자열을 객체 리스트로 변환
         val typeOfFeedInfoList = object : TypeToken<List<VectoService.FeedInfoWithFollow>>() {}.type
         val feedInfoWithFollow = Gson().fromJson<List<VectoService.FeedInfoWithFollow>>(feedInfoWithFollowIntent, typeOfFeedInfoList)
 
-        // Adapter 데이터 설정
-        //myFeedDetailAdapter.addFeedInfoData(feedInfoList)
+        /*   ViewModel 데이터 설정   */
+        if(type != null)
+            viewModel.type = type
+        if(query != null)
+            viewModel.query = query
+        viewModel.nextPage = nextPage
+        viewModel.followPage = followPage
+        viewModel.lastPage = lastPage
+        viewModel.userId = feedInfoWithFollow[0].feedInfo.userId
+        viewModel.allFeedInfo.addAll(feedInfoWithFollow)
+
+        myFeedDetailAdapter.feedInfoWithFollow = viewModel.allFeedInfo
+        myFeedDetailAdapter.lastSize = viewModel.allFeedInfo.size
         myFeedDetailAdapter.notifyDataSetChanged()
 
-        if(position != -1)
-            (binding.PostDetailRecyclerView.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(position, 0)
+        Log.d("ASD123", "${myFeedDetailAdapter.lastSize}, ${viewModel.allFeedInfo.size}")
+
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     private fun initObservers() {
         /*   로그인 관련 Observer   */
         Auth.loginFlag.observe(this) {
             if(Auth.loginFlag.value != viewModel.originLoginFlag) {
-                Log.d("LOGINFLAG", "LOGINFLAG IS CHANGED: ${Auth.loginFlag.value}")
-                clearRecyclerView()
-                viewModel.initSetting()
-                getFeed()   //로그인 상태 변경시 게시글 다시 불러옴
-                viewModel.originLoginFlag = Auth.loginFlag.value!!
+                if(viewModel.originLoginFlag == null){
+                    viewModel.originLoginFlag = Auth.loginFlag.value
+                } else {
+                    viewModel.initSetting()
+                    getFeed()   //로그인 상태 변경시 게시글 다시 불러옴
+                    viewModel.originLoginFlag = Auth.loginFlag.value
+                }
             }
         }
 
         /*   게시글 관련 Observer   */
         viewModel.feedInfoLiveData.observe(this) {
-            //새로운 feed 정보를 받았을 때의 처리
-            pageNo = viewModel.nextPage //다음 page 정보
-            viewModel.feedInfoLiveData.value?.let { myFeedDetailAdapter.addFeedInfoData(it.feeds) }   //새로 받은 게시글 정보 추가
+            Log.d("ASD", "${myFeedDetailAdapter.lastSize}, ${viewModel.allFeedInfo.size}")
+
+            if(viewModel.firstFlag) {
+                myFeedDetailAdapter.feedInfoWithFollow = viewModel.allFeedInfo
+                myFeedDetailAdapter.lastSize = viewModel.allFeedInfo.size
+
+                myFeedDetailAdapter.notifyDataSetChanged()
+                viewModel.firstFlag = false
+            }
+            else
+                myFeedDetailAdapter.addFeedData()
         }
 
         /*   로딩 관련 Observer   */
         viewModel.isLoadingCenter.observe(this) {
             if(it)
                 binding.progressBarCenter.visibility = View.VISIBLE
-            else
+            else {
                 binding.progressBarCenter.visibility = View.GONE
+            }
         }
         viewModel.isLoadingBottom.observe(this) {
             if(it)
                 binding.progressBar.visibility = View.VISIBLE
             else
                 binding.progressBar.visibility = View.GONE
+        }
+
+        /*   게시물 상호 작용 관련 Observer   */
+
+        /*   게시글 좋아요   */
+        viewModel.postFeedLikeResult.observe(this) { postFeedLikeResult ->
+            if(myFeedDetailAdapter.actionPosition != -1)
+            {
+                postFeedLikeResult.onSuccess {
+                    myFeedDetailAdapter.postFeedLikeSuccess()
+                }.onFailure {
+                    Toast.makeText(this, getText(R.string.APIErrorToastMessage), Toast.LENGTH_SHORT).show()
+                }
+
+                myFeedDetailAdapter.actionPosition = -1
+            }
+        }
+
+        viewModel.deleteFeedLikeResult.observe(this) { deleteFeedLikeResult ->
+            if(myFeedDetailAdapter.actionPosition != -1) {
+                deleteFeedLikeResult.onSuccess {
+                    myFeedDetailAdapter.deleteFeedLikeSuccess()
+                }.onFailure {
+                    Toast.makeText(this, getText(R.string.APIErrorToastMessage), Toast.LENGTH_SHORT).show()
+                }
+
+                myFeedDetailAdapter.actionPosition = -1
+            }
+        }
+
+        //팔로우
+        viewModel.postFollowResult.observe(this) {
+            if(myFeedDetailAdapter.actionPosition != -1) {
+                if (it) {
+                    myFeedDetailAdapter.postFollowSuccess()
+                    Toast.makeText(this, "${viewModel.allFeedInfo[myFeedDetailAdapter.actionPosition].feedInfo.nickName} 님을 팔로우하기 시작했습니다.", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(this, "이미 ${viewModel.allFeedInfo[myFeedDetailAdapter.actionPosition].feedInfo.nickName} 님을 팔로우 중입니다.", Toast.LENGTH_SHORT).show()
+                }
+
+                myFeedDetailAdapter.actionPosition = -1
+            }
+        }
+
+        viewModel.deleteFollowResult.observe(this) {
+            if(myFeedDetailAdapter.actionPosition != -1) {
+                if (it) {
+                    myFeedDetailAdapter.deleteFollowSuccess()
+                    Toast.makeText(this, "${viewModel.allFeedInfo[myFeedDetailAdapter.actionPosition].feedInfo.nickName} 님 팔로우를 취소하였습니다.", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(this, "이미 ${viewModel.allFeedInfo[myFeedDetailAdapter.actionPosition].feedInfo.nickName} 님을 팔로우하지 않습니다.", Toast.LENGTH_SHORT).show()
+                }
+
+                myFeedDetailAdapter.actionPosition = -1
+            }
         }
 
         /*   오류 관련 Observer   */
@@ -244,41 +311,44 @@ class FeedDetailActivity : AppCompatActivity(), OnMapReadyCallback {
                 Toast.makeText(this, getText(R.string.APIErrorToastMessage), Toast.LENGTH_SHORT).show()
             }
         }
-    }
 
-    @SuppressLint("NotifyDataSetChanged")
-    private fun clearRecyclerView() {
-        if(::myFeedDetailAdapter.isInitialized) {
-            myFeedDetailAdapter.feedInfo.clear()
-            myFeedDetailAdapter.notifyDataSetChanged()
-            Log.d("CLEAR TEST", "RecyclerView is Cleared")
+        viewModel.followErrorLiveData.observe(this) {
+            if(it == "FAIL") {
+                Toast.makeText(this, "팔로우 정보 불러오기에 실패하였습니다.", Toast.LENGTH_SHORT).show()
+            } else if(it == "ERROR") {
+                Toast.makeText(this, getText(R.string.APIErrorToastMessage), Toast.LENGTH_SHORT).show()
+            }
+
+        }
+
+        viewModel.postFollowError.observe(this) {
+            if(myFeedDetailAdapter.actionPosition != -1) {
+                if (it == "FAIL") {
+                    Toast.makeText(this, "팔로우 요청에 실패하였습니다. 다시 시도해 주세요.", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(this, getText(R.string.APIErrorToastMessage), Toast.LENGTH_SHORT).show()
+                }
+
+                myFeedDetailAdapter.actionPosition = -1
+            }
+        }
+
+        viewModel.deleteFollowError.observe(this) {
+            if(myFeedDetailAdapter.actionPosition != -1) {
+                if (it == "FAIL") {
+                    Toast.makeText(this, "팔로우 취소 요청에 실패하였습니다. 다시 시도해 주세요.", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(this, getText(R.string.APIErrorToastMessage), Toast.LENGTH_SHORT).show()
+                }
+
+                myFeedDetailAdapter.actionPosition = -1
+            }
         }
     }
 
     private fun getFeed() {
         //게시글 요청 함수
-        if(likePostFlag){
-            viewModel.fetchLikeFeedResults()
-            Log.d("getFeed", "Like")
-        }
-        else if(query.isEmpty() && userId.isEmpty()) {
-            if(Auth.loginFlag.value == false) {   //로그인 X인 경우
-                viewModel.fetchFeedResults()
-                Log.d("getFeed", "Normal")
-            }
-            else{
-                viewModel.fetchPersonalFeedResults()
-                Log.d("getFeed", "Personal")
-            }
-        }
-        else if(userId.isNotEmpty()) {
-            viewModel.fetchUserFeedResults(userId)
-            Log.d("getFeed", "User")
-        }
-        else if(query.isNotEmpty()){
-            viewModel.fetchSearchFeedResults(query)
-            Log.d("getFeed", "Query")
-        }
+        viewModel.getFeedList()
     }
 
 }

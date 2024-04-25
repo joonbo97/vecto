@@ -23,6 +23,7 @@ import com.vecto_example.vecto.ui.detail.FeedDetailActivity
 import com.vecto_example.vecto.ui.mypage.myfeed.adapter.MyFeedAdapter
 import com.vecto_example.vecto.ui.userinfo.UserInfoViewModel
 import com.vecto_example.vecto.ui.userinfo.UserInfoViewModelFactory
+import com.vecto_example.vecto.utils.FeedDetailType
 import com.vecto_example.vecto.utils.LoadImageUtils
 
 class MypageFeedFragment : Fragment(), MyFeedAdapter.OnFeedActionListener {
@@ -219,7 +220,7 @@ class MypageFeedFragment : Fragment(), MyFeedAdapter.OnFeedActionListener {
         if(!viewModel.checkLoading())
             viewModel.deleteFeed(feedID)
         else
-            Toast.makeText(requireContext(), "이전 작업을 처리 중입니다. 잠시 후 다시 시도해 주세요", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), "이전 작업을 처리중 입니다. 잠시 후 다시 시도해 주세요", Toast.LENGTH_SHORT).show()
     }
 
     override fun onItemViewClick(position: Int) {
@@ -234,13 +235,17 @@ class MypageFeedFragment : Fragment(), MyFeedAdapter.OnFeedActionListener {
 
         val intent = Intent(requireContext(), FeedDetailActivity::class.java).apply {
             putExtra("feedInfoListJson", Gson().toJson(feedInfoWithFollowList))
-            putExtra("type", "MyFeed")
+            putExtra("type", FeedDetailType.INTENT_USERINFO.code)
+            putExtra("query", "")
             putExtra("nextPage", viewModel.nextPage)
             putExtra("followPage", viewModel.followPage)
             putExtra("lastPage", viewModel.lastPage)
         }
 
-        requireContext().startActivity(intent)
+        if(!viewModel.checkLoading())
+            requireContext().startActivity(intent)
+        else
+            Toast.makeText(requireContext(), "이전 작업을 처리중 입니다. 잠시 후 다시 시도해 주세요.", Toast.LENGTH_SHORT).show()
     }
 
 }

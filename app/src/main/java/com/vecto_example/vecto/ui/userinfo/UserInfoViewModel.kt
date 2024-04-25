@@ -57,7 +57,7 @@ class UserInfoViewModel(private val repository: FeedRepository, private val user
 
     /*   팔로우   */
     //팔로우 여부
-    private val _isFollowing = MutableLiveData<Boolean>()
+    private val _isFollowing = MutableLiveData<Boolean>(false)
     val isFollowing: LiveData<Boolean> = _isFollowing
 
     //팔로우 요청

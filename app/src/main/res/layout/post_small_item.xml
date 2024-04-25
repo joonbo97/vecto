@@ -163,12 +163,9 @@
         android:id="@+id/LikeTouchImage"
         android:layout_width="70dp"
         android:layout_height="30dp"
-        android:layout_marginStart="16dp"
-        android:padding="5dp"
-        app:layout_constraintStart_toStartOf="@+id/ImageItemBox"
-        app:layout_constraintBottom_toBottomOf="@+id/ImageItemBox"
-        app:layout_constraintTop_toTopOf="@id/MapImageSmall"
-        app:layout_constraintVertical_bias="0.95" />
+        app:layout_constraintStart_toStartOf="@+id/LikeImage"
+        app:layout_constraintBottom_toBottomOf="@+id/LikeImage"
+        app:layout_constraintTop_toTopOf="@id/LikeImage" />
 
     <ImageView
         android:id="@+id/LikeImage"
@@ -200,12 +197,9 @@
         android:id="@+id/CommentTouchImage"
         android:layout_width="70dp"
         android:layout_height="30dp"
-        android:padding="5dp"
-        android:layout_marginStart="90dp"
-        app:layout_constraintStart_toStartOf="@+id/ImageItemBox"
-        app:layout_constraintBottom_toBottomOf="@+id/ImageItemBox"
-        app:layout_constraintTop_toTopOf="@id/MapImageSmall"
-        app:layout_constraintVertical_bias="0.95" />
+        app:layout_constraintStart_toStartOf="@+id/CommentImage"
+        app:layout_constraintBottom_toBottomOf="@+id/CommentImage"
+        app:layout_constraintTop_toTopOf="@id/CommentImage"/>
 
     <ImageView
         android:id="@+id/CommentImage"
