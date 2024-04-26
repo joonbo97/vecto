@@ -467,11 +467,11 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
             //location 첫 좌표 넣어줌.
             locationDataforPath.add(LocationData(visitDataList[0].datetime, visitDataList[0].lat_set, visitDataList[0].lng_set))
 
-            for (visitdatalist in visitDataList){
-                mapOverlayManager.addCircleOverlay(visitdatalist)
-                mapMarkerManager.addVisitMarkerBasic(visitdatalist)
+            for (visitDataItem in visitDataList){
+                mapOverlayManager.addCircleOverlay(visitDataItem)
+                mapMarkerManager.addVisitMarkerBasic(visitDataItem)
 
-                myCourseAdapter.visitdata.add(visitdatalist)
+                myCourseAdapter.visitdata.add(visitDataItem)
             }
 
             for (locationData in locationDataList){

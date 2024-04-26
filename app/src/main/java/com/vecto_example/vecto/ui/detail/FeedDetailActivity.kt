@@ -26,12 +26,12 @@ import com.vecto_example.vecto.R
 import com.vecto_example.vecto.data.Auth
 import com.vecto_example.vecto.data.repository.FeedRepository
 import com.vecto_example.vecto.data.repository.UserRepository
-import com.vecto_example.vecto.databinding.ActivityPostDetailBinding
+import com.vecto_example.vecto.databinding.ActivityFeedDetailBinding
 import com.vecto_example.vecto.utils.MapMarkerManager
 import com.vecto_example.vecto.utils.MapOverlayManager
 
 class FeedDetailActivity : AppCompatActivity(), OnMapReadyCallback {
-    private lateinit var binding: ActivityPostDetailBinding
+    private lateinit var binding: ActivityFeedDetailBinding
     private lateinit var mapMarkerManager: MapMarkerManager
     private lateinit var mapOverlayManager: MapOverlayManager
 
@@ -45,12 +45,13 @@ class FeedDetailActivity : AppCompatActivity(), OnMapReadyCallback {
     private lateinit var mapView: MapFragment
     private lateinit var naverMap: NaverMap
 
-    var lastY = 0f
+    private var offset = 350
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        binding = ActivityPostDetailBinding.inflate(layoutInflater)
+        binding = ActivityFeedDetailBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         initMap()
@@ -68,9 +69,10 @@ class FeedDetailActivity : AppCompatActivity(), OnMapReadyCallback {
         val topMargin = dpToPx(150f, this) // 상단에서 최소 150dp
         val bottomMargin = dpToPx(100f, this) // 하단에서 최소 100dp
         val screenHeight = Resources.getSystem().displayMetrics.heightPixels
+        var lastY = 0f
 
         binding.slide.setOnTouchListener { view, event ->
-            val layoutParams = binding.naverMapDetail.layoutParams as ConstraintLayout.LayoutParams
+            val layoutParams = binding.constraintLayout2.layoutParams as ConstraintLayout.LayoutParams
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
                     lastY = event.rawY
@@ -79,15 +81,16 @@ class FeedDetailActivity : AppCompatActivity(), OnMapReadyCallback {
                 MotionEvent.ACTION_MOVE -> {
                     val newY = event.rawY
                     val deltaY = newY - lastY
-                    var newHeight = layoutParams.height + deltaY.toInt()
+                    var newHeight = layoutParams.height - deltaY.toInt()
 
                     // 상단 마진과 하단 마진을 고려하여 새로운 높이를 조정합니다.
                     newHeight = newHeight.coerceAtLeast(topMargin)
                     newHeight = newHeight.coerceAtMost(screenHeight - bottomMargin)
 
                     layoutParams.height = newHeight
-                    binding.naverMapDetail.layoutParams = layoutParams
-                    binding.naverMapDetail.requestLayout()
+                    offset = (newHeight / resources.displayMetrics.density).toInt()
+                    binding.constraintLayout2.layoutParams = layoutParams
+                    binding.constraintLayout2.requestLayout()
 
                     lastY = newY
                     true
@@ -102,11 +105,7 @@ class FeedDetailActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     private fun dpToPx(dp: Float, context: Context): Int {
-        return TypedValue.applyDimension(
-            TypedValue.COMPLEX_UNIT_DIP,
-            dp,
-            context.resources.displayMetrics
-        ).toInt()
+        return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, context.resources.displayMetrics).toInt()
     }
 
 
@@ -155,6 +154,11 @@ class FeedDetailActivity : AppCompatActivity(), OnMapReadyCallback {
                     if (centerPosition >= 0 && centerPosition < myFeedDetailAdapter.feedInfoWithFollow.size) {
                         val feedInfo = myFeedDetailAdapter.feedInfoWithFollow[centerPosition]
                         mapOverlayManager.addOverlayForPost(feedInfo.feedInfo) // 중앙 아이템 강조
+
+                        if(feedInfo.feedInfo.visit.size == 1)
+                            mapOverlayManager.moveCameraForVisitOffset(feedInfo.feedInfo.visit.first(), offset)
+                        else
+                            mapOverlayManager.moveCameraForPathOffset(feedInfo.feedInfo.location.toMutableList(), offset + 50)
                     }
                 }
 
