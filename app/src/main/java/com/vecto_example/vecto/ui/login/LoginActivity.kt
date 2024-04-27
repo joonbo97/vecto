@@ -140,25 +140,28 @@ class LoginActivity : AppCompatActivity() {
         loginViewModel.loginResult.observe(this){ loginResult ->
             loginResult.onSuccess {
                 Auth.token = it
-                loginViewModel.getUserInfo()
-            }
-                .onFailure {
-                    if(it.message == "FAIL"){
 
-                        if(provider == "vecto"){    //vecto 로그인 인 경우
-                            Toast.makeText(this, "아이디 혹은 비밀번호가 일치하지 않습니다.", Toast.LENGTH_SHORT).show()
-                        }
-                        else{                       //kakao 로그인 인 경우
-                            loginViewModel.registerRequest(VectoService.RegisterRequest(
-                                loginViewModel.loginRequestData.userId, null, provider, nickname, null, null
-                            ))
-                        }
+                saveLoginInformation(loginViewModel.loginRequestData.userId,
+                    loginViewModel.loginRequestData.userPw,
+                    provider)
+
+                loginViewModel.getUserInfo()
+            }.onFailure {
+                if(it.message == "FAIL"){
+
+                    if(provider == "vecto"){    //vecto 로그인 인 경우
+                        Toast.makeText(this, "아이디 혹은 비밀번호가 일치하지 않습니다.", Toast.LENGTH_SHORT).show()
                     }
-                    else{
-                        Toast.makeText(this, getText(R.string.APIErrorToastMessage), Toast.LENGTH_SHORT).show()
+                    else{                       //kakao 로그인 인 경우
+                        loginViewModel.registerRequest(VectoService.RegisterRequest(
+                            loginViewModel.loginRequestData.userId, null, provider, nickname, null, null
+                        ))
                     }
                 }
-
+                else{
+                    Toast.makeText(this, getText(R.string.APIErrorToastMessage), Toast.LENGTH_SHORT).show()
+                }
+            }
         }
 
         loginViewModel.registerResult.observe(this){ registerResult ->
@@ -185,6 +188,26 @@ class LoginActivity : AppCompatActivity() {
                 }
             }
         }
+    }
+
+    private fun saveLoginInformation(userId: String, password: String?, provider: String) {
+        val sharedPreferences = this.getSharedPreferences("MyAppPreferences", Context.MODE_PRIVATE)
+
+        val editor = sharedPreferences.edit()
+        // 기존 정보 삭제
+        editor.remove("userId")
+        editor.remove("password")
+        editor.remove("provider")
+        editor.apply()
+
+        // 새로운 정보 저장
+        editor.putString("username", userId)
+        editor.putString("password", password)
+        editor.putString("provider", provider)
+        if (!sharedPreferences.contains("FCM")) {
+            editor.putString("FCM", fcmtoken)
+        }
+        editor.apply()
     }
 
     private val mCallback: (OAuthToken?, Throwable?) -> Unit = { token, error ->

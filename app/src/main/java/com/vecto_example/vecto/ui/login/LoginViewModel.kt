@@ -21,6 +21,9 @@ class LoginViewModel(private val repository: UserRepository): ViewModel() {
     private val _userInfoResult = MutableLiveData<Result<VectoService.UserInfoResponse>>()
     val userInfoResult: LiveData<Result<VectoService.UserInfoResponse>> = _userInfoResult
 
+    private val _isLoginFinished = MutableLiveData<Boolean>(false)
+    val isLoginFinished: LiveData<Boolean> = _isLoginFinished
+
     private val _errorMessage = MutableLiveData<String?>()
     val errorMessage: LiveData<String?> = _errorMessage
 
@@ -49,5 +52,9 @@ class LoginViewModel(private val repository: UserRepository): ViewModel() {
 
             _userInfoResult.value = userInfoResponse
         }
+    }
+
+    fun loginFinish(){
+        _isLoginFinished.value = true
     }
 }
