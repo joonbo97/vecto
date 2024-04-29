@@ -13,7 +13,9 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.widget.Toast
+import androidx.activity.viewModels
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.ViewModelProvider
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -27,6 +29,8 @@ import com.vecto_example.vecto.data.repository.UserRepository
 import com.vecto_example.vecto.databinding.FragmentSearchBinding
 import com.vecto_example.vecto.retrofit.VectoService
 import com.vecto_example.vecto.ui.detail.FeedDetailActivity
+import com.vecto_example.vecto.ui.login.LoginViewModel
+import com.vecto_example.vecto.ui.login.LoginViewModelFactory
 import com.vecto_example.vecto.ui.main.MainActivity
 import com.vecto_example.vecto.ui.notification.NotificationViewModel
 import com.vecto_example.vecto.ui.notification.NotificationViewModelFactory
@@ -43,6 +47,8 @@ class SearchFragment : Fragment(), MainActivity.ScrollToTop, FeedAdapter.OnFeedA
     private val notificationViewModel: NotificationViewModel by viewModels {
         NotificationViewModelFactory(NotificationRepository(VectoService.create()))
     }
+
+    private lateinit var loginViewModel: LoginViewModel
 
     private lateinit var feedAdapter: FeedAdapter
 
@@ -62,6 +68,8 @@ class SearchFragment : Fragment(), MainActivity.ScrollToTop, FeedAdapter.OnFeedA
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        loginViewModel = ViewModelProvider(requireActivity(), LoginViewModelFactory(UserRepository(VectoService.create())))[LoginViewModel::class.java]
 
         initUI()
         initRecyclerView()
@@ -187,21 +195,11 @@ class SearchFragment : Fragment(), MainActivity.ScrollToTop, FeedAdapter.OnFeedA
         Auth.loginFlag.observe(viewLifecycleOwner) {
             initUI()
 
-            if(Auth.loginFlag.value != searchViewModel.originLoginFlag) {
-                if(searchViewModel.originLoginFlag == null)
-                    searchViewModel.originLoginFlag = false
+            loginFlagChange()
+        }
 
-                clearNoneImage()
-
-                searchViewModel.initSetting()
-
-                queryFlag = false
-
-                Log.d("getFeed_REQUEST", "By loginFlag Change")
-                getFeed()   //로그인 상태 변경시 게시글 다시 불러옴
-
-                searchViewModel.originLoginFlag = Auth.loginFlag.value
-            }
+        loginViewModel.isLoginFinished.observe(viewLifecycleOwner){
+            loginFlagChange()
         }
 
         /*   게시글 관련 Observer   */
@@ -335,6 +333,8 @@ class SearchFragment : Fragment(), MainActivity.ScrollToTop, FeedAdapter.OnFeedA
         }
     }
 
+
+
     @SuppressLint("NotifyDataSetChanged")
     private fun initRecyclerView() {
         /*   Recycler 초기화 함수   */
@@ -387,6 +387,24 @@ class SearchFragment : Fragment(), MainActivity.ScrollToTop, FeedAdapter.OnFeedA
                     Log.d("getFeed", "Personal")
                 }
             }
+        }
+    }
+
+    private fun loginFlagChange() {
+        if(Auth.loginFlag.value != searchViewModel.originLoginFlag && loginViewModel.isLoginFinished.value == true) {
+            if(searchViewModel.originLoginFlag == null)
+                searchViewModel.originLoginFlag = false
+
+            clearNoneImage()
+
+            searchViewModel.initSetting()
+
+            queryFlag = false
+
+            Log.d("getFeed_REQUEST", "By loginFlag Change")
+            getFeed()   //로그인 상태 변경시 게시글 다시 불러옴
+
+            searchViewModel.originLoginFlag = Auth.loginFlag.value
         }
     }
 

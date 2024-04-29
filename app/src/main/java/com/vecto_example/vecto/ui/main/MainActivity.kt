@@ -24,7 +24,6 @@ import com.vecto_example.vecto.ui.search.SearchFragment
 
 class MainActivity : AppCompatActivity() {
     lateinit var binding: ActivityMainBinding
-    private var currentMenuItemId: Int? = null
 
     val loginViewModel: LoginViewModel by viewModels {
         LoginViewModelFactory(UserRepository(VectoService.create()))
@@ -82,6 +81,8 @@ class MainActivity : AppCompatActivity() {
 
             if(userId != null && fcmtoken != null) {
                 loginViewModel.loginRequest(VectoService.LoginRequest(userId, password, fcmtoken))
+            } else {
+                loginViewModel.loginFinish()
             }
         }
 
@@ -101,6 +102,8 @@ class MainActivity : AppCompatActivity() {
                 else{
                     Toast.makeText(this, getText(R.string.APIErrorToastMessage), Toast.LENGTH_SHORT).show()
                 }
+
+                loginViewModel.loginFinish()
             }
         }
 
@@ -109,7 +112,7 @@ class MainActivity : AppCompatActivity() {
                 Auth.setLoginFlag(true)
 
                 Auth.setUserData(it.provider, it.userId, it.profileUrl, it.nickName, it.email)
-
+                loginViewModel.loginFinish()
             }.onFailure {
                 if(it.message == "E020"){
                     Toast.makeText(this, "사용자 정보가 존재하지 않습니다.", Toast.LENGTH_SHORT).show()
@@ -117,6 +120,8 @@ class MainActivity : AppCompatActivity() {
                 else{
                     Toast.makeText(this, getText(R.string.APIErrorToastMessage), Toast.LENGTH_SHORT).show()
                 }
+
+                loginViewModel.loginFinish()
             }
         }
     }
