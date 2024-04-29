@@ -32,10 +32,10 @@ android {
 
     signingConfigs {
         release {
-            storeFile file('C:\\Users\\s_joonbo97\\AndroidStudioProjects\\vecto\\app\\vecto.jks') // 키스토어 파일의 경로
-            storePassword 'tlawnsqh123'
-            keyAlias 'vecto'
-            keyPassword 'tlawnsqh123'
+            storeFile file(STORE_FILE) // 키스토어 파일의 경로
+            storePassword STORE_PASSWORD
+            keyAlias KEY_ALIAS
+            keyPassword KEY_PASSWORD
         }
     }
     buildTypes {
