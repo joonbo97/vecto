@@ -17,7 +17,7 @@
 
 Vecto 애플리케이션은 사용자들의 데이트 경로를 공유할 수 있는 SNS입니다.  
 연인간의 데이트 경로뿐만 아니라, 하루동안 사용자들이 경험한 다양한 장소 및 경로를 공유할 수 있습니다.  
-앱은 Android Studio에서 다운받을 수 있습니다.  
+앱은 Play Store에서 다운받을 수 있습니다.  
 <p align="middle" >
 <img width="200px;" src="https://github.com/Vecto-Konkuk/spring-backend/assets/127181634/0dfced33-b985-4e4c-b535-cd435132dab7"/>
 </p>
@@ -47,7 +47,7 @@ Vecto 애플리케이션은 사용자들의 데이트 경로를 공유할 수 �
 
 <img src="https://img.shields.io/badge/Amazon EC2-FF9900?style=for-the-badge&logo=Amazon EC2&logoColor=white"/> <img src="https://img.shields.io/badge/Amazon rds-527FFF?style=for-the-badge&logo=Amazon rds&logoColor=white"/>  
 
-**Frontend(Web)**
+**Frontend(App)**
 - **Language**
   
   <img src="https://img.shields.io/badge/Kotlin-7F52FF?style=for-the-badge&logo=Kotlin&logoColor=white"/>
