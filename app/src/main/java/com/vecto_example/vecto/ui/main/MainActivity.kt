@@ -89,6 +89,7 @@ class MainActivity : AppCompatActivity() {
         initObservers()
     }
 
+
     private fun initObservers() {
         loginViewModel.loginResult.observe(this){ loginResult ->
             loginResult.onSuccess {
@@ -126,7 +127,16 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
 
+        /*마이페이지 Intent 관련*/
+        val fragmentId = intent.getIntExtra("MyPage", -1)
+        if (fragmentId != -1) {
+            updateBottomNavigationSelection(R.id.MypageFragment)
+            findNavController(R.id.nav_host_fragment_activity_main).navigate(R.id.MypageFragment)
+        }
+    }
     interface ScrollToTop {
         fun scrollToTop()
     }
