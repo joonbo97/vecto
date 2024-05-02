@@ -164,7 +164,7 @@ class UserRepository (private val vectoService: VectoService) {
 
     suspend fun postFollow(userId: String): Result<String> {
         return try {
-            val response = vectoService.postFollow2("Bearer ${Auth.token}", userId)
+            val response = vectoService.postFollow("Bearer ${Auth.token}", userId)
 
             if(response.isSuccessful) {
                 Log.d("postFollow", "SUCCESS: ${response.body()}")
@@ -182,7 +182,7 @@ class UserRepository (private val vectoService: VectoService) {
 
     suspend fun deleteFollow(userId: String): Result<String> {
         return try {
-            val response = vectoService.deleteFollow2("Bearer ${Auth.token}", userId)
+            val response = vectoService.deleteFollow("Bearer ${Auth.token}", userId)
 
             if(response.isSuccessful) {
                 Log.d("deleteFollow", "SUCCESS: ${response.body()}")
@@ -194,6 +194,45 @@ class UserRepository (private val vectoService: VectoService) {
             }
         } catch (e: Exception) {
             Log.e("deleteFollow", "ERROR", e)
+            Result.failure(Exception("ERROR"))
+        }
+    }
+
+    //팔로우 유저 리스트 확인
+    suspend fun getFollowerList(userId: String): Result<VectoService.FollowListResponse> {
+
+        return try {
+            val response = vectoService.getFollowerList(userId)
+
+            if(response.isSuccessful) {
+                Log.d("getFollowerList", "SUCCESS: ${response.body()}")
+
+                Result.success(response.body()!!.result!!)
+            } else {
+                Log.d("getFollowerList", "FAIL: ${response.errorBody()?.string()}")
+                Result.failure(Exception("FAIL"))
+            }
+        } catch (e: Exception) {
+            Log.e("getFollowerList", "ERROR", e)
+            Result.failure(Exception("ERROR"))
+        }
+    }
+
+    //팔로잉 유저 리스트 확인
+    suspend fun getFollowingList(userId: String): Result<VectoService.FollowListResponse> {
+        return try {
+            val response = vectoService.getFollowingList(userId)
+
+            if(response.isSuccessful) {
+                Log.d("getFollowingList", "SUCCESS: ${response.body()}")
+
+                Result.success(response.body()!!.result!!)
+            } else {
+                Log.d("getFollowingList", "FAIL: ${response.errorBody()?.string()}")
+                Result.failure(Exception("FAIL"))
+            }
+        } catch (e: Exception) {
+            Log.e("getFollowingList", "ERROR", e)
             Result.failure(Exception("ERROR"))
         }
     }

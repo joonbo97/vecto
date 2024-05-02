@@ -48,7 +48,7 @@ class CalendarDialog (private val context: Context) {//deletepostdialog copy
         month = currentCalendar.get(Calendar.MONTH)
         initCalendar(year, month)
 
-        Log.d("YEAR MONTH3", "${year} ${month}")
+        Log.d("YEAR MONTH3", "$year $month")
 
         dialog.show()
 
