@@ -54,7 +54,7 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/constraintLayout2"
         android:layout_width="match_parent"
-        android:layout_height="350dp"
+        android:layout_height="500dp"
         android:background="@drawable/bottom_dialog_box"
         android:elevation="20dp"
         app:layout_constraintBottom_toBottomOf="@+id/naver_map_detail">
