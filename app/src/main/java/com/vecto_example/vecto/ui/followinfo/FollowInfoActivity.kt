@@ -71,6 +71,10 @@ class FollowInfoActivity : AppCompatActivity() {
                 }
             }
         }
+
+        binding.BackButton.setOnClickListener {
+            finish()
+        }
     }
 
     fun getUserIdValue(): String {

@@ -94,9 +94,12 @@ class FollowListAdapter(): RecyclerView.Adapter<FollowListAdapter.ViewHolder>() 
     //팔로우 삭제 요청 성공시 실행 함수
     fun deleteFollowSuccess(){
         if(actionPosition != -1 ) {
-            followList.removeAt(actionPosition)
+            if(followList[actionPosition].relation == "followed")
+                followList[actionPosition].relation = "none"
+            else if(followList[actionPosition].relation == "all")
+                followList[actionPosition].relation = "follower"
 
-            notifyItemRemoved(actionPosition)
+            notifyItemChanged(actionPosition)
         }
     }
 
