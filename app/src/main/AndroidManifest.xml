@@ -20,9 +20,18 @@
         android:theme="@style/Theme.Vecto"
         tools:targetApi="31">
         <activity
+            android:name=".ui.followinfo.FollowInfoActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.myfeed.MyFeedActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.likefeed.LikeFeedActivity"
+            android:exported="false" />
+        <activity
             android:name=".ui.editfeed.EditPostActivity"
             android:exported="false"
-            android:windowSoftInputMode="adjustPan"/>
+            android:windowSoftInputMode="adjustPan" />
         <activity
             android:name=".ui.mypage.inquiry.PolicyActivity"
             android:exported="false" />

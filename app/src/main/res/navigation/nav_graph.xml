@@ -41,12 +41,6 @@
             android:id="@+id/action_MypageFragment_to_MypageSettingFragment"
             app:destination="@id/MypageSettingFragment" />
         <action
-            android:id="@+id/action_MypageFragment_to_MypageLikepostFragment"
-            app:destination="@id/MypageLikepostFragment" />
-        <action
-            android:id="@+id/action_MypageFragment_to_MypagePostFragment"
-            app:destination="@id/MypagePostFragment" />
-        <action
             android:id="@+id/action_MypageFragment_to_MypageInquiryFragment"
             app:destination="@id/MypageInquiryFragment" />
     </fragment>
@@ -62,18 +56,6 @@
         android:name="com.vecto_example.vecto.ui.mypage.setting.MypageSettingkakaoFragment"
         android:label="fragment_mypage_settingkakao"
         tools:layout="@layout/fragment_mypage_settingkakao"/>
-
-    <fragment
-        android:id="@+id/MypagePostFragment"
-        android:name="com.vecto_example.vecto.ui.mypage.myfeed.MypageFeedFragment"
-        android:label="fragment_mypage_post"
-        tools:layout="@layout/fragment_mypage_post"/>
-
-    <fragment
-        android:id="@+id/MypageLikepostFragment"
-        android:name="com.vecto_example.vecto.ui.mypage.likefeed.MypageLikeFeedFragment"
-        android:label="fragment_mypage_likepost"
-        tools:layout="@layout/fragment_mypage_likepost"/>
 
     <fragment
         android:id="@+id/MypageInquiryFragment"

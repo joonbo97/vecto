@@ -1,18 +1,13 @@
-package com.vecto_example.vecto.ui.mypage.myfeed.adapter
+package com.vecto_example.vecto.ui.myfeed.adapter
 
-import android.content.Context
 import android.content.Intent
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
-import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
 import com.vecto_example.vecto.ui.comment.CommentActivity
-import com.vecto_example.vecto.ui.detail.FeedDetailActivity
-import com.vecto_example.vecto.ui.userinfo.UserInfoActivity
 import com.vecto_example.vecto.data.Auth
 import com.vecto_example.vecto.dialog.DeletePostDialog
 import com.vecto_example.vecto.popupwindow.EditDeletePopupWindow
@@ -24,12 +19,6 @@ import com.vecto_example.vecto.databinding.MypostItemBinding
 import com.vecto_example.vecto.utils.DateTimeUtils
 import com.vecto_example.vecto.utils.LoadImageUtils
 import com.vecto_example.vecto.utils.RequestLoginUtils
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
-import java.time.Duration
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 
 class MyFeedAdapter(): RecyclerView.Adapter<MyFeedAdapter.ViewHolder>()
 {

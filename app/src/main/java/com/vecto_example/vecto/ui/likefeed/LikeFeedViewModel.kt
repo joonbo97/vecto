@@ -1,4 +1,4 @@
-package com.vecto_example.vecto.ui.mypage.likefeed
+package com.vecto_example.vecto.ui.likefeed
 
 import android.util.Log
 import androidx.lifecycle.LiveData
@@ -11,7 +11,7 @@ import com.vecto_example.vecto.retrofit.VectoService
 import com.vecto_example.vecto.utils.ServerResponse
 import kotlinx.coroutines.launch
 
-class MypageLikeFeedViewModel(private val repository: FeedRepository, private val userRepository: UserRepository) : ViewModel() {
+class LikeFeedViewModel(private val feedRepository: FeedRepository, private val userRepository: UserRepository) : ViewModel() {
     var firstFlag = true    //처음 게시글 정보를 받아볼 경우 확인을 위한 Flag
 
     /*   로딩 관련   */
@@ -89,7 +89,7 @@ class MypageLikeFeedViewModel(private val repository: FeedRepository, private va
             startLoading()
 
         viewModelScope.launch {
-            val feedListResponse = repository.postLikeFeedList(nextPage)
+            val feedListResponse = feedRepository.postLikeFeedList(nextPage)
 
             feedListResponse.onSuccess {
                 val newFeedInfoWithFollow = it.feeds.map { feedInfo ->
@@ -145,7 +145,7 @@ class MypageLikeFeedViewModel(private val repository: FeedRepository, private va
         tempLoading = true
 
         viewModelScope.launch {
-            val postFeedLikeResponse = repository.postFeedLike(feedId)
+            val postFeedLikeResponse = feedRepository.postFeedLike(feedId)
 
             _postFeedLikeResult.value = postFeedLikeResponse
 
@@ -157,7 +157,7 @@ class MypageLikeFeedViewModel(private val repository: FeedRepository, private va
         tempLoading = true
 
         viewModelScope.launch {
-            val deleteFeedLikeResponse = repository.deleteFeedLike(feedId)
+            val deleteFeedLikeResponse = feedRepository.deleteFeedLike(feedId)
 
             _deleteFeedLikeResult.value = deleteFeedLikeResponse
 
