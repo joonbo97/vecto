@@ -48,6 +48,9 @@ class FollowerListFragment : Fragment(), FollowListAdapter.OnFollowActionListene
     private fun initObservers() {
         viewModel.followListResponse.observe(viewLifecycleOwner) {
             followListAdapter.addFollowListData(it.followRelations)
+
+            if(followListAdapter.followList.size == 0)
+                setNoneImage()
         }
 
         viewModel.postFollowResult.observe(viewLifecycleOwner) {
@@ -108,6 +111,11 @@ class FollowerListFragment : Fragment(), FollowListAdapter.OnFollowActionListene
         binding.FollowerListRecyclerView.adapter = followListAdapter
         binding.FollowerListRecyclerView.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
         binding.FollowerListRecyclerView.itemAnimator = null
+    }
+
+    private fun setNoneImage() {
+        binding.FollowerNoneImage.visibility = View.VISIBLE
+        binding.FollowerNoneText.visibility = View.VISIBLE
     }
 
     override fun onPostFollow(userId: String) {
