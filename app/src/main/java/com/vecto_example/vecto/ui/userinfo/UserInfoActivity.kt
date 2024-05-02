@@ -9,6 +9,7 @@ import android.view.View
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.core.content.ContextCompat
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.gson.Gson
@@ -21,7 +22,9 @@ import com.vecto_example.vecto.popupwindow.ReportPopupWindow
 import com.vecto_example.vecto.dialog.ReportUserDialog
 import com.vecto_example.vecto.retrofit.VectoService
 import com.vecto_example.vecto.ui.detail.FeedDetailActivity
-import com.vecto_example.vecto.ui.mypage.myfeed.adapter.MyFeedAdapter
+import com.vecto_example.vecto.ui.followinfo.FollowInfoActivity
+import com.vecto_example.vecto.ui.main.MainActivity
+import com.vecto_example.vecto.ui.myfeed.adapter.MyFeedAdapter
 import com.vecto_example.vecto.utils.FeedDetailType
 import com.vecto_example.vecto.utils.LoadImageUtils
 import com.vecto_example.vecto.utils.RequestLoginUtils
@@ -53,8 +56,8 @@ class UserInfoActivity : AppCompatActivity(), MyFeedAdapter.OnFeedActionListener
 
             if(userId == Auth._userId.value) {
                 binding.MenuIcon.visibility = View.GONE
-                binding.FollowButton.visibility = View.GONE
-                binding.FollowButtonText.visibility = View.GONE
+
+                binding.FollowButtonText.text = "마이페이지"
             }
         }
 
@@ -120,6 +123,12 @@ class UserInfoActivity : AppCompatActivity(), MyFeedAdapter.OnFeedActionListener
             if(Auth.loginFlag.value == false)
             {
                 RequestLoginUtils.requestLogin(this)
+            } else if(Auth._userId.value == userId){
+                val intent = Intent(this, MainActivity::class.java)
+                intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+                intent.putExtra("MyPage", R.id.MypageFragment)
+                startActivity(intent)
+                finish()
             } else {
                 if (!userInfoViewModel.isFollowRequestFinished) {
                     Toast.makeText(this, "이전 요청을 처리 중입니다. 잠시 후 다시 시도해 주세요.", Toast.LENGTH_SHORT)
@@ -139,17 +148,32 @@ class UserInfoActivity : AppCompatActivity(), MyFeedAdapter.OnFeedActionListener
 
         }
 
+        binding.FollowerTouchImage.setOnClickListener {
+            val intent = Intent(this, FollowInfoActivity::class.java)
+            intent.putExtra("userId", userInfoViewModel.userInfo.value?.userId)
+            intent.putExtra("nickName", userInfoViewModel.userInfo.value?.nickName)
+            intent.putExtra("type", "follower")
+            intent.putExtra("follower", userInfoViewModel.userInfo.value?.followerCount)
+            intent.putExtra("following", userInfoViewModel.userInfo.value?.followingCount)
+            startActivity(intent)
+        }
+
+        binding.FollowingTouchImage.setOnClickListener {
+            val intent = Intent(this, FollowInfoActivity::class.java)
+            intent.putExtra("userId", userInfoViewModel.userInfo.value?.userId)
+            intent.putExtra("nickName", userInfoViewModel.userInfo.value?.nickName)
+            intent.putExtra("type", "following")
+            intent.putExtra("follower", userInfoViewModel.userInfo.value?.followerCount)
+            intent.putExtra("following", userInfoViewModel.userInfo.value?.followingCount)
+            startActivity(intent)
+        }
+
     }
 
     @SuppressLint("NotifyDataSetChanged")
     private fun initObservers() {
 
         Auth.loginFlag.observe(this){
-            if(Auth._userId.value == userId){
-                binding.FollowButton.visibility = View.GONE
-                binding.FollowButtonText.visibility = View.GONE
-            }
-
             if(Auth.loginFlag.value != originalLoginFlag) {
 
                 userInfoViewModel.initSetting()
@@ -358,7 +382,7 @@ class UserInfoActivity : AppCompatActivity(), MyFeedAdapter.OnFeedActionListener
             LoadImageUtils.loadUserProfileImage(this, binding.ProfileImage, userinfo.profileUrl)
         }
 
-        binding.PostCountText.text = userinfo.feedCount.toString()
+        binding.FeedCountText.text = userinfo.feedCount.toString()
         if(userinfo.feedCount == 0)
             binding.NoneText.text = "${userinfo.nickName}님이 작성한 게시물이 없어요!"
 
@@ -373,17 +397,20 @@ class UserInfoActivity : AppCompatActivity(), MyFeedAdapter.OnFeedActionListener
 
     //팔로우 버튼 설정
     private fun setFollowButton(isFollowing: Boolean){
-        if(!isFollowing)
+        if(userId != Auth._userId.value)
         {
-            binding.FollowButton.setImageResource(R.drawable.userinfo_following_button)
-            binding.FollowButtonText.text = "팔로우"
-            binding.FollowButtonText.setTextColor(ContextCompat.getColor(this, R.color.vecto_theme_orange))
-        }
-        else
-        {
-            binding.FollowButton.setImageResource(R.drawable.userinfo_follow_button)
-            binding.FollowButtonText.text = "팔로잉"
-            binding.FollowButtonText.setTextColor(ContextCompat.getColor(this, R.color.white))
+            if(!isFollowing)
+            {
+                binding.FollowButton.setBackgroundResource(R.drawable.ripple_effect_follow)
+                binding.FollowButtonText.text = "팔로우"
+                binding.FollowButtonText.setTextColor(ContextCompat.getColor(this, R.color.vecto_theme_orange))
+            }
+            else
+            {
+                binding.FollowButton.setBackgroundResource(R.drawable.ripple_effect_following)
+                binding.FollowButtonText.text = "팔로잉"
+                binding.FollowButtonText.setTextColor(ContextCompat.getColor(this, R.color.white))
+            }
         }
     }
 
