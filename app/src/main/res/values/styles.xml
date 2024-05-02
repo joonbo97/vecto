@@ -20,4 +20,15 @@
         <item name="android:background">@drawable/bottom_dialog_box</item>
     </style>
 
+    <style name="TabLayout_Text" parent="TextAppearance.Design.Tab">
+        <item name="android:textSize">14sp</item>
+        <item name="android:fontFamily">@font/lineseedkr_rg</item>
+        <item name="android:textColor">@color/tab_layout_normal</item>
+    </style>
+
+    <style name="TabLayout_Selected_Text" parent="TextAppearance.Design.Tab">
+        <item name="android:textSize">14sp</item>
+        <item name="android:fontFamily">@font/lineseedkr_bd</item>
+        <item name="android:textColor">@color/vecto_theme_orange</item>
+    </style>
 </resources>
