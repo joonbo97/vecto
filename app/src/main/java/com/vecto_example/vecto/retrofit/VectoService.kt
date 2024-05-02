@@ -4,7 +4,6 @@ import com.vecto_example.vecto.data.model.LocationData
 import com.vecto_example.vecto.data.model.VisitData
 import com.vecto_example.vecto.data.model.VisitDataForWrite
 import okhttp3.MultipartBody
-import retrofit2.Call
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -96,12 +95,6 @@ interface VectoService {
 
     //게시글 좋아요
     @POST("feed/{feedId}/likes")
-    fun sendLike(
-        @Header("Authorization") authorization: String,
-        @Path("feedId") feedId: Int,
-    ): Call<VectoResponse<Unit>>
-
-    @POST("feed/{feedId}/likes")
     suspend fun postFeedLike(
         @Header("Authorization") authorization: String,
         @Path("feedId") feedId: Int,
@@ -109,12 +102,6 @@ interface VectoService {
 
 
     //게시글 좋아요 취소
-    @DELETE("feed/{feedId}/likes")
-    fun cancelLike(
-        @Header("Authorization") authorization: String,
-        @Path("feedId") feedId: Int,
-    ): Call<VectoResponse<Unit>>
-
     @DELETE("feed/{feedId}/likes")
     suspend fun deleteFeedLike(
         @Header("Authorization") authorization: String,
@@ -203,12 +190,6 @@ interface VectoService {
     /*   User Interaction 관련   */
 
     //팔로우 여부 조회
-    @GET("follow/{userId}")
-    fun getFollow(
-        @Header("Authorization") authorization: String,
-        @Path("userId") userId: String
-    ):Call<VectoResponse<Unit>>
-
     @POST("follow")
     suspend fun getFollowRelation(
         @Header("Authorization") authorization: String,
@@ -217,30 +198,28 @@ interface VectoService {
 
     //팔로우 추가
     @POST("follow/{userId}")
-    fun sendFollow(
-        @Header("Authorization") authorization: String,
-        @Path("userId") userId: String
-    ):Call<VectoResponse<Unit>>
-
-    @POST("follow/{userId}")
-    suspend fun postFollow2(
+    suspend fun postFollow(
         @Header("Authorization") authorization: String,
         @Path("userId") userId: String
     ):Response<VectoResponse<Unit>>
 
     //팔로우 취소
     @DELETE("follow/{userId}")
-    fun deleteFollow(
-        @Header("Authorization") authorization: String,
-        @Path("userId") userId: String
-    ):Call<VectoResponse<Unit>>
-
-    @DELETE("follow/{userId}")
-    suspend fun deleteFollow2(
+    suspend fun deleteFollow(
         @Header("Authorization") authorization: String,
         @Path("userId") userId: String
     ):Response<VectoResponse<Unit>>
 
+    //팔로우 유저 리스트 반환
+    @GET("follow/follower")
+    suspend fun getFollowerList(
+        @Query("userId") userId: String
+    ):Response<VectoResponse<FollowListResponse>>
+
+    @GET("follow/followed")
+    suspend fun getFollowingList(
+        @Query("userId") userId: String
+    ):Response<VectoResponse<FollowListResponse>>
 
     /*   Comment 관련   */
 
@@ -499,6 +478,17 @@ interface VectoService {
     data class FollowRelation(
         val userId: String,
         val relation: String
+    )
+
+    data class FollowListResponse(
+        val followRelations: List<FollowList>
+    )
+
+    data class FollowList(
+        val userId: String,
+        var relation: String,
+        val profileUrl: String,
+        val nickName: String
     )
 
 }
