@@ -26,5 +26,6 @@
     <color name="image_number">#B3000000</color>
     <color name="edit_gray">#8C97A1</color>
     <color name="vecto_warning">#FF951F</color>
+    <color name="tab_layout_normal">#A0A5B9</color>
     <color name="progress_background2">#B3000000</color>
 </resources>
