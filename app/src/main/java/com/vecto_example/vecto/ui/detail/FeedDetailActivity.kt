@@ -45,7 +45,8 @@ class FeedDetailActivity : AppCompatActivity(), OnMapReadyCallback {
     private lateinit var mapView: MapFragment
     private lateinit var naverMap: NaverMap
 
-    private var offset = 350
+    private var offset = 500
+    private var lastPosition = -1
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -145,26 +146,43 @@ class FeedDetailActivity : AppCompatActivity(), OnMapReadyCallback {
                 // 중앙 아이템 인덱스 계산
                 val centerPosition = (firstVisibleItemPosition + lastVisibleItemPosition) / 2
 
-                if(layoutManager.findLastVisibleItemPosition() == myFeedDetailAdapter.feedInfoWithFollow.lastIndex){
-                    val feedInfo = myFeedDetailAdapter.feedInfoWithFollow[lastVisibleItemPosition]
-                    mapOverlayManager.addOverlayForPost(feedInfo.feedInfo) // 중앙 아이템 강조
-                }
-                else {
-                    // 중앙 아이템의 정보를 가져와서 처리
-                    if (centerPosition >= 0 && centerPosition < myFeedDetailAdapter.feedInfoWithFollow.size) {
-                        val feedInfo = myFeedDetailAdapter.feedInfoWithFollow[centerPosition]
-                        mapOverlayManager.addOverlayForPost(feedInfo.feedInfo) // 중앙 아이템 강조
+
+
+                if(lastVisibleItemPosition == myFeedDetailAdapter.feedInfoWithFollow.lastIndex){    //마지막 아이템
+                    if(lastPosition != lastVisibleItemPosition) {
+                        val feedInfo = myFeedDetailAdapter.feedInfoWithFollow[lastVisibleItemPosition]
+                        mapOverlayManager.addOverlayForPost(feedInfo.feedInfo)
 
                         if(feedInfo.feedInfo.visit.size == 1)
                             mapOverlayManager.moveCameraForVisitOffset(feedInfo.feedInfo.visit.first(), offset)
                         else
-                            mapOverlayManager.moveCameraForPathOffset(feedInfo.feedInfo.location.toMutableList(), offset + 50)
+                            mapOverlayManager.moveCameraForPathOffset(feedInfo.feedInfo.location.toMutableList(), offset)
+
+                        lastPosition = lastVisibleItemPosition
+                    }
+                }
+                else {
+                    // 중앙 아이템의 정보를 가져와서 처리
+                    if (centerPosition >= 0 && centerPosition < myFeedDetailAdapter.feedInfoWithFollow.size) {
+                        if(lastPosition != centerPosition){
+                            val feedInfo = myFeedDetailAdapter.feedInfoWithFollow[centerPosition]
+                                mapOverlayManager.addOverlayForPost(feedInfo.feedInfo) // 중앙 아이템 강조
+
+                                if(feedInfo.feedInfo.visit.size == 1)
+                                    mapOverlayManager.moveCameraForVisitOffset(feedInfo.feedInfo.visit.first(), offset)
+                                else
+                                    mapOverlayManager.moveCameraForPathOffset(feedInfo.feedInfo.location.toMutableList(), offset)
+
+                                lastPosition = centerPosition
+                        }
                     }
                 }
 
+
+
                 if (!recyclerView.canScrollVertically(1)) {
                     if(!viewModel.checkLoading() && myFeedDetailAdapter.lastSize == viewModel.allFeedInfo.size) {
-                        Log.d("asd", "getFeed 호출")
+                        Log.d("FeedDetailActivity", "getFeed")
                         getFeed()
                     }
                 }
