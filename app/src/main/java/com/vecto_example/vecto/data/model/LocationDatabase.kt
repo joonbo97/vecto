@@ -34,7 +34,7 @@ class LocationDatabase(context: Context) {
         }
 
         cursor.close()
-        //db.close()
+        db.close()
 
         return dataList
     }
@@ -92,7 +92,7 @@ class LocationDatabase(context: Context) {
     fun getTodayLocationData(): MutableList<LocationData> {
         val db = dbHelper.readableDatabase
 
-        // 오늘 날짜를 YYYY-MM-DD 형식으로 가져옵니다.
+        //YYYY-MM-DD 오늘 날짜
         val todayDate = LocalDate.now().toString()
 
         val startDatetime = "${todayDate}T00:00:00"
