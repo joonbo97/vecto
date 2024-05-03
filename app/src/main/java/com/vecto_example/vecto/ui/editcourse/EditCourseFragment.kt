@@ -160,32 +160,7 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
         binding.editCourseButtonOK.setOnClickListener {
             editCourseViewModel.overlayStart()
 
-            val startTime = LocalDateTime.parse(locationDataList.first().datetime, DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"))
-
-            //시작과 끝을 제외한 기존 경로 삭제
-            LocationDatabase(requireContext()).deleteLocationDataBetween(locationDataList.first().datetime, locationDataList.last().datetime)
-
-            myCourseAdapter.pathdata[pathposition].coordinates.clear()
-
-            //시작 시간은 시작 지점의 시간.
-
-            editCourseViewModel.responsePathData.forEachIndexed { index, point ->
-                LocationDatabase(requireContext()).addLocationData(LocationData(startTime.plusSeconds(index.toLong() + 1).format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")), point.latitude, point.longitude))
-                myCourseAdapter.pathdata[pathposition].coordinates.add(LocationData(startTime.plusSeconds(index.toLong() + 1).format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")), point.latitude, point.longitude))
-            }
-
-            myCourseAdapter.pathdata[pathposition].coordinates.add(0, locationDataList.first())
-            myCourseAdapter.pathdata[pathposition].coordinates.add(locationDataList.last())
-
-            myCourseAdapter.notifyItemChanged(pathposition)
-            mapOverlayManager.deleteOverlay()
-            mapOverlayManager.addPathOverlayForLocation(myCourseAdapter.pathdata[pathposition].coordinates)
-
-
-            Toast.makeText(requireContext(), "해당 경로 변경이 완료되었습니다.", Toast.LENGTH_SHORT).show()
-
-            editCourseViewModel.setButtonRecommend(true)
-            editCourseViewModel.setButtonSelect(false)
+            changeCourseData()
 
             editCourseViewModel.overlayDone()
         }
@@ -201,6 +176,37 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
             initRecyclerView()
             setRecyclerView(binding.TextForLargeRight.text.toString())
         }
+    }
+
+    private fun changeCourseData() {    //추천 경로로 변경 함수
+        val startTime = LocalDateTime.parse(locationDataList.first().datetime, DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"))
+
+        VisitDatabase(requireContext()).updateVisitDataDistance(locationDataList.first().datetime, editCourseViewModel.totalDistance)   //total distance 변경
+
+        //시작과 끝을 제외한 기존 경로 삭제
+        LocationDatabase(requireContext()).deleteLocationDataBetween(locationDataList.first().datetime, locationDataList.last().datetime)
+
+        myCourseAdapter.pathdata[pathposition].coordinates.clear()
+
+        //시작 시간은 시작 지점의 시간.
+
+        editCourseViewModel.responsePathData.forEachIndexed { index, point ->
+            LocationDatabase(requireContext()).addLocationData(LocationData(startTime.plusSeconds(index.toLong() + 1).format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")), point.latitude, point.longitude))
+            myCourseAdapter.pathdata[pathposition].coordinates.add(LocationData(startTime.plusSeconds(index.toLong() + 1).format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")), point.latitude, point.longitude))
+        }
+
+        myCourseAdapter.pathdata[pathposition].coordinates.add(0, locationDataList.first())
+        myCourseAdapter.pathdata[pathposition].coordinates.add(locationDataList.last())
+
+        myCourseAdapter.notifyItemChanged(pathposition)
+        mapOverlayManager.deleteOverlay()
+        mapOverlayManager.addPathOverlayForLocation(myCourseAdapter.pathdata[pathposition].coordinates)
+
+
+        Toast.makeText(requireContext(), "해당 경로 변경이 완료되었습니다.", Toast.LENGTH_SHORT).show()
+
+        editCourseViewModel.setButtonRecommend(true)
+        editCourseViewModel.setButtonSelect(false)
     }
 
     private fun initObservers() {
@@ -360,9 +366,12 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
         initObservers()
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     private fun setRecyclerView(selectedDate: String){
         myCourseAdapter.visitdata.clear()
         myCourseAdapter.pathdata.clear()
+
+        mapOverlayManager.deleteOverlay()
 
         val previousDate = DateTimeUtils.getPreviousDate(selectedDate)
 
@@ -376,27 +385,21 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
             it.datetime.startsWith(selectedDate)
         }.toMutableList()
 
-        //종료 시간이 선택 날짜인 방문지 추가
+        //시작 날짜가 previousDate, 종료 시간이 datetime 방문지 추가
         if(filteredData.isNotEmpty())
             visitDataList.add(0, filteredData[0])
 
-        if(visitDataList.isNotEmpty()){
-            //방문 장소가 있을 경우
-
-            mapOverlayManager.deleteOverlay()
-
+        if(visitDataList.isNotEmpty()){ //방문 장소가 있을 경우
             //선택한 날짜의 방문지의 처음과 끝까지의 경로
             locationDataList = LocationDatabase(requireContext()).getBetweenLocationData(visitDataList.first().datetime, visitDataList.last().datetime)
 
             mapOverlayManager.addPathOverlayForLocation(locationDataList)
             mapOverlayManager.moveCameraForPathOffset(locationDataList, offset)
 
-
-            val locationDataforPath = mutableListOf<LocationData>()
+            val locationDataForPath = mutableListOf<LocationData>()
             var cnt = 1
 
-            //location 첫 좌표 넣어줌.
-            locationDataforPath.add(LocationData(visitDataList[0].datetime, visitDataList[0].lat_set, visitDataList[0].lng_set))
+            locationDataForPath.add(LocationData(visitDataList[0].datetime, visitDataList[0].lat_set, visitDataList[0].lng_set))    //처음 값 넣어줌
 
             for (visitDataItem in visitDataList){
                 mapOverlayManager.addCircleOverlay(visitDataItem)
@@ -405,40 +408,52 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
                 myCourseAdapter.visitdata.add(visitDataItem)
             }
 
+            var totalDistance = 0.0
+            var lastLocation = locationDataList.first()
+
             for (locationData in locationDataList){
                 if(visitDataList.size > 1) { //저장된 시각이 같으면 방문지점 도착경로 1 cycle 완료
+
+                    if(visitDataList[cnt - 1].distance == 0){
+                        totalDistance += editCourseViewModel.calculateDistance(LatLng(lastLocation.lat, lastLocation.lng), LatLng(locationData.lat, locationData.lng))
+                        lastLocation = locationData
+                    }
+
                     if (locationData.datetime == visitDataList[cnt].datetime) {
                         //다음 방문 지점의 경로 좌표에 도달하면, 방문지점 좌표까지 추가해서, adapter에 넘겨주고, 비운후 방문지점 좌표 추가해서 시작
-                        locationDataforPath.add(locationData)
-                        val pathData = PathData(locationDataforPath.toMutableList())
+                        locationDataForPath.add(locationData)
+                        val pathData = PathData(locationDataForPath.toMutableList())
                         myCourseAdapter.pathdata.add(pathData)
 
-                        locationDataforPath.clear()
-                        locationDataforPath.add(locationData)
+                        locationDataForPath.clear()
+                        locationDataForPath.add(locationData)
+
+                        if(visitDataList[cnt - 1].distance == 0){
+                            VisitDatabase(requireContext()).updateVisitDataDistance(visitDataList[cnt - 1].datetime, totalDistance.toInt())
+                        }
+
                         cnt++
+                        totalDistance = 0.0
 
                         if (cnt == visitDataList.size) {
                             Log.d("location", "마지막 항목에 도달하여 종료합니다. 저장된 경로 수: ${myCourseAdapter.pathdata}")
                             break
                         }
                     } else {
-                        locationDataforPath.add(locationData)
+                        locationDataForPath.add(locationData)
                     }
+
                 }
 
             }
 
             myCourseAdapter.notifyDataSetChanged()
         }
-        else{
-            //방문 장소 없을 경우
-            mapOverlayManager.deleteOverlay()
-        }
 
         editCourseViewModel.overlayDone()
     }
 
-    /*RecyclerView Adapter 설정*/
+    /*  RecyclerView Adapter 설정 */
     private fun initRecyclerView(){
         myCourseAdapter = MyCourseAdapter(requireContext(), this)
         val locationRecyclerView = binding.LocationRecyclerView
@@ -452,7 +467,6 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
     }
 
     /*   override 관련 함수   */
-
     override fun onDateSelected(date: String) {
         editCourseViewModel.setDate(date)
         naverMap.onSymbolClickListener = null
@@ -487,6 +501,7 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
 
     override fun onSearchVisit(visitData: VisitData, p: Int) {
         placeList.clear()
+        editCourseViewModel.poiResponseList.clear()
         editCourseViewModel.searchNearbyPoi(visitData, getString(R.string.tmapcategory), p)
     }
 
@@ -509,6 +524,8 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
             naverMap.setOnSymbolClickListener { symbol ->
                 editCourseViewModel.overlayStart()
 
+                //방문지 수정
+
                 if(editCourseViewModel.checkDistance(LatLng(data.lat, data.lng), symbol.position,
                         LocationService.CHECKDISTANCE
                     )) {
@@ -517,15 +534,12 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
 
                     mapOverlayManager.deleteOverlay()
                     mapMarkerManager.addVisitMarkerBasic(newVisitData)//선택한 newVisitData를 마커에 추가
-
-
-                    VisitDatabase(requireContext()).updateVisitData(data, newVisitData)
-                    updateVisitData(data, newVisitData)
-
                     mapMarkerManager.addButtonMarker(data, position)
                     mapOverlayManager.addCircleOverlay(data)
-
                     mapOverlayManager.moveCameraForVisitOffset(newVisitData, offset)
+
+                    updateVisitData(data, newVisitData)
+
                     editCourseViewModel.selectedVisitData = data
 
                     Toast.makeText(context, "선택한 장소로 변경이 완료되었습니다.", Toast.LENGTH_SHORT).show()
@@ -580,6 +594,7 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
 
     /*   데이터 수정 관련   */
     private fun updateVisitData(oldVisitData: VisitData, newVisitData: VisitData){
+        VisitDatabase(requireContext()).updateVisitData(oldVisitData, newVisitData)
 
         for(i in myCourseAdapter.visitdata.indices){
 
@@ -627,59 +642,85 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
             )
         }
 
+        fun mergeWithBeforeData(position: Int){ //이전 방문지와 합병
+            LocationDatabase(requireContext()).deleteLocationDataBetween(myCourseAdapter.visitdata[position - 1].datetime, myCourseAdapter.visitdata[position].endtime)
+            LocationDatabase(requireContext()).updateLocationData(myCourseAdapter.visitdata[position - 1].datetime, myCourseAdapter.visitdata[position].lat_set, myCourseAdapter.visitdata[position].lng_set)
+
+            //재할당을 위한 데이터를 만듬
+            val newVisitData = myCourseAdapter.visitdata[position - 1].copy(
+                endtime = visitData.endtime,
+                staytime = editCourseViewModel.getTimeDiff(myCourseAdapter.visitdata[position - 1].datetime, visitData.endtime),
+                distance = myCourseAdapter.visitdata[position].distance //이전 distance 값 사용
+            )
+
+            VisitDatabase(requireContext()).updateVisitData(myCourseAdapter.visitdata[position - 1], newVisitData)  //기존 데이터를 업데이트 데이터로 변경
+
+            myCourseAdapter.visitdata[position - 1] = newVisitData//직전 방문지에 이전 방문지 데이터를 합친다.
+            myCourseAdapter.visitdata.removeAt(position)//해당 위치 방문지 데이터 삭제
+
+            VisitDatabase(requireContext()).deleteVisitData(visitData.datetime)
+        }
+
+        fun mergeWithAfterData(position: Int){  //이후 방문지와 합병
+            LocationDatabase(requireContext()).deleteLocationDataBetween(myCourseAdapter.visitdata[position].datetime, myCourseAdapter.visitdata[position + 1].endtime)
+            LocationDatabase(requireContext()).updateLocationData(myCourseAdapter.visitdata[position].datetime, myCourseAdapter.visitdata[position + 1].lat_set, myCourseAdapter.visitdata[position + 1].lng_set)
+
+            //재할당을 위한 데이터를 만듬
+            val newVisitData = myCourseAdapter.visitdata[position + 1].copy(
+                datetime = visitData.datetime,
+                staytime = editCourseViewModel.getTimeDiff(visitData.datetime, myCourseAdapter.visitdata[position + 1].endtime)
+                //position - 1 의 방문지 distance 를 변경해야하지만, 합쳐질 정도로 가까우므로 같은 값 사용
+            )
+
+            VisitDatabase(requireContext()).updateVisitData(myCourseAdapter.visitdata[position + 1], newVisitData)  //기존 데이터를 업데이트 데이터로 변경
+
+            myCourseAdapter.visitdata[position + 1] = newVisitData
+            myCourseAdapter.visitdata.removeAt(position)
+
+            VisitDatabase(requireContext()).deleteVisitDataForEndtime(visitData.endtime)
+        }
+
+        fun mergePathData(position: Int){   //경로 합병
+            val newPath: List<LocationData> =
+                myCourseAdapter.pathdata[position - 1].coordinates + myCourseAdapter.pathdata[position].coordinates
+
+            myCourseAdapter.pathdata[position - 1].coordinates.clear()
+            myCourseAdapter.pathdata[position - 1].coordinates.addAll(newPath)
+            myCourseAdapter.pathdata.removeAt(position)
+        }
+
         if(myCourseAdapter.visitdata.size != 1) {
             if (position == 0)// 만약 해당 날짜의 첫번째 방문지인 경우
             {
                 if(checkDistanceAfter(position))//만약 직후 방문지와 합병가능한 거리에 있다면
                 {
+                    mergeWithAfterData(position)
 
-                    //재할당을 위한 데이터를 만듬
-                    val newVisitData = myCourseAdapter.visitdata[1].copy(
-                        datetime = visitData.datetime,
-                        staytime = editCourseViewModel.getTimeDiff(visitData.datetime, myCourseAdapter.visitdata[1].endtime)
-                    )
-
-                    VisitDatabase(requireContext()).updateVisitData(myCourseAdapter.visitdata[1], newVisitData)
-
-                    myCourseAdapter.visitdata[1] = newVisitData//다음 방문지에 이전 방문지 데이터를 합친다.
-                    myCourseAdapter.visitdata.removeAt(0)//최초 방문지 데이터 삭제
-
-                    //최초 방문지가 사라지는 경우, 경로의 [0] 과 [1] 사이의 데이터를 없애면 된다.
-                    myCourseAdapter.pathdata.removeAt(0)
-
-                    VisitDatabase(requireContext()).deleteVisitDataForEndtime(visitData.endtime)
+                    //최초 방문지가 사라지는 경우, 경로의 [0]데이터 삭제
+                    myCourseAdapter.pathdata.removeAt(position)
                 }
                 else//합병이 불가능한 거리에 있다면
                 {
                     myCourseAdapter.visitdata.removeAt(0)
                     myCourseAdapter.pathdata.removeAt(0)
 
-
                     VisitDatabase(requireContext()).deleteVisitData(visitData.datetime)
                 }
 
-            } else if (position == myCourseAdapter.visitdata.lastIndex)// 만약 해당 날짜의 마지막 방문지인 경우
+            }
+            else if (position == myCourseAdapter.visitdata.lastIndex)// 만약 해당 날짜의 마지막 방문지인 경우
             {
                 if(checkDistanceBefore(position))//마지막과 직전 방문지가 합병 가능한 거리에 있다면
                 {
-                    //재할당을 위한 데이터를 만듬
-                    val newVisitData = myCourseAdapter.visitdata[position - 1].copy(
-                        endtime = visitData.endtime,
-                        staytime = editCourseViewModel.getTimeDiff(myCourseAdapter.visitdata[position - 1].datetime, visitData.endtime)
-                    )
+                    mergeWithBeforeData(position)
 
-                    VisitDatabase(requireContext()).updateVisitData(myCourseAdapter.visitdata[position - 1], newVisitData)
-
-                    myCourseAdapter.visitdata[position - 1] = newVisitData//직전 방문지에 이전 방문지 데이터를 합친다.
-                    myCourseAdapter.visitdata.removeAt(position)//마지막 방문지 데이터 삭제
-
-                    //최초 방문지가 사라지는 경우, 방문지 [position - 1] 과 [position] 사이의 경로 데이터를 없애면 된다.
                     myCourseAdapter.pathdata.removeAt(position - 1)
-
-                    VisitDatabase(requireContext()).deleteVisitData(visitData.datetime)
                 }
                 else
                 {
+                    if(myCourseAdapter.visitdata[position - 1].distance != 0)
+                        VisitDatabase(requireContext()).updateVisitDataDistance(myCourseAdapter.visitdata[position - 1].datetime, 0)    //새로운 방문지 추가를 대비하여 초기화
+
                     myCourseAdapter.visitdata.removeAt(position)
                     myCourseAdapter.pathdata.removeAt(position - 1)
 
@@ -690,62 +731,26 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
             {
                 if(checkDistanceBefore(position))
                 {
-                    //재할당을 위한 데이터를 만듬
-                    val newVisitData = myCourseAdapter.visitdata[position - 1].copy(
-                        endtime = visitData.endtime,
-                        staytime = editCourseViewModel.getTimeDiff(myCourseAdapter.visitdata[position - 1].datetime, visitData.endtime)
-                    )
+                    mergeWithBeforeData(position)
 
-                    VisitDatabase(requireContext()).updateVisitData(myCourseAdapter.visitdata[position - 1], newVisitData)
-
-                    myCourseAdapter.visitdata[position - 1] = newVisitData//직전 방문지에 이전 방문지 데이터를 합친다.
-                    myCourseAdapter.visitdata.removeAt(position)//해당 위치 방문지 데이터 삭제
-
-                    VisitDatabase(requireContext()).deleteVisitData(visitData.datetime)
-
-                    val newPath: List<LocationData> =
-                        myCourseAdapter.pathdata[position - 1].coordinates + myCourseAdapter.pathdata[position].coordinates
-
-                    myCourseAdapter.pathdata[position - 1].coordinates.clear()
-                    myCourseAdapter.pathdata[position - 1].coordinates.addAll(newPath)
-                    myCourseAdapter.pathdata.removeAt(position)
+                    mergePathData(position)
                 }
                 else if(checkDistanceAfter(position))
                 {
-                    //재할당을 위한 데이터를 만듬
-                    val newVisitData = myCourseAdapter.visitdata[position + 1].copy(
-                        datetime = visitData.datetime,
-                        staytime = editCourseViewModel.getTimeDiff(visitData.datetime, myCourseAdapter.visitdata[position + 1].endtime)
-                    )
+                    mergeWithAfterData(position)
 
-                    VisitDatabase(requireContext()).updateVisitData(myCourseAdapter.visitdata[1], newVisitData)
-
-                    myCourseAdapter.visitdata[position + 1] = newVisitData
-                    myCourseAdapter.visitdata.removeAt(position)
-
-                    VisitDatabase(requireContext()).deleteVisitDataForEndtime(visitData.endtime)
-
-                    val newPath: List<LocationData> =
-                        myCourseAdapter.pathdata[position - 1].coordinates + myCourseAdapter.pathdata[position].coordinates
-
-                    myCourseAdapter.pathdata[position - 1].coordinates.clear()
-                    myCourseAdapter.pathdata[position - 1].coordinates.addAll(newPath)
-                    myCourseAdapter.pathdata.removeAt(position)
+                    mergePathData(position)
                 }
                 else //합병 x
                 {
+                    VisitDatabase(requireContext()).updateVisitDataDistance(myCourseAdapter.visitdata[position - 1].datetime,
+                        myCourseAdapter.visitdata[position - 1].distance + myCourseAdapter.visitdata[position].distance)
+
                     myCourseAdapter.visitdata.removeAt(position)
 
                     VisitDatabase(requireContext()).deleteVisitData(visitData.datetime)
 
-
-                    val newPath: List<LocationData> =
-                        myCourseAdapter.pathdata[position - 1].coordinates + myCourseAdapter.pathdata[position].coordinates
-
-                    myCourseAdapter.pathdata[position - 1].coordinates.clear()
-                    myCourseAdapter.pathdata[position - 1].coordinates.addAll(newPath)
-                    myCourseAdapter.pathdata.removeAt(position)
-
+                    mergePathData(position)
                 }
             }
         }
@@ -757,6 +762,7 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
 
             mapOverlayManager.deleteOverlay()
         }
+
         myCourseAdapter.notifyDataSetChanged()
 
         editCourseViewModel.overlayDone()

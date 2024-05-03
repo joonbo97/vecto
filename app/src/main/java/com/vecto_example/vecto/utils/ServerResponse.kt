@@ -17,5 +17,8 @@ enum class ServerResponse(val code:String) {
     FAIL_DUPLICATED_EMAIL("E019"),          //메일 중복
     FAIL_EMAILCODE_INVALID("E017"),         //인증 코드 오류
 
-
+    /*   VISIT   */
+    VISIT_TYPE_WALK("walk"),
+    VISIT_TYPE_CAR("car"),
+    VISIT_TYPE_PUBLIC("public"),
 }

@@ -28,7 +28,9 @@ class VisitDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE
                 "lat_set REAL, " +
                 "lng_set REAL, " +
                 "staytime INTEGER, " +
-                "name TEXT" +
+                "name TEXT, " +
+                "distance INTEGER, " +
+                "type TEXT" +
                 ")"
 
         private const val DROP_TABLE_QUERY = "DROP TABLE IF EXISTS visit_data"

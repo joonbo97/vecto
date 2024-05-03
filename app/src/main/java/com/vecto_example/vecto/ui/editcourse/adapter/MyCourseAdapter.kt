@@ -18,7 +18,6 @@ class MyCourseAdapter(private val context: Context, private val itemClickListene
     var pathdata = mutableListOf<PathData>()
     private var selectedPosition = -1
 
-
     inner class VisitViewHolder(view: View): RecyclerView.ViewHolder(view), View.OnClickListener{
         val imageView: ImageView = view.findViewById(R.id.VisitImageView)
         val title: TextView = view.findViewById(R.id.VisitTitleText)

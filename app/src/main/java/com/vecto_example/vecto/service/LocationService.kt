@@ -19,6 +19,7 @@ import com.vecto_example.vecto.data.model.VisitDatabase
 import com.google.android.gms.location.*
 import com.naver.maps.geometry.LatLng
 import com.vecto_example.vecto.ui.notification.MapNotification
+import com.vecto_example.vecto.utils.ServerResponse
 import java.time.Duration
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -26,16 +27,15 @@ import java.time.format.DateTimeFormatter
 class LocationService : Service() {
     /*   Foreground Service   */
 
-    /*위치 관련*/
+    /*   위치 관련   */
     private lateinit var fusedLocationClient: FusedLocationProviderClient
 
-    /*DB 관련*/
+    /*   DB 관련   */
     private lateinit var locationDatabase: LocationDatabase
     private lateinit var visitDatabase: VisitDatabase
     private lateinit var logDatabase: LogDatabase
 
-
-    /*시간, 위치 관련*/
+    /*   시간, 위치 관련   */
     private var lastUpdateTime: LocalDateTime? = LocalDateTime.now().withNano(0)
     private var lastUpdateLocation: LatLng = LatLng(0.0, 0.0)//초기 방문 중심 좌표
     val FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")
@@ -48,7 +48,7 @@ class LocationService : Service() {
 
             for (location in locationResult.locations) {
 
-                //정확도가 CHECK DISTANCE 이내인 정보만 수집할 것임.
+                //정확도가 CHECK DISTANCE 이내
                 if(location.accuracy <= CHECKDISTANCE) {
 
                     //현재 시간
@@ -61,7 +61,10 @@ class LocationService : Service() {
                         if(Duration.between(lastUpdateTime, currentDateTime).toMinutes() <= 5) {
                             //중심 좌표 조정
                             cnt++
-                            lastUpdateLocation = LatLng(((lastUpdateLocation.latitude * (cnt-1) + location.latitude)/cnt), ((lastUpdateLocation.longitude * (cnt-1) + location.longitude) / cnt))
+
+                            lastUpdateLocation =
+                                LatLng(((lastUpdateLocation.latitude * (cnt - 1) + location.latitude) / cnt),
+                                    ((lastUpdateLocation.longitude * (cnt - 1) + location.longitude) / cnt))
 
                             //위치 데이터 추가
                             locationDatabase.addLocationData(LocationData(currentDateTime.format(FORMAT), location.latitude, location.longitude))
@@ -69,21 +72,19 @@ class LocationService : Service() {
                         }
                         else//5분이 경과했으면 (방문)
                         {
-                            if(cnt > 1)//이번이 처음 방문으로 판단하는 시점이라면
+                            if(!visitFlag)//이번이 처음 방문으로 판단하는 시점이라면
                             {
                                 fun saveNewVisit() {
                                     savelog(1)
+
                                     //평균 값과 처음 업데이트 시간을 visit db에 저장함.
-                                    visitDatabase.addVisitData(VisitData(lastUpdateTime!!.format(FORMAT), lastUpdateTime!!.format(FORMAT), lastUpdateLocation.latitude, lastUpdateLocation.longitude, lastUpdateLocation.latitude, lastUpdateLocation.longitude, 0, ""))
+                                    visitDatabase.addVisitData(VisitData(lastUpdateTime!!.format(FORMAT), lastUpdateTime!!.format(FORMAT), lastUpdateLocation.latitude, lastUpdateLocation.longitude, lastUpdateLocation.latitude, lastUpdateLocation.longitude, 0, "", 0, ServerResponse.VISIT_TYPE_WALK.code))
 
-                                    locationDatabase.deleteLocationDataAfter(lastUpdateTime!!)
-                                    locationDatabase.updateLocationData(lastUpdateTime!!.format(FORMAT), lastUpdateLocation.latitude, lastUpdateLocation.longitude)
-
+                                    locationDatabase.deleteLocationDataAfter(lastUpdateTime!!)  //방문 중 경로 데이터 모두 삭제 후, 방문지에 해당하는 좌표 넣어줌
                                     locationDatabase.addLocationData(LocationData(lastUpdateTime!!.format(FORMAT),lastUpdateLocation.latitude, lastUpdateLocation.longitude))
 
                                     cnt = 1
                                     visitFlag = true
-
 
                                     sendVisitNotification()
                                 }
@@ -129,11 +130,12 @@ class LocationService : Service() {
                                 LocalDateTime.parse(lastVisitLocation.datetime, FORMAT)
                             val minutesPassed = Duration.between(lastVisitTime, currentDateTime).toMinutes().toInt()
 
-                            visitDatabase.updateVisitEndtimeData(
+                            visitDatabase.updateVisitDataEndTime(
                                 lastVisitTime.format(FORMAT),
                                 currentDateTime.format(FORMAT),
                                 minutesPassed
                             )
+
                             visitFlag = false
                         }
 
@@ -153,6 +155,7 @@ class LocationService : Service() {
                     Log.d("LocationService", "Ignoring ${location.accuracy}")
                     savelog(5)
                 }
+
             }
         }
     }
@@ -164,7 +167,15 @@ class LocationService : Service() {
 
     override fun onCreate() {
         super.onCreate()
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+
+        try {
+            fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+        } catch (e: Exception) {
+            val datetime = LocalDateTime.now().withNano(0).format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"))
+            logDatabase.addLogData(LogData(datetime ,e.message.toString()))
+            stopSelf()
+        }
+
         locationDatabase = LocationDatabase(this)
         visitDatabase = VisitDatabase(this)
         logDatabase = LogDatabase(this)
@@ -174,9 +185,8 @@ class LocationService : Service() {
         Thread.setDefaultUncaughtExceptionHandler { thread, throwable ->
             val datetime = LocalDateTime.now().withNano(0).format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"))
             logDatabase.addLogData(LogData(datetime ,throwable.message.toString()))
-            defaultHandler?.uncaughtException(thread, throwable)  // 이전 기본 처리기에 위임하여 앱이 종료되게 할 수 있습니다.
+            defaultHandler?.uncaughtException(thread, throwable)
         }
-
 
     }
 

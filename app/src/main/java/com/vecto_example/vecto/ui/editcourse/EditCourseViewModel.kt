@@ -57,6 +57,8 @@ class EditCourseViewModel(private val repository: TMapRepository) : ViewModel() 
 
     var responsePathData = mutableListOf<LatLng>()
 
+    var totalDistance = 0
+
     fun recommendRoute(locationDataList: MutableList<LocationData>) {
         startLoading()
 
@@ -75,6 +77,8 @@ class EditCourseViewModel(private val repository: TMapRepository) : ViewModel() 
             recommendRouteResponse.onSuccess {
 
                 _responseRecommendLiveData.postValue(it)
+
+                totalDistance = it.features[0].properties.totalDistance
 
             }.onFailure {
                 if(it.message == "FAIL"){
@@ -167,6 +171,10 @@ class EditCourseViewModel(private val repository: TMapRepository) : ViewModel() 
 
     fun checkDistance(centerLatLng: LatLng, currentLatLng: LatLng, checkDistance: Int): Boolean{
         return centerLatLng.distanceTo(currentLatLng) <= checkDistance.toDouble()
+    }
+
+    fun calculateDistance(centerLatLng: LatLng, currentLatLng: LatLng): Double{
+        return centerLatLng.distanceTo(currentLatLng)
     }
 
     fun overlayDone(){

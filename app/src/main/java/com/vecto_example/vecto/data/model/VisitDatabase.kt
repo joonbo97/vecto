@@ -19,6 +19,8 @@ class VisitDatabase(private val context: Context) {
             put("lng_set", visitData.lng_set)
             put("staytime", visitData.staytime)
             put("name", visitData.name)
+            put("distance", visitData.distance)
+            put("type", visitData.type)
         }
         db.insert("visit_data", null, values)
         db.close()
@@ -39,7 +41,9 @@ class VisitDatabase(private val context: Context) {
             val lng_set = cursor.getDouble(cursor.getColumnIndex("lng_set"))
             val staytime = cursor.getInt(cursor.getColumnIndex("staytime"))
             val name = cursor.getString(cursor.getColumnIndex("name"))
-            dataList.add(VisitData(datetime, endtime, lat, lng, lat_set, lng_set, staytime, name))
+            val distance = cursor.getInt(cursor.getColumnIndex("distance"))
+            val type = cursor.getString(cursor.getColumnIndex("type"))
+            dataList.add(VisitData(datetime, endtime, lat, lng, lat_set, lng_set, staytime, name, distance, type))
         }
 
         cursor.close()
@@ -68,17 +72,41 @@ class VisitDatabase(private val context: Context) {
         val lng_set = cursor.getDouble(cursor.getColumnIndex("lng_set"))
         val staytime = cursor.getInt(cursor.getColumnIndex("staytime"))
         val name = cursor.getString(cursor.getColumnIndex("name"))
+        val distance = cursor.getInt(cursor.getColumnIndex("distance"))
+        val type = cursor.getString(cursor.getColumnIndex("type"))
         cursor.close()
 
-        return VisitData(datetime, endtime, lat, lng, lat_set, lng_set, staytime, name)
+        return VisitData(datetime, endtime, lat, lng, lat_set, lng_set, staytime, name, distance, type)
     }
 
     //특정 시간의 데이터를 변경하는 작업
-    fun updateVisitEndtimeData(datetime: String, endtime: String, staytime: Int) {
+    fun updateVisitDataEndTime(datetime: String, endtime: String, staytime: Int) {
         val db = dbHelper.writableDatabase
         val values = ContentValues().apply {
             put("endtime", endtime)
             put("staytime", staytime)
+        }
+        val whereClause = "datetime = ?"
+        val whereArgs = arrayOf(datetime)
+        db.update("visit_data", values, whereClause, whereArgs)
+        db.close()
+    }
+
+    fun updateVisitDataDistance(datetime: String, distance: Int) {
+        val db = dbHelper.writableDatabase
+        val values = ContentValues().apply {
+            put("distance", distance)
+        }
+        val whereClause = "datetime = ?"
+        val whereArgs = arrayOf(datetime)
+        db.update("visit_data", values, whereClause, whereArgs)
+        db.close()
+    }
+
+    fun updateVisitDataType(datetime: String, type: String) {
+        val db = dbHelper.writableDatabase
+        val values = ContentValues().apply {
+            put("type", type)
         }
         val whereClause = "datetime = ?"
         val whereArgs = arrayOf(datetime)
@@ -98,6 +126,8 @@ class VisitDatabase(private val context: Context) {
             put("lng_set", newVisitData.lng_set)
             put("staytime", newVisitData.staytime)
             put("name", newVisitData.name)
+            put("distance", newVisitData.distance)
+            put("type", newVisitData.type)
         }
         val whereClause = "datetime = ?" // 조건을 설정하여 갱신할 데이터 선택
         val whereArgs = arrayOf(oldVisitData.datetime) // 조건에 사용할 값들
@@ -155,7 +185,9 @@ class VisitDatabase(private val context: Context) {
             val lng_set = cursor.getDouble(cursor.getColumnIndex("lng_set"))
             val staytime = cursor.getInt(cursor.getColumnIndex("staytime"))
             val name = cursor.getString(cursor.getColumnIndex("name"))
-            dataList.add(VisitData(datetime, endtime, lat, lng, lat_set, lng_set, staytime, name))
+            val distance = cursor.getInt(cursor.getColumnIndex("distance"))
+            val type = cursor.getString(cursor.getColumnIndex("type"))
+            dataList.add(VisitData(datetime, endtime, lat, lng, lat_set, lng_set, staytime, name, distance, type))
         }
 
         cursor.close()
@@ -184,7 +216,9 @@ class VisitDatabase(private val context: Context) {
                 val lng_set = cursor.getDouble(cursor.getColumnIndex("lng_set"))
                 val staytime = cursor.getInt(cursor.getColumnIndex("staytime"))
                 val name = cursor.getString(cursor.getColumnIndex("name"))
-                dataList.add(VisitData(datetime, endtime, lat, lng, lat_set, lng_set, staytime, name))
+                val distance = cursor.getInt(cursor.getColumnIndex("distance"))
+                val type = cursor.getString(cursor.getColumnIndex("type"))
+                dataList.add(VisitData(datetime, endtime, lat, lng, lat_set, lng_set, staytime, name, distance, type))
             } while (cursor.moveToNext())
         }
 
