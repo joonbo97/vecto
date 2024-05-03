@@ -16,9 +16,9 @@
         android:id="@+id/Top_Layout"
         android:layout_width="match_parent"
         android:layout_height="90dp"
+        android:background="@color/vecto_transparenct"
         android:clickable="true"
         android:focusable="true"
-        android:background="@color/vecto_transparenct"
         app:layout_constraintTop_toTopOf="parent">
 
         <ImageView
@@ -72,6 +72,20 @@
             app:layout_constraintTop_toTopOf="@+id/CalendarLargeBoxImage"
             app:layout_constraintVertical_bias="0.5" />
 
+        <ImageView
+            android:id="@+id/RefreshButton"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginEnd="15dp"
+            android:src="@drawable/edit_course_refresh"
+            android:background="?selectableItemBackgroundBorderless"
+            android:padding="4dp"
+            android:visibility="visible"
+            app:layout_constraintBottom_toBottomOf="@+id/CalendarLargeBoxImage"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/CalendarLargeBoxImage"
+            app:layout_constraintVertical_bias="0.5" />
+
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -80,7 +94,7 @@
         android:layout_width="120dp"
         android:layout_height="30dp"
         android:layout_marginTop="10dp"
-        android:src="@drawable/edit_course_button_init"
+        android:background="@drawable/ripple_effect_edit_course_blue"
         android:visibility="invisible"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
@@ -93,7 +107,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="1dp"
         android:fontFamily="@font/lineseedkr_bd"
-        android:text="추천 경로 설정"
+        android:text="경로 다듬기"
         android:textColor="@color/white"
         android:textSize="13sp"
         android:visibility="invisible"
@@ -109,7 +123,7 @@
         android:layout_height="30dp"
         android:layout_marginTop="10dp"
         android:layout_marginEnd="66dp"
-        android:src="@drawable/edit_course_button_no"
+        android:background="@drawable/ripple_effect_edit_course_pink"
         android:visibility="invisible"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
@@ -138,7 +152,7 @@
         android:layout_height="30dp"
         android:layout_marginStart="66dp"
         android:layout_marginTop="10dp"
-        android:src="@drawable/edit_course_button_ok"
+        android:background="@drawable/ripple_effect_edit_course_blue"
         android:visibility="invisible"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
@@ -159,6 +173,88 @@
         app:layout_constraintEnd_toEndOf="@+id/editCourseButtonOK"
         app:layout_constraintStart_toStartOf="@+id/editCourseButtonOK"
         app:layout_constraintTop_toTopOf="@+id/editCourseButtonOK"
+        app:layout_constraintVertical_bias="0.5" />
+
+    <ImageView
+        android:id="@+id/visitEditButton"
+        android:layout_width="54dp"
+        android:layout_height="30dp"
+        android:layout_marginTop="10dp"
+        android:background="@drawable/ripple_effect_edit_course_blue"
+        android:visibility="invisible"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/Top_Layout" />
+
+    <TextView
+        android:id="@+id/visitEditButtonText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="1dp"
+        android:fontFamily="@font/lineseedkr_bd"
+        android:text="편집"
+        android:textColor="@color/white"
+        android:textSize="13sp"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toBottomOf="@+id/visitEditButton"
+        app:layout_constraintEnd_toEndOf="@+id/visitEditButton"
+        app:layout_constraintStart_toStartOf="@+id/visitEditButton"
+        app:layout_constraintTop_toTopOf="@+id/visitEditButton"
+        app:layout_constraintVertical_bias="0.5" />
+
+    <ImageView
+        android:id="@+id/visitDeleteButton"
+        android:layout_width="54dp"
+        android:layout_height="30dp"
+        android:background="@drawable/ripple_effect_edit_course_pink"
+        android:visibility="invisible"
+        android:layout_marginTop="10dp"
+        android:layout_marginEnd="10dp"
+        app:layout_constraintEnd_toStartOf="@+id/visitEditButton"
+        app:layout_constraintTop_toBottomOf="@id/Top_Layout" />
+
+    <TextView
+        android:id="@+id/visitDeleteButtonText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="1dp"
+        android:fontFamily="@font/lineseedkr_bd"
+        android:text="삭제"
+        android:textColor="@color/white"
+        android:textSize="13sp"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toBottomOf="@+id/visitDeleteButton"
+        app:layout_constraintEnd_toEndOf="@+id/visitDeleteButton"
+        app:layout_constraintStart_toStartOf="@+id/visitDeleteButton"
+        app:layout_constraintTop_toTopOf="@+id/visitDeleteButton"
+        app:layout_constraintVertical_bias="0.5" />
+
+    <ImageView
+        android:id="@+id/visitSearchButton"
+        android:layout_width="54dp"
+        android:layout_height="30dp"
+        android:background="@drawable/ripple_effect_edit_course_mint"
+        android:visibility="invisible"
+        android:layout_marginTop="10dp"
+        android:layout_marginStart="10dp"
+        app:layout_constraintStart_toEndOf="@+id/visitEditButton"
+        app:layout_constraintTop_toBottomOf="@id/Top_Layout" />
+
+    <TextView
+        android:id="@+id/visitSearchButtonText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="1dp"
+        android:fontFamily="@font/lineseedkr_bd"
+        android:text="검색"
+        android:textColor="@color/white"
+        android:textSize="13sp"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toBottomOf="@+id/visitSearchButton"
+        app:layout_constraintEnd_toEndOf="@+id/visitSearchButton"
+        app:layout_constraintStart_toStartOf="@+id/visitSearchButton"
+        app:layout_constraintTop_toTopOf="@+id/visitSearchButton"
         app:layout_constraintVertical_bias="0.5" />
 
 
@@ -198,19 +294,6 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="@+id/EditLayout" />
     </androidx.constraintlayout.widget.ConstraintLayout>
-
-
-    <ImageView
-        android:id="@+id/RefreshButton"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:padding="7dp"
-        android:layout_marginTop="15dp"
-        android:layout_marginEnd="15dp"
-        android:src="@drawable/refresh_orange"
-        android:visibility="visible"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/Top_Layout" />
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/constraintProgress"

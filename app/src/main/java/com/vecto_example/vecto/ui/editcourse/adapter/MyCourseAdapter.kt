@@ -1,6 +1,6 @@
 package com.vecto_example.vecto.ui.editcourse.adapter
 
-import android.content.Context
+import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -10,301 +10,165 @@ import androidx.recyclerview.widget.RecyclerView
 import com.vecto_example.vecto.R
 import com.vecto_example.vecto.data.model.PathData
 import com.vecto_example.vecto.data.model.VisitData
+import com.vecto_example.vecto.databinding.EditCoursePathItemBinding
+import com.vecto_example.vecto.databinding.EditCourseVisitItemBinding
+import com.vecto_example.vecto.utils.ServerResponse
 import java.lang.IllegalArgumentException
 
 
-class MyCourseAdapter(private val context: Context, private val itemClickListener: OnItemClickListener): RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+class MyCourseAdapter(): RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     var visitdata = mutableListOf<VisitData>()
     var pathdata = mutableListOf<PathData>()
+
     private var selectedPosition = -1
 
-    inner class VisitViewHolder(view: View): RecyclerView.ViewHolder(view), View.OnClickListener{
-        val imageView: ImageView = view.findViewById(R.id.VisitImageView)
-        val title: TextView = view.findViewById(R.id.VisitTitleText)
-        val time: TextView = view.findViewById(R.id.VisitTimeText)
+    private var isTypeChangeFinished = true
 
-        val boximageView: ImageView = view.findViewById(R.id.VisitDiscriptionBoxImage)
+    interface OnItemClickListener {
+        fun onVisitItemClick(position: Int)
 
-        init{
-            view.setOnClickListener(this)
-        }
+        fun onPathItemClick(position: Int)
 
-        fun bindvisit(item: VisitData)
-        {
-            if(adapterPosition == 0)
-            {
-                if(item.name.isNotEmpty())
-                {
-                    if(visitdata.size == 1) {
-                        imageView.setImageResource(R.drawable.course_visit_only_on)
-                        title.text = item.name
-                        time.text = getStayTime(item.staytime)
-                    }
-                    else {
-                        imageView.setImageResource(R.drawable.course_visit_top_on)
-                        title.text = item.name
-                        time.text = getStayTime(item.staytime)
-                    }
-                }
-                else
-                {
-                    if(visitdata.size == 1) {
-                        imageView.setImageResource(R.drawable.course_visit_only_off)
-                        title.text = "정확한 장소를 설정하세요."
-                        time.text = getStayTime(item.staytime)
-                    }
-                    else {
-                        imageView.setImageResource(R.drawable.course_visit_top_off)
-                        title.text = "정확한 장소를 설정하세요."
-                        time.text = getStayTime(item.staytime)
-                    }
-                }
-            }
-            else if(adapterPosition == visitdata.size + pathdata.size - 1)
-            {
-                if(item.name.isNotEmpty())
-                {
-                    imageView.setImageResource(R.drawable.course_visit_bottom_on)
-                    title.text = item.name
-                    time.text = getStayTime(item.staytime)
-                }
-                else
-                {
-                    imageView.setImageResource(R.drawable.course_visit_bottom_off)
-                    title.text = "정확한 장소를 설정하세요."
-                    time.text = getStayTime(item.staytime)
-                }
-            }
-            else
-            {
-                if(item.name.isNotEmpty())
-                {
-                    imageView.setImageResource(R.drawable.course_visit_middle_on)
-                    title.text = item.name
-                    time.text = getStayTime(item.staytime)
-                }
-                else
-                {
-                    imageView.setImageResource(R.drawable.course_visit_middle_off)
-                    title.text = "정확한 장소를 설정하세요."
-                    time.text = getStayTime(item.staytime)
-                }
-            }
-
-            if (adapterPosition == selectedPosition) {
-                boximageView.setImageResource(R.drawable.course_visitbox_select)
-
-                if(adapterPosition == 0)
-                {
-                    if(visitdata.size == 1) {
-                        imageView.setImageResource(R.drawable.course_visit_only_select)
-                    }
-                    else {
-                        imageView.setImageResource(R.drawable.course_visit_top_select)
-                    }
-                }
-                else if(adapterPosition == visitdata.size + pathdata.size - 1)
-                {
-                        imageView.setImageResource(R.drawable.course_visit_bottom_select)
-                }
-                else
-                {
-                    if(item.name.isNotEmpty())
-                        imageView.setImageResource(R.drawable.course_visit_middle_select)
-                }
-            } else {
-                // 나머지 아이템은 기본 이미지로 설정
-                boximageView.setImageResource(R.drawable.course_visitbox)
-
-                if(adapterPosition == 0)
-                {
-                    if(item.name.isNotEmpty())
-                    {
-                        if(visitdata.size == 1)
-                            imageView.setImageResource(R.drawable.course_visit_only_on)
-                        else
-                            imageView.setImageResource(R.drawable.course_visit_top_on)
-                    }
-                    else
-                    {
-                        if(visitdata.size == 1)
-                            imageView.setImageResource(R.drawable.course_visit_only_off)
-                        else
-                            imageView.setImageResource(R.drawable.course_visit_top_off)
-                    }
-                }
-                else if(adapterPosition == visitdata.size + pathdata.size - 1)
-                {
-                    if(item.name.isNotEmpty())
-                        imageView.setImageResource(R.drawable.course_visit_bottom_on)
-                    else
-                        imageView.setImageResource(R.drawable.course_visit_bottom_off)
-                }
-                else
-                {
-                    if(item.name.isNotEmpty())
-                        imageView.setImageResource(R.drawable.course_visit_middle_on)
-                    else
-                        imageView.setImageResource(R.drawable.course_visit_middle_off)
-                }
-            }
-
-
-
-            if(visitdata.size > 1) {
-                if (adapterPosition == selectedPosition - 1 && selectedPosition != -1) { //왼쪽(위쪽의 데이터)
-                    if(item.name.isEmpty())
-                    {
-                        if(adapterPosition == 0)//처음인 경우
-                            imageView.setImageResource(R.drawable.course_visit_top_off_select)
-                        else
-                            imageView.setImageResource(R.drawable.course_visit_bottom_off_select_bottom)
-                    }else{
-                        if(adapterPosition == 0)
-                            imageView.setImageResource(R.drawable.course_visit_top_on_select)
-                        else
-                            imageView.setImageResource(R.drawable.course_visit_bottom_on_select_bottom)
-                    }
-                } else if(adapterPosition == selectedPosition + 1 && selectedPosition != -1){ //오른쪽(아래쪽의 데이터)
-                    if(item.name.isEmpty())
-                    {
-                        if(adapterPosition == visitdata.size + pathdata.size - 1)//마지막인 경우
-                            imageView.setImageResource(R.drawable.course_visit_bottom_off_select)
-                        else
-                            imageView.setImageResource(R.drawable.course_visit_bottom_off_select_top)
-                    } else {
-                        if(adapterPosition == visitdata.size + pathdata.size - 1)//마지막인 경우
-                            imageView.setImageResource(R.drawable.course_visit_bottom_on_select)
-                        else
-                            imageView.setImageResource(R.drawable.course_visit_bottom_on_select_top)
-                    }
-                } else{
-                    //기본 이미지 설정
-                    if(adapterPosition == 0)
-                    {
-                        if(item.name.isNotEmpty())
-                        {
-                            if(visitdata.size == 1) {
-                                imageView.setImageResource(R.drawable.course_visit_only_on)
-                            }
-                            else {
-                                imageView.setImageResource(R.drawable.course_visit_top_on)
-                            }
-                        }
-                        else
-                        {
-                            if(visitdata.size == 1) {
-                                imageView.setImageResource(R.drawable.course_visit_only_off)
-                            }
-                            else {
-                                imageView.setImageResource(R.drawable.course_visit_top_off)
-                            }
-                        }
-                    }
-                    else if(adapterPosition == visitdata.size + pathdata.size - 1)
-                    {
-                        if(item.name.isNotEmpty())
-                        {
-                            imageView.setImageResource(R.drawable.course_visit_bottom_on)
-                        }
-                        else
-                        {
-                            imageView.setImageResource(R.drawable.course_visit_bottom_off)
-                        }
-                    }
-                    else
-                    {
-                        if(item.name.isNotEmpty())
-                        {
-                            imageView.setImageResource(R.drawable.course_visit_middle_on)
-                        }
-                        else
-                        {
-                            imageView.setImageResource(R.drawable.course_visit_middle_off)
-                        }
-                    }
-                }
-            }
-        }
-
-        override fun onClick(p0: View?) {
-            val position = adapterPosition
-            if (position != RecyclerView.NO_POSITION) {
-
-                // 선택된 위치 업데이트
-                selectedPosition = position
-
-
-                notifyDataSetChanged()
-
-                val item =
-                    if (position % 2 == 0)
-                        visitdata[position / 2]
-                    else
-                        pathdata[position / 2]
-
-
-                itemClickListener.onItemClick(item, position /2)
-            }
-        }
+        fun onPathTypeClick(type: String, position: Int)
     }
 
-    inner class PathViewHolder(view: View): RecyclerView.ViewHolder(view), View.OnClickListener{
+    var itemClickListener: OnItemClickListener? = null
 
-        val locationView: ImageView = view.findViewById(R.id.PathImageView)
-
-        init{
-            view.setOnClickListener(this)
-        }
-
-        fun bindlocation(item: PathData)
+    inner class VisitViewHolder(val binding: EditCourseVisitItemBinding): RecyclerView.ViewHolder(binding.root){
+        fun bind(item: VisitData)
         {
-            if (adapterPosition == selectedPosition) {
-                locationView.setImageResource(R.drawable.course_location_select)
-            } else {
-                // 나머지 아이템은 기본 이미지로 설정
-                locationView.setImageResource(R.drawable.course_location)
+            val visitPosition = adapterPosition / 2
+
+            when(visitPosition % 4){
+                0 -> binding.visitItemIcon.setImageResource(R.drawable.edit_course_circle_mint)
+                1 -> binding.visitItemIcon.setImageResource(R.drawable.edit_course_circle_blue)
+                2 -> binding.visitItemIcon.setImageResource(R.drawable.edit_course_circle_yellow)
+                3 -> binding.visitItemIcon.setImageResource(R.drawable.edit_course_circle_pink)
             }
-        }
 
-        override fun onClick(p0: View?) {
-            val position = adapterPosition
-            if (position != RecyclerView.NO_POSITION) {
-                // 선택된 위치 업데이트
-                val prevSelectedPosition = selectedPosition
-                selectedPosition = position
+            if(item.name.isNotEmpty()) {
+                binding.visitTitleText.text = item.name
+            } else {
+                binding.visitTitleText.text = "정확한 장소를 설정하세요."
+            }
 
-                // 이전에 강조된 PathData의 항목과 양옆의 VisitData의 항목을 갱신
-                notifyItemChanged(prevSelectedPosition - 1)
-                notifyItemChanged(prevSelectedPosition)
-                notifyItemChanged(prevSelectedPosition + 1)
+            if(selectedPosition == adapterPosition) {   //선택 데이터강조
+                binding.visitConstraintlayout.setBackgroundResource(R.drawable.ripple_effect_edit_course_box_highlight)
+            } else {
+                binding.visitConstraintlayout.setBackgroundResource(R.drawable.ripple_effect_edit_course_box_white)
+            }
 
-                // 현재 선택된 PathData의 항목과 양옆의 VisitData의 항목을 갱신
-                notifyItemChanged(selectedPosition - 1)
+            binding.stayTimeText.text = getStayTimeText(item.staytime)
+
+            itemView.setOnClickListener {
+                selectedPosition = adapterPosition
                 notifyItemChanged(selectedPosition)
-                notifyItemChanged(selectedPosition + 1)
 
-
-                val item =
-                    if (position % 2 == 0)
-                        visitdata[position / 2]
-                    else
-                        pathdata[position / 2]
-                itemClickListener.onItemClick(item, position / 2)
+                itemClickListener?.onVisitItemClick(adapterPosition / 2)    //visitData position 으로 넘겨줌
             }
+
+        }
+    }
+    inner class PathViewHolder(val binding: EditCoursePathItemBinding): RecyclerView.ViewHolder(binding.root){
+        @SuppressLint("SetTextI18n")
+        fun bind(item: PathData)
+        {
+            when(visitdata[adapterPosition / 2].type){
+                ServerResponse.VISIT_TYPE_WALK.code -> {
+                    binding.pathWalkTypeIcon.setImageResource(R.drawable.edit_course_path_icon_walk_on)
+                    binding.pathCarTypeBox.setImageResource(R.drawable.edit_course_path_icon_car_off)
+                    binding.pathBusTypeBox.setImageResource(R.drawable.edit_course_path_icon_bus_off)
+
+                    binding.pathDistanceText.text = "도보로 약 ${getDistanceText(visitdata[adapterPosition / 2].distance)} 이동"
+                }
+
+                ServerResponse.VISIT_TYPE_CAR.code -> {
+                    binding.pathWalkTypeIcon.setImageResource(R.drawable.edit_course_path_icon_walk_off)
+                    binding.pathCarTypeBox.setImageResource(R.drawable.edit_course_path_icon_car_on)
+                    binding.pathBusTypeBox.setImageResource(R.drawable.edit_course_path_icon_bus_off)
+
+                    binding.pathDistanceText.text = "자동차로 약 ${getDistanceText(visitdata[adapterPosition / 2].distance)} 이동"
+                }
+
+                ServerResponse.VISIT_TYPE_PUBLIC.code -> {
+                    binding.pathWalkTypeIcon.setImageResource(R.drawable.edit_course_path_icon_walk_off)
+                    binding.pathCarTypeBox.setImageResource(R.drawable.edit_course_path_icon_car_off)
+                    binding.pathBusTypeBox.setImageResource(R.drawable.edit_course_path_icon_bus_on)
+
+                    binding.pathDistanceText.text = "대중교통으로 약 ${getDistanceText(visitdata[adapterPosition / 2].distance)} 이동"
+                }
+
+                else -> {
+                    binding.pathWalkTypeIcon.setImageResource(R.drawable.edit_course_path_icon_walk_on)
+                    binding.pathCarTypeBox.setImageResource(R.drawable.edit_course_path_icon_car_off)
+                    binding.pathBusTypeBox.setImageResource(R.drawable.edit_course_path_icon_bus_off)
+
+                    binding.pathDistanceText.text = "도보로 약 ${getDistanceText(visitdata[adapterPosition / 2].distance)} 이동"
+                }
+            }
+
+            if(selectedPosition == adapterPosition) {   //선택 데이터강조
+                binding.pathConstraintlayout.setBackgroundResource(R.drawable.ripple_effect_edit_course_box_highlight)
+            } else {
+                binding.pathConstraintlayout.setBackgroundResource(R.drawable.ripple_effect_edit_course_box_white)
+            }
+
+            itemView.setOnClickListener {
+                selectedPosition = adapterPosition
+                notifyItemChanged(selectedPosition)
+
+                itemClickListener?.onPathItemClick(adapterPosition / 2)    //pathData position 으로 넘겨줌
+            }
+
+            binding.pathWalkTypeBox.setOnClickListener {
+                pathTypeBoxClick(ServerResponse.VISIT_TYPE_WALK.code, adapterPosition)
+            }
+
+            binding.pathCarTypeBox.setOnClickListener {
+                pathTypeBoxClick(ServerResponse.VISIT_TYPE_CAR.code, adapterPosition)
+            }
+
+            binding.pathBusTypeBox.setOnClickListener {
+                pathTypeBoxClick(ServerResponse.VISIT_TYPE_PUBLIC.code, adapterPosition)
+            }
+
         }
     }
 
+    private fun pathTypeBoxClick(type: String, adapterPosition: Int) {
+        if(!isTypeChangeFinished)   //이전 작업이 있으면
+            return
+
+        if(selectedPosition == adapterPosition){    //강조된 Path 의 Type 선택한 경우
+            itemClickListener?.onPathTypeClick(type, adapterPosition / 2)
+        } else {
+            selectedPosition = adapterPosition
+            notifyItemChanged(selectedPosition)
+
+            itemClickListener?.onPathItemClick(adapterPosition / 2)
+            itemClickListener?.onPathTypeClick(type, adapterPosition / 2)
+        }
+
+        isTypeChangeFinished = false
+    }
+
+    fun successChangeType(type: String, position: Int){   //이미 /2 된 position 받음
+        isTypeChangeFinished = true
+
+        visitdata[position].type = type
+
+        notifyItemChanged(selectedPosition)
+    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         return when(viewType){
             VISIT -> {
-                val view = LayoutInflater.from(context).inflate(R.layout.edit_visit, parent, false)
-                VisitViewHolder(view)
+                val binding = EditCourseVisitItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+                VisitViewHolder(binding)
             }
             PATH -> {
-                val view = LayoutInflater.from(context).inflate(R.layout.edit_course, parent, false)
-                PathViewHolder(view)
+                val binding = EditCoursePathItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+                PathViewHolder(binding)
             }
             else -> throw IllegalArgumentException("Invalid position")
         }
@@ -318,15 +182,14 @@ class MyCourseAdapter(private val context: Context, private val itemClickListene
         when(position % 2) {
             0 -> {
                 if (holder is VisitViewHolder) {
-                    holder.bindvisit(visitdata[position / 2])
+                    holder.bind(visitdata[position / 2])
                 }
             }
             1 -> {
                 if (holder is PathViewHolder) {
-                    holder.bindlocation(pathdata[position / 2])
+                    holder.bind(pathdata[position / 2])
                 }
             }
-
         }
     }
 
@@ -338,11 +201,7 @@ class MyCourseAdapter(private val context: Context, private val itemClickListene
         }
     }
 
-    interface OnItemClickListener {
-        fun onItemClick(data: Any, position: Int)
-    }
-
-    private fun getStayTime(minutes: Int): String{
+    private fun getStayTimeText(minutes: Int): String{
         if(minutes == 0)
             return ""
 
@@ -350,7 +209,15 @@ class MyCourseAdapter(private val context: Context, private val itemClickListene
         val remainingMinutes = minutes % 60
         if(hours == 0)
             return "${remainingMinutes}분"
-        return "${hours}시간 ${remainingMinutes}분"
+        return "약 ${hours}시간 ${remainingMinutes}분 방문"
+    }
+
+    private fun getDistanceText(distance: Int): String {
+        return if(distance < 1000){
+            "${distance}m"
+        } else {
+            "${distance/1000}.${distance % 1000 / 100}Km"
+        }
     }
 
     companion object {

@@ -11,12 +11,9 @@ import com.vecto_example.vecto.data.model.VisitData
 import com.vecto_example.vecto.data.repository.TMapRepository
 import com.vecto_example.vecto.retrofit.TMapAPIService
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
 import java.time.Duration
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-import java.util.Calendar
-import java.util.Locale
 
 class EditCourseViewModel(private val repository: TMapRepository) : ViewModel() {
 
@@ -33,6 +30,9 @@ class EditCourseViewModel(private val repository: TMapRepository) : ViewModel() 
 
     private val _buttonSelect = MutableLiveData<Boolean>()
     val buttonSelect: LiveData<Boolean> = _buttonSelect
+
+    private val _editVisitButton = MutableLiveData<Boolean>()
+    val editVisitButton: LiveData<Boolean> = _editVisitButton
 
     private val _isLoading = MutableLiveData<Boolean>()
     val isLoading: LiveData<Boolean> = _isLoading
@@ -167,6 +167,10 @@ class EditCourseViewModel(private val repository: TMapRepository) : ViewModel() 
 
     fun setButtonRecommend(value: Boolean){
         _buttonRecommend.value = value
+    }
+
+    fun setEditVisitButton(value: Boolean){
+        _editVisitButton.value = value
     }
 
     fun checkDistance(centerLatLng: LatLng, currentLatLng: LatLng, checkDistance: Int): Boolean{

@@ -26,17 +26,8 @@ import kotlin.math.pow
 
 class MapMarkerManager(private val context: Context, private val naverMap: NaverMap) {
     private val visitMarkers = mutableListOf<Marker>()
-    private val buttonMarkers = mutableListOf<Marker>()
 
     private var tedNaverClustering: TedNaverClustering<MyClusterItem>? = null
-
-    interface OnButtonClickListener {
-        fun onEditVisit(visitData: VisitData, p: Int)
-
-        fun onDeleteVisit(visitData: VisitData, p: Int)
-
-        fun onSearchVisit(visitData: VisitData, p: Int)
-    }
 
     interface OnClusterClickListener {
         fun onMarkerClick(visitData: VisitData, clusterItem: MyClusterItem, position: Int)
@@ -44,7 +35,6 @@ class MapMarkerManager(private val context: Context, private val naverMap: Naver
         fun onClusterClick(visitData: VisitData, cluster: Cluster<MyClusterItem>, position: Int)
     }
 
-    var buttonClickListener: OnButtonClickListener? = null
     var clusterClickListener: OnClusterClickListener? = null
 
     fun addVisitMarkerBasic(visitData: VisitData){
@@ -97,120 +87,6 @@ class MapMarkerManager(private val context: Context, private val naverMap: Naver
             8 -> R.drawable.marker_number_9
             else -> R.drawable.marker_image
         }
-    }
-
-    /*지도의 버튼 관련 함수*/
-    fun addButtonMarker(visitData: VisitData, p: Int) {
-        val buttonMarker1 = Marker().apply {
-            icon = OverlayImage.fromResource(R.drawable.marker_delete_button)
-            position = LatLng(visitData.lat, visitData.lng)
-            map = naverMap
-        }
-
-        val buttonMarker2 = Marker().apply {
-            icon = OverlayImage.fromResource(R.drawable.marker_edit_button)
-            position = LatLng(visitData.lat, visitData.lng)
-            map = naverMap
-        }
-
-        val buttonMarker3 = Marker().apply {
-            icon = OverlayImage.fromResource(R.drawable.marker_search_button)
-            position = LatLng(visitData.lat, visitData.lng)
-            map = naverMap
-        }
-
-        buttonMarkers.add(buttonMarker1)
-        buttonMarkers.add(buttonMarker2)
-        buttonMarkers.add(buttonMarker3)
-
-        buttonMarker1.setOnClickListener {
-            buttonClickListener?.onDeleteVisit(visitData, p)
-
-            true
-        }
-
-        buttonMarker2.setOnClickListener {
-            buttonClickListener?.onEditVisit(visitData, p)
-
-            true
-        }
-
-        buttonMarker3.setOnClickListener {
-            buttonClickListener?.onSearchVisit(visitData, p)
-
-            buttonMarker3.onClickListener = null
-
-            true
-        }
-
-        adjustMarkerDistanceFromBaseMarker1(naverMap, LatLng(visitData.lat, visitData.lng), buttonMarker1)
-        adjustMarkerDistanceFromBaseMarker2(naverMap, LatLng(visitData.lat, visitData.lng), buttonMarker2)
-        adjustMarkerDistanceFromBaseMarker3(naverMap, LatLng(visitData.lat, visitData.lng), buttonMarker3)
-    }
-
-    fun adjustAllButtonMarkers() {
-        if(visitMarkers.isNotEmpty() && buttonMarkers.isNotEmpty()) {
-            val baseMarker = visitMarkers[0]
-            val buttonMarker1 = buttonMarkers[0]
-            val buttonMarker2 = buttonMarkers[1]
-            val buttonMarker3 = buttonMarkers[2]
-
-            adjustMarkerDistanceFromBaseMarker1(naverMap, baseMarker.position, buttonMarker1)
-            adjustMarkerDistanceFromBaseMarker2(naverMap, baseMarker.position, buttonMarker2)
-            adjustMarkerDistanceFromBaseMarker3(naverMap, baseMarker.position, buttonMarker3)
-        }
-    }
-
-    private fun adjustMarkerDistanceFromBaseMarker1(naverMap: NaverMap, position: LatLng, buttonMarker: Marker) {
-        val baseZoom = 15.0
-        val scaleFactor = Math.pow(2.0, naverMap.cameraPosition.zoom - baseZoom)
-
-        val density = Resources.getSystem().displayMetrics.density
-        val distanceInMeters = 33 * density / scaleFactor
-        val offsetInMeters = 10 * density / scaleFactor
-        val offsetInDegreesLat = offsetInMeters / 111000
-        val distanceFromBaseMarkerInDegreesLat = distanceInMeters / 111000  // 1 degree latitude is approximately 111000 meters
-        val distanceFromBaseMarkerInDegreesLon = distanceInMeters / (Math.cos(Math.toRadians(
-            position.latitude
-        )) * 111000)  // Adjusting for longitude based on latitude
-
-        val newPosition = LatLng(
-            position.latitude + distanceFromBaseMarkerInDegreesLat - offsetInDegreesLat,
-            position.longitude - distanceFromBaseMarkerInDegreesLon  // 경도를 감소시켜 왼쪽으로 이동
-        )
-        buttonMarker.position = newPosition
-    }
-
-    private fun adjustMarkerDistanceFromBaseMarker2(naverMap: NaverMap, position: LatLng, buttonMarker: Marker) {
-        val baseZoom = 15.0
-        val scaleFactor = 2.0.pow(naverMap.cameraPosition.zoom - baseZoom)
-
-        val density = Resources.getSystem().displayMetrics.density
-        val distanceInMeters = 38 * density / scaleFactor
-        val distanceFromBaseMarkerInDegrees = distanceInMeters / 111000  // 1 degree is approximately 111000 meters
-
-        val newPosition = LatLng(position.latitude + distanceFromBaseMarkerInDegrees, position.longitude)
-        buttonMarker.position = newPosition
-    }
-
-    private fun adjustMarkerDistanceFromBaseMarker3(naverMap: NaverMap, position: LatLng, buttonMarker: Marker) {
-        val baseZoom = 15.0
-        val scaleFactor = 2.0.pow(naverMap.cameraPosition.zoom - baseZoom)
-
-        val density = Resources.getSystem().displayMetrics.density
-        val distanceInMeters = 33 * density / scaleFactor
-        val offsetInMeters = 10 * density / scaleFactor
-        val offsetInDegreesLat = offsetInMeters / 111000
-        val distanceFromBaseMarkerInDegreesLat = distanceInMeters / 111000  // 1 degree latitude is approximately 111000 meters
-        val distanceFromBaseMarkerInDegreesLon = distanceInMeters / (Math.cos(Math.toRadians(
-            position.latitude
-        )) * 111000)  // Adjusting for longitude based on latitude
-
-        val newPosition = LatLng(
-            position.latitude + distanceFromBaseMarkerInDegreesLat - offsetInDegreesLat,
-            position.longitude + distanceFromBaseMarkerInDegreesLon
-        )
-        buttonMarker.position = newPosition
     }
 
     fun setMarkerClustering(placelist: MutableList<TMapAPIService.Poi>, visitData: VisitData, p: Int) {
@@ -277,9 +153,6 @@ class MapMarkerManager(private val context: Context, private val naverMap: Naver
     fun deleteMarker() {
         visitMarkers.forEach { it.map = null }
         visitMarkers.clear()
-
-        buttonMarkers.forEach{ it.map = null }
-        buttonMarkers.clear()
 
         tedNaverClustering?.clearItems()
         if(tedNaverClustering != null)

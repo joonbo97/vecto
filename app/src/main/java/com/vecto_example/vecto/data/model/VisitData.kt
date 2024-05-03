@@ -17,5 +17,5 @@ data class VisitData (
     val staytime: Int,
     val name: String,
     val distance: Int,
-    val type: String
+    var type: String
 )

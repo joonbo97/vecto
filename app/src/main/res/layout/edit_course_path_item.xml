@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/pathConstraintlayout"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/ripple_effect_edit_course_box_white">
+
+    <ImageView
+        android:id="@+id/upPathIcon"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        android:padding="5dp"
+        app:layout_constraintEnd_toEndOf="@id/pathWalkTypeBox"
+        app:layout_constraintStart_toStartOf="@id/pathWalkTypeBox"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/edit_course_path_dots" />
+
+    <ImageView
+        android:id="@+id/pathWalkTypeBox"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        android:layout_marginStart="20dp"
+        android:background="?selectableItemBackgroundBorderless"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/upPathIcon"
+        app:srcCompat="@drawable/edit_course_visit_item_box" />
+
+    <ImageView
+        android:id="@+id/pathWalkTypeIcon"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        app:layout_constraintBottom_toBottomOf="@+id/pathWalkTypeBox"
+        app:layout_constraintEnd_toEndOf="@+id/pathWalkTypeBox"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="@id/pathWalkTypeBox"
+        app:layout_constraintTop_toTopOf="@+id/pathWalkTypeBox"
+        app:layout_constraintVertical_bias="0.5"
+        app:srcCompat="@drawable/edit_course_path_icon_walk_off" />
+
+    <ImageView
+        android:id="@+id/pathCarTypeBox"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        android:layout_marginStart="10dp"
+        android:background="?selectableItemBackgroundBorderless"
+        app:layout_constraintStart_toEndOf="@id/pathWalkTypeBox"
+        app:layout_constraintTop_toBottomOf="@+id/upPathIcon"
+        app:srcCompat="@drawable/edit_course_visit_item_box" />
+
+    <ImageView
+        android:id="@+id/pathCarTypeIcon"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        app:layout_constraintBottom_toBottomOf="@+id/pathCarTypeBox"
+        app:layout_constraintEnd_toEndOf="@+id/pathCarTypeBox"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="@id/pathCarTypeBox"
+        app:layout_constraintTop_toTopOf="@+id/pathCarTypeBox"
+        app:layout_constraintVertical_bias="0.5"
+        app:srcCompat="@drawable/edit_course_path_icon_car_off" />
+
+    <ImageView
+        android:id="@+id/pathBusTypeBox"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        android:layout_marginStart="10dp"
+        android:background="?selectableItemBackgroundBorderless"
+        app:layout_constraintStart_toEndOf="@id/pathCarTypeBox"
+        app:layout_constraintTop_toBottomOf="@+id/upPathIcon"
+        app:srcCompat="@drawable/edit_course_visit_item_box" />
+
+    <ImageView
+        android:id="@+id/pathBusTypeIcon"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        app:layout_constraintBottom_toBottomOf="@+id/pathBusTypeBox"
+        app:layout_constraintEnd_toEndOf="@+id/pathBusTypeBox"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="@id/pathBusTypeBox"
+        app:layout_constraintTop_toTopOf="@+id/pathBusTypeBox"
+        app:layout_constraintVertical_bias="0.5"
+        app:srcCompat="@drawable/edit_course_path_icon_bus_off" />
+
+    <TextView
+        android:id="@+id/pathDistanceText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/lineseedkr_bd"
+        android:text=""
+        android:textColor="@color/edit_course_gray"
+        android:textSize="13sp"
+        android:layout_marginStart="20dp"
+        app:layout_constraintStart_toEndOf="@id/pathBusTypeBox"
+        app:layout_constraintBottom_toBottomOf="@id/pathBusTypeBox"
+        app:layout_constraintTop_toTopOf="@id/pathBusTypeBox"/>
+
+    <ImageView
+        android:id="@+id/downPathIcon"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        android:padding="5dp"
+        app:layout_constraintEnd_toEndOf="@id/pathWalkTypeBox"
+        app:layout_constraintStart_toStartOf="@id/pathWalkTypeBox"
+        app:layout_constraintTop_toBottomOf="@id/pathWalkTypeBox"
+        app:srcCompat="@drawable/edit_course_path_dots" />
+</androidx.constraintlayout.widget.ConstraintLayout>

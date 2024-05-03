@@ -28,4 +28,14 @@
     <color name="vecto_warning">#FF951F</color>
     <color name="tab_layout_normal">#A0A5B9</color>
     <color name="progress_background2">#B3000000</color>
+
+    <!--Colors used in EditCourse -->
+    <color name="edit_course_blue">#FF4B82FF</color>
+    <color name="edit_course_mint">#FF00C8B9</color>
+    <color name="edit_course_pink">#FFFF4B78</color>
+    <color name="edit_course_yellow">#FFFAB732</color>
+    <color name="edit_course_gray">#FFA0A5B9</color>
+
+    <color name="edit_course_box">#FFF2F6FF</color>
+    <color name="edit_course_highlight">#FFD5CE</color>
 </resources>

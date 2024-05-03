@@ -166,14 +166,15 @@ class FeedDetailActivity : AppCompatActivity(), OnMapReadyCallback {
                     if (centerPosition >= 0 && centerPosition < myFeedDetailAdapter.feedInfoWithFollow.size) {
                         if(lastPosition != centerPosition){
                             val feedInfo = myFeedDetailAdapter.feedInfoWithFollow[centerPosition]
-                                mapOverlayManager.addOverlayForPost(feedInfo.feedInfo) // 중앙 아이템 강조
 
-                                if(feedInfo.feedInfo.visit.size == 1)
-                                    mapOverlayManager.moveCameraForVisitOffset(feedInfo.feedInfo.visit.first(), offset)
-                                else
-                                    mapOverlayManager.moveCameraForPathOffset(feedInfo.feedInfo.location.toMutableList(), offset)
+                            mapOverlayManager.addOverlayForPost(feedInfo.feedInfo) // 중앙 아이템 강조
 
-                                lastPosition = centerPosition
+                            if(feedInfo.feedInfo.visit.size == 1)
+                                mapOverlayManager.moveCameraForVisitOffset(feedInfo.feedInfo.visit.first(), offset)
+                            else
+                                mapOverlayManager.moveCameraForPathOffset(feedInfo.feedInfo.location.toMutableList(), offset)
+
+                            lastPosition = centerPosition
                         }
                     }
                 }
