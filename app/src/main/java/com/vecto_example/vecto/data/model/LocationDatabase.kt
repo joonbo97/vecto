@@ -20,25 +20,6 @@ class LocationDatabase(context: Context) {
         db.close()
     }
 
-    @SuppressLint("Range")
-    fun getAllLocationData(): MutableList<LocationData> {
-        val db = dbHelper.readableDatabase
-        val cursor = db.rawQuery("SELECT * FROM location_data ORDER BY datetime ASC", null)
-        val dataList = mutableListOf<LocationData>()
-
-        while (cursor.moveToNext()) {
-            val datetime = cursor.getString(cursor.getColumnIndex("datetime"))
-            val lat = cursor.getDouble(cursor.getColumnIndex("lat"))
-            val lng = cursor.getDouble(cursor.getColumnIndex("lng"))
-            dataList.add(LocationData(datetime, lat, lng))
-        }
-
-        cursor.close()
-        db.close()
-
-        return dataList
-    }
-
     //일정 시간 이후의 데이터를 지우는 작업
     fun deleteLocationDataAfter(datetime: LocalDateTime) {
         val db = dbHelper.writableDatabase
