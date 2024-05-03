@@ -236,12 +236,17 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
         editCourseViewModel.isBlock.observe(viewLifecycleOwner){
             if(it) {
                 binding.constraintBlock.visibility = View.VISIBLE
+
                 binding.EditLayout.visibility = View.INVISIBLE
+                binding.RefreshButton.visibility = View.INVISIBLE
+
                 mapOverlayManager.deleteOverlay()
             }
             else {
                 binding.constraintBlock.visibility = View.GONE
+
                 binding.EditLayout.visibility = View.VISIBLE
+                binding.RefreshButton.visibility = View.VISIBLE
             }
         }
 

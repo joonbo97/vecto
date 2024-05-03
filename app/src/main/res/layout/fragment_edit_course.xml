@@ -80,7 +80,7 @@
             android:src="@drawable/edit_course_refresh"
             android:background="?selectableItemBackgroundBorderless"
             android:padding="4dp"
-            android:visibility="visible"
+            android:visibility="invisible"
             app:layout_constraintBottom_toBottomOf="@+id/CalendarLargeBoxImage"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="@+id/CalendarLargeBoxImage"
@@ -266,6 +266,7 @@
         android:clickable="true"
         android:elevation="10dp"
         android:focusable="true"
+        android:visibility="invisible"
         app:layout_constraintBottom_toBottomOf="@+id/naver_map_Edit"
         tools:layout_editor_absoluteX="0dp">
 
