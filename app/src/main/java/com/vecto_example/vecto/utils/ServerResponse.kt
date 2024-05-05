@@ -20,5 +20,5 @@ enum class ServerResponse(val code:String) {
     /*   VISIT   */
     VISIT_TYPE_WALK("walk"),
     VISIT_TYPE_CAR("car"),
-    VISIT_TYPE_PUBLIC("public"),
+    VISIT_TYPE_PUBLIC_TRANSPORT("public_transport"),
 }

@@ -57,6 +57,32 @@ class MapMarkerManager(private val context: Context, private val naverMap: Naver
         visitMarkers.add(visitMarker)
     }
 
+    fun addBasicMarker(visitData: VisitData){
+        val visitMarker = Marker()
+
+        if(visitData.name.isNotEmpty())
+            visitMarker.icon = OverlayImage.fromResource(getBasicMarkerIcon())
+        else
+            visitMarker.icon = OverlayImage.fromResource(R.drawable.edit_course_marker_gray)
+
+        if(visitData.name.isNotEmpty()) {
+            visitMarker.position = LatLng(visitData.lat_set, visitData.lng_set)
+        }
+        else {
+            visitMarker.position = LatLng(visitData.lat, visitData.lng)
+        }
+
+        visitMarker.map = naverMap
+
+        visitMarkers.add(visitMarker)
+    }
+
+    fun addVisitMarkersBasic(visitDataList: List<VisitData>) {
+        visitDataList.forEach {
+            addBasicMarker(it)
+        }
+    }
+
     fun addVisitMarker(visitData: VisitData){
         val visitMarker = Marker()
 
@@ -86,6 +112,16 @@ class MapMarkerManager(private val context: Context, private val naverMap: Naver
             7 -> R.drawable.marker_number_8
             8 -> R.drawable.marker_number_9
             else -> R.drawable.marker_image
+        }
+    }
+
+    private fun getBasicMarkerIcon(): Int{
+        return when(visitMarkers.size % 4){
+            0 -> R.drawable.edit_course_marker_mint
+            1 -> R.drawable.edit_course_marker_blue
+            2 -> R.drawable.edit_course_marker_yellow
+            3 -> R.drawable.edit_course_marker_pink
+            else -> R.drawable.edit_course_marker_mint
         }
     }
 

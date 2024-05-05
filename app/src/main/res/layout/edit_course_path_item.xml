@@ -5,7 +5,22 @@
     android:id="@+id/pathConstraintlayout"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@drawable/ripple_effect_edit_course_box_white">
+    android:elevation="1dp">
+
+    <ImageView
+        android:id="@+id/highlightImage"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="35dp"
+        android:layout_marginBottom="35dp"
+        android:foreground="?attr/selectableItemBackground"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintVertical_bias="0.5"
+        app:srcCompat="@color/edit_course_highlight"/>
+
 
     <ImageView
         android:id="@+id/upPathIcon"
@@ -22,10 +37,31 @@
         android:layout_width="45dp"
         android:layout_height="45dp"
         android:layout_marginStart="20dp"
-        android:background="?selectableItemBackgroundBorderless"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/upPathIcon"
-        app:srcCompat="@drawable/edit_course_visit_item_box" />
+        app:srcCompat="@drawable/ripple_effect_edit_course_type_box" />
+
+    <ImageView
+        android:id="@+id/pathCarTypeBox"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        android:layout_marginStart="10dp"
+        app:layout_constraintStart_toEndOf="@id/pathWalkTypeBox"
+        app:layout_constraintTop_toTopOf="@+id/pathWalkTypeBox"
+        app:layout_constraintBottom_toBottomOf="@+id/pathWalkTypeBox"
+        app:layout_constraintVertical_bias="0.5"
+        app:srcCompat="@drawable/ripple_effect_edit_course_type_box" />
+
+    <ImageView
+        android:id="@+id/pathBusTypeBox"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        android:layout_marginStart="10dp"
+        app:layout_constraintStart_toEndOf="@id/pathCarTypeBox"
+        app:layout_constraintTop_toTopOf="@id/pathCarTypeBox"
+        app:layout_constraintBottom_toBottomOf="@+id/pathCarTypeBox"
+        app:layout_constraintVertical_bias="0.5"
+        app:srcCompat="@drawable/ripple_effect_edit_course_type_box" />
 
     <ImageView
         android:id="@+id/pathWalkTypeIcon"
@@ -40,16 +76,6 @@
         app:srcCompat="@drawable/edit_course_path_icon_walk_off" />
 
     <ImageView
-        android:id="@+id/pathCarTypeBox"
-        android:layout_width="45dp"
-        android:layout_height="45dp"
-        android:layout_marginStart="10dp"
-        android:background="?selectableItemBackgroundBorderless"
-        app:layout_constraintStart_toEndOf="@id/pathWalkTypeBox"
-        app:layout_constraintTop_toBottomOf="@+id/upPathIcon"
-        app:srcCompat="@drawable/edit_course_visit_item_box" />
-
-    <ImageView
         android:id="@+id/pathCarTypeIcon"
         android:layout_width="45dp"
         android:layout_height="45dp"
@@ -60,16 +86,6 @@
         app:layout_constraintTop_toTopOf="@+id/pathCarTypeBox"
         app:layout_constraintVertical_bias="0.5"
         app:srcCompat="@drawable/edit_course_path_icon_car_off" />
-
-    <ImageView
-        android:id="@+id/pathBusTypeBox"
-        android:layout_width="45dp"
-        android:layout_height="45dp"
-        android:layout_marginStart="10dp"
-        android:background="?selectableItemBackgroundBorderless"
-        app:layout_constraintStart_toEndOf="@id/pathCarTypeBox"
-        app:layout_constraintTop_toBottomOf="@+id/upPathIcon"
-        app:srcCompat="@drawable/edit_course_visit_item_box" />
 
     <ImageView
         android:id="@+id/pathBusTypeIcon"

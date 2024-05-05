@@ -17,7 +17,7 @@ class LogDatabaseHelper (context: Context) : SQLiteOpenHelper(context, DATABASE_
 
     companion object {
         private const val DATABASE_NAME = "log_database"
-        private const val DATABASE_VERSION = 5
+        private const val DATABASE_VERSION = 6
 
         private const val CREATE_TABLE_QUERY = "CREATE TABLE IF NOT EXISTS log_data (" +
                 "id INTEGER PRIMARY KEY AUTOINCREMENT, " +

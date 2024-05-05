@@ -127,7 +127,7 @@ class MapOverlayManager(private val context: Context, private val mapMarkerManag
             val maxLng = pathPoints.maxOf { it.lng }
 
             val bounds = LatLngBounds(LatLng(minLat , minLng), LatLng(maxLat, maxLng))
-            naverMap.moveCamera(CameraUpdate.fitBounds(bounds, 50, 100, 50, offset + (offset / 2)  + 600))
+            naverMap.moveCamera(CameraUpdate.fitBounds(bounds, 50, 250, 50, offset))
         }
     }
 

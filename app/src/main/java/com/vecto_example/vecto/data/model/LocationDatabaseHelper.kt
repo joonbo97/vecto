@@ -17,7 +17,7 @@ class LocationDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATAB
 
     companion object {
         private const val DATABASE_NAME = "location_database"
-        private const val DATABASE_VERSION = 5
+        private const val DATABASE_VERSION = 6
 
         private const val CREATE_TABLE_QUERY = "CREATE TABLE IF NOT EXISTS location_data (" +
                 "id INTEGER PRIMARY KEY AUTOINCREMENT, " +

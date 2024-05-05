@@ -68,14 +68,14 @@ class LocationService : Service() {
 
                             //위치 데이터 추가
                             locationDatabase.addLocationData(LocationData(currentDateTime.format(FORMAT), location.latitude, location.longitude))
-                            savelog(0)
+                            saveLog(0)
                         }
                         else//5분이 경과했으면 (방문)
                         {
                             if(!visitFlag)//이번이 처음 방문으로 판단하는 시점이라면
                             {
                                 fun saveNewVisit() {
-                                    savelog(1)
+                                    saveLog(1)
 
                                     //평균 값과 처음 업데이트 시간을 visit db에 저장함.
                                     visitDatabase.addVisitData(VisitData(lastUpdateTime!!.format(FORMAT), lastUpdateTime!!.format(FORMAT), lastUpdateLocation.latitude, lastUpdateLocation.longitude, lastUpdateLocation.latitude, lastUpdateLocation.longitude, 0, "", 0, ServerResponse.VISIT_TYPE_WALK.code))
@@ -111,13 +111,13 @@ class LocationService : Service() {
 
                                         cnt = 1
                                         visitFlag = true
-                                        savelog(2)
+                                        saveLog(2)
                                     }
                                 }
                             }
                             else  //계속 방문중인 상태라면
                             {
-                                savelog(3)
+                                saveLog(3)
                             }
                         }
                     }
@@ -146,14 +146,14 @@ class LocationService : Service() {
 
                         //위치 데이터 추가
                         locationDatabase.addLocationData(LocationData(currentDateTime.format(FORMAT), location.latitude, location.longitude))
-                        savelog(4)
+                        saveLog(4)
                     }
 
                 }
                 else
                 {
                     Log.d("LocationService", "Ignoring ${location.accuracy}")
-                    savelog(5)
+                    saveLog(5)
                 }
 
             }
@@ -251,13 +251,13 @@ class LocationService : Service() {
         super.onDestroy()
         stopLocationUpdates()
 
-        savelog(6)
+        saveLog(6)
     }
 
     override fun onTaskRemoved(rootIntent: Intent?) {
         super.onTaskRemoved(rootIntent)
 
-        savelog(7)
+        saveLog(7)
     }
 
     companion object {
@@ -265,13 +265,13 @@ class LocationService : Service() {
         const val NOTIFICATION_ID_VISIT = 10000
         const val CHECKDISTANCE = 50 //몇M 떨어진 점까지 방문으로 간주할 것인지
     }
-    private fun savelog(type: Int){
+    private fun saveLog(type: Int){
         val datetime = LocalDateTime.now().withNano(0).format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"))
 
         when(type)
         {
             0 ->{
-                logDatabase.addLogData(LogData(datetime, "CHECK 내부에 위치했으나, 5분이 되지 않았습니다."))
+                //logDatabase.addLogData(LogData(datetime, "CHECK 내부에 위치했으나, 5분이 되지 않았습니다."))
             }
             1 ->{
                 logDatabase.addLogData(LogData(datetime, "방문으로 판단되었습니다."))
@@ -280,13 +280,13 @@ class LocationService : Service() {
                 logDatabase.addLogData(LogData(datetime, "직전 방문지와 합병되었습니다."))
             }
             3 ->{
-                logDatabase.addLogData(LogData(datetime, "계속 방문중입니다."))
+                //logDatabase.addLogData(LogData(datetime, "계속 방문중입니다."))
             }
             4 ->{
-                logDatabase.addLogData(LogData(datetime, "CHECK 외부에 위치하여 이동중으로 판단합니다."))
+                //logDatabase.addLogData(LogData(datetime, "CHECK 외부에 위치하여 이동중으로 판단합니다."))
             }
             5 ->{
-                logDatabase.addLogData(LogData(datetime, "정확도가 떨어져 판단하지 않습니다."))
+                //logDatabase.addLogData(LogData(datetime, "정확도가 떨어져 판단하지 않습니다."))
             }
             6 ->{
                 logDatabase.addLogData(LogData(datetime, "서비스가 종료되었습니다."))

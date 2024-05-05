@@ -88,8 +88,6 @@ class EditCourseViewModel(private val repository: TMapRepository) : ViewModel() 
                 }
 
                 endLoading()
-
-
             }
         }
     }
@@ -161,16 +159,33 @@ class EditCourseViewModel(private val repository: TMapRepository) : ViewModel() 
         }
     }
 
-    fun setButtonSelect(value: Boolean){
-        _buttonSelect.value = value
-    }
+    fun setButtonVisibility(type: String) {
+        when(type){
+            ButtonType.EDIT_VISIT.name -> {
+                _editVisitButton.value = true
+                _buttonRecommend.value = false
+                _buttonSelect.value = false
+            }
 
-    fun setButtonRecommend(value: Boolean){
-        _buttonRecommend.value = value
-    }
+            ButtonType.EDIT_PATH.name -> {
+                _editVisitButton.value = false
+                _buttonRecommend.value = true
+                _buttonSelect.value = false
+            }
 
-    fun setEditVisitButton(value: Boolean){
-        _editVisitButton.value = value
+            ButtonType.SELECT.name -> {
+                _editVisitButton.value = false
+                _buttonRecommend.value = false
+                _buttonSelect.value = true
+            }
+
+            ButtonType.NONE.name -> {
+                _editVisitButton.value = false
+                _buttonRecommend.value = false
+                _buttonSelect.value = false
+            }
+
+        }
     }
 
     fun checkDistance(centerLatLng: LatLng, currentLatLng: LatLng, checkDistance: Int): Boolean{
@@ -207,5 +222,12 @@ class EditCourseViewModel(private val repository: TMapRepository) : ViewModel() 
     private fun endLoading(){
         Log.d("END_LOADING", "END")
         _isLoading.value = false
+    }
+
+    enum class ButtonType{
+        EDIT_VISIT,
+        EDIT_PATH,
+        SELECT,
+        NONE
     }
 }

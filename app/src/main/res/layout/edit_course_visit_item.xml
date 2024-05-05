@@ -7,6 +7,18 @@
     android:layout_height="72dp">
 
     <ImageView
+        android:id="@+id/highlightImage"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:foreground="?attr/selectableItemBackground"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintVertical_bias="0.5"
+        app:srcCompat="@color/edit_course_highlight"/>
+
+    <ImageView
         android:id="@+id/visitItemIcon"
         android:layout_width="45dp"
         android:layout_height="45dp"
@@ -43,7 +55,7 @@
         android:ellipsize="end"
         android:textColor="@color/black"
         android:textSize="15sp"
-        android:layout_marginTop="12dp"
+        android:layout_marginTop="10dp"
         android:layout_marginStart="15dp"
         android:layout_marginEnd="15dp"
         app:layout_constraintStart_toStartOf="@id/visitBox"
@@ -56,8 +68,8 @@
         android:layout_height="wrap_content"
         android:fontFamily="@font/lineseedkr_rg"
         android:text=""
-        android:textColor="@color/edit_course_gray"
-        android:textSize="11sp"
+        android:textColor="@color/edit_course_staytime"
+        android:textSize="10sp"
         android:layout_marginBottom="5dp"
         android:layout_marginTop="5dp"
         app:layout_constraintStart_toStartOf="@id/visitTitleText"

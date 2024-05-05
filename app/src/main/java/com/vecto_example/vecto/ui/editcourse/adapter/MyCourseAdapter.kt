@@ -1,11 +1,9 @@
 package com.vecto_example.vecto.ui.editcourse.adapter
 
 import android.annotation.SuppressLint
+import android.util.Log
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
-import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.vecto_example.vecto.R
 import com.vecto_example.vecto.data.model.PathData
@@ -20,7 +18,7 @@ class MyCourseAdapter(): RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     var visitdata = mutableListOf<VisitData>()
     var pathdata = mutableListOf<PathData>()
 
-    private var selectedPosition = -1
+    var selectedPosition = -1
 
     private var isTypeChangeFinished = true
 
@@ -49,20 +47,20 @@ class MyCourseAdapter(): RecyclerView.Adapter<RecyclerView.ViewHolder>() {
             if(item.name.isNotEmpty()) {
                 binding.visitTitleText.text = item.name
             } else {
+                binding.visitItemIcon.setImageResource(R.drawable.edit_course_circle_gray)
                 binding.visitTitleText.text = "정확한 장소를 설정하세요."
             }
 
             if(selectedPosition == adapterPosition) {   //선택 데이터강조
-                binding.visitConstraintlayout.setBackgroundResource(R.drawable.ripple_effect_edit_course_box_highlight)
+                binding.highlightImage.setImageResource(R.color.edit_course_highlight)
             } else {
-                binding.visitConstraintlayout.setBackgroundResource(R.drawable.ripple_effect_edit_course_box_white)
+                binding.highlightImage.setImageResource(R.color.alpha)
             }
 
             binding.stayTimeText.text = getStayTimeText(item.staytime)
 
-            itemView.setOnClickListener {
-                selectedPosition = adapterPosition
-                notifyItemChanged(selectedPosition)
+            binding.highlightImage.setOnClickListener {
+                setSelectItem(adapterPosition)
 
                 itemClickListener?.onVisitItemClick(adapterPosition / 2)    //visitData position 으로 넘겨줌
             }
@@ -76,46 +74,45 @@ class MyCourseAdapter(): RecyclerView.Adapter<RecyclerView.ViewHolder>() {
             when(visitdata[adapterPosition / 2].type){
                 ServerResponse.VISIT_TYPE_WALK.code -> {
                     binding.pathWalkTypeIcon.setImageResource(R.drawable.edit_course_path_icon_walk_on)
-                    binding.pathCarTypeBox.setImageResource(R.drawable.edit_course_path_icon_car_off)
-                    binding.pathBusTypeBox.setImageResource(R.drawable.edit_course_path_icon_bus_off)
+                    binding.pathCarTypeIcon.setImageResource(R.drawable.edit_course_path_icon_car_off)
+                    binding.pathBusTypeIcon.setImageResource(R.drawable.edit_course_path_icon_bus_off)
 
                     binding.pathDistanceText.text = "도보로 약 ${getDistanceText(visitdata[adapterPosition / 2].distance)} 이동"
                 }
 
                 ServerResponse.VISIT_TYPE_CAR.code -> {
                     binding.pathWalkTypeIcon.setImageResource(R.drawable.edit_course_path_icon_walk_off)
-                    binding.pathCarTypeBox.setImageResource(R.drawable.edit_course_path_icon_car_on)
-                    binding.pathBusTypeBox.setImageResource(R.drawable.edit_course_path_icon_bus_off)
+                    binding.pathCarTypeIcon.setImageResource(R.drawable.edit_course_path_icon_car_on)
+                    binding.pathBusTypeIcon.setImageResource(R.drawable.edit_course_path_icon_bus_off)
 
                     binding.pathDistanceText.text = "자동차로 약 ${getDistanceText(visitdata[adapterPosition / 2].distance)} 이동"
                 }
 
-                ServerResponse.VISIT_TYPE_PUBLIC.code -> {
+                ServerResponse.VISIT_TYPE_PUBLIC_TRANSPORT.code -> {
                     binding.pathWalkTypeIcon.setImageResource(R.drawable.edit_course_path_icon_walk_off)
-                    binding.pathCarTypeBox.setImageResource(R.drawable.edit_course_path_icon_car_off)
-                    binding.pathBusTypeBox.setImageResource(R.drawable.edit_course_path_icon_bus_on)
+                    binding.pathCarTypeIcon.setImageResource(R.drawable.edit_course_path_icon_car_off)
+                    binding.pathBusTypeIcon.setImageResource(R.drawable.edit_course_path_icon_bus_on)
 
                     binding.pathDistanceText.text = "대중교통으로 약 ${getDistanceText(visitdata[adapterPosition / 2].distance)} 이동"
                 }
 
                 else -> {
                     binding.pathWalkTypeIcon.setImageResource(R.drawable.edit_course_path_icon_walk_on)
-                    binding.pathCarTypeBox.setImageResource(R.drawable.edit_course_path_icon_car_off)
-                    binding.pathBusTypeBox.setImageResource(R.drawable.edit_course_path_icon_bus_off)
+                    binding.pathCarTypeIcon.setImageResource(R.drawable.edit_course_path_icon_car_off)
+                    binding.pathBusTypeIcon.setImageResource(R.drawable.edit_course_path_icon_bus_off)
 
                     binding.pathDistanceText.text = "도보로 약 ${getDistanceText(visitdata[adapterPosition / 2].distance)} 이동"
                 }
             }
 
             if(selectedPosition == adapterPosition) {   //선택 데이터강조
-                binding.pathConstraintlayout.setBackgroundResource(R.drawable.ripple_effect_edit_course_box_highlight)
+                binding.highlightImage.setImageResource(R.color.edit_course_highlight)
             } else {
-                binding.pathConstraintlayout.setBackgroundResource(R.drawable.ripple_effect_edit_course_box_white)
+                binding.highlightImage.setImageResource(R.color.alpha)
             }
 
-            itemView.setOnClickListener {
-                selectedPosition = adapterPosition
-                notifyItemChanged(selectedPosition)
+            binding.highlightImage.setOnClickListener {
+                setSelectItem(adapterPosition)
 
                 itemClickListener?.onPathItemClick(adapterPosition / 2)    //pathData position 으로 넘겨줌
             }
@@ -129,7 +126,7 @@ class MyCourseAdapter(): RecyclerView.Adapter<RecyclerView.ViewHolder>() {
             }
 
             binding.pathBusTypeBox.setOnClickListener {
-                pathTypeBoxClick(ServerResponse.VISIT_TYPE_PUBLIC.code, adapterPosition)
+                pathTypeBoxClick(ServerResponse.VISIT_TYPE_PUBLIC_TRANSPORT.code, adapterPosition)
             }
 
         }
@@ -139,17 +136,16 @@ class MyCourseAdapter(): RecyclerView.Adapter<RecyclerView.ViewHolder>() {
         if(!isTypeChangeFinished)   //이전 작업이 있으면
             return
 
+        isTypeChangeFinished = false
+
         if(selectedPosition == adapterPosition){    //강조된 Path 의 Type 선택한 경우
             itemClickListener?.onPathTypeClick(type, adapterPosition / 2)
         } else {
-            selectedPosition = adapterPosition
-            notifyItemChanged(selectedPosition)
+            setSelectItem(adapterPosition)
 
             itemClickListener?.onPathItemClick(adapterPosition / 2)
             itemClickListener?.onPathTypeClick(type, adapterPosition / 2)
         }
-
-        isTypeChangeFinished = false
     }
 
     fun successChangeType(type: String, position: Int){   //이미 /2 된 position 받음
@@ -158,6 +154,8 @@ class MyCourseAdapter(): RecyclerView.Adapter<RecyclerView.ViewHolder>() {
         visitdata[position].type = type
 
         notifyItemChanged(selectedPosition)
+
+        Log.d("MyCourseAdapter", "isTypeChangeFinished: $isTypeChangeFinished")
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
@@ -218,6 +216,26 @@ class MyCourseAdapter(): RecyclerView.Adapter<RecyclerView.ViewHolder>() {
         } else {
             "${distance/1000}.${distance % 1000 / 100}Km"
         }
+    }
+
+    private fun setSelectItem(adapterPosition: Int){
+        val lastSelectedPosition = selectedPosition
+
+        selectedPosition = adapterPosition
+        notifyItemChanged(selectedPosition)
+
+        if(lastSelectedPosition != -1 && lastSelectedPosition != selectedPosition)
+            notifyItemChanged(lastSelectedPosition)
+    }
+
+    fun clearSelect(){
+        if(selectedPosition == -1)
+            return
+
+        val lastSelectedPosition = selectedPosition
+
+        selectedPosition = -1
+        notifyItemChanged(lastSelectedPosition)
     }
 
     companion object {
