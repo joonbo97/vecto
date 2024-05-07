@@ -129,42 +129,15 @@ class WriteFragment : Fragment(), OnMapReadyCallback, CalendarDialog.OnDateSelec
 
         writeViewModel.mapImageUrls.observe(viewLifecycleOwner){
             if(imageUri.isEmpty() && uploadStarted){   //업로드 할 Normal Image 가 없는 경우
-                writeViewModel.addFeed(
-                    VectoService.FeedDataForUpload(
-                        binding.EditTitle.text.toString(),
-                        binding.EditContent.text.toString(),
-                        LocalDateTime.now().withNano(0).toString(),
-                        null,
-                        locationDataList,
-                        writeViewModel.visitDataForWriteList,
-                        writeViewModel.mapImageUrls.value?.toMutableList()
-                ))
+                uploadData(null)
             } else if(writeViewModel.normalImageDone.value == true && uploadStarted) { //업로드 할 Normal Image 가 이미 완료된 경우
-                writeViewModel.addFeed(
-                    VectoService.FeedDataForUpload(
-                        binding.EditTitle.text.toString(),
-                        binding.EditContent.text.toString(),
-                        LocalDateTime.now().withNano(0).toString(),
-                        writeViewModel.imageUrls.value?.toMutableList(),
-                        locationDataList,
-                        writeViewModel.visitDataForWriteList,
-                        writeViewModel.mapImageUrls.value?.toMutableList()
-                    ))
+                uploadData(writeViewModel.imageUrls.value?.toMutableList())
             }
         }
 
         writeViewModel.imageUrls.observe(viewLifecycleOwner){
             if((writeViewModel.mapImageDone.value == true && uploadStarted)){  //Normal Image 와 지도 이미지 모두 완료된 경우
-                writeViewModel.addFeed(
-                    VectoService.FeedDataForUpload(
-                        binding.EditTitle.text.toString(),
-                        binding.EditContent.text.toString(),
-                        LocalDateTime.now().withNano(0).toString(),
-                        writeViewModel.imageUrls.value?.toMutableList(),
-                        locationDataList,
-                        writeViewModel.visitDataForWriteList,
-                        writeViewModel.mapImageUrls.value?.toMutableList()
-                    ))
+                uploadData(writeViewModel.imageUrls.value?.toMutableList())
             }
 
         }
@@ -199,6 +172,19 @@ class WriteFragment : Fragment(), OnMapReadyCallback, CalendarDialog.OnDateSelec
             sendFailMessage(it, requireContext(), "imageErrorLiveData")
         }
 
+    }
+
+    private fun uploadData(allImageUrl: MutableList<String>?) {
+        writeViewModel.addFeed(
+            VectoService.FeedDataForUpload(
+                binding.EditTitle.text.toString(),
+                binding.EditContent.text.toString(),
+                LocalDateTime.now().withNano(0).toString(),
+                allImageUrl,
+                locationDataList,
+                writeViewModel.visitDataForWriteList,
+                writeViewModel.mapImageUrls.value?.toMutableList()
+            ))
     }
 
     private fun initListeners() {

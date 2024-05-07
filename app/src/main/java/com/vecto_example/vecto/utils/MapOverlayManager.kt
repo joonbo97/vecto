@@ -6,6 +6,7 @@ import android.graphics.PointF
 import androidx.core.content.ContextCompat
 import com.naver.maps.geometry.LatLng
 import com.naver.maps.geometry.LatLngBounds
+import com.naver.maps.map.CameraAnimation
 import com.naver.maps.map.CameraUpdate
 import com.naver.maps.map.NaverMap
 import com.naver.maps.map.overlay.CircleOverlay
@@ -111,7 +112,19 @@ class MapOverlayManager(private val context: Context, private val mapMarkerManag
             val maxLng = pathPoints.maxOf { it.lng }
 
             val bounds = LatLngBounds(LatLng(minLat , minLng), LatLng(maxLat, maxLng))
-            naverMap.moveCamera(CameraUpdate.fitBounds(bounds, 50, 250, 50, offset))
+            naverMap.moveCamera(CameraUpdate.fitBounds(bounds, 50, 350, 50, offset))
+        }
+    }
+
+    fun moveCameraForPathOffsetWithAnimation(pathPoints: MutableList<LocationData>, offset: Int){
+        if(pathPoints.isNotEmpty()) {
+            val minLat = pathPoints.minOf { it.lat }
+            val maxLat = pathPoints.maxOf { it.lat }
+            val minLng = pathPoints.minOf { it.lng }
+            val maxLng = pathPoints.maxOf { it.lng }
+
+            val bounds = LatLngBounds(LatLng(minLat , minLng), LatLng(maxLat, maxLng))
+            naverMap.moveCamera(CameraUpdate.fitBounds(bounds, 50, 350, 50, offset).animate(CameraAnimation.Easing))
         }
     }
 

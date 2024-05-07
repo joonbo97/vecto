@@ -57,8 +57,11 @@ class FeedDetailActivity : AppCompatActivity(), OnMapReadyCallback, MyFeedDetail
         binding = ActivityFeedDetailBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        initMap()
+
         initObservers()
+        viewModel.startLoading()
+        initMap()
+
         initSlideLayout()
 
         binding.BackButton.setOnClickListener {
@@ -69,8 +72,8 @@ class FeedDetailActivity : AppCompatActivity(), OnMapReadyCallback, MyFeedDetail
 
     @SuppressLint("ClickableViewAccessibility")
     private fun initSlideLayout() {
-        val topMargin = dpToPx(150f, this) // 상단에서 최소 150dp
-        val bottomMargin = dpToPx(100f, this) // 하단에서 최소 100dp
+        val topMargin = dpToPx(250f, this)
+        val bottomMargin = dpToPx(250f, this)
         val screenHeight = Resources.getSystem().displayMetrics.heightPixels
         var lastY = 0f
 
@@ -222,6 +225,8 @@ class FeedDetailActivity : AppCompatActivity(), OnMapReadyCallback, MyFeedDetail
         myFeedDetailAdapter.feedInfoWithFollow = viewModel.allFeedInfo
         myFeedDetailAdapter.lastSize = viewModel.allFeedInfo.size
         myFeedDetailAdapter.notifyDataSetChanged()
+
+        viewModel.endLoading()
     }
 
     @SuppressLint("NotifyDataSetChanged")
@@ -413,7 +418,7 @@ class FeedDetailActivity : AppCompatActivity(), OnMapReadyCallback, MyFeedDetail
     }
 
     override fun onPathItemClick(pathData: PathData) {
-        mapOverlayManager.moveCameraForPathOffset(pathData.coordinates, dpToPx((offset + 20).toFloat(), this))
+        mapOverlayManager.moveCameraForPathOffsetWithAnimation(pathData.coordinates, dpToPx((offset + 20).toFloat(), this))
     }
 
 }

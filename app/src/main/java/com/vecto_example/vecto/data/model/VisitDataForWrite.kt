@@ -9,5 +9,7 @@ data class VisitDataForWrite(
     val lng_set: Double,
     val staytime: Int,
     val name: String,
-    val address: String
+    val address: String,
+    val distance: Int,
+    val transportType: String
 )

@@ -8,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import com.vecto_example.vecto.data.model.VisitData
 import com.vecto_example.vecto.data.model.VisitDataForWrite
 import com.vecto_example.vecto.retrofit.VectoService
+import com.vecto_example.vecto.utils.ServerResponse
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
@@ -127,7 +128,7 @@ class WriteViewModel(private val repository: WriteRepository): ViewModel() {
 
     fun reverseGeocode(visitDataList: MutableList<VisitData>) {
 
-        visitDataForWriteList = MutableList(visitDataList.size){ VisitDataForWrite("", "", 0.0, 0.0, 0.0, 0.0, 0, "", "") }
+        visitDataForWriteList = MutableList(visitDataList.size){ VisitDataForWrite("", "", 0.0, 0.0, 0.0, 0.0, 0, "", "", 0, ServerResponse.VISIT_TYPE_WALK.code) }
         address = MutableList(visitDataList.size) {""}
         _isCourseDataLoaded.value = true
 
@@ -158,7 +159,9 @@ class WriteViewModel(private val repository: WriteRepository): ViewModel() {
                         lng_set = visitDataList[index].lng_set,
                         staytime = visitDataList[index].staytime,
                         name = visitDataList[index].name,
-                        address = address[index]
+                        address = address[index],
+                        distance = visitDataList[index].distance,
+                        transportType = visitDataList[index].type
                     )
 
                 }

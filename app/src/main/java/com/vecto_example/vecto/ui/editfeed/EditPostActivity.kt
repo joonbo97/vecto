@@ -90,9 +90,6 @@ class EditPostActivity : AppCompatActivity(), OnMapReadyCallback, CalendarDialog
     private var content = ""
     private var feedId = -1
 
-
-
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -162,29 +159,11 @@ class EditPostActivity : AppCompatActivity(), OnMapReadyCallback, CalendarDialog
             if(imageUri.isEmpty() && uploadStarted){   //업로드 할 Normal Image 가 없는 경우
                 Log.d("EditPost", "업로드 할 이미지가 없고 지도 이미지 업로드가 완료되었습니다.")
 
-                writeViewModel.updateFeed(
-                    VectoService.UpdateFeedRequest(
-                        feedId,
-                        binding.EditTitle.text.toString(),
-                        binding.EditContent.text.toString(),
-                        allImageUrl.toMutableList(),
-                        locationDataList,
-                        writeViewModel.visitDataForWriteList,
-                        writeViewModel.mapImageUrls.value?.toMutableList()
-                    ))
+                uploadData(allImageUrl)
             } else if(writeViewModel.normalImageDone.value == true && uploadStarted) { //업로드 할 Normal Image 가 이미 완료된 경우
                 Log.d("EditPost", "업로드 할 이미지가 완료되었고 지도 이미지 업로드가 완료되었습니다.")
 
-                writeViewModel.updateFeed(
-                    VectoService.UpdateFeedRequest(
-                        feedId,
-                        binding.EditTitle.text.toString(),
-                        binding.EditContent.text.toString(),
-                        allImageUrl.toMutableList(),
-                        locationDataList,
-                        writeViewModel.visitDataForWriteList,
-                        writeViewModel.mapImageUrls.value?.toMutableList()
-                    ))
+                uploadData(allImageUrl)
             }
         }
 
@@ -198,16 +177,7 @@ class EditPostActivity : AppCompatActivity(), OnMapReadyCallback, CalendarDialog
             if(writeViewModel.mapImageDone.value == true && uploadStarted){  //Normal Image 와 지도 이미지 모두 완료된 경우
                 Log.d("EditPost", "업로드 할 이미지가 있고 지도 이미지 업로드는 완료되었습니다.")
 
-                writeViewModel.updateFeed(
-                    VectoService.UpdateFeedRequest(
-                        feedId,
-                        binding.EditTitle.text.toString(),
-                        binding.EditContent.text.toString(),
-                        allImageUrl.toMutableList(),
-                        locationDataList,
-                        writeViewModel.visitDataForWriteList,
-                        writeViewModel.mapImageUrls.value?.toMutableList()
-                    ))
+                uploadData(allImageUrl)
             }
 
         }
@@ -232,6 +202,19 @@ class EditPostActivity : AppCompatActivity(), OnMapReadyCallback, CalendarDialog
             sendFailMessage(it, this, "imageErrorLiveData")
         }
 
+    }
+
+    private fun uploadData(allImageUrl: List<String>) {
+        writeViewModel.updateFeed(
+            VectoService.UpdateFeedRequest(
+                feedId,
+                binding.EditTitle.text.toString(),
+                binding.EditContent.text.toString(),
+                allImageUrl.toMutableList(),
+                locationDataList,
+                writeViewModel.visitDataForWriteList,
+                writeViewModel.mapImageUrls.value?.toMutableList()
+            ))
     }
 
     private fun initUI() {

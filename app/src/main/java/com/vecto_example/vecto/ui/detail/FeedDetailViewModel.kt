@@ -74,16 +74,16 @@ class FeedDetailViewModel(private val repository: FeedRepository, private val us
     private val _deleteFollowError = MutableLiveData<String>()
     val deleteFollowError: LiveData<String> = _deleteFollowError
 
-    private fun startLoading(){
+    fun startLoading(){
         Log.d("FeedDetailViewModel", "Start Loading")
 
-        if(nextPage == 0)   //처음 실행하는 경우 center 로딩
+        if(allFeedInfo.isEmpty())   //처음 실행하는 경우 center 로딩
             _isLoadingCenter.value = true
         else                //하단 스크롤인 경우 bottom 로딩
             _isLoadingBottom.value = true
     }
 
-    private fun endLoading(){
+    fun endLoading(){
         Log.d("FeedDetailViewModel", "End Loading")
 
         _isLoadingCenter.value = false
