@@ -31,7 +31,7 @@ class LikeFeedViewModel(private val feedRepository: FeedRepository, private val 
     private val _feedInfoLiveData = MutableLiveData<VectoService.FeedPageResponse>()
     val feedInfoLiveData: LiveData<VectoService.FeedPageResponse> = _feedInfoLiveData
 
-    val allFeedInfo = mutableListOf<VectoService.FeedInfoWithFollow>()
+    var allFeedInfo = mutableListOf<VectoService.FeedInfoWithFollow>()
 
     /*   좋아요   */
     private val _postFeedLikeResult = MutableLiveData<Result<String>>()
@@ -69,13 +69,13 @@ class LikeFeedViewModel(private val feedRepository: FeedRepository, private val 
     private fun startLoading(){
         Log.d("MyPageLikeFeedViewModel", "Start Loading")
 
-        if(nextPage == 0)   //처음 실행하는 경우 center 로딩
+        if(firstFlag)   //처음 실행하는 경우 center 로딩
             _isLoadingCenter.value = true
         else                //하단 스크롤인 경우 bottom 로딩
             _isLoadingBottom.value = true
     }
 
-    private fun endLoading(){
+    fun endLoading(){
         Log.d("MyPageLikeFeedViewModel", "End Loading")
 
         _isLoadingCenter.value = false
@@ -89,25 +89,25 @@ class LikeFeedViewModel(private val feedRepository: FeedRepository, private val 
             startLoading()
 
         viewModelScope.launch {
-            val feedListResponse = feedRepository.postLikeFeedList(nextPage)
+            if(!lastPage){
+                val feedListResponse = feedRepository.postLikeFeedList(nextPage)
 
-            feedListResponse.onSuccess {
-                val newFeedInfoWithFollow = it.feeds.map { feedInfo ->
-                    VectoService.FeedInfoWithFollow(feedInfo, false)
+                feedListResponse.onSuccess {
+
+                    val newFeedInfoWithFollow = it.feeds.map { feedInfo ->
+                        VectoService.FeedInfoWithFollow(feedInfo, false)
+                    }
+
+                    checkFollow(newFeedInfoWithFollow, it)
+
+                    nextPage = it.nextPage    //페이지 정보값 변경
+                    lastPage = it.lastPage
+                    followPage = it.followPage
+                }.onFailure {
+                    _feedErrorLiveData.value = it.message
+                    endLoading()
                 }
-
-                checkFollow(newFeedInfoWithFollow, it)
-
-                nextPage = it.nextPage    //페이지 정보값 변경
-                lastPage = it.lastPage
-                followPage = it.followPage
-
-                endLoading()
-            }.onFailure {
-                _feedErrorLiveData.value = it.message
-                endLoading()
             }
-
         }
 
     }
@@ -127,12 +127,19 @@ class LikeFeedViewModel(private val feedRepository: FeedRepository, private val 
                         newFeedInfoWithFollow[i].isFollowing = true
                 }
 
-                allFeedInfo.addAll(newFeedInfoWithFollow)
+                if(firstFlag) {
+                    allFeedInfo = newFeedInfoWithFollow.toMutableList()
+                } else {
+                    allFeedInfo.addAll(newFeedInfoWithFollow)
+                }
                 _feedInfoLiveData.postValue(feedPageResponse)
 
-                endLoading()
             }.onFailure {
-                allFeedInfo.addAll(newFeedInfoWithFollow)
+                if(firstFlag) {
+                    allFeedInfo = newFeedInfoWithFollow.toMutableList()
+                } else {
+                    allFeedInfo.addAll(newFeedInfoWithFollow)
+                }
                 _feedInfoLiveData.postValue(feedPageResponse)
 
                 _followErrorLiveData.value = it.message
@@ -216,8 +223,6 @@ class LikeFeedViewModel(private val feedRepository: FeedRepository, private val 
         followPage = true
 
         firstFlag = true
-
-        allFeedInfo.clear()
     }
 
     fun checkLoading(): Boolean{

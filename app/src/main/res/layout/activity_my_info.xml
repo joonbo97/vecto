@@ -1,0 +1,368 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/vecto_main"
+    tools:context=".ui.myinfo.MyInfoActivity">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/constraintLayout"
+        android:layout_width="match_parent"
+        android:layout_height="90dp"
+        android:background="@color/vecto_theme_orange"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:id="@+id/TitleText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="33dp"
+            android:fontFamily="@font/lineseedkr_bd"
+            android:text="내 정보 설정"
+            android:textColor="@color/white"
+            android:textSize="@dimen/text_size_title"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.5" />
+
+        <ImageView
+            android:id="@+id/BackButton"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginStart="5dp"
+            android:padding="15dp"
+            android:src="@drawable/write_back"
+            app:layout_constraintBottom_toBottomOf="@+id/TitleText"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/TitleText"
+            app:layout_constraintVertical_bias="0.5" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+    <ImageView
+        android:id="@+id/ProfileImage"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:layout_marginTop="15dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/constraintLayout"
+        app:srcCompat="@drawable/profile_basic" />
+
+    <ImageView
+        android:id="@+id/ProfileEditIcon"
+        android:layout_width="22dp"
+        android:layout_height="22dp"
+        android:layout_marginStart="40dp"
+        android:layout_marginTop="40dp"
+        android:src="@drawable/edit_profile_image_icon"
+        app:layout_constraintStart_toStartOf="@+id/ProfileImage"
+        app:layout_constraintTop_toTopOf="@+id/ProfileImage" />
+
+    <TextView
+        android:id="@+id/emailTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:fontFamily="@font/lineseedkr_bd"
+        android:text="이메일"
+        android:textColor="@color/vecto_gray"
+        android:textSize="15sp"
+        app:layout_constraintStart_toStartOf="@+id/emailBox"
+        app:layout_constraintTop_toBottomOf="@+id/ProfileImage" />
+
+    <ImageView
+        android:id="@+id/emailBox"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="7dp"
+        android:layout_marginEnd="20dp"
+        android:src="@drawable/mypage_email_box"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/emailTitle" />
+
+    <TextView
+        android:id="@+id/emailText"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="10dp"
+        android:ellipsize="end"
+        android:fontFamily="@font/lineseedkr_rg"
+        android:maxLines="1"
+        android:text="example@vec-to.net"
+        android:textColor="@color/vecto_gray"
+        android:textSize="15sp"
+        app:layout_constraintBottom_toBottomOf="@+id/emailBox"
+        app:layout_constraintEnd_toStartOf="@id/emailLockImage"
+        app:layout_constraintStart_toStartOf="@+id/emailBox"
+        app:layout_constraintTop_toTopOf="@+id/emailBox"
+        app:layout_constraintVertical_bias="0.53" />
+
+    <ImageView
+        android:id="@+id/emailLockImage"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:layout_marginEnd="20dp"
+        android:src="@drawable/lock_icon"
+        app:layout_constraintBottom_toBottomOf="@+id/emailBox"
+        app:layout_constraintEnd_toEndOf="@+id/emailBox"
+        app:layout_constraintTop_toTopOf="@+id/emailBox"
+        app:layout_constraintVertical_bias="0.4" />
+
+
+    <TextView
+        android:id="@+id/idTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="15dp"
+        android:fontFamily="@font/lineseedkr_bd"
+        android:text="아이디(영어, 숫자 4~20자)"
+        android:textColor="@color/vecto_gray"
+        android:textSize="15sp"
+        app:layout_constraintStart_toStartOf="@+id/idBox"
+        app:layout_constraintTop_toBottomOf="@id/emailBox" />
+
+    <ImageView
+        android:id="@+id/idBox"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="7dp"
+        android:layout_marginEnd="20dp"
+        android:src="@drawable/myinfo_item_box"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/idTitle" />
+
+    <EditText
+        android:id="@+id/editTextID"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:background="@null"
+        android:ellipsize="end"
+        android:ems="20"
+        android:fontFamily="@font/lineseedkr_rg"
+        android:inputType="text"
+        android:maxLines="1"
+        android:text=""
+        android:textSize="15sp"
+        android:textColor="@color/black"
+        android:theme="@style/EditTheme"
+        app:layout_constraintBottom_toBottomOf="@+id/idBox"
+        app:layout_constraintEnd_toStartOf="@+id/idCheckButton"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="@+id/idBox"
+        app:layout_constraintTop_toTopOf="@+id/idBox"
+        app:layout_constraintVertical_bias="0.53" />
+
+    <ImageView
+        android:id="@+id/idCheckButton"
+        android:layout_width="80dp"
+        android:layout_height="30dp"
+        android:layout_marginEnd="6dp"
+        android:background="@drawable/ripple_check_duplication_button"
+        app:layout_constraintBottom_toBottomOf="@+id/idBox"
+        app:layout_constraintEnd_toEndOf="@+id/idBox"
+        app:layout_constraintTop_toTopOf="@+id/idBox"
+        app:layout_constraintVertical_bias="0.5" />
+
+    <TextView
+        android:id="@+id/idCheckButtonText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/lineseedkr_bd"
+        android:text="중복 확인"
+        android:textColor="@color/white"
+        android:textSize="11sp"
+        app:layout_constraintStart_toStartOf="@+id/idCheckButton"
+        app:layout_constraintTop_toTopOf="@id/idCheckButton"
+        app:layout_constraintEnd_toEndOf="@id/idCheckButton"
+        app:layout_constraintBottom_toBottomOf="@id/idCheckButton"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintVertical_bias="0.53"/>
+
+    <TextView
+        android:id="@+id/nicknameTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="15dp"
+        android:fontFamily="@font/lineseedkr_bd"
+        android:text="닉네임(10자이하)"
+        android:textColor="@color/vecto_gray"
+        android:textSize="15sp"
+        app:layout_constraintStart_toStartOf="@+id/nicknameBox"
+        app:layout_constraintTop_toBottomOf="@id/idBox" />
+
+    <ImageView
+        android:id="@+id/nicknameBox"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="7dp"
+        android:layout_marginEnd="20dp"
+        android:src="@drawable/myinfo_item_box"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/nicknameTitle" />
+
+    <EditText
+        android:id="@+id/editTextNickname"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
+        android:background="@null"
+        android:ellipsize="end"
+        android:ems="20"
+        android:fontFamily="@font/lineseedkr_rg"
+        android:inputType="text"
+        android:maxLines="1"
+        android:text=""
+        android:textSize="15sp"
+        android:textColor="@color/black"
+        android:theme="@style/EditTheme"
+        app:layout_constraintBottom_toBottomOf="@+id/nicknameBox"
+        app:layout_constraintEnd_toEndOf="@+id/nicknameBox"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="@+id/nicknameBox"
+        app:layout_constraintTop_toTopOf="@+id/nicknameBox"
+        app:layout_constraintVertical_bias="0.53" />
+
+    <TextView
+        android:id="@+id/pwTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="15dp"
+        android:fontFamily="@font/lineseedkr_bd"
+        android:text="비밀번호(영어, 숫자, 특수문자 포함 8~20자)"
+        android:textColor="@color/vecto_gray"
+        android:textSize="15sp"
+        app:layout_constraintStart_toStartOf="@+id/pwBox"
+        app:layout_constraintTop_toBottomOf="@+id/nicknameBox" />
+
+    <ImageView
+        android:id="@+id/pwBox"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="7dp"
+        android:layout_marginEnd="20dp"
+        android:src="@drawable/myinfo_item_box"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/pwTitle" />
+
+    <EditText
+        android:id="@+id/editTextPW"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
+        android:background="@null"
+        android:ems="20"
+        android:hint="비밀번호"
+        android:inputType="textPassword"
+        android:textSize="15sp"
+        android:textColor="@color/black"
+        android:theme="@style/EditTheme"
+        app:layout_constraintBottom_toBottomOf="@+id/pwBox"
+        app:layout_constraintEnd_toEndOf="@+id/pwBox"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="@+id/pwBox"
+        app:layout_constraintTop_toTopOf="@+id/pwBox"
+        app:layout_constraintVertical_bias="0.53" />
+
+    <TextView
+        android:id="@+id/pwcheckTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="15dp"
+        android:fontFamily="@font/lineseedkr_bd"
+        android:text="비밀번호 확인"
+        android:textColor="@color/vecto_gray"
+        android:textSize="15sp"
+        app:layout_constraintStart_toStartOf="@+id/pwcheckBox"
+        app:layout_constraintTop_toBottomOf="@+id/pwBox" />
+
+    <ImageView
+        android:id="@+id/pwcheckBox"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="7dp"
+        android:layout_marginEnd="20dp"
+        android:src="@drawable/myinfo_item_box"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/pwcheckTitle" />
+
+    <EditText
+        android:id="@+id/editTextCheckPW"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
+        android:background="@null"
+        android:ems="20"
+        android:hint="비밀번호확인"
+        android:inputType="textPassword"
+        android:textSize="15sp"
+        android:textColor="@color/black"
+        android:theme="@style/EditTheme"
+        app:layout_constraintBottom_toBottomOf="@+id/pwcheckBox"
+        app:layout_constraintEnd_toEndOf="@+id/pwcheckBox"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="@+id/pwcheckBox"
+        app:layout_constraintTop_toTopOf="@+id/pwcheckBox"
+        app:layout_constraintVertical_bias="0.53" />
+
+    <ImageView
+        android:id="@+id/WriteDoneButton"
+        android:layout_width="0dp"
+        android:layout_height="40dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginTop="30dp"
+        android:foreground="@drawable/ripple_orange_large_box"
+        app:backgroundTint="@null"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/pwcheckBox"/>
+
+    <TextView
+        android:id="@+id/writeDoneButtonText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/lineseedkr_bd"
+        android:text="작성완료"
+        android:textColor="@color/white"
+        android:textSize="15sp"
+        app:layout_constraintBottom_toBottomOf="@+id/WriteDoneButton"
+        app:layout_constraintEnd_toEndOf="@+id/WriteDoneButton"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="@+id/WriteDoneButton"
+        app:layout_constraintTop_toTopOf="@+id/WriteDoneButton"
+        app:layout_constraintVertical_bias="0.53" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

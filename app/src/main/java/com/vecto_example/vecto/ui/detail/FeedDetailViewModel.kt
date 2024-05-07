@@ -10,6 +10,7 @@ import com.vecto_example.vecto.data.repository.FeedRepository
 import com.vecto_example.vecto.data.repository.UserRepository
 import com.vecto_example.vecto.retrofit.VectoService
 import com.vecto_example.vecto.utils.FeedDetailType
+import com.vecto_example.vecto.utils.ServerResponse
 import kotlinx.coroutines.launch
 
 class FeedDetailViewModel(private val repository: FeedRepository, private val userRepository: UserRepository) : ViewModel() {
@@ -186,6 +187,74 @@ class FeedDetailViewModel(private val repository: FeedRepository, private val us
             _feedInfoLiveData.postValue(feedPageResponse)
 
             endLoading()
+        }
+    }
+
+    fun postFeedLike(feedId: Int) {
+        tempLoading = true
+
+        viewModelScope.launch {
+            val postFeedLikeResponse = repository.postFeedLike(feedId)
+
+            _postFeedLikeResult.value = postFeedLikeResponse
+
+            endLoading()
+        }
+    }
+
+    fun deleteFeedLike(feedId: Int) {
+        tempLoading = true
+
+        viewModelScope.launch {
+            val deleteFeedLikeResponse = repository.deleteFeedLike(feedId)
+
+            _deleteFeedLikeResult.value = deleteFeedLikeResponse
+
+            endLoading()
+        }
+    }
+
+    fun postFollow(userId: String) {
+        tempLoading = true
+
+        viewModelScope.launch {
+            val followResponse = userRepository.postFollow(userId)
+
+            followResponse.onSuccess {
+                if(it == ServerResponse.SUCCESS_POSTFOLLOW.code){
+                    _postFollowResult.value = true
+                } else if(it == ServerResponse.SUCCESS_ALREADY_POSTFOLLOW.code) {
+                    _postFollowResult.value = false
+                }
+
+                endLoading()
+            }.onFailure {
+                _postFollowError.value = it.message
+
+                endLoading()
+            }
+        }
+    }
+
+    fun deleteFollow(userId: String) {
+        tempLoading = true
+
+        viewModelScope.launch {
+            val followResponse = userRepository.deleteFollow(userId)
+
+            followResponse.onSuccess {
+                if(it == ServerResponse.SUCCESS_DELETEFOLLOW.code){
+                    _deleteFollowResult.value = true
+                } else if(it == ServerResponse.SUCCESS_ALREADY_DELETEFOLLOW.code) {
+                    _deleteFollowResult.value = false
+                }
+
+                endLoading()
+            }.onFailure {
+                _deleteFollowError.value = it.message
+
+                endLoading()
+            }
         }
     }
 

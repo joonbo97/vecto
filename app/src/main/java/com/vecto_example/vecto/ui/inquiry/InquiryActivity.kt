@@ -1,41 +1,59 @@
-package com.vecto_example.vecto.ui.mypage.inquiry
+package com.vecto_example.vecto.ui.inquiry
 
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import androidx.fragment.app.Fragment
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
+import android.widget.Toast
 import androidx.core.content.FileProvider
 import com.vecto_example.vecto.data.Auth
-import com.vecto_example.vecto.databinding.FragmentMypageInquiryBinding
+import com.vecto_example.vecto.databinding.ActivityInquiryBinding
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
 
-class MypageInquiryFragment : Fragment() {
-    lateinit var binding: FragmentMypageInquiryBinding
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
-        binding = FragmentMypageInquiryBinding.inflate(inflater, container, false)
+class InquiryActivity : AppCompatActivity() {
+    private lateinit var binding: ActivityInquiryBinding
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        binding = ActivityInquiryBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
+        initListener()
+    }
+
+    private fun initListener() {
+        /*   리스너 초기화 함수   */
+
+        //뒤로 가기 버튼
+        binding.BackButton.setOnClickListener {
+            finish()
+        }
+
+        binding.QueryBox1.setOnClickListener {
+            if(binding.Qcontent.visibility == View.VISIBLE){
+                binding.Qcontent.visibility = View.GONE
+                binding.SendLogText.visibility = View.GONE
+            } else {
+                binding.Qcontent.visibility = View.VISIBLE
+                binding.SendLogText.visibility = View.VISIBLE
+            }
+        }
 
         binding.SendLogText.setOnClickListener {
-            sendDatabaseByEmail(requireContext(), "log_database")
+            sendDatabaseByEmail(this, "log_database")
         }
 
         binding.contractTextBox.setOnClickListener {
-            val intent = Intent(context, PolicyActivity::class.java)
-            requireContext().startActivity(intent)
+            val intent = Intent(this, PolicyActivity::class.java)
+            this.startActivity(intent)
         }
-
-        return binding.root
     }
 
-    fun sendDatabaseByEmail(context: Context, databaseName: String) {
+    private fun sendDatabaseByEmail(context: Context, databaseName: String) {
         try {
             val internalDbFile = context.getDatabasePath(databaseName)
             val externalDbFile = File(context.getExternalFilesDir(null), databaseName)
@@ -69,6 +87,7 @@ class MypageInquiryFragment : Fragment() {
             context.startActivity(Intent.createChooser(emailIntent, "Send email..."))
         } catch (e: Exception) {
             e.printStackTrace()
+            Toast.makeText(this, "로그 데이터가 존재하지 않습니다.", Toast.LENGTH_SHORT).show()
         }
     }
 }

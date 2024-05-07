@@ -30,9 +30,9 @@ class MapMarkerManager(private val context: Context, private val naverMap: Naver
     private var tedNaverClustering: TedNaverClustering<MyClusterItem>? = null
 
     interface OnClusterClickListener {
-        fun onMarkerClick(visitData: VisitData, clusterItem: MyClusterItem, position: Int)
+        fun onMarkerClick(clusterItem: MyClusterItem)
 
-        fun onClusterClick(visitData: VisitData, cluster: Cluster<MyClusterItem>, position: Int)
+        fun onClusterClick(cluster: Cluster<MyClusterItem>)
     }
 
     var clusterClickListener: OnClusterClickListener? = null
@@ -57,7 +57,7 @@ class MapMarkerManager(private val context: Context, private val naverMap: Naver
         visitMarkers.add(visitMarker)
     }
 
-    fun addBasicMarker(visitData: VisitData){
+    private fun addBasicMarker(visitData: VisitData){
         val visitMarker = Marker()
 
         if(visitData.name.isNotEmpty())
@@ -77,16 +77,19 @@ class MapMarkerManager(private val context: Context, private val naverMap: Naver
         visitMarkers.add(visitMarker)
     }
 
-    fun addVisitMarkersBasic(visitDataList: List<VisitData>) {
+    fun addBasicMarkers(visitDataList: List<VisitData>) {
         visitDataList.forEach {
             addBasicMarker(it)
         }
     }
 
-    fun addVisitMarker(visitData: VisitData){
+    fun addBasicMarkerWithPosition(visitData: VisitData, position: Int){
         val visitMarker = Marker()
 
-        visitMarker.icon = OverlayImage.fromResource(getMarkerIcon())
+        if(visitData.name.isNotEmpty())
+            visitMarker.icon = OverlayImage.fromResource(getBasicMarkerIconWithPosition(position))
+        else
+            visitMarker.icon = OverlayImage.fromResource(R.drawable.edit_course_marker_gray)
 
         if(visitData.name.isNotEmpty()) {
             visitMarker.position = LatLng(visitData.lat_set, visitData.lng_set)
@@ -100,18 +103,35 @@ class MapMarkerManager(private val context: Context, private val naverMap: Naver
         visitMarkers.add(visitMarker)
     }
 
-    private fun getMarkerIcon(): Int{
+    fun addNumberMarker(visitData: VisitData){
+        val visitMarker = Marker()
+
+        visitMarker.icon = OverlayImage.fromResource(getMarkerIconWithNumber())
+
+        if(visitData.name.isNotEmpty()) {
+            visitMarker.position = LatLng(visitData.lat_set, visitData.lng_set)
+        }
+        else {
+            visitMarker.position = LatLng(visitData.lat, visitData.lng)
+        }
+
+        visitMarker.map = naverMap
+
+        visitMarkers.add(visitMarker)
+    }
+
+    private fun getMarkerIconWithNumber(): Int{
         return when(visitMarkers.size){
-            0 -> R.drawable.marker_number_1
-            1 -> R.drawable.marker_number_2
-            2 -> R.drawable.marker_number_3
-            3 -> R.drawable.marker_number_4
-            4 -> R.drawable.marker_number_5
-            5 -> R.drawable.marker_number_6
-            6 -> R.drawable.marker_number_7
-            7 -> R.drawable.marker_number_8
-            8 -> R.drawable.marker_number_9
-            else -> R.drawable.marker_image
+            0 -> R.drawable.detail_marker_1
+            1 -> R.drawable.detail_marker_2
+            2 -> R.drawable.detail_marker_3
+            3 -> R.drawable.detail_marker_4
+            4 -> R.drawable.detail_marker_5
+            5 -> R.drawable.detail_marker_6
+            6 -> R.drawable.detail_marker_7
+            7 -> R.drawable.detail_marker_8
+            8 -> R.drawable.detail_marker_9
+            else -> R.drawable.edit_course_marker_gray
         }
     }
 
@@ -125,7 +145,17 @@ class MapMarkerManager(private val context: Context, private val naverMap: Naver
         }
     }
 
-    fun setMarkerClustering(placelist: MutableList<TMapAPIService.Poi>, visitData: VisitData, p: Int) {
+    private fun getBasicMarkerIconWithPosition(position: Int): Int{
+        return when(position % 4){
+            0 -> R.drawable.edit_course_marker_mint
+            1 -> R.drawable.edit_course_marker_blue
+            2 -> R.drawable.edit_course_marker_yellow
+            3 -> R.drawable.edit_course_marker_pink
+            else -> R.drawable.edit_course_marker_mint
+        }
+    }
+
+    fun setMarkerClustering(placelist: MutableList<TMapAPIService.Poi>) {
         val clusterItems = placelist.map { MyClusterItem(TedLatLng( it.frontLat, it.frontLon), it.name) }
 
         tedNaverClustering = TedNaverClustering.with<MyClusterItem>(context, naverMap)
@@ -137,7 +167,7 @@ class MapMarkerManager(private val context: Context, private val naverMap: Naver
                 }
             }
             .markerClickListener {
-                clusterClickListener?.onMarkerClick(visitData, it, p)
+                clusterClickListener?.onMarkerClick(it)
             }
             .minClusterSize(2)
             .customCluster { cluster ->
@@ -170,7 +200,7 @@ class MapMarkerManager(private val context: Context, private val naverMap: Naver
                 }
             }
             .clusterClickListener {
-                clusterClickListener?.onClusterClick(visitData, it, p)
+                clusterClickListener?.onClusterClick(it)
             }
             .make()
 

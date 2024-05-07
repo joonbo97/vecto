@@ -3,9 +3,11 @@ package com.vecto_example.vecto.ui.editcourse.adapter
 import android.annotation.SuppressLint
 import android.util.Log
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.vecto_example.vecto.R
+import com.vecto_example.vecto.data.model.LocationData
 import com.vecto_example.vecto.data.model.PathData
 import com.vecto_example.vecto.data.model.VisitData
 import com.vecto_example.vecto.databinding.EditCoursePathItemBinding
@@ -23,11 +25,11 @@ class MyCourseAdapter(): RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     private var isTypeChangeFinished = true
 
     interface OnItemClickListener {
-        fun onVisitItemClick(position: Int)
+        fun onVisitItemClick()
 
-        fun onPathItemClick(position: Int)
+        fun onPathItemClick()
 
-        fun onPathTypeClick(type: String, position: Int)
+        fun onPathTypeClick(type: String)
     }
 
     var itemClickListener: OnItemClickListener? = null
@@ -57,12 +59,17 @@ class MyCourseAdapter(): RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                 binding.highlightImage.setImageResource(R.color.alpha)
             }
 
-            binding.stayTimeText.text = getStayTimeText(item.staytime)
+            if(item.staytime == 0)
+                binding.stayTimeText.visibility = View.GONE
+            else {
+                binding.stayTimeText.visibility = View.VISIBLE
+                binding.stayTimeText.text = getStayTimeText(item.staytime)
+            }
 
             binding.highlightImage.setOnClickListener {
                 setSelectItem(adapterPosition)
 
-                itemClickListener?.onVisitItemClick(adapterPosition / 2)    //visitData position 으로 넘겨줌
+                itemClickListener?.onVisitItemClick()    //visitData position 으로 넘겨줌
             }
 
         }
@@ -114,7 +121,7 @@ class MyCourseAdapter(): RecyclerView.Adapter<RecyclerView.ViewHolder>() {
             binding.highlightImage.setOnClickListener {
                 setSelectItem(adapterPosition)
 
-                itemClickListener?.onPathItemClick(adapterPosition / 2)    //pathData position 으로 넘겨줌
+                itemClickListener?.onPathItemClick()    //pathData position 으로 넘겨줌
             }
 
             binding.pathWalkTypeBox.setOnClickListener {
@@ -139,12 +146,12 @@ class MyCourseAdapter(): RecyclerView.Adapter<RecyclerView.ViewHolder>() {
         isTypeChangeFinished = false
 
         if(selectedPosition == adapterPosition){    //강조된 Path 의 Type 선택한 경우
-            itemClickListener?.onPathTypeClick(type, adapterPosition / 2)
+            itemClickListener?.onPathTypeClick(type)
         } else {
             setSelectItem(adapterPosition)
 
-            itemClickListener?.onPathItemClick(adapterPosition / 2)
-            itemClickListener?.onPathTypeClick(type, adapterPosition / 2)
+            itemClickListener?.onPathItemClick()
+            itemClickListener?.onPathTypeClick(type)
         }
     }
 
@@ -236,6 +243,40 @@ class MyCourseAdapter(): RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
         selectedPosition = -1
         notifyItemChanged(lastSelectedPosition)
+    }
+
+    fun updateVisitData(newVisitData: VisitData, position: Int){
+        if(newVisitData.lat_set != visitdata[position / 2].lat_set || newVisitData.lng_set != visitdata[position / 2].lng_set) //위치도 바뀐 경우
+            adjustPathData(newVisitData, position / 2)
+
+        visitdata[position / 2] = newVisitData
+
+        notifyItemChanged(position)
+    }
+
+    private fun adjustPathData(visitData: VisitData, visitPosition: Int){
+        when(visitPosition){
+            0 -> {  //처음 인 경우
+                changeAfterPath(visitData, visitPosition)
+            }
+            visitdata.lastIndex -> {    //마지막 인 경우
+                changeBeforePath(visitData, visitPosition - 1)
+            }
+            else -> {
+                changeBeforePath(visitData, visitPosition - 1)
+                changeAfterPath(visitData, visitPosition)
+            }
+        }
+    }
+
+    private fun changeBeforePath(visitData: VisitData, pathPosition: Int){
+        pathdata[pathPosition].coordinates[pathdata[pathPosition].coordinates.lastIndex] = LocationData(
+            pathdata[pathPosition].coordinates[pathdata[pathPosition].coordinates.lastIndex].datetime, visitData.lat_set, visitData.lng_set)
+    }
+
+    private fun changeAfterPath(visitData: VisitData, pathPosition: Int){
+        pathdata[pathPosition].coordinates[0] = LocationData(
+            pathdata[pathPosition].coordinates[0].datetime, visitData.lat_set, visitData.lng_set)
     }
 
     companion object {

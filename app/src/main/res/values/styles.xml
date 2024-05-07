@@ -20,6 +20,10 @@
         <item name="android:background">@drawable/bottom_dialog_box</item>
     </style>
 
+    <style name="EditTheme" parent="Theme.AppCompat.DayNight.NoActionBar">
+        <item name="colorAccent">@color/vecto_theme_orange</item>
+    </style>
+
     <style name="TabLayout_Text" parent="TextAppearance.Design.Tab">
         <item name="android:textSize">14sp</item>
         <item name="android:fontFamily">@font/lineseedkr_rg</item>

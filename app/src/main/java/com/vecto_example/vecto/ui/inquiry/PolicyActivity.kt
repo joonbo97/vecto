@@ -1,4 +1,4 @@
-package com.vecto_example.vecto.ui.mypage.inquiry
+package com.vecto_example.vecto.ui.inquiry
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle

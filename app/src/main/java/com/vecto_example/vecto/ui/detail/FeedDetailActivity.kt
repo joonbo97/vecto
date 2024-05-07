@@ -24,13 +24,16 @@ import com.naver.maps.map.OnMapReadyCallback
 import com.vecto_example.vecto.ui.detail.adapter.MyFeedDetailAdapter
 import com.vecto_example.vecto.R
 import com.vecto_example.vecto.data.Auth
+import com.vecto_example.vecto.data.model.PathData
+import com.vecto_example.vecto.data.model.VisitData
 import com.vecto_example.vecto.data.repository.FeedRepository
 import com.vecto_example.vecto.data.repository.UserRepository
 import com.vecto_example.vecto.databinding.ActivityFeedDetailBinding
+import com.vecto_example.vecto.ui.decoration.VerticalOverlapItemDecoration
 import com.vecto_example.vecto.utils.MapMarkerManager
 import com.vecto_example.vecto.utils.MapOverlayManager
 
-class FeedDetailActivity : AppCompatActivity(), OnMapReadyCallback {
+class FeedDetailActivity : AppCompatActivity(), OnMapReadyCallback, MyFeedDetailAdapter.OnFeedActionListener {
     private lateinit var binding: ActivityFeedDetailBinding
     private lateinit var mapMarkerManager: MapMarkerManager
     private lateinit var mapOverlayManager: MapOverlayManager
@@ -41,13 +44,12 @@ class FeedDetailActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private lateinit var myFeedDetailAdapter: MyFeedDetailAdapter
 
-    //map설정 관련
+    //map 설정 관련
     private lateinit var mapView: MapFragment
     private lateinit var naverMap: NaverMap
 
     private var offset = 500
     private var lastPosition = -1
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -126,13 +128,20 @@ class FeedDetailActivity : AppCompatActivity(), OnMapReadyCallback {
         mapMarkerManager = MapMarkerManager(this, naverMap)
         mapOverlayManager = MapOverlayManager(this, mapMarkerManager, naverMap)
 
+        initRecyclerView()
+    }
+
+    private fun initRecyclerView() {
         myFeedDetailAdapter = MyFeedDetailAdapter()
+        myFeedDetailAdapter.feedActionListener = this
+
         binding.PostDetailRecyclerView.adapter = myFeedDetailAdapter
 
         setViewModelData()
 
         binding.PostDetailRecyclerView.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
         binding.PostDetailRecyclerView.itemAnimator = null
+
         binding.PostDetailRecyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 super.onScrolled(recyclerView, dx, dy)
@@ -149,33 +158,12 @@ class FeedDetailActivity : AppCompatActivity(), OnMapReadyCallback {
 
 
                 if(lastVisibleItemPosition == myFeedDetailAdapter.feedInfoWithFollow.lastIndex){    //마지막 아이템
-                    if(lastPosition != lastVisibleItemPosition) {
-                        val feedInfo = myFeedDetailAdapter.feedInfoWithFollow[lastVisibleItemPosition]
-                        mapOverlayManager.addOverlayForPost(feedInfo.feedInfo)
-
-                        if(feedInfo.feedInfo.visit.size == 1)
-                            mapOverlayManager.moveCameraForVisitOffset(feedInfo.feedInfo.visit.first(), offset)
-                        else
-                            mapOverlayManager.moveCameraForPathOffset(feedInfo.feedInfo.location.toMutableList(), offset)
-
-                        lastPosition = lastVisibleItemPosition
-                    }
+                    setOverlayAndCamera(lastVisibleItemPosition)
                 }
                 else {
                     // 중앙 아이템의 정보를 가져와서 처리
                     if (centerPosition >= 0 && centerPosition < myFeedDetailAdapter.feedInfoWithFollow.size) {
-                        if(lastPosition != centerPosition){
-                            val feedInfo = myFeedDetailAdapter.feedInfoWithFollow[centerPosition]
-
-                            mapOverlayManager.addOverlayForPost(feedInfo.feedInfo) // 중앙 아이템 강조
-
-                            if(feedInfo.feedInfo.visit.size == 1)
-                                mapOverlayManager.moveCameraForVisitOffset(feedInfo.feedInfo.visit.first(), offset)
-                            else
-                                mapOverlayManager.moveCameraForPathOffset(feedInfo.feedInfo.location.toMutableList(), offset)
-
-                            lastPosition = centerPosition
-                        }
+                        setOverlayAndCamera(centerPosition)
                     }
                 }
 
@@ -189,8 +177,21 @@ class FeedDetailActivity : AppCompatActivity(), OnMapReadyCallback {
                 }
             }
         })
+    }
 
+    private fun setOverlayAndCamera(position: Int) {
+        if(lastPosition != position) {
 
+            val feedInfo = myFeedDetailAdapter.feedInfoWithFollow[position]
+            mapOverlayManager.addOverlayForPost(feedInfo.feedInfo)
+
+            if(feedInfo.feedInfo.visit.size == 1)
+                mapOverlayManager.moveCameraForVisitOffset(feedInfo.feedInfo.visit.first(), offset)
+            else
+                mapOverlayManager.moveCameraForPathOffset(feedInfo.feedInfo.location.toMutableList(), dpToPx((offset + 20).toFloat(), this))
+
+            lastPosition = position
+        }
     }
 
     @SuppressLint("NotifyDataSetChanged")
@@ -221,9 +222,6 @@ class FeedDetailActivity : AppCompatActivity(), OnMapReadyCallback {
         myFeedDetailAdapter.feedInfoWithFollow = viewModel.allFeedInfo
         myFeedDetailAdapter.lastSize = viewModel.allFeedInfo.size
         myFeedDetailAdapter.notifyDataSetChanged()
-
-        Log.d("ASD123", "${myFeedDetailAdapter.lastSize}, ${viewModel.allFeedInfo.size}")
-
     }
 
     @SuppressLint("NotifyDataSetChanged")
@@ -372,6 +370,50 @@ class FeedDetailActivity : AppCompatActivity(), OnMapReadyCallback {
     private fun getFeed() {
         //게시글 요청 함수
         viewModel.getFeedList()
+    }
+
+    override fun onPostFeedLike(feedId: Int) {
+        if(!viewModel.checkLoading()) {
+            viewModel.postFeedLike(feedId)
+        } else {
+            Toast.makeText(this, "이전 작업을 처리 중입니다. 잠시 후 다시 시도해 주세요", Toast.LENGTH_SHORT).show()
+            myFeedDetailAdapter.actionPosition = -1
+        }
+    }
+
+    override fun onDeleteFeedLike(feedId: Int) {
+        if(!viewModel.checkLoading()) {
+            viewModel.deleteFeedLike(feedId)
+        } else {
+            Toast.makeText(this, "이전 작업을 처리 중입니다. 잠시 후 다시 시도해 주세요", Toast.LENGTH_SHORT).show()
+            myFeedDetailAdapter.actionPosition = -1
+        }
+    }
+
+    override fun onPostFollow(userId: String) {
+        if(!viewModel.checkLoading()) {
+            viewModel.postFollow(userId)
+        } else {
+            Toast.makeText(this, "이전 작업을 처리 중입니다. 잠시 후 다시 시도해 주세요", Toast.LENGTH_SHORT).show()
+            myFeedDetailAdapter.actionPosition = -1
+        }
+    }
+
+    override fun onDeleteFollow(userId: String) {
+        if(!viewModel.checkLoading()) {
+            viewModel.deleteFollow(userId)
+        } else {
+            Toast.makeText(this, "이전 작업을 처리 중입니다. 잠시 후 다시 시도해 주세요", Toast.LENGTH_SHORT).show()
+            myFeedDetailAdapter.actionPosition = -1
+        }
+    }
+
+    override fun onVisitItemClick(visitData: VisitData) {
+        mapOverlayManager.moveCameraForVisitOffset(visitData, offset)
+    }
+
+    override fun onPathItemClick(pathData: PathData) {
+        mapOverlayManager.moveCameraForPathOffset(pathData.coordinates, dpToPx((offset + 20).toFloat(), this))
     }
 
 }

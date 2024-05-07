@@ -38,7 +38,7 @@ class UserInfoViewModel(private val repository: FeedRepository, private val user
     private val _feedInfoLiveData = MutableLiveData<VectoService.FeedPageResponse>()
     val feedInfoLiveData: LiveData<VectoService.FeedPageResponse> = _feedInfoLiveData
 
-    val allFeedInfo = mutableListOf<VectoService.FeedInfo>()
+    var allFeedInfo = mutableListOf<VectoService.FeedInfo>()
 
     /*   사용자 정보   */
     private val _userInfoResult = MutableLiveData<Result<VectoService.UserInfoResponse>>()
@@ -91,7 +91,7 @@ class UserInfoViewModel(private val repository: FeedRepository, private val user
     private fun startLoading(){
         Log.d("UserInfoViewModel", "Loading Start")
 
-        if(nextPage == 0)   //처음 실행하는 경우 center 로딩
+        if(firstFlag)   //처음 실행하는 경우 center 로딩
             _isLoadingCenter.value = true
         else                //하단 스크롤인 경우 bottom 로딩
             _isLoadingBottom.value = true
@@ -101,7 +101,7 @@ class UserInfoViewModel(private val repository: FeedRepository, private val user
         _isLoadingCenter.value = true
     }
 
-    private fun endLoading(){
+    fun endLoading(){
         Log.d("UserInfoViewModel", "Loading End")
 
         _isLoadingCenter.value = false
@@ -126,15 +126,17 @@ class UserInfoViewModel(private val repository: FeedRepository, private val user
 
                 feedListResponse.onSuccess { feedPageResponse ->
                     if(!lastPage) {
-                        allFeedInfo.addAll(feedPageResponse.feeds)
+                        if(firstFlag) {
+                            allFeedInfo = feedPageResponse.feeds.toMutableList()
+                        } else {
+                            allFeedInfo.addAll(feedPageResponse.feeds)
+                        }
                         _feedInfoLiveData.postValue(feedPageResponse)
 
                         nextPage = feedPageResponse.nextPage    //페이지 정보값 변경
                         lastPage = feedPageResponse.lastPage
                         followPage = feedPageResponse.followPage
-
                     }
-                    endLoading()
                 }.onFailure {
                     _feedErrorLiveData.value = it.message
                     endLoading()
@@ -287,8 +289,6 @@ class UserInfoViewModel(private val repository: FeedRepository, private val user
         followPage = true
 
         firstFlag = true
-
-        allFeedInfo.clear()
     }
 
     fun checkLoading(): Boolean{

@@ -13,7 +13,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.widget.Toast
-import androidx.activity.viewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
@@ -82,6 +81,7 @@ class SearchFragment : Fragment(), MainActivity.ScrollToTop, FeedAdapter.OnFeedA
             if(!searchViewModel.checkLoading()){//로딩중이 아니라면
 
                 searchViewModel.initSetting()
+
                 clearNoneImage()
 
                 Log.d("getFeed_REQUEST", "By Refresh")
@@ -210,9 +210,13 @@ class SearchFragment : Fragment(), MainActivity.ScrollToTop, FeedAdapter.OnFeedA
 
                 feedAdapter.notifyDataSetChanged()
                 searchViewModel.firstFlag = false
+
+                searchViewModel.endLoading()
             }
-            else
+            else {
                 feedAdapter.addFeedData()
+                searchViewModel.endLoading()
+            }
 
             if(queryFlag && searchViewModel.allFeedInfo.isEmpty() && !searchViewModel.checkLoading()){
                 setNoneImage()
@@ -352,12 +356,8 @@ class SearchFragment : Fragment(), MainActivity.ScrollToTop, FeedAdapter.OnFeedA
                 super.onScrolled(recyclerView, dx, dy)
 
                 if (!recyclerView.canScrollVertically(1)) {
-                    if(!searchViewModel.checkLoading())
-                    {
-                        Log.d("getFeed_REQUEST", "By Scroll")
-                        getFeed()
-                    }
-
+                    Log.d("getFeed_REQUEST", "By Scroll")
+                    getFeed()
                 }
 
             }

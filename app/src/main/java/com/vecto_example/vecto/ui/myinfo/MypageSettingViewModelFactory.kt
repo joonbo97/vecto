@@ -1,4 +1,4 @@
-package com.vecto_example.vecto.ui.mypage.setting
+package com.vecto_example.vecto.ui.myinfo
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider

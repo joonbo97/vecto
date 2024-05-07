@@ -387,7 +387,7 @@ class WriteFragment : Fragment(), OnMapReadyCallback, CalendarDialog.OnDateSelec
             val mapImageParts = mutableListOf<MultipartBody.Part>()
             for (bitmap in mapSnapshot) {
                 val byteArrayOutputStream = ByteArrayOutputStream()
-                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream)
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 80, byteArrayOutputStream)
                 val byteArray = byteArrayOutputStream.toByteArray()
                 val body = byteArray.toRequestBody("image/jpeg".toMediaTypeOrNull(), 0)
 

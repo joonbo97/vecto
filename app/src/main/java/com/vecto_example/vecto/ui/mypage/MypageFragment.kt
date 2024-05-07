@@ -1,40 +1,30 @@
 package com.vecto_example.vecto.ui.mypage
 
-import android.content.BroadcastReceiver
-import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
 import android.os.Bundle
-import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.activity.viewModels
 import androidx.fragment.app.viewModels
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.navigation.fragment.findNavController
 import com.vecto_example.vecto.ui.login.LoginActivity
 import com.vecto_example.vecto.ui.main.MainActivity
-import com.vecto_example.vecto.ui.notification.NotificationActivity
 import com.vecto_example.vecto.R
 import com.vecto_example.vecto.data.Auth
 import com.vecto_example.vecto.data.repository.FeedRepository
-import com.vecto_example.vecto.data.repository.NotificationRepository
 import com.vecto_example.vecto.data.repository.UserRepository
 import com.vecto_example.vecto.databinding.FragmentMypageBinding
 import com.vecto_example.vecto.retrofit.VectoService
-import com.vecto_example.vecto.ui.comment.CommentActivity
+import com.vecto_example.vecto.ui.inquiry.InquiryActivity
 import com.vecto_example.vecto.ui.followinfo.FollowInfoActivity
 import com.vecto_example.vecto.ui.likefeed.LikeFeedActivity
 import com.vecto_example.vecto.ui.myfeed.MyFeedActivity
-import com.vecto_example.vecto.ui.notification.NotificationViewModel
-import com.vecto_example.vecto.ui.notification.NotificationViewModelFactory
+import com.vecto_example.vecto.ui.myinfo.MyInfoActivity
 import com.vecto_example.vecto.ui.userinfo.UserInfoViewModel
 import com.vecto_example.vecto.ui.userinfo.UserInfoViewModelFactory
 import com.vecto_example.vecto.utils.LoadImageUtils
-import com.vecto_example.vecto.utils.RequestLoginUtils
 
 class MypageFragment : Fragment() {
     lateinit var binding: FragmentMypageBinding
@@ -97,11 +87,8 @@ class MypageFragment : Fragment() {
 
         /*   계정 설정   */
         binding.MypageMenu1.setOnClickListener {
-            val navController = findNavController()
-            if(Auth.provider == "vecto")
-                navController.navigate(R.id.MypageSettingFragment)
-            else
-                navController.navigate(R.id.MypageSettingkakaoFragment)
+            val intent = Intent(context, MyInfoActivity::class.java)
+            startActivity(intent)
         }
 
         /*   내 게시물   */
@@ -118,8 +105,8 @@ class MypageFragment : Fragment() {
 
         /*   문의하기   */
         binding.MypageMenu4.setOnClickListener {
-            val navController = findNavController()
-            navController.navigate(R.id.MypageInquiryFragment)
+            val intent = Intent(context, InquiryActivity::class.java)
+            startActivity(intent)
         }
 
         /*   로그아웃   */

@@ -8,15 +8,15 @@
         android:pathData="M0,0h80v80h-80z"/>
     <path
         android:pathData="M40,80C62.091,80 80,62.091 80,40C80,17.909 62.091,0 40,0C17.909,0 0,17.909 0,40C0,62.091 17.909,80 40,80Z"
-        android:fillColor="#ffffff"/>
+        android:fillColor="#FD7156"/>
     <path
         android:pathData="M55.1,18.815L61.185,24.9C62.988,26.703 62.988,29.407 61.185,31.211L59.382,33.013L46.986,20.618L48.789,18.815C50.592,17.012 53.522,17.012 55.1,18.815Z"
-        android:fillColor="#FD7156"/>
+        android:fillColor="#ffffff"/>
     <path
         android:pathData="M43.311,24.473L24.188,43.596L36.618,56.026L55.741,36.903L43.311,24.473Z"
-        android:fillColor="#FD7156"/>
+        android:fillColor="#ffffff"/>
     <path
-        android:pathData="M20.393,47.437L32.788,59.832L17.463,62.537L20.393,47.437Z"
-        android:fillColor="#FD7156"/>
+        android:pathData="M20.393,47.437L32.788,59.833L17.463,62.537L20.393,47.437Z"
+        android:fillColor="#ffffff"/>
   </group>
 </vector>

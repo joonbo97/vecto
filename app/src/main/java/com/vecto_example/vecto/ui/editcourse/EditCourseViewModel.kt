@@ -51,10 +51,6 @@ class EditCourseViewModel(private val repository: TMapRepository) : ViewModel() 
 
     private var currentPage = 1
 
-    var position = 0
-
-    lateinit var selectedVisitData: VisitData
-
     var responsePathData = mutableListOf<LatLng>()
 
     var totalDistance = 0
@@ -92,10 +88,8 @@ class EditCourseViewModel(private val repository: TMapRepository) : ViewModel() 
         }
     }
 
-    fun searchNearbyPoi(visitData: VisitData, category: String, p: Int) {
+    fun searchNearbyPoi(visitData: VisitData, category: String) {
         startLoading()
-        selectedVisitData = visitData
-        position = p
 
         viewModelScope.launch {
             val searchNearbyPoiResponse = repository.searchNearbyPoi(TMapAPIService.SearchNearbyPoiRequest(

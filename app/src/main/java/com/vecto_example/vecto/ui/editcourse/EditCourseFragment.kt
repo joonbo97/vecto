@@ -166,14 +166,23 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
             /*   Map clear   */
             mapOverlayManager.deleteOverlay()
 
-            mapOverlayManager.addPathOverlayForLocation(allPathData)
-            mapMarkerManager.addVisitMarkersBasic(myCourseAdapter.visitdata)
-            mapOverlayManager.moveCameraForPathOffset(allPathData, dpToPx((offset + 20).toFloat(), requireContext()))
+            mapOverlayManager.addPathOverlayForPathList(myCourseAdapter.pathdata)
+            mapMarkerManager.addBasicMarkers(myCourseAdapter.visitdata)
+
+            /*   Move Camera   */
+            moveCamera()
 
             /*   UI clear   */
             editCourseViewModel.setButtonVisibility(EditCourseViewModel.ButtonType.NONE.name)
             myCourseAdapter.clearSelect()
         }
+    }
+
+    private fun moveCamera() {
+        if(myCourseAdapter.visitdata.size == 1)
+            mapOverlayManager.moveCameraForVisitOffset(myCourseAdapter.visitdata[0], offset)
+        else
+            mapOverlayManager.moveCameraForPathOffset(allPathData, dpToPx((offset + 20).toFloat(), requireContext()))
     }
 
     private fun changeCourseData() {    //추천 경로로 변경 함수
@@ -217,25 +226,7 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
                 binding.TextForLargeRight.text = "날짜를 선택해주세요."
             } else {
                 binding.TextForLargeRight.text = it
-                setRecyclerView(it)
-            }
-        }
-
-        /*   Block Observer   */
-        editCourseViewModel.isBlock.observe(viewLifecycleOwner){
-            if(it) {
-                binding.constraintBlock.visibility = View.VISIBLE
-
-                binding.EditLayout.visibility = View.INVISIBLE
-                binding.RefreshButton.visibility = View.INVISIBLE
-
-                mapOverlayManager.deleteOverlay()
-            }
-            else {
-                binding.constraintBlock.visibility = View.GONE
-
-                binding.EditLayout.visibility = View.VISIBLE
-                binding.RefreshButton.visibility = View.VISIBLE
+                setAdapterData(it)
             }
         }
 
@@ -276,27 +267,14 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
             editCourseViewModel.overlayDone()
         }
 
-        editCourseViewModel.isLoading.observe(viewLifecycleOwner){
-
-            if(it) {
-                binding.constraintProgress.visibility = View.VISIBLE
-                binding.progressBar.visibility = View.VISIBLE
-            }
-            else{
-                binding.constraintProgress.visibility = View.GONE
-                binding.progressBar.visibility = View.GONE
-            }
-
-        }
-
         /*   주변 장소 검색 완료 Observer   */
         editCourseViewModel.isFinished.observe(viewLifecycleOwner){
             if(it) {    //종료 되었을 때
-                mapMarkerManager.setMarkerClustering(editCourseViewModel.poiResponseList, editCourseViewModel.selectedVisitData, editCourseViewModel.position)
+                mapMarkerManager.setMarkerClustering(editCourseViewModel.poiResponseList)
                 editCourseViewModel.overlayDone()
             }
             else {      //추가가 더 있는 경우
-                editCourseViewModel.searchNearbyPoi(editCourseViewModel.selectedVisitData, getString(R.string.tmapcategory), editCourseViewModel.position)
+                editCourseViewModel.searchNearbyPoi(getSelectedVisitData(), getString(R.string.tmapcategory))
             }
         }
 
@@ -319,6 +297,8 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
                 binding.visitEditButtonText.visibility = View.INVISIBLE
                 binding.visitDeleteButtonText.visibility = View.INVISIBLE
                 binding.visitSearchButtonText.visibility = View.INVISIBLE
+
+                naverMap.onSymbolClickListener = null
             }
         }
 
@@ -345,6 +325,36 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
                 binding.editCourseButton.visibility = View.INVISIBLE
             }
         }
+
+        /*   Loading Observer   */
+        editCourseViewModel.isLoading.observe(viewLifecycleOwner){
+            if(it) {
+                binding.constraintProgress.visibility = View.VISIBLE
+                binding.progressBar.visibility = View.VISIBLE
+            }
+            else{
+                binding.constraintProgress.visibility = View.GONE
+                binding.progressBar.visibility = View.GONE
+            }
+        }
+
+        /*   Block Observer   */
+        editCourseViewModel.isBlock.observe(viewLifecycleOwner){
+            if(it) {
+                binding.constraintBlock.visibility = View.VISIBLE
+
+                binding.EditLayout.visibility = View.INVISIBLE
+                binding.RefreshButton.visibility = View.INVISIBLE
+
+                mapOverlayManager.deleteOverlay()
+            }
+            else {
+                binding.constraintBlock.visibility = View.GONE
+
+                binding.EditLayout.visibility = View.VISIBLE
+                binding.RefreshButton.visibility = View.VISIBLE
+            }
+        }
     }
 
     private fun dpToPx(dp: Float, context: Context): Int {
@@ -353,6 +363,14 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
 
     private fun getSelectedPathData(): PathData {
         return myCourseAdapter.pathdata[myCourseAdapter.selectedPosition / 2]
+    }
+
+    private fun getSelectedVisitData(): VisitData {
+        return myCourseAdapter.visitdata[myCourseAdapter.selectedPosition / 2]
+    }
+
+    private fun getSelectedItemPosition(): Int {
+        return (myCourseAdapter.selectedPosition / 2)
     }
 
     private fun initMap(){
@@ -381,9 +399,10 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
     }
 
     @SuppressLint("NotifyDataSetChanged")
-    private fun setRecyclerView(selectedDate: String){
+    private fun setAdapterData(selectedDate: String){
         myCourseAdapter.visitdata.clear()
         myCourseAdapter.pathdata.clear()
+        myCourseAdapter.clearSelect()
 
         mapOverlayManager.deleteOverlay()
 
@@ -408,19 +427,14 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
             allPathData = LocationDatabase(requireContext()).getBetweenLocationData(visitDataList.first().datetime, visitDataList.last().datetime)
 
             mapOverlayManager.addPathOverlayForLocation(allPathData)
-            mapOverlayManager.moveCameraForPathOffset(allPathData, offset)
+
+            moveCamera()
 
             val locationDataForPath = mutableListOf<LocationData>()
             var cnt = 1
 
-            locationDataForPath.add(LocationData(visitDataList[0].datetime, visitDataList[0].lat_set, visitDataList[0].lng_set))    //처음 값 넣어줌
-
-            for (visitDataItem in visitDataList){
-                mapOverlayManager.addCircleOverlay(visitDataItem)
-                mapMarkerManager.addVisitMarkerBasic(visitDataItem)
-
-                myCourseAdapter.visitdata.add(visitDataItem)
-            }
+            mapMarkerManager.addBasicMarkers(visitDataList)
+            myCourseAdapter.visitdata.addAll(visitDataList)
 
             var totalDistance = 0.0
             var lastLocation = allPathData.first()
@@ -428,7 +442,7 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
             for (locationData in allPathData){
                 if(visitDataList.size > 1) { //저장된 시각이 같으면 방문지점 도착경로 1 cycle 완료
 
-                    if(visitDataList[cnt - 1].distance == 0){
+                    if(visitDataList[cnt - 1].distance == 0){   //거리 설정 값이 없는 경우 설정 작업
                         totalDistance += editCourseViewModel.calculateDistance(LatLng(lastLocation.lat, lastLocation.lng), LatLng(locationData.lat, locationData.lng))
                         lastLocation = locationData
                     }
@@ -467,10 +481,8 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
         editCourseViewModel.overlayDone()
     }
 
-    /*  RecyclerView Adapter 설정 */
+    /*   RecyclerView 초기화 함수   */
     private fun initRecyclerView(){
-        /*   RecyclerView 초기화 함수   */
-
         myCourseAdapter = MyCourseAdapter()
         myCourseAdapter.itemClickListener = this
 
@@ -483,31 +495,15 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
         locationRecyclerView.addItemDecoration(VerticalOverlapItemDecoration(60))
     }
 
-    /*   override 관련 함수   */
-    override fun onDateSelected(date: String) {
-        editCourseViewModel.setDate(date)
-        naverMap.onSymbolClickListener = null
-
-        setRecyclerView(date)
-    }
-
-    override fun onMarkerClick(visitData: VisitData, clusterItem: MyClusterItem, position: Int) {
-        editVisitDialog(visitData, clusterItem.getTitle(), position)
-
-        Toast.makeText(context, "수정이 완료되었습니다.", Toast.LENGTH_SHORT).show()
-    }
-
-    private fun editVisitButtonClick(visitData: VisitData, p: Int) {
+    private fun editVisitButtonClick() {    //방문지 수정 선택
         val editVisitDialog = EditVisitDialog(requireContext())
         editVisitDialog.showDialog()
         editVisitDialog.onOkButtonClickListener = {
-            editVisitDialog(visitData, it, p)
-
-            Toast.makeText(context, "방문지 수정이 완료되었습니다.", Toast.LENGTH_SHORT).show()
+            updateVisitData(it, getSelectedVisitData().lat_set, getSelectedVisitData().lng_set)
         }
     }
 
-    private fun deleteVisitButtonClick(visitData: VisitData, p: Int) {
+    private fun deleteVisitButtonClick(visitData: VisitData, p: Int) {  //방문지 삭제 선택
         val deleteVisitDialog = DeleteVisitDialog(requireContext())
         deleteVisitDialog.showDialog()
         deleteVisitDialog.onOkButtonClickListener = {
@@ -520,52 +516,45 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
         }
     }
 
-    private fun searchVisitButtonClick(visitData: VisitData, p: Int) {
+    private fun searchVisitButtonClick(visitData: VisitData) {  //주변 검색 선택
         placeList.clear()
         editCourseViewModel.poiResponseList.clear()
-        editCourseViewModel.searchNearbyPoi(visitData, getString(R.string.tmapcategory), p)
+        editCourseViewModel.searchNearbyPoi(visitData, getString(R.string.tmapcategory))
     }
 
-    override fun onClusterClick(visitData: VisitData, cluster: Cluster<MyClusterItem>, position: Int) {
+    override fun onClusterClick(cluster: Cluster<MyClusterItem>) {
         val names = cluster.items.map { it.getTitle() } // 클러스터에 포함된 모든 아이템의 이름을 가져옵니다.
 
         val placePopupWindow = PlacePopupWindow(requireContext())
         placePopupWindow.showPopupWindow(binding.visitSearchButton, names) { name ->
-
-            editVisitDialog(visitData, name, position)
-
-            Toast.makeText(context, "수정이 완료되었습니다.", Toast.LENGTH_SHORT).show()
+            updateVisitData(name, cluster.position.latitude, cluster.position.longitude)
         }
     }
 
     /*   데이터 수정 관련   */
-    private fun updateVisitData(oldVisitData: VisitData, newVisitData: VisitData){
-        VisitDatabase(requireContext()).updateVisitData(oldVisitData, newVisitData)
+    private fun updateVisitData(name: String, lat: Double, lng: Double) {
+        if(!editCourseViewModel.checkDistance(LatLng(getSelectedVisitData().lat, getSelectedVisitData().lng),
+                LatLng(lat, lng), LocationService.CHECKDISTANCE)) {
+            Toast.makeText(context, "허용범위 외부의 장소입니다.", Toast.LENGTH_SHORT).show()
 
-        for(i in myCourseAdapter.visitdata.indices){
-
-            if(myCourseAdapter.visitdata[i] == oldVisitData) {
-                myCourseAdapter.visitdata[i] = newVisitData
-                myCourseAdapter.notifyItemChanged(i * 2)
-                break
-            }
+            return
         }
-    }
 
-    private fun editVisitDialog(visitData: VisitData, visitName: String, position: Int) {
         editCourseViewModel.overlayStart()
 
-        val newVisitData = visitData.copy(name = visitName)
+        val newVisitData = getSelectedVisitData().copy(name = name, lat_set = lat, lng_set = lng)
 
-        VisitDatabase(requireContext()).updateVisitData(visitData, newVisitData)
-        myCourseAdapter.visitdata[position] = newVisitData
-        myCourseAdapter.notifyItemChanged(position * 2)
+        VisitDatabase(requireContext()).updateVisitData(getSelectedVisitData(), newVisitData)   //DB 데이터 변경
+        myCourseAdapter.updateVisitData(newVisitData, myCourseAdapter.selectedPosition) //Adapter 데이터 변경
 
         mapOverlayManager.deleteOverlay()
-        mapMarkerManager.addVisitMarkerBasic(visitData)
-        mapOverlayManager.addCircleOverlay(visitData)
+        mapMarkerManager.addBasicMarkerWithPosition(getSelectedVisitData(), getSelectedItemPosition())
+        mapOverlayManager.addCircleOverlay(getSelectedVisitData())
+        mapOverlayManager.moveCameraForVisitOffset(getSelectedVisitData(), offset)  //Overlay 재설정
 
         editCourseViewModel.overlayDone()
+
+        Toast.makeText(context, "방문지 수정이 완료되었습니다.", Toast.LENGTH_SHORT).show()
     }
 
     private fun deleteVisit(visitData: VisitData, position: Int) {
@@ -714,7 +703,20 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
         editCourseViewModel.overlayDone()
     }
 
-    override fun onVisitItemClick(position: Int) {
+    /*   override 관련 함수   */
+    override fun onDateSelected(date: String) {
+        editCourseViewModel.setDate(date)
+        naverMap.onSymbolClickListener = null
+
+        setAdapterData(date)
+    }
+
+    //Cluster 마커 클릭
+    override fun onMarkerClick(clusterItem: MyClusterItem) {
+        updateVisitData(clusterItem.getTitle(), clusterItem.getTedLatLng().latitude, clusterItem.getTedLatLng().longitude)
+    }
+
+    override fun onVisitItemClick() {
         mapOverlayManager.deleteOverlay()
         editCourseViewModel.overlayStart()
 
@@ -722,74 +724,46 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
         editCourseViewModel.setButtonVisibility(EditCourseViewModel.ButtonType.EDIT_VISIT.name)
 
         naverMap.setOnSymbolClickListener { symbol ->
-            editCourseViewModel.overlayStart()
-
-            //방문지 수정
-            if(editCourseViewModel.checkDistance(LatLng(myCourseAdapter.visitdata[position].lat, myCourseAdapter.visitdata[position].lng), symbol.position, LocationService.CHECKDISTANCE)) {
-                val newVisitData = myCourseAdapter.visitdata[position].copy(name = symbol.caption, lat_set = symbol.position.latitude, lng_set = symbol.position.longitude)
-
-
-                mapOverlayManager.deleteOverlay()
-                mapMarkerManager.addVisitMarkerBasic(newVisitData)//선택한 newVisitData를 마커에 추가
-                mapOverlayManager.addCircleOverlay(myCourseAdapter.visitdata[position])
-                mapOverlayManager.moveCameraForVisitOffset(newVisitData, offset)
-
-                updateVisitData(myCourseAdapter.visitdata[position], newVisitData)
-
-                editCourseViewModel.selectedVisitData = myCourseAdapter.visitdata[position]
-
-                Toast.makeText(context, "선택한 장소로 변경이 완료되었습니다.", Toast.LENGTH_SHORT).show()
-            }
-            else
-            {
-                Toast.makeText(context, "허용범위 외부의 장소입니다.", Toast.LENGTH_SHORT).show()
-            }
-
-            editCourseViewModel.overlayDone()
-
+            updateVisitData(symbol.caption, symbol.position.latitude, symbol.position.longitude)
             true
         }
 
         binding.visitEditButton.setOnClickListener {
-            editVisitButtonClick(myCourseAdapter.visitdata[position], position)
+            editVisitButtonClick()
         }
 
         binding.visitDeleteButton.setOnClickListener {
-            deleteVisitButtonClick(myCourseAdapter.visitdata[position], position)
+            deleteVisitButtonClick(getSelectedVisitData(), getSelectedItemPosition())
         }
 
         binding.visitSearchButton.setOnClickListener {
-            searchVisitButtonClick(myCourseAdapter.visitdata[position], position)
+            searchVisitButtonClick(getSelectedVisitData())
         }
 
-        editCourseViewModel.selectedVisitData = myCourseAdapter.visitdata[position]
+        mapMarkerManager.addVisitMarkerBasic(getSelectedVisitData())
+        mapOverlayManager.addCircleOverlay(getSelectedVisitData())
 
-        mapMarkerManager.addVisitMarkerBasic(myCourseAdapter.visitdata[position])
-        mapOverlayManager.addCircleOverlay(myCourseAdapter.visitdata[position])
-
-        mapOverlayManager.moveCameraForVisitOffset(myCourseAdapter.visitdata[position], offset)
+        mapOverlayManager.moveCameraForVisitOffset(getSelectedVisitData(), offset)
 
         editCourseViewModel.overlayDone()
     }
 
-    override fun onPathItemClick(position: Int) {
+    override fun onPathItemClick() {
         mapOverlayManager.deleteOverlay()
         editCourseViewModel.overlayStart()
 
         editCourseViewModel.setButtonVisibility(EditCourseViewModel.ButtonType.EDIT_PATH.name)
 
-        naverMap.onSymbolClickListener = null
-
-        mapOverlayManager.addPathOverlayForLocation(myCourseAdapter.pathdata[position].coordinates)
-        mapOverlayManager.moveCameraForPathOffset(myCourseAdapter.pathdata[position].coordinates, dpToPx((offset + 20).toFloat(), requireContext()))
+        mapOverlayManager.addPathOverlayForLocation(getSelectedPathData().coordinates)
+        mapOverlayManager.moveCameraForPathOffset(getSelectedPathData().coordinates, dpToPx((offset + 20).toFloat(), requireContext()))
 
         editCourseViewModel.overlayDone()
     }
 
-    override fun onPathTypeClick(type: String, position: Int) {
-        VisitDatabase(requireContext()).updateVisitDataType(myCourseAdapter.visitdata[position].datetime, type)
+    override fun onPathTypeClick(type: String) {
+        VisitDatabase(requireContext()).updateVisitDataType(getSelectedVisitData().datetime, type)
 
-        myCourseAdapter.successChangeType(type, position)
+        myCourseAdapter.successChangeType(type, getSelectedItemPosition())
     }
 
 }

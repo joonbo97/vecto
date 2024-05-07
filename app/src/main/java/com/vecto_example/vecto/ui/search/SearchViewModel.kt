@@ -73,13 +73,13 @@ class SearchViewModel(private val repository: FeedRepository, private val userRe
     private fun startLoading(){
         Log.d("SearchViewModel", "Start Loading")
 
-        if(nextPage == 0)   //처음 실행하는 경우 center 로딩
+        if(firstFlag)   //처음 실행하는 경우 center 로딩
             _isLoadingCenter.value = true
         else                //하단 스크롤인 경우 bottom 로딩
             _isLoadingBottom.value = true
     }
 
-    private fun endLoading(){
+    fun endLoading(){
         Log.d("SearchViewModel", "End Loading")
 
         _isLoadingCenter.value = false
@@ -136,12 +136,18 @@ class SearchViewModel(private val repository: FeedRepository, private val userRe
                             newFeedInfoWithFollow[i].isFollowing = true
                     }
 
-                    allFeedInfo.addAll(newFeedInfoWithFollow)
+                    if(firstFlag) {
+                        allFeedInfo = newFeedInfoWithFollow.toMutableList()
+                    } else {
+                        allFeedInfo.addAll(newFeedInfoWithFollow)
+                    }
                     _feedInfoLiveData.postValue(feedPageResponse)
-
-                    endLoading()
                 }.onFailure {
-                    allFeedInfo.addAll(newFeedInfoWithFollow)
+                    if(firstFlag) {
+                        allFeedInfo = newFeedInfoWithFollow.toMutableList()
+                    } else {
+                        allFeedInfo.addAll(newFeedInfoWithFollow)
+                    }
                     _feedInfoLiveData.postValue(feedPageResponse)
 
                     _followErrorLiveData.value = it.message
@@ -150,9 +156,11 @@ class SearchViewModel(private val repository: FeedRepository, private val userRe
             }
 
         } else {
-
-
-            allFeedInfo.addAll(newFeedInfoWithFollow)
+            if(firstFlag) {
+                allFeedInfo = newFeedInfoWithFollow.toMutableList()
+            } else {
+                allFeedInfo.addAll(newFeedInfoWithFollow)
+            }
             _feedInfoLiveData.postValue(feedPageResponse)
 
             endLoading()
@@ -246,15 +254,13 @@ class SearchViewModel(private val repository: FeedRepository, private val userRe
     }
 
     fun initSetting(){
-        Log.d("SEARCH_VIEWMODEL", "initSetting")
+        Log.d("SearchViewModel", "initSetting")
 
         nextPage = 0
         lastPage = false
         followPage = true
 
         firstFlag = true
-
-        allFeedInfo.clear()
     }
 
     fun checkLoading(): Boolean{

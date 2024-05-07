@@ -55,12 +55,15 @@
         android:ellipsize="end"
         android:textColor="@color/black"
         android:textSize="15sp"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="3dp"
         android:layout_marginStart="15dp"
         android:layout_marginEnd="15dp"
         app:layout_constraintStart_toStartOf="@id/visitBox"
+        app:layout_constraintBottom_toTopOf="@id/stayTimeText"
         app:layout_constraintEnd_toEndOf="@id/visitBox"
-        app:layout_constraintTop_toTopOf="@+id/visitBox" />
+        app:layout_constraintTop_toTopOf="@+id/visitBox"
+        app:layout_constraintVertical_bias="0.5"
+        app:layout_constraintHorizontal_bias="0.47"/>
 
     <TextView
         android:id="@+id/stayTimeText"
@@ -70,10 +73,10 @@
         android:text=""
         android:textColor="@color/edit_course_staytime"
         android:textSize="10sp"
-        android:layout_marginBottom="5dp"
-        android:layout_marginTop="5dp"
+        android:visibility="visible"
+        android:layout_marginBottom="9dp"
         app:layout_constraintStart_toStartOf="@id/visitTitleText"
-        app:layout_constraintTop_toBottomOf="@+id/visitTitleText"
+        app:layout_constraintBottom_toBottomOf="@id/visitBox"
         app:layout_constraintVertical_bias="0.5" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

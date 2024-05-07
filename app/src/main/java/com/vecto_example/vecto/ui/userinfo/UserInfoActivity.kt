@@ -194,8 +194,12 @@ class UserInfoActivity : AppCompatActivity(), MyFeedAdapter.OnFeedActionListener
 
                 myFeedAdapter.notifyDataSetChanged()
                 userInfoViewModel.firstFlag = false
+
+                userInfoViewModel.endLoading()
             } else {
                 myFeedAdapter.addFeedInfoData()
+
+                userInfoViewModel.endLoading()
             }
 
             if(userInfoViewModel.allFeedInfo.isEmpty()){

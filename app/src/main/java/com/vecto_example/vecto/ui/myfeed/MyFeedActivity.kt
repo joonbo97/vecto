@@ -46,8 +46,8 @@ class MyFeedActivity : AppCompatActivity(), MyFeedAdapter.OnFeedActionListener {
         binding.swipeRefreshLayout.setOnRefreshListener {
 
             if(!viewModel.checkLoading()){
-
                 viewModel.initSetting()
+
                 clearNoneImage()
 
                 getFeed()
@@ -105,8 +105,12 @@ class MyFeedActivity : AppCompatActivity(), MyFeedAdapter.OnFeedActionListener {
 
                 myFeedAdapter.notifyDataSetChanged()
                 viewModel.firstFlag = false
+
+                viewModel.endLoading()
             } else {
                 myFeedAdapter.addFeedInfoData()
+
+                viewModel.endLoading()
             }
 
             if(viewModel.allFeedInfo.isEmpty()){

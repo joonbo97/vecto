@@ -43,7 +43,6 @@ class LikeFeedActivity : AppCompatActivity(), FeedAdapter.OnFeedActionListener {
         binding.swipeRefreshLayout.setOnRefreshListener {
 
             if(!likeFeedViewModel.checkLoading()){
-
                 likeFeedViewModel.initSetting()
                 clearNoneImage()
 
@@ -73,9 +72,14 @@ class LikeFeedActivity : AppCompatActivity(), FeedAdapter.OnFeedActionListener {
 
                 feedAdapter.notifyDataSetChanged()
                 likeFeedViewModel.firstFlag = false
+
+                likeFeedViewModel.endLoading()
             } else {
                 feedAdapter.addFeedData()
+
+                likeFeedViewModel.endLoading()
             }
+
 
             if(likeFeedViewModel.allFeedInfo.isEmpty()){
                 setNoneImage()
