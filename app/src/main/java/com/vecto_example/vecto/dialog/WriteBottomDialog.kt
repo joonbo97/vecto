@@ -21,10 +21,10 @@ class WriteBottomDialog(private val context: Context) {
             window.attributes.windowAnimations = R.style.CustomBottomDialog
         }
 
-        myWriteCourseAdapter = MyWriteCourseAdapter(context)
+        myWriteCourseAdapter = MyWriteCourseAdapter()
         recyclerView = dialog.findViewById(R.id.WriteBottomRecyclerView)!!
 
-        myWriteCourseAdapter = MyWriteCourseAdapter(context).apply {
+        myWriteCourseAdapter = MyWriteCourseAdapter().apply {
             myVisit = visitData
             notifyDataSetChanged()
 

@@ -328,6 +328,11 @@ class EditPostActivity : AppCompatActivity(), OnMapReadyCallback, CalendarDialog
             val writeBottomDialog = WriteBottomDialog(this)
             writeBottomDialog.showDialog(visitDataList) { selectedItems -> //구간을 선택함 (모든 정보 완료)
 
+                if(selectedItems.size > 9){
+                    Toast.makeText(this, "방문지는 최대 9개까지 선택이 가능합니다.", Toast.LENGTH_SHORT).show()
+                    return@showDialog
+                }
+
                 mapOverlayManager.deleteOverlay()
 
                 //선택한 날짜의 방문지의 처음과 끝까지의 경로

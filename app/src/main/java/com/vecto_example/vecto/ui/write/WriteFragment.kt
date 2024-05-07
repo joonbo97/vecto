@@ -291,6 +291,11 @@ class WriteFragment : Fragment(), OnMapReadyCallback, CalendarDialog.OnDateSelec
             val writeBottomDialog = WriteBottomDialog(requireContext())
             writeBottomDialog.showDialog(visitDataList) { selectedItems -> //구간을 선택함 (모든 정보 완료)
 
+                if(selectedItems.size > 9){
+                    Toast.makeText(requireContext(), "방문지는 최대 9개까지 선택이 가능합니다.", Toast.LENGTH_SHORT).show()
+                    return@showDialog
+                }
+
                 binding.naverMapWrite.visibility = View.VISIBLE
                 mapOverlayManager.deleteOverlay()
 

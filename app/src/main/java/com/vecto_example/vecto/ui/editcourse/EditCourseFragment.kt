@@ -740,7 +740,7 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
             searchVisitButtonClick(getSelectedVisitData())
         }
 
-        mapMarkerManager.addVisitMarkerBasic(getSelectedVisitData())
+        mapMarkerManager.addBasicMarkerWithPosition(getSelectedVisitData(), getSelectedItemPosition())
         mapOverlayManager.addCircleOverlay(getSelectedVisitData())
 
         mapOverlayManager.moveCameraForVisitOffset(getSelectedVisitData(), offset)
