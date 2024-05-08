@@ -20,7 +20,7 @@
         <item name="android:background">@drawable/bottom_dialog_box</item>
     </style>
 
-    <style name="EditTheme" parent="Theme.AppCompat.DayNight.NoActionBar">
+    <style name="EditTheme" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="colorAccent">@color/vecto_theme_orange</item>
     </style>
 

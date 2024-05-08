@@ -52,6 +52,7 @@
             android:imeOptions="actionSearch"
             android:text=""
             android:textSize="15sp"
+            android:theme="@style/EditTheme"
             app:layout_constraintBottom_toBottomOf="@+id/SearchBoxImage"
             app:layout_constraintEnd_toStartOf="@+id/SearchIconImage"
             app:layout_constraintHorizontal_bias="0.5"

@@ -231,7 +231,6 @@
             android:paddingBottom="15dp"
             android:text=""
             android:textColorHint="@color/vecto_alphagray"
-            android:textColor="@color/black"
             android:theme="@style/EditTheme"
             app:layout_constraintBottom_toBottomOf="@+id/CommentBox"
             app:layout_constraintEnd_toStartOf="@+id/CommentButton"

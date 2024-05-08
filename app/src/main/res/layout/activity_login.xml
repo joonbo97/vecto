@@ -126,6 +126,7 @@
         android:hint="아이디"
         android:inputType="text"
         android:text=""
+        android:theme="@style/EditTheme"
         app:layout_constraintBottom_toBottomOf="@+id/LoginBoxID"
         app:layout_constraintEnd_toEndOf="@+id/LoginBoxID"
         app:layout_constraintHorizontal_bias="0.5"
