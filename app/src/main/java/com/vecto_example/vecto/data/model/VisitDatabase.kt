@@ -20,7 +20,7 @@ class VisitDatabase(private val context: Context) {
             put("staytime", visitData.staytime)
             put("name", visitData.name)
             put("distance", visitData.distance)
-            put("type", visitData.type)
+            put("type", visitData.transportType)
         }
         db.insert("visit_data", null, values)
         db.close()
@@ -127,7 +127,7 @@ class VisitDatabase(private val context: Context) {
             put("staytime", newVisitData.staytime)
             put("name", newVisitData.name)
             put("distance", newVisitData.distance)
-            put("type", newVisitData.type)
+            put("type", newVisitData.transportType)
         }
         val whereClause = "datetime = ?" // 조건을 설정하여 갱신할 데이터 선택
         val whereArgs = arrayOf(oldVisitData.datetime) // 조건에 사용할 값들

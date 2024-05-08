@@ -49,6 +49,7 @@ import com.vecto_example.vecto.ui.write.WriteViewModelFactory
 import com.vecto_example.vecto.utils.DateTimeUtils
 import com.vecto_example.vecto.utils.MapMarkerManager
 import com.vecto_example.vecto.utils.MapOverlayManager
+import com.vecto_example.vecto.utils.RequestLoginUtils
 import com.yalantis.ucrop.UCrop
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
@@ -237,14 +238,13 @@ class EditPostActivity : AppCompatActivity(), OnMapReadyCallback, CalendarDialog
         }
 
         binding.WriteDoneButton.setOnClickListener {
-            if(Auth.loginFlag.value == false)
-            {
-                val loginRequestDialog = LoginRequestDialog(this)
-                loginRequestDialog.showDialog()
-                loginRequestDialog.onOkButtonClickListener = {
-                    val intent = Intent(this, LoginActivity::class.java)
-                    this.startActivity(intent)
-                }
+            if(Auth.loginFlag.value == false) {
+                RequestLoginUtils.requestLogin(this)
+                return@setOnClickListener
+            }
+
+            if(!writeViewModel.isAllVisitDataValid()){  //방문지 유효성 검사
+                Toast.makeText(this, "경로 정보가 유효하지 않습니다. 경로를 재등록 해주세요.", Toast.LENGTH_SHORT).show()
 
                 return@setOnClickListener
             }

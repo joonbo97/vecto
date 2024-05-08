@@ -78,7 +78,7 @@ class MyCourseAdapter(): RecyclerView.Adapter<RecyclerView.ViewHolder>() {
         @SuppressLint("SetTextI18n")
         fun bind(item: PathData)
         {
-            when(visitdata[adapterPosition / 2].type){
+            when(visitdata[adapterPosition / 2].transportType){
                 ServerResponse.VISIT_TYPE_WALK.code -> {
                     binding.pathWalkTypeIcon.setImageResource(R.drawable.edit_course_path_icon_walk_on)
                     binding.pathCarTypeIcon.setImageResource(R.drawable.edit_course_path_icon_car_off)
@@ -158,7 +158,7 @@ class MyCourseAdapter(): RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     fun successChangeType(type: String, position: Int){   //이미 /2 된 position 받음
         isTypeChangeFinished = true
 
-        visitdata[position].type = type
+        visitdata[position].transportType = type
 
         notifyItemChanged(selectedPosition)
 

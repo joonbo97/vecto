@@ -33,5 +33,16 @@ class DateTimeUtils {
                 "약 ${minutesPassed/60}시간 코스"
             }
         }
+
+        fun isValidDateTimeFormat(date: String): Boolean {
+            return try {
+                val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault())
+                dateFormat.isLenient = false
+                dateFormat.parse(date)
+                true
+            } catch (e: Exception) {
+                false
+            }
+        }
     }
 }

@@ -8,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import com.vecto_example.vecto.data.model.VisitData
 import com.vecto_example.vecto.data.model.VisitDataForWrite
 import com.vecto_example.vecto.retrofit.VectoService
+import com.vecto_example.vecto.utils.DateTimeUtils
 import com.vecto_example.vecto.utils.ServerResponse
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -126,9 +127,17 @@ class WriteViewModel(private val repository: WriteRepository): ViewModel() {
         }
     }
 
+    fun isAllVisitDataValid(): Boolean {
+        return visitDataForWriteList.all {
+            it.name.isNotEmpty() && DateTimeUtils.isValidDateTimeFormat(it.datetime) && DateTimeUtils.isValidDateTimeFormat(it.endtime)
+        }
+    }
+
     fun reverseGeocode(visitDataList: MutableList<VisitData>) {
 
-        visitDataForWriteList = MutableList(visitDataList.size){ VisitDataForWrite("", "", 0.0, 0.0, 0.0, 0.0, 0, "", "", 0, ServerResponse.VISIT_TYPE_WALK.code) }
+        visitDataForWriteList = MutableList(visitDataList.size){
+            VisitDataForWrite("", "", 0.0, 0.0, 0.0, 0.0, 0, "", "", 0, ServerResponse.VISIT_TYPE_WALK.code)
+        }
         address = MutableList(visitDataList.size) {""}
         _isCourseDataLoaded.value = true
 
@@ -161,7 +170,7 @@ class WriteViewModel(private val repository: WriteRepository): ViewModel() {
                         name = visitDataList[index].name,
                         address = address[index],
                         distance = visitDataList[index].distance,
-                        transportType = visitDataList[index].type
+                        transportType = visitDataList[index].transportType
                     )
 
                 }

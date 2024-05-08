@@ -2,12 +2,8 @@ package com.vecto_example.vecto.ui.detail.adapter
 
 import android.annotation.SuppressLint
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
-import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.naver.maps.geometry.LatLng
 import com.vecto_example.vecto.R
 import com.vecto_example.vecto.data.model.PathData
 import com.vecto_example.vecto.data.model.VisitData
@@ -53,9 +49,9 @@ class VisitListAdapter(): RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     inner class PathViewHolder(val binding: DetailPathItemBinding): RecyclerView.ViewHolder(binding.root){
         @SuppressLint("SetTextI18n")
         fun bind(item: PathData) {
-            val visitPosition = adapterPosition / 2
 
-            when(visitData[visitPosition].type) {
+
+            when(visitData[adapterPosition / 2].transportType) {
                 ServerResponse.VISIT_TYPE_WALK.code -> {
                     binding.pathTypeIcon.setImageResource(R.drawable.edit_course_path_icon_walk_on)
                     binding.pathDistanceText.text = "도보로 약 ${getDistanceText(visitData[adapterPosition / 2].distance)} 이동"

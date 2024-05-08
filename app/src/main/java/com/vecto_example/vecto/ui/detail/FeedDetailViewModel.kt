@@ -160,6 +160,7 @@ class FeedDetailViewModel(private val repository: FeedRepository, private val us
                 it.feedInfo.userId
             }
             viewModelScope.launch {
+
                 val followResponse = userRepository.getFollowRelation(userIdList)
 
                 followResponse.onSuccess { followStatuses ->
@@ -168,7 +169,6 @@ class FeedDetailViewModel(private val repository: FeedRepository, private val us
                         if(followStatuses.followRelations[i].relation == "followed" || followStatuses.followRelations[i].relation == "all")
                             newFeedInfoWithFollow[i].isFollowing = true
                     }
-
                     allFeedInfo.addAll(newFeedInfoWithFollow)
                     _feedInfoLiveData.postValue(feedPageResponse)
 
