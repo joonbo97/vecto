@@ -20,6 +20,7 @@ import com.vecto_example.vecto.data.repository.UserRepository
 import com.vecto_example.vecto.databinding.ActivityUserInfoBinding
 import com.vecto_example.vecto.popupwindow.ReportPopupWindow
 import com.vecto_example.vecto.dialog.ReportUserDialog
+import com.vecto_example.vecto.dialog.UserProfileImageDialog
 import com.vecto_example.vecto.retrofit.VectoService
 import com.vecto_example.vecto.ui.detail.FeedDetailActivity
 import com.vecto_example.vecto.ui.followinfo.FollowInfoActivity
@@ -84,6 +85,7 @@ class UserInfoActivity : AppCompatActivity(), MyFeedAdapter.OnFeedActionListener
     }
 
     private fun initListeners() {
+
         binding.MenuIcon.setOnClickListener {
             val reportPopupWindow = ReportPopupWindow(this,
                 reportListener = {
@@ -312,6 +314,8 @@ class UserInfoActivity : AppCompatActivity(), MyFeedAdapter.OnFeedActionListener
             } else {
                 Toast.makeText(this, getText(R.string.APIErrorToastMessage), Toast.LENGTH_SHORT).show()
             }
+
+            setFollowButton(false)
         }
 
         userInfoViewModel.postFollowError.observe(this) {
@@ -380,10 +384,12 @@ class UserInfoActivity : AppCompatActivity(), MyFeedAdapter.OnFeedActionListener
 
         if (userinfo.profileUrl == null) {
             binding.ProfileImage.setImageResource(R.drawable.profile_basic)
-        }
-        else//사용자 정의 이미지가 있을 경우
-        {
+        } else{ //사용자 정의 이미지가 있을 경우
             LoadImageUtils.loadUserProfileImage(this, binding.ProfileImage, userinfo.profileUrl)
+        }
+
+        binding.ProfileImage.setOnClickListener {
+            UserProfileImageDialog(this, userInfoViewModel.userInfo.value?.profileUrl).showDialog()
         }
 
         binding.FeedCountText.text = userinfo.feedCount.toString()
@@ -403,19 +409,23 @@ class UserInfoActivity : AppCompatActivity(), MyFeedAdapter.OnFeedActionListener
     private fun setFollowButton(isFollowing: Boolean){
         if(userId != Auth._userId.value)
         {
-            if(!isFollowing)
-            {
-                binding.FollowButton.setBackgroundResource(R.drawable.ripple_effect_follow)
-                binding.FollowButtonText.text = "팔로우"
-                binding.FollowButtonText.setTextColor(ContextCompat.getColor(this, R.color.vecto_theme_orange))
-            }
-            else
-            {
-                binding.FollowButton.setBackgroundResource(R.drawable.ripple_effect_following)
-                binding.FollowButtonText.text = "팔로잉"
-                binding.FollowButtonText.setTextColor(ContextCompat.getColor(this, R.color.white))
+            when(isFollowing){
+                true -> {
+                    binding.FollowButton.setBackgroundResource(R.drawable.ripple_effect_following)
+                    binding.FollowButtonText.text = "팔로잉"
+                    binding.FollowButtonText.setTextColor(ContextCompat.getColor(this, R.color.white))
+                }
+
+                false -> {
+                    binding.FollowButton.setBackgroundResource(R.drawable.ripple_effect_follow)
+                    binding.FollowButtonText.text = "팔로우"
+                    binding.FollowButtonText.setTextColor(ContextCompat.getColor(this, R.color.vecto_theme_orange))
+                }
             }
         }
+
+        binding.FollowButton.visibility = View.VISIBLE
+        binding.FollowButtonText.visibility = View.VISIBLE
     }
 
     //결과 None 이미지

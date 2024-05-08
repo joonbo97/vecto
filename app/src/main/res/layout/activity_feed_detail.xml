@@ -37,11 +37,12 @@
 
         <ImageView
             android:id="@+id/BackButton"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
+            android:layout_width="39dp"
+            android:layout_height="39dp"
             android:layout_marginStart="5dp"
-            android:padding="15dp"
-            android:src="@drawable/write_back"
+            android:padding="12dp"
+            app:srcCompat="@drawable/write_back"
+            android:background="?attr/selectableItemBackgroundBorderless"
             app:layout_constraintBottom_toBottomOf="@+id/TitleText"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="@+id/TitleText"

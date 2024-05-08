@@ -17,8 +17,17 @@ class MyImageAdapter (private val context: Context): RecyclerView.Adapter<MyImag
     lateinit var recyclerView: RecyclerView
 
     inner class ViewHolder(view: View): RecyclerView.ViewHolder(view){
-        val imageView: ImageView = view.findViewById(R.id.ImageItem)
-        val deleteButton: ImageView = view.findViewById(R.id.DeleteButton)
+        private val imageView: ImageView = view.findViewById(R.id.ImageItem)
+        private val deleteButton: ImageView = view.findViewById(R.id.DeleteButton)
+
+        fun bind(item: Uri){
+            imageView.clipToOutline = true
+            imageView.setImageURI(item)
+
+            deleteButton.setOnClickListener {
+                removeItem(adapterPosition)
+            }
+        }
 
     }
     override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
@@ -37,13 +46,7 @@ class MyImageAdapter (private val context: Context): RecyclerView.Adapter<MyImag
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val uri = imageUri[position]
-        holder.imageView.clipToOutline = true
-        holder.imageView.setImageURI(uri)
-
-        holder.deleteButton.setOnClickListener {
-            removeItem(position)
-        }
+        holder.bind(imageUri[position])
     }
 
     private fun removeItem(position: Int) {
@@ -51,21 +54,16 @@ class MyImageAdapter (private val context: Context): RecyclerView.Adapter<MyImag
             val itemView = recyclerView.findViewHolderForAdapterPosition(position)?.itemView
             val scaleDown = AnimationUtils.loadAnimation(context, R.anim.scale_down)
 
+
+            imageUri.removeAt(position)
+            notifyItemRemoved(position)
+            onItemRemovedListener?.onItemRemoved()
             scaleDown.setAnimationListener(object : Animation.AnimationListener {
-                override fun onAnimationStart(animation: Animation?) {
-                    // Nothing to do here
-                }
+                override fun onAnimationStart(animation: Animation?) {}
 
-                override fun onAnimationEnd(animation: Animation?) {
-                    // 애니메이션이 완료되면 아이템 제거
-                    imageUri.removeAt(position)
-                    notifyItemRemoved(position)
-                    onItemRemovedListener?.onItemRemoved()
-                }
+                override fun onAnimationEnd(animation: Animation?) {}
 
-                override fun onAnimationRepeat(animation: Animation?) {
-                    // Nothing to do here
-                }
+                override fun onAnimationRepeat(animation: Animation?) {}
             })
 
             itemView?.startAnimation(scaleDown)

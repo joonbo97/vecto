@@ -175,6 +175,7 @@ class CommentActivity : AppCompatActivity(), MyCommentAdapter.OnEditActionListen
         myCommentAdapter.commentActionListener = this
         val commentRecyclerView = binding.CommentRecyclerView
         commentRecyclerView.adapter = myCommentAdapter
+        commentRecyclerView.itemAnimator = null
         commentRecyclerView.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
         commentRecyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {

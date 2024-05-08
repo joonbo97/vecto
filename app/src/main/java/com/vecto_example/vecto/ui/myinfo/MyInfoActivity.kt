@@ -53,7 +53,7 @@ class MyInfoActivity : AppCompatActivity() {
 
     private fun initObservers() {
         Auth._profileImage.observe(this) {
-            LoadImageUtils.loadProfileImage(this, binding.ProfileImage)
+            LoadImageUtils.loadUserProfileImage(this, binding.ProfileImage, Auth._profileImage.value)
         }
 
         viewModel.idDuplicateResult.observe(this) {
@@ -108,6 +108,10 @@ class MyInfoActivity : AppCompatActivity() {
     }
 
     private fun initListeners() {
+        binding.BackButton.setOnClickListener {
+            finish()
+        }
+
         binding.ProfileImage.setOnClickListener {
             val intent = Intent(Intent.ACTION_PICK)
             intent.type = "image/jpeg"

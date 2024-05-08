@@ -22,6 +22,26 @@ class MyEditImageAdapter (private val context: Context): RecyclerView.Adapter<My
         val imageView: ImageView = view.findViewById(R.id.ImageItem)
         val deleteButton: ImageView = view.findViewById(R.id.DeleteButton)
 
+        fun bindUri(uri: Uri) {
+            imageView.clipToOutline = true
+
+            imageView.setImageURI(imageUri[adapterPosition - imageUrl.size])
+
+
+            deleteButton.setOnClickListener {
+                removeItem(adapterPosition)
+            }
+        }
+
+        fun bindUrl(url: String) {
+            imageView.clipToOutline = true
+
+            LoadImageUtils.loadImage(context, imageView, imageUrl[adapterPosition])
+
+            deleteButton.setOnClickListener {
+                removeItem(adapterPosition)
+            }
+        }
     }
     override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
         super.onAttachedToRecyclerView(recyclerView)
@@ -39,19 +59,10 @@ class MyEditImageAdapter (private val context: Context): RecyclerView.Adapter<My
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.imageView.clipToOutline = true
-
-        if(position < imageUrl.size)//서버에서 전송받은 URL 세팅
-        {
-            LoadImageUtils.loadImage(context, holder.imageView, imageUrl[position])
-        }
-        else
-        {
-            holder.imageView.setImageURI(imageUri[position - imageUrl.size])
-        }
-
-        holder.deleteButton.setOnClickListener {
-            removeItem(position)
+        if(position > imageUrl.lastIndex) {
+            holder.bindUri(imageUri[position])
+        } else {
+            holder.bindUrl(imageUrl[position])
         }
     }
 
@@ -60,30 +71,25 @@ class MyEditImageAdapter (private val context: Context): RecyclerView.Adapter<My
             val itemView = recyclerView.findViewHolderForAdapterPosition(position)?.itemView
             val scaleDown = AnimationUtils.loadAnimation(context, R.anim.scale_down)
 
+            if(position < imageUrl.size)//서버에서 전송받은 URL 세팅
+            {
+                imageUrl.removeAt(position)
+                notifyItemRemoved(position)
+            }
+            else
+            {
+                imageUri.removeAt(position - imageUrl.size)
+                notifyItemRemoved(position - imageUrl.size)
+            }
+
+            onItemRemovedListener?.onItemRemoved()
+
             scaleDown.setAnimationListener(object : Animation.AnimationListener {
-                override fun onAnimationStart(animation: Animation?) {
-                    // Nothing to do here
-                }
+                override fun onAnimationStart(animation: Animation?) {}
 
-                override fun onAnimationEnd(animation: Animation?) {
-                    // 애니메이션이 완료되면 아이템 제거
-                    if(position < imageUrl.size)//서버에서 전송받은 URL 세팅
-                    {
-                        imageUrl.removeAt(position)
-                        notifyItemRemoved(position)
-                    }
-                    else
-                    {
-                        imageUri.removeAt(position - imageUrl.size)
-                        notifyItemRemoved(position - imageUrl.size)
-                    }
+                override fun onAnimationEnd(animation: Animation?) {}
 
-                    onItemRemovedListener?.onItemRemoved()
-                }
-
-                override fun onAnimationRepeat(animation: Animation?) {
-                    // Nothing to do here
-                }
+                override fun onAnimationRepeat(animation: Animation?) {}
             })
 
             itemView?.startAnimation(scaleDown)

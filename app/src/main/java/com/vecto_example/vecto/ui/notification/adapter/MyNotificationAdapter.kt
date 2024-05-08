@@ -37,25 +37,18 @@ class MyNotificationAdapter(private val context: Context): RecyclerView.Adapter<
         }
 
         holder.itemView.setOnClickListener {
-            if(!notificationData[position].requestedBefore)//확인 안했으면
-            {
-                notifyItemChanged(position)
-                notificationData[position].requestedBefore = true
-                holder.circle.visibility = View.INVISIBLE
+
+            if(notificationData[position].notificationType == "follow"){
+                val intent = Intent(context, UserInfoActivity::class.java)
+                intent.putExtra("userId", notificationData[position].fromUserId)
+                context.startActivity(intent)
             }
-            else
-            {
-                if(notificationData[position].notificationType == "follow"){
-                    val intent = Intent(context, UserInfoActivity::class.java)
-                    intent.putExtra("userId", notificationData[position].fromUserId)
-                    context.startActivity(intent)
-                }
-                else if(notificationData[position].notificationType == "comment"){
-                    val intent = Intent(context, CommentActivity::class.java)
-                    intent.putExtra("feedID", notificationData[position].feedId)
-                    context.startActivity(intent)
-                }
+            else if(notificationData[position].notificationType == "comment"){
+                val intent = Intent(context, CommentActivity::class.java)
+                intent.putExtra("feedID", notificationData[position].feedId)
+                context.startActivity(intent)
             }
+
         }
 
 

@@ -76,7 +76,7 @@ class MyCourseAdapter(): RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     }
     inner class PathViewHolder(val binding: EditCoursePathItemBinding): RecyclerView.ViewHolder(binding.root){
         @SuppressLint("SetTextI18n")
-        fun bind(item: PathData)
+        fun bind()
         {
             when(visitdata[adapterPosition / 2].transportType){
                 ServerResponse.VISIT_TYPE_WALK.code -> {
@@ -192,7 +192,7 @@ class MyCourseAdapter(): RecyclerView.Adapter<RecyclerView.ViewHolder>() {
             }
             1 -> {
                 if (holder is PathViewHolder) {
-                    holder.bind(pathdata[position / 2])
+                    holder.bind()
                 }
             }
         }
@@ -246,7 +246,9 @@ class MyCourseAdapter(): RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     }
 
     fun updateVisitData(newVisitData: VisitData, position: Int){
-        if(newVisitData.lat_set != visitdata[position / 2].lat_set || newVisitData.lng_set != visitdata[position / 2].lng_set) //위치도 바뀐 경우
+        Log.d("ASD", visitdata.size.toString())
+
+        if((newVisitData.lat_set != visitdata[position / 2].lat_set || newVisitData.lng_set != visitdata[position / 2].lng_set) && visitdata.size > 1) //위치도 바뀐 경우
             adjustPathData(newVisitData, position / 2)
 
         visitdata[position / 2] = newVisitData

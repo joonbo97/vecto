@@ -81,7 +81,6 @@ class WriteFragment : Fragment(), OnMapReadyCallback, CalendarDialog.OnDateSelec
     private lateinit var visitDataList: MutableList<VisitData>
 
     private var mapSnapshot = mutableListOf<Bitmap>()
-    private var imageUri = mutableListOf<Uri>()
 
     private var uploadStarted = false
 
@@ -129,7 +128,7 @@ class WriteFragment : Fragment(), OnMapReadyCallback, CalendarDialog.OnDateSelec
         }
 
         writeViewModel.mapImageUrls.observe(viewLifecycleOwner){
-            if(imageUri.isEmpty() && uploadStarted){   //업로드 할 Normal Image 가 없는 경우
+            if(myImageAdapter.imageUri.isEmpty() && uploadStarted){   //업로드 할 Normal Image 가 없는 경우
                 uploadData(null)
             } else if(writeViewModel.normalImageDone.value == true && uploadStarted) { //업로드 할 Normal Image 가 이미 완료된 경우
                 uploadData(writeViewModel.imageUrls.value?.toMutableList())
@@ -210,11 +209,6 @@ class WriteFragment : Fragment(), OnMapReadyCallback, CalendarDialog.OnDateSelec
                 return@setOnClickListener
             }
 
-            if(!writeViewModel.isAllVisitDataValid()){  //방문지 유효성 검사
-                Toast.makeText(requireContext(), "경로 정보가 유효하지 않습니다. 경로를 재등록 해주세요.", Toast.LENGTH_SHORT).show()
-
-                return@setOnClickListener
-            }
 
             if(::visitDataList.isInitialized) {
                 if (binding.EditTitle.text.isEmpty())
@@ -222,6 +216,12 @@ class WriteFragment : Fragment(), OnMapReadyCallback, CalendarDialog.OnDateSelec
                 else if (visitDataList.size == 0)
                     Toast.makeText(requireContext(), "경로를 선택해주세요.", Toast.LENGTH_SHORT).show()
                 else {
+                    if(!writeViewModel.isAllVisitDataValid()){  //방문지 유효성 검사
+                        Toast.makeText(requireContext(), "경로 정보가 유효하지 않습니다. 경로를 재등록 해주세요.", Toast.LENGTH_SHORT).show()
+
+                        return@setOnClickListener
+                    }
+
                     writeViewModel.startLoading()
 
                     uploadStarted = true
@@ -245,8 +245,6 @@ class WriteFragment : Fragment(), OnMapReadyCallback, CalendarDialog.OnDateSelec
         myImageAdapter.setOnItemRemovedListener(object : MyImageAdapter.OnItemRemovedListener {
             override fun onItemRemoved() {
                 binding.PhotoIconText.text = "${myImageAdapter.itemCount}/10"
-
-                imageUri = myImageAdapter.imageUri
             }
         })
         binding.WriteRecyclerView.addItemDecoration(SpacesItemDecoration(resources.getDimensionPixelSize(R.dimen.image_margin)))
@@ -391,8 +389,8 @@ class WriteFragment : Fragment(), OnMapReadyCallback, CalendarDialog.OnDateSelec
 
             val imageParts: MutableList<MultipartBody.Part> = mutableListOf()
 
-            if (imageUri.isNotEmpty()) {//업로드 할 이미지가 있으면
-                for (uri in imageUri) {
+            if (myImageAdapter.imageUri.isNotEmpty()) {//업로드 할 이미지가 있으면
+                for (uri in myImageAdapter.imageUri) {
                     val file = File(uri.path!!)
                     val requestFile = file.asRequestBody("image/*".toMediaTypeOrNull())
                     val imagePart = MultipartBody.Part.createFormData("image", file.name, requestFile)
@@ -602,7 +600,7 @@ class WriteFragment : Fragment(), OnMapReadyCallback, CalendarDialog.OnDateSelec
         val file = File(requireContext().cacheDir, filename)
         file.outputStream().use { it.write(compressedBytes) }
 
-        imageUri.add(Uri.fromFile(file))
         myImageAdapter.imageUri.add(Uri.fromFile(file))
+        Log.d("ASD", "${myImageAdapter.imageUri.size}")
     }
 }

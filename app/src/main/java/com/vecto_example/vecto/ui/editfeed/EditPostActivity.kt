@@ -82,7 +82,6 @@ class EditPostActivity : AppCompatActivity(), OnMapReadyCallback, CalendarDialog
     private lateinit var visitDataList: MutableList<VisitData>
 
     private var mapSnapshot = mutableListOf<Bitmap>()
-    private var imageUri = mutableListOf<Uri>()
     private var imageUrl = mutableListOf<String>()
 
     private var uploadStarted = false
@@ -157,7 +156,7 @@ class EditPostActivity : AppCompatActivity(), OnMapReadyCallback, CalendarDialog
             Log.d("EditPost", "ORIGINAL IMAGE SIZE: ${imageUrl.size}")
             Log.d("EditPost", "NEW IMAGE SIZE: ${writeViewModel.imageUrls.value?.size}")
 
-            if(imageUri.isEmpty() && uploadStarted){   //업로드 할 Normal Image 가 없는 경우
+            if(myEditImageAdapter.imageUri.isEmpty() && uploadStarted){   //업로드 할 Normal Image 가 없는 경우
                 Log.d("EditPost", "업로드 할 이미지가 없고 지도 이미지 업로드가 완료되었습니다.")
 
                 uploadData(allImageUrl)
@@ -284,7 +283,6 @@ class EditPostActivity : AppCompatActivity(), OnMapReadyCallback, CalendarDialog
             override fun onItemRemoved() {
                 binding.PhotoIconText.text = "${myEditImageAdapter.itemCount}/10"
 
-                imageUri = myEditImageAdapter.imageUri
                 imageUrl = myEditImageAdapter.imageUrl
             }
         })
@@ -429,8 +427,8 @@ class EditPostActivity : AppCompatActivity(), OnMapReadyCallback, CalendarDialog
 
             val imageParts: MutableList<MultipartBody.Part> = mutableListOf()
 
-            if (imageUri.isNotEmpty()) {//업로드 할 이미지가 있으면
-                for (uri in imageUri) {
+            if (myEditImageAdapter.imageUri.isNotEmpty()) {//업로드 할 이미지가 있으면
+                for (uri in myEditImageAdapter.imageUri) {
                     val file = File(uri.path!!)
                     val requestFile = file.asRequestBody("image/*".toMediaTypeOrNull())
                     val imagePart = MultipartBody.Part.createFormData("image", file.name, requestFile)
@@ -650,7 +648,5 @@ class EditPostActivity : AppCompatActivity(), OnMapReadyCallback, CalendarDialog
         file.outputStream().use { it.write(compressedBytes) }
 
         myEditImageAdapter.imageUri.add(Uri.fromFile(file))
-        imageUri = myEditImageAdapter.imageUri
-
     }
 }

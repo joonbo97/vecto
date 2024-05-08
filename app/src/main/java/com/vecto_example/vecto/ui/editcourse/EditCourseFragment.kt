@@ -249,23 +249,29 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
         }
 
         /*   경로 추천 API 응답 Observer   */
-        editCourseViewModel.responseRecommendLiveData.observe(viewLifecycleOwner){
+        editCourseViewModel.responseRecommendLiveData.observe(viewLifecycleOwner){ tMapResponse ->
 
             editCourseViewModel.responsePathData.add(editCourseViewModel.start)
 
-            it.features.forEach { feature ->
+            tMapResponse.features.forEach { feature ->
                 when (feature.geometry.type) {
                     "Point" -> {
-                        val coordinate = feature.geometry.coordinates as List<Double>
-                        val latLng = LatLng(coordinate[1], coordinate[0])
-                        editCourseViewModel.responsePathData.add(latLng)
+                        (feature.geometry.coordinates as? List<*>)?.let { coordinateList ->
+                            if(coordinateList.size >= 2 && coordinateList.all { it is Double }){
+                                val latLng = LatLng(coordinateList[1] as Double, coordinateList[0] as Double)
+                                editCourseViewModel.responsePathData.add(latLng)
+                            }
+                        }
                     }
 
                     "LineString" -> {
-                        val coordinates = feature.geometry.coordinates as List<List<Double>>
-                        coordinates.forEach { coordinate ->
-                            val latLng = LatLng(coordinate[1], coordinate[0])
-                            editCourseViewModel.responsePathData.add(latLng)
+                        (feature.geometry.coordinates as? List<*>)?.forEach { coordinateItem ->
+                            (coordinateItem as? List<*>)?.let { coordinate ->
+                                if (coordinate.size >= 2 && coordinate.all { it is Double }) {
+                                    val latLng = LatLng(coordinate[1] as Double, coordinate[0] as Double)
+                                    editCourseViewModel.responsePathData.add(latLng)
+                                }
+                            }
                         }
                     }
                 }

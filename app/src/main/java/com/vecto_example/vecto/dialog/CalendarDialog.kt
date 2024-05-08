@@ -153,6 +153,7 @@ class CalendarDialog (private val context: Context) {//deletepostdialog copy
 
                     this.apply{
                         setTextColor(ContextCompat.getColor(context, R.color.black))
+                        isClickable = true
                         setOnClickListener {
                             selectedDate = String.format("%d-%02d-%02d", year, month + 1, i)
                             setTextColor(ContextCompat.getColor(context, R.color.vecto_theme_orange))
@@ -172,6 +173,7 @@ class CalendarDialog (private val context: Context) {//deletepostdialog copy
                     this.apply {
                         setTextColor(ContextCompat.getColor(context, R.color.edit_gray))
                         setOnClickListener(null)
+                        isClickable = false
                     }
 
                 }

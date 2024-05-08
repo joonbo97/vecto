@@ -12,6 +12,10 @@ class PolicyActivity : AppCompatActivity() {
         binding = ActivityPolicyBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        binding.BackButton.setOnClickListener {
+            finish()
+        }
+
         binding.webView.loadUrl("https://vec-to.net/privacy-policy")
     }
 }

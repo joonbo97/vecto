@@ -16,6 +16,7 @@ import com.vecto_example.vecto.data.Auth
 import com.vecto_example.vecto.data.repository.FeedRepository
 import com.vecto_example.vecto.data.repository.UserRepository
 import com.vecto_example.vecto.databinding.FragmentMypageBinding
+import com.vecto_example.vecto.dialog.UserProfileImageDialog
 import com.vecto_example.vecto.retrofit.VectoService
 import com.vecto_example.vecto.ui.inquiry.InquiryActivity
 import com.vecto_example.vecto.ui.followinfo.FollowInfoActivity
@@ -64,6 +65,9 @@ class MypageFragment : Fragment() {
 
     private fun initListeners() {
         /*   리스너 초기화 함수   */
+        binding.ProfileImage.setOnClickListener {
+            UserProfileImageDialog(requireContext(), Auth._profileImage.value).showDialog()
+        }
 
         binding.FollowerTouchImage.setOnClickListener {
             val intent = Intent(context, FollowInfoActivity::class.java)
@@ -119,7 +123,7 @@ class MypageFragment : Fragment() {
 
     private fun initObservers() {
         Auth._profileImage.observe(viewLifecycleOwner) {
-            LoadImageUtils.loadProfileImage(requireContext(), binding.ProfileImage)
+            LoadImageUtils.loadUserProfileImage(requireContext(), binding.ProfileImage, Auth._profileImage.value)
         }
 
         Auth._nickName.observe(viewLifecycleOwner) {

@@ -80,7 +80,7 @@ class MapOverlayManager(private val context: Context, private val mapMarkerManag
     fun addCircleOverlay(visitData: VisitData){
         val circleOverlay = CircleOverlay()
         circleOverlay.center = LatLng(visitData.lat, visitData.lng)
-        circleOverlay.radius = 50.0 // 반지름을 50m로 설정
+        circleOverlay.radius = 50.0 // radius 50m로 설정
 
         if(visitData.name.isEmpty()) {
             circleOverlay.color = Color.argb(20, 255, 0, 0) // 원의 색상 설정
