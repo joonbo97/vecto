@@ -113,6 +113,10 @@ class CalendarDialog (private val context: Context) {//deletepostdialog copy
 
     }
 
+    fun dismiss(){
+        dialog.dismiss()
+    }
+
     private fun initCalendar(year: Int, month: Int){
         val calendar = Calendar.getInstance().apply {
             set(Calendar.YEAR, year)

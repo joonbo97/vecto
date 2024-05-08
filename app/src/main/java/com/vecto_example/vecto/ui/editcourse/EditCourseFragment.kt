@@ -63,6 +63,9 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
     //Adapter
     private lateinit var myCourseAdapter: MyCourseAdapter
 
+    //Dialog
+    private lateinit var calendarDialog: CalendarDialog
+
     //데이터 관련
     private lateinit var allPathData: MutableList<LocationData>
 
@@ -214,13 +217,20 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
         editCourseViewModel.setButtonVisibility(EditCourseViewModel.ButtonType.EDIT_PATH.name)
     }
 
+    override fun onPause() {
+        super.onPause()
+
+        if(::calendarDialog.isInitialized)
+            calendarDialog.dismiss()
+    }
+
     private fun initObservers() {
         /*   날짜 선택 Observer   */
         editCourseViewModel.date.observe(viewLifecycleOwner){
             editCourseViewModel.setButtonVisibility(EditCourseViewModel.ButtonType.NONE.name)
 
             if (it == null) {
-                val calendarDialog = CalendarDialog(requireContext())
+                calendarDialog = CalendarDialog(requireContext())
                 calendarDialog.onDateSelectedListener = this
                 calendarDialog.showDialog()
                 binding.TextForLargeRight.text = "날짜를 선택해주세요."
