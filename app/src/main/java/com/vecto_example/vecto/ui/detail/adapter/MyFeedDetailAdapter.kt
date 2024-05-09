@@ -21,6 +21,7 @@ import com.vecto_example.vecto.data.model.VisitData
 import com.vecto_example.vecto.databinding.PostDetailItemBinding
 import com.vecto_example.vecto.retrofit.VectoService
 import com.vecto_example.vecto.ui.decoration.VerticalOverlapItemDecoration
+import com.vecto_example.vecto.ui.userinfo.UserInfoActivity
 import com.vecto_example.vecto.utils.DateTimeUtils
 import com.vecto_example.vecto.utils.LoadImageUtils
 import com.vecto_example.vecto.utils.RequestLoginUtils
@@ -40,7 +41,9 @@ class MyFeedDetailAdapter(): RecyclerView.Adapter<MyFeedDetailAdapter.ViewHolder
 
         fun onDeleteFollow(userId: String)
 
-        fun onVisitItemClick(visitData: VisitData)
+        fun onTitleClick(position: Int)
+
+        fun onVisitItemClick(visitData: VisitData, itemPosition: Int)
 
         fun onPathItemClick(pathData: PathData)
     }
@@ -93,6 +96,10 @@ class MyFeedDetailAdapter(): RecyclerView.Adapter<MyFeedDetailAdapter.ViewHolder
             /*   게시글 설정   */
             binding.TitleText.text = feedInfoWithFollow.feedInfo.title  //제목 설정
 
+            binding.titleTouchImage.setOnClickListener {
+                feedActionListener?.onTitleClick(adapterPosition)
+            }
+
             binding.TotalTimeText.text = DateTimeUtils.getCourseTime(   //소요 시간 설정
                 feedInfoWithFollow.feedInfo.visit.first().datetime,
                 feedInfoWithFollow.feedInfo.visit.last().datetime)
@@ -110,6 +117,12 @@ class MyFeedDetailAdapter(): RecyclerView.Adapter<MyFeedDetailAdapter.ViewHolder
             LoadImageUtils.loadUserProfileImage(itemView.context, binding.ProfileImage, feedInfoWithFollow.feedInfo.userProfile)
 
             binding.UserNameText.text = feedInfoWithFollow.feedInfo.nickName
+
+            binding.ProfileImage.setOnClickListener {
+                val intent = Intent(itemView.context, UserInfoActivity::class.java)
+                intent.putExtra("userId", feedInfoWithFollow.feedInfo.userId)
+                itemView.context.startActivity(intent)
+            }
 
             /*   방문지 목록 설정   */
             bindVisitData(feedInfoWithFollow.feedInfo.visit, feedInfoWithFollow.feedInfo.location)
@@ -212,8 +225,8 @@ class MyFeedDetailAdapter(): RecyclerView.Adapter<MyFeedDetailAdapter.ViewHolder
             binding.PostDetailRecyclerView.addItemDecoration(VerticalOverlapItemDecoration(60))
 
             visitListAdapter.detailItemClickListener = object : VisitListAdapter.OnDetailItemClickListener{
-                override fun onVisitItemClick(visitData: VisitData) {
-                    feedActionListener?.onVisitItemClick(visitData)
+                override fun onVisitItemClick(visitData: VisitData, itemPosition: Int) {
+                    feedActionListener?.onVisitItemClick(visitData, itemPosition)
                 }
 
                 override fun onPathItemClick(pathData: PathData) {

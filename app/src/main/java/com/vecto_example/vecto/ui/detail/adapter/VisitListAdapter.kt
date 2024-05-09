@@ -15,7 +15,7 @@ class VisitListAdapter(): RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     val visitData = mutableListOf<VisitData>()
     val pathData = mutableListOf<PathData>()
     interface OnDetailItemClickListener {
-        fun onVisitItemClick(visitData: VisitData)
+        fun onVisitItemClick(visitData: VisitData, itemPosition: Int)
 
         fun onPathItemClick(pathData: PathData)
     }
@@ -41,7 +41,7 @@ class VisitListAdapter(): RecyclerView.Adapter<RecyclerView.ViewHolder>() {
             binding.visitTitleText.text = item.name
 
             binding.highlightImage.setOnClickListener {
-                detailItemClickListener?.onVisitItemClick(item)
+                detailItemClickListener?.onVisitItemClick(item, adapterPosition / 2)
             }
         }
     }

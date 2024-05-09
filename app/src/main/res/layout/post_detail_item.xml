@@ -11,6 +11,7 @@
         android:layout_height="50dp"
         android:layout_marginStart="25dp"
         android:layout_marginTop="25dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/profile_basic" />
@@ -68,10 +69,21 @@
         app:layout_constraintVertical_bias="0.5" />
 
     <ImageView
+        android:id="@+id/titleTouchImage"
+        android:layout_width="0dp"
+        android:layout_height="62dp"
+        android:background="?attr/selectableItemBackground"
+        app:layout_constraintVertical_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/titleBoxImage"
+        app:layout_constraintBottom_toBottomOf="@id/titleBoxImage"/>
+
+    <ImageView
         android:id="@+id/titleBoxImage"
         android:layout_width="6dp"
         android:layout_height="35dp"
-        android:layout_marginTop="17dp"
+        android:layout_marginTop="20dp"
         android:layout_marginStart="10dp"
         android:src="@color/vecto_theme_orange"
         app:layout_constraintStart_toStartOf="@+id/ProfileImage"
@@ -180,7 +192,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/indicator" />
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <ImageView
         android:id="@+id/BottomBox"
         android:layout_width="match_parent"
         android:layout_height="52dp"
@@ -189,89 +201,92 @@
         android:layout_marginEnd="20dp"
         android:layout_marginBottom="100dp"
         android:background="@drawable/normal_box"
+        android:backgroundTint="@color/vecto_main"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/ContentText">
+        app:layout_constraintTop_toBottomOf="@+id/ContentText"/>
 
-        <androidx.constraintlayout.widget.Guideline
-            android:id="@+id/guideline"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            app:layout_constraintGuide_percent="0.5" />
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.5" />
 
 
-        <ImageView
-            android:id="@+id/LikeTouchImage"
-            android:layout_width="70dp"
-            android:layout_height="30dp"
-            android:background="?android:attr/selectableItemBackgroundBorderless"
-            app:layout_constraintStart_toStartOf="@+id/LikeImage"
-            app:layout_constraintBottom_toBottomOf="@+id/LikeImage"
-            app:layout_constraintTop_toTopOf="@id/LikeImage" />
+    <ImageView
+        android:id="@+id/LikeTouchImage"
+        android:layout_width="70dp"
+        android:layout_height="40dp"
+        android:background="@drawable/ripple_feed_like"
+        app:layout_constraintBottom_toBottomOf="@+id/LikeImage"
+        app:layout_constraintEnd_toEndOf="@+id/LikeCount"
+        app:layout_constraintStart_toStartOf="@+id/LikeImage"
+        app:layout_constraintTop_toTopOf="@id/LikeImage"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintVertical_bias="0.5" />
 
-        <ImageView
-            android:id="@+id/LikeImage"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
-            android:layout_marginStart="20dp"
-            android:padding="3dp"
-            android:src="@drawable/post_like_off"
-            app:layout_constraintBottom_toBottomOf="@+id/BottomBox"
-            app:layout_constraintStart_toStartOf="@+id/BottomBox"
-            app:layout_constraintTop_toTopOf="@+id/BottomBox"
-            app:layout_constraintVertical_bias="0.5" />
 
-        <TextView
-            android:id="@+id/LikeCount"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="10dp"
-            android:fontFamily="@font/lineseedkr_bd"
-            android:text="30"
-            android:textColor="@color/vecto_likecolor"
-            android:textSize="15sp"
-            app:layout_constraintBottom_toBottomOf="@+id/BottomBox"
-            app:layout_constraintStart_toEndOf="@+id/LikeImage"
-            app:layout_constraintTop_toTopOf="@+id/BottomBox"
-            app:layout_constraintVertical_bias="0.49" />
+    <ImageView
+        android:id="@+id/LikeImage"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_marginStart="20dp"
+        android:padding="3dp"
+        android:src="@drawable/post_like_off"
+        app:layout_constraintBottom_toBottomOf="@+id/BottomBox"
+        app:layout_constraintStart_toStartOf="@+id/BottomBox"
+        app:layout_constraintTop_toTopOf="@+id/BottomBox"
+        app:layout_constraintVertical_bias="0.5" />
 
-        <ImageView
-            android:id="@+id/CommentTouchImage"
-            android:layout_width="70dp"
-            android:layout_height="30dp"
-            android:background="?android:attr/selectableItemBackgroundBorderless"
-            app:layout_constraintStart_toStartOf="@+id/CommentImage"
-            app:layout_constraintBottom_toBottomOf="@+id/CommentImage"
-            app:layout_constraintTop_toTopOf="@id/CommentImage"/>
+    <TextView
+        android:id="@+id/LikeCount"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:fontFamily="@font/lineseedkr_bd"
+        android:text="3"
+        android:textColor="@color/vecto_likecolor"
+        android:textSize="15sp"
+        app:layout_constraintBottom_toBottomOf="@+id/BottomBox"
+        app:layout_constraintStart_toEndOf="@+id/LikeImage"
+        app:layout_constraintTop_toTopOf="@+id/BottomBox"
+        app:layout_constraintVertical_bias="0.49" />
 
-        <ImageView
-            android:id="@+id/CommentImage"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
-            android:layout_marginEnd="50dp"
-            android:padding="4dp"
-            android:src="@drawable/post_comment"
-            app:layout_constraintBottom_toBottomOf="@+id/BottomBox"
-            app:layout_constraintEnd_toStartOf="@+id/guideline"
-            app:layout_constraintTop_toTopOf="@+id/BottomBox"
-            app:layout_constraintVertical_bias="0.5" />
+    <ImageView
+        android:id="@+id/CommentTouchImage"
+        android:layout_width="70dp"
+        android:layout_height="40dp"
+        android:background="@drawable/ripple_feed_like"
+        app:layout_constraintStart_toStartOf="@+id/CommentImage"
+        app:layout_constraintBottom_toBottomOf="@+id/CommentImage"
+        app:layout_constraintTop_toTopOf="@id/CommentImage"/>
 
-        <TextView
-            android:id="@+id/CommentCount"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="10dp"
-            android:fontFamily="@font/lineseedkr_bd"
-            android:text="30"
-            android:textColor="@color/vecto_commentcolor"
-            android:textSize="15sp"
-            app:layout_constraintBottom_toBottomOf="@+id/BottomBox"
-            app:layout_constraintStart_toEndOf="@+id/CommentImage"
-            app:layout_constraintTop_toTopOf="@+id/BottomBox"
-            app:layout_constraintVertical_bias="0.49" />
+    <ImageView
+        android:id="@+id/CommentImage"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_marginEnd="50dp"
+        android:padding="4dp"
+        android:src="@drawable/post_comment"
+        app:layout_constraintBottom_toBottomOf="@+id/BottomBox"
+        app:layout_constraintEnd_toStartOf="@+id/guideline"
+        app:layout_constraintTop_toTopOf="@+id/BottomBox"
+        app:layout_constraintVertical_bias="0.5" />
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+    <TextView
+        android:id="@+id/CommentCount"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:fontFamily="@font/lineseedkr_bd"
+        android:text="30"
+        android:textColor="@color/vecto_commentcolor"
+        android:textSize="15sp"
+        app:layout_constraintBottom_toBottomOf="@+id/BottomBox"
+        app:layout_constraintStart_toEndOf="@+id/CommentImage"
+        app:layout_constraintTop_toTopOf="@+id/BottomBox"
+        app:layout_constraintVertical_bias="0.49" />
 </androidx.constraintlayout.widget.ConstraintLayout>

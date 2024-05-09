@@ -120,6 +120,12 @@ class MapMarkerManager(private val context: Context, private val naverMap: Naver
         visitMarkers.add(visitMarker)
     }
 
+    fun showNumberMarker(position: Int){
+        visitMarkers.forEach { it.zIndex = 0 }
+        if(position < visitMarkers.size)
+            visitMarkers[position].zIndex = 1
+    }
+
     private fun getMarkerIconWithNumber(): Int{
         return when(visitMarkers.size){
             0 -> R.drawable.detail_marker_1

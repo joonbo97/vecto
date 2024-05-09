@@ -29,7 +29,6 @@ import com.vecto_example.vecto.data.model.VisitData
 import com.vecto_example.vecto.data.repository.FeedRepository
 import com.vecto_example.vecto.data.repository.UserRepository
 import com.vecto_example.vecto.databinding.ActivityFeedDetailBinding
-import com.vecto_example.vecto.ui.decoration.VerticalOverlapItemDecoration
 import com.vecto_example.vecto.utils.MapMarkerManager
 import com.vecto_example.vecto.utils.MapOverlayManager
 
@@ -413,7 +412,16 @@ class FeedDetailActivity : AppCompatActivity(), OnMapReadyCallback, MyFeedDetail
         }
     }
 
-    override fun onVisitItemClick(visitData: VisitData) {
+    override fun onTitleClick(position: Int) {
+        if(myFeedDetailAdapter.feedInfoWithFollow[position].feedInfo.visit.size == 1)
+            mapOverlayManager.moveCameraForVisitOffset(myFeedDetailAdapter.feedInfoWithFollow[position].feedInfo.visit.first(), offset)
+        else
+            mapOverlayManager.moveCameraForPathOffset(myFeedDetailAdapter.feedInfoWithFollow[position].feedInfo.location.toMutableList(), dpToPx((offset + 20).toFloat(), this))
+    }
+
+    override fun onVisitItemClick(visitData: VisitData, itemPosition: Int) {
+        mapMarkerManager.showNumberMarker(itemPosition)
+
         mapOverlayManager.moveCameraForVisitOffset(visitData, offset)
     }
 
