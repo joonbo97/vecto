@@ -87,7 +87,6 @@ class MyCommentAdapter(private val context: Context): RecyclerView.Adapter<MyCom
 
 
             itemView.setOnLongClickListener {
-
                 if (!editFlag)
                     showPopupWindow(comment)
 
@@ -157,7 +156,7 @@ class MyCommentAdapter(private val context: Context): RecyclerView.Adapter<MyCom
                         binding.constraintLayout.setBackgroundColor(
                             ContextCompat.getColor(
                                 context,
-                                R.color.vecto_alphagray
+                                R.color.edit_course_highlight
                             )
                         )
                         editActionListener?.onEditAction(comment.commentId, selectedPosition)
@@ -204,7 +203,7 @@ class MyCommentAdapter(private val context: Context): RecyclerView.Adapter<MyCom
         // 아이템 선택 상태에 따라 배경색 설정
         if (selectedPosition == position) {
             // 선택된 아이템의 배경색 변경
-            holder.binding.constraintLayout.setBackgroundColor(ContextCompat.getColor(context, R.color.vecto_alphagray))
+            holder.binding.constraintLayout.setBackgroundColor(ContextCompat.getColor(context, R.color.edit_course_highlight))
         } else {
             // 선택되지 않은 아이템의 배경색을 기본값으로 설정
             holder.binding.constraintLayout.setBackgroundColor(ContextCompat.getColor(context, R.color.white))

@@ -133,7 +133,7 @@
         android:id="@+id/constraintLayout2"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:background="@color/white"
+        android:background="@color/vecto_main"
         android:elevation="20dp"
         app:layout_constraintBottom_toBottomOf="parent">
 
@@ -141,7 +141,8 @@
             android:id="@+id/EditCommentBox"
             android:layout_width="match_parent"
             android:layout_height="20dp"
-            android:src="@color/vecto_main"
+            android:src="@color/edit_course_highlight"
+            android:background="?attr/selectableItemBackground"
             android:visibility="gone"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
@@ -158,7 +159,7 @@
             android:fontFamily="@font/lineseedkr_rg"
             android:text="댓글 수정중입니다. 취소하려면 터치하세요."
             android:visibility="gone"
-            android:textColor="@color/edit_gray"
+            android:textColor="#66727E"
             android:textSize="11sp"
             app:layout_constraintBottom_toBottomOf="@+id/EditCommentBox"
             app:layout_constraintStart_toStartOf="@+id/EditCommentBox"
@@ -176,7 +177,7 @@
         <ImageView
             android:id="@+id/CommentBox"
             android:layout_width="match_parent"
-            android:layout_height="50dp"
+            android:layout_height="40dp"
             android:layout_marginStart="20dp"
             android:layout_marginEnd="20dp"
             android:src="@drawable/comment_box"
@@ -191,11 +192,11 @@
 
         <ImageView
             android:id="@+id/CommentButton"
-            android:layout_width="86dp"
-            android:layout_height="38dp"
+            android:layout_width="70dp"
+            android:layout_height="30dp"
             android:layout_marginEnd="25dp"
             android:layout_marginBottom="1dp"
-            android:src="@drawable/comment_button"
+            android:background="@drawable/ripple_check_duplication_button"
             app:layout_constraintBottom_toBottomOf="@+id/CommentBox"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="@+id/CommentBox"
@@ -220,24 +221,24 @@
         <EditText
             android:id="@+id/EditContent"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="0dp"
             android:layout_marginStart="20dp"
-            android:layout_marginTop="7dp"
             android:layout_marginEnd="10dp"
+            android:layout_marginTop="-10dp"
+            android:paddingTop="20dp"
+            android:paddingBottom="20dp"
             android:background="@null"
-            android:gravity="top"
             android:hint="댓글을 작성해 주세요."
             android:inputType="text"
-            android:paddingTop="8dp"
-            android:paddingBottom="15dp"
             android:text=""
-            android:textColorHint="@color/vecto_alphagray"
+            android:textSize="15sp"
             android:theme="@style/EditTheme"
-            app:layout_constraintBottom_toBottomOf="@+id/CommentBox"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/CommentButton"
             app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintVertical_bias="0.5"
             app:layout_constraintStart_toStartOf="@+id/CommentBox"
-            app:layout_constraintTop_toTopOf="@+id/CommentBox" />
+            app:layout_constraintTop_toTopOf="@id/CommentBox" />
 
 
     </androidx.constraintlayout.widget.ConstraintLayout>

@@ -4,6 +4,7 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.PopupWindow
 import android.widget.TextView
 import com.vecto_example.vecto.R
@@ -25,7 +26,7 @@ class ReportPopupWindow (
             isOutsideTouchable = true // 팝업 외부 터치 시 팝업 닫기 활성화
 
             // 텍스트 뷰 클릭 리스너 설정
-            popupView.findViewById<TextView>(R.id.text_edit).setOnClickListener {
+            popupView.findViewById<ImageView>(R.id.reportTouchImage).setOnClickListener {
                 reportListener()
                 dismiss()
             }

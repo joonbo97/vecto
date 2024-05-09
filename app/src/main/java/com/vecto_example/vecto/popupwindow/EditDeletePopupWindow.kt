@@ -5,6 +5,7 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
+import android.widget.ImageView
 import android.widget.PopupWindow
 import android.widget.TextView
 import com.vecto_example.vecto.R
@@ -29,11 +30,11 @@ class EditDeletePopupWindow (
             isOutsideTouchable = true // 팝업 외부 터치 시 팝업 닫기 활성화
 
             // 텍스트 뷰 클릭 리스너 설정
-            popupView.findViewById<TextView>(R.id.text_edit).setOnClickListener {
+            popupView.findViewById<ImageView>(R.id.editTouchImage).setOnClickListener {
                 editListener()
                 dismiss()
             }
-            popupView.findViewById<TextView>(R.id.text_delete).setOnClickListener {
+            popupView.findViewById<ImageView>(R.id.deleteTouchImage).setOnClickListener {
                 deleteListener()
                 dismiss()
             }

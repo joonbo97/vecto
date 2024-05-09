@@ -45,4 +45,7 @@
 
     <!--Colors used in Calendar -->
     <color name="calendar_ripple">#1F000000</color>
+
+    <!--Colors used in PopupWindow -->
+    <color name="popup_window_background">#FF66727E</color>
 </resources>

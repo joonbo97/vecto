@@ -1,7 +1,6 @@
 package com.vecto_example.vecto.utils
 
 import android.content.Context
-import android.content.res.Resources
 import android.graphics.Typeface
 import android.os.Handler
 import android.os.Looper
@@ -22,7 +21,6 @@ import ted.gun0912.clustering.clustering.Cluster
 import ted.gun0912.clustering.geometry.TedLatLng
 import ted.gun0912.clustering.naver.TedNaverClustering
 import java.util.concurrent.Executors
-import kotlin.math.pow
 
 class MapMarkerManager(private val context: Context, private val naverMap: NaverMap) {
     private val visitMarkers = mutableListOf<Marker>()
