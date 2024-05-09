@@ -22,6 +22,7 @@
 
     <style name="EditTheme" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="colorAccent">@color/vecto_theme_orange</item>
+        <item name="fontFamily">@font/lineseedkr_rg</item>
     </style>
 
     <style name="TabLayout_Text" parent="TextAppearance.Design.Tab">

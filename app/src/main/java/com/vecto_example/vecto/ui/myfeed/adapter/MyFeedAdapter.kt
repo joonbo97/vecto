@@ -13,7 +13,7 @@ import com.vecto_example.vecto.dialog.DeletePostDialog
 import com.vecto_example.vecto.popupwindow.EditDeletePopupWindow
 import com.vecto_example.vecto.retrofit.VectoService
 import com.google.gson.Gson
-import com.vecto_example.vecto.ui.editfeed.EditPostActivity
+import com.vecto_example.vecto.ui.editfeed.EditFeedActivity
 import com.vecto_example.vecto.R
 import com.vecto_example.vecto.databinding.MypostItemBinding
 import com.vecto_example.vecto.utils.DateTimeUtils
@@ -79,7 +79,7 @@ class MyFeedAdapter(): RecyclerView.Adapter<MyFeedAdapter.ViewHolder>()
                 binding.PostMenuImage.setOnClickListener {
                     val editDeletePopupWindow = EditDeletePopupWindow(itemView.context,
                         editListener = {
-                            val intent = Intent(itemView.context, EditPostActivity::class.java).apply {
+                            val intent = Intent(itemView.context, EditFeedActivity::class.java).apply {
                                 putExtra("feedInfoJson", Gson().toJson(feedInfo[adapterPosition]))
                                 putExtra("feedId", feedInfo[adapterPosition].feedId)
                             }

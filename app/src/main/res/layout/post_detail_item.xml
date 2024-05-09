@@ -73,7 +73,7 @@
         android:layout_height="35dp"
         android:layout_marginTop="17dp"
         android:layout_marginStart="10dp"
-        android:src="@drawable/detail_title_box"
+        android:src="@color/vecto_theme_orange"
         app:layout_constraintStart_toStartOf="@+id/ProfileImage"
         app:layout_constraintTop_toBottomOf="@+id/ProfileImage"/>
 
@@ -188,7 +188,7 @@
         android:layout_marginTop="20dp"
         android:layout_marginEnd="20dp"
         android:layout_marginBottom="100dp"
-        android:background="@drawable/feed_detail_bottom_box"
+        android:background="@drawable/normal_box"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"

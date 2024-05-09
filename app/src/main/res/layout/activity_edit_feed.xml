@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/vecto_main"
-    tools:context=".ui.editfeed.EditPostActivity">
+    tools:context=".ui.editfeed.EditFeedActivity">
 
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -19,11 +19,11 @@
             android:id="@+id/TitleText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="30dp"
+            android:layout_marginTop="33dp"
             android:fontFamily="@font/lineseedkr_bd"
             android:text="수정하기"
             android:textColor="@color/white"
-            android:textSize="20sp"
+            android:textSize="@dimen/text_size_title"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
@@ -33,15 +33,15 @@
 
         <ImageView
             android:id="@+id/BackButton"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:padding="15dp"
+            android:layout_width="39dp"
+            android:layout_height="39dp"
             android:layout_marginStart="5dp"
-            android:layout_marginTop="13dp"
-            android:src="@drawable/write_back"
-            app:layout_constraintBottom_toBottomOf="parent"
+            android:padding="12dp"
+            app:srcCompat="@drawable/back_button_icon"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            app:layout_constraintBottom_toBottomOf="@+id/TitleText"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/TitleText"
             app:layout_constraintVertical_bias="0.5" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
@@ -66,8 +66,32 @@
                 android:fontFamily="@font/lineseedkr_bd"
                 android:text="내 경로"
                 android:textColor="@color/vecto_gray"
-                android:textSize="18sp"
+                android:textSize="15sp"
                 app:layout_constraintStart_toStartOf="@+id/LocationBoxImage"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/starTextCourse"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/lineseedkr_rg"
+                android:text="*"
+                android:textColor="@color/red"
+                android:textSize="12sp"
+                android:layout_marginTop="30dp"
+                app:layout_constraintStart_toEndOf="@+id/WriteTitle1"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/noticeTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/lineseedkr_rg"
+                android:text="필수 입력 사항"
+                android:textColor="@color/black"
+                android:textSize="12sp"
+                android:layout_marginTop="30dp"
+                app:layout_constraintEnd_toEndOf="@+id/LocationBoxImage"
                 app:layout_constraintTop_toTopOf="parent" />
 
             <ImageView
@@ -78,7 +102,7 @@
                 app:layout_constraintDimensionRatio="3:2"
                 android:layout_marginStart="20dp"
                 android:layout_marginEnd="20dp"
-                android:src="@drawable/write_box_large"
+                android:background="@drawable/ripple_normal_box"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0.5"
                 app:layout_constraintStart_toStartOf="parent"
@@ -119,9 +143,9 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="30dp"
                 android:fontFamily="@font/lineseedkr_bd"
-                android:text="사진 (선택 사항)"
+                android:text="사진"
                 android:textColor="@color/vecto_gray"
-                android:textSize="18sp"
+                android:textSize="15sp"
                 app:layout_constraintStart_toStartOf="@+id/LocationBoxImage"
                 app:layout_constraintTop_toBottomOf="@+id/LocationBoxImage" />
 
@@ -130,7 +154,7 @@
                 android:layout_width="100dp"
                 android:layout_height="100dp"
                 android:layout_marginTop="10dp"
-                android:src="@drawable/write_box_photo"
+                android:background="@drawable/ripple_normal_box"
                 app:layout_constraintStart_toStartOf="@+id/LocationBoxImage"
                 app:layout_constraintTop_toBottomOf="@id/WriteTitle2" />
 
@@ -181,18 +205,29 @@
                 android:fontFamily="@font/lineseedkr_bd"
                 android:text="제목"
                 android:textColor="@color/vecto_gray"
-                android:textSize="18sp"
+                android:textSize="15sp"
                 app:layout_constraintStart_toStartOf="@+id/PhotoBoxImage"
                 app:layout_constraintTop_toBottomOf="@+id/PhotoBoxImage" />
+
+            <TextView
+                android:id="@+id/starTextTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/lineseedkr_rg"
+                android:text="*"
+                android:textColor="@color/red"
+                android:textSize="12sp"
+                app:layout_constraintStart_toEndOf="@+id/WriteTitle3"
+                app:layout_constraintTop_toTopOf="@+id/WriteTitle3" />
 
             <ImageView
                 android:id="@+id/TitleBoxImage"
                 android:layout_width="match_parent"
-                android:layout_height="52dp"
+                android:layout_height="45dp"
                 android:layout_marginTop="10dp"
                 android:layout_marginStart="20dp"
                 android:layout_marginEnd="20dp"
-                android:src="@drawable/write_box_large2"
+                android:background="@drawable/ripple_normal_box"
                 app:layout_constraintStart_toStartOf="@+id/PhotoBoxImage"
                 app:layout_constraintTop_toBottomOf="@id/WriteTitle3" />
 
@@ -202,12 +237,13 @@
                 android:layout_height="wrap_content"
                 android:background="@null"
                 android:hint="제목을 입력하세요."
-                android:textSize="18sp"
+                android:textSize="15sp"
                 android:inputType="text"
                 android:text=""
-                android:layout_marginStart="20dp"
-                android:layout_marginEnd="20dp"
-                android:textColorHint="@color/vecto_alphagray"
+                android:maxLines="1"
+                android:layout_marginStart="15dp"
+                android:layout_marginEnd="15dp"
+                android:theme="@style/EditTheme"
                 app:layout_constraintBottom_toBottomOf="@+id/TitleBoxImage"
                 app:layout_constraintEnd_toEndOf="@+id/TitleBoxImage"
                 app:layout_constraintHorizontal_bias="0.5"
@@ -221,9 +257,9 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="30dp"
                 android:fontFamily="@font/lineseedkr_bd"
-                android:text="내용 (선택 사항)"
+                android:text="내용"
                 android:textColor="@color/vecto_gray"
-                android:textSize="18sp"
+                android:textSize="15sp"
                 app:layout_constraintStart_toStartOf="@+id/TitleBoxImage"
                 app:layout_constraintTop_toBottomOf="@+id/TitleBoxImage" />
 
@@ -234,7 +270,7 @@
                 android:layout_marginTop="10dp"
                 android:layout_marginStart="20dp"
                 android:layout_marginEnd="20dp"
-                android:src="@drawable/write_box_large2"
+                android:src="@drawable/normal_box"
                 app:layout_constraintBottom_toBottomOf="@+id/EditContent"
                 app:layout_constraintStart_toStartOf="@+id/TitleBoxImage"
                 app:layout_constraintTop_toBottomOf="@id/WriteTitle4" />
@@ -244,41 +280,52 @@
                 android:id="@+id/EditContent"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="7dp"
-                android:layout_marginStart="20dp"
-                android:layout_marginEnd="20dp"
+                android:layout_marginStart="15dp"
+                android:layout_marginEnd="15dp"
                 android:background="@null"
                 android:gravity="top"
                 android:hint="경로 추천 게시글 내용을 작성해주세요.\n(규정위반 내용은 게시가 제한될 수 있어요.)"
                 android:inputType="textMultiLine|text"
                 android:paddingTop="8dp"
-                android:paddingBottom="15dp"
+                android:paddingBottom="12dp"
+                android:textSize="15sp"
                 android:text=""
-                android:textColorHint="@color/vecto_alphagray"
+                android:theme="@style/EditTheme"
                 app:layout_constraintEnd_toEndOf="@+id/ContentBoxImage"
                 app:layout_constraintHorizontal_bias="0.5"
                 app:layout_constraintStart_toStartOf="@+id/ContentBoxImage"
                 app:layout_constraintTop_toTopOf="@+id/ContentBoxImage" />
 
 
-            <com.google.android.material.button.MaterialButton
+            <ImageView
                 android:id="@+id/WriteDoneButton"
                 android:layout_width="0dp"
-                android:layout_height="0dp"
+                android:layout_height="50dp"
                 android:layout_marginTop="30dp"
                 android:layout_marginStart="20dp"
                 android:layout_marginEnd="20dp"
-                app:layout_constraintDimensionRatio="20:3"
-                android:background="@drawable/login_button"
-                android:fontFamily="@font/lineseedkr_bd"
-                android:text="작성완료"
-                android:textColor="@color/white"
-                android:textSize="20sp"
-                app:backgroundTint="@null"
+                android:layout_marginBottom="200dp"
+                android:background="@drawable/ripple_write_button"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0.5"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/ContentBoxImage" />
+                app:layout_constraintTop_toBottomOf="@+id/ContentBoxImage"
+                app:layout_constraintBottom_toBottomOf="parent"/>
+
+            <TextView
+                android:id="@+id/writeDoneButtonText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/lineseedkr_bd"
+                android:text="작성완료"
+                android:textColor="@color/white"
+                android:textSize="15sp"
+                app:layout_constraintBottom_toBottomOf="@+id/WriteDoneButton"
+                app:layout_constraintEnd_toEndOf="@+id/WriteDoneButton"
+                app:layout_constraintHorizontal_bias="0.5"
+                app:layout_constraintStart_toStartOf="@+id/WriteDoneButton"
+                app:layout_constraintTop_toTopOf="@+id/WriteDoneButton"
+                app:layout_constraintVertical_bias="0.53" />
 
             <androidx.fragment.app.FragmentContainerView
                 android:id="@+id/naver_map_EditPost"

@@ -34,14 +34,12 @@ import com.vecto_example.vecto.data.model.LocationData
 import com.vecto_example.vecto.data.model.LocationDatabase
 import com.vecto_example.vecto.data.model.VisitData
 import com.vecto_example.vecto.data.model.VisitDatabase
-import com.vecto_example.vecto.databinding.ActivityEditPostBinding
+import com.vecto_example.vecto.databinding.ActivityEditFeedBinding
 import com.vecto_example.vecto.dialog.CalendarDialog
-import com.vecto_example.vecto.dialog.LoginRequestDialog
 import com.vecto_example.vecto.dialog.WriteBottomDialog
 import com.vecto_example.vecto.dialog.WriteNameEmptyDialog
 import com.vecto_example.vecto.retrofit.NaverSearchApiService
 import com.vecto_example.vecto.retrofit.VectoService
-import com.vecto_example.vecto.ui.login.LoginActivity
 import com.vecto_example.vecto.ui.decoration.SpacesItemDecoration
 import com.vecto_example.vecto.ui.write.WriteRepository
 import com.vecto_example.vecto.ui.write.WriteViewModel
@@ -58,8 +56,8 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import java.io.ByteArrayOutputStream
 import java.io.File
 
-class EditPostActivity : AppCompatActivity(), OnMapReadyCallback, CalendarDialog.OnDateSelectedListener {
-    lateinit var binding: ActivityEditPostBinding
+class EditFeedActivity : AppCompatActivity(), OnMapReadyCallback, CalendarDialog.OnDateSelectedListener {
+    lateinit var binding: ActivityEditFeedBinding
 
     private val writeViewModel: WriteViewModel by viewModels {
         WriteViewModelFactory(WriteRepository(VectoService.create(), NaverSearchApiService.create()))
@@ -93,7 +91,7 @@ class EditPostActivity : AppCompatActivity(), OnMapReadyCallback, CalendarDialog
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        binding = ActivityEditPostBinding.inflate(layoutInflater)
+        binding = ActivityEditFeedBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         val typeofFeedInfo = object : TypeToken<VectoService.FeedInfoResponse>() {}.type
@@ -140,9 +138,14 @@ class EditPostActivity : AppCompatActivity(), OnMapReadyCallback, CalendarDialog
             if(it){ //데이터가 불러와져 있으면
                 binding.DeleteButton.visibility = View.VISIBLE
                 binding.naverMapEditPost.visibility = View.VISIBLE
+
+                binding.LocationBoxImage.isClickable = false
             } else {
                 binding.DeleteButton.visibility = View.GONE
                 binding.naverMapEditPost.visibility = View.INVISIBLE
+
+                binding.LocationBoxImage.isClickable = true
+
                 visitDataList.clear()
                 locationDataList.clear()
                 mapOverlayManager.deleteOverlay()

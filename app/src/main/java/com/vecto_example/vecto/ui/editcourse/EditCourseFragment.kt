@@ -694,9 +694,11 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
                 }
                 else //합병 x
                 {
-                    VisitDatabase(requireContext()).updateVisitDataDistance(myCourseAdapter.visitdata[position - 1].datetime,
-                        myCourseAdapter.visitdata[position - 1].distance + myCourseAdapter.visitdata[position].distance)
+                    val newDistance = myCourseAdapter.visitdata[position - 1].distance + myCourseAdapter.visitdata[position].distance
 
+                    VisitDatabase(requireContext()).updateVisitDataDistance(myCourseAdapter.visitdata[position - 1].datetime, newDistance)
+
+                    myCourseAdapter.visitdata[position - 1].distance = newDistance
                     myCourseAdapter.visitdata.removeAt(position)
 
                     VisitDatabase(requireContext()).deleteVisitData(visitData.datetime)

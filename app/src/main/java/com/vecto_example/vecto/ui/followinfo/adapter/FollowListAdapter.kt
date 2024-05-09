@@ -54,13 +54,11 @@ class FollowListAdapter(): RecyclerView.Adapter<FollowListAdapter.ViewHolder>() 
 
         private fun setFollowButton(followFlag: Boolean) {
             if(followFlag){
-                binding.FollowButton.setImageResource(R.drawable.follow_button)
-
+                binding.FollowButton.setBackgroundResource(R.drawable.ripple_effect_feed_following)
                 binding.ButtonText.text = "팔로잉"
                 binding.ButtonText.setTextColor(ContextCompat.getColor(itemView.context, R.color.vecto_theme_orange))
             } else {
-                binding.FollowButton.setImageResource(R.drawable.following_button)
-
+                binding.FollowButton.setBackgroundResource(R.drawable.ripple_effect_feed_follow)
                 binding.ButtonText.text = "팔로우"
                 binding.ButtonText.setTextColor(ContextCompat.getColor(itemView.context, R.color.white))
             }

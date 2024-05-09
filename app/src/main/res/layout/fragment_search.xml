@@ -67,7 +67,7 @@
             android:layout_height="20dp"
             android:layout_marginEnd="20dp"
             android:src="@drawable/ic_search_on"
-            android:foreground="?attr/selectableItemBackgroundBorderless"
+            android:background="@drawable/ripple_effect_white_circle"
             app:layout_constraintBottom_toBottomOf="@+id/SearchBoxImage"
             app:layout_constraintEnd_toEndOf="@+id/SearchBoxImage"
             app:layout_constraintTop_toTopOf="@id/SearchBoxImage"

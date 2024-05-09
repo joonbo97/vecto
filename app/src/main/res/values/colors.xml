@@ -44,5 +44,5 @@
     <color name="edit_course_staytime">#FF66727E</color>
 
     <!--Colors used in Calendar -->
-    <color name="calendar_ripple">#FFDDD7</color>
+    <color name="calendar_ripple">#1F000000</color>
 </resources>

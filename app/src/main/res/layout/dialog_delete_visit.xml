@@ -3,7 +3,7 @@
     android:layout_width="300dp"
     android:layout_height="300dp"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:background="@drawable/dialog_background">
+    android:background="@drawable/normal_dialog_box">
 
     <ImageView
         android:id="@+id/DialogImage"
@@ -41,7 +41,7 @@
         android:layout_height="56dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:srcCompat="@drawable/dialog_endok_button" />
+        android:background="@drawable/ripple_dialog_left_gray" />
 
 
     <ImageView
@@ -50,7 +50,7 @@
         android:layout_height="56dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:srcCompat="@drawable/dialog_endno_button" />
+        android:background="@drawable/ripple_dialog_right_orange" />
 
     <TextView
         android:id="@+id/OKButtonText"

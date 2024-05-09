@@ -114,9 +114,13 @@ class WriteFragment : Fragment(), OnMapReadyCallback, CalendarDialog.OnDateSelec
             if(it){ //데이터가 불러와져 있으면
                 binding.DeleteButton.visibility = View.VISIBLE
                 binding.naverMapWrite.visibility = View.VISIBLE
+
+                binding.LocationBoxImage.isClickable = false
             } else {
                 binding.DeleteButton.visibility = View.GONE
                 binding.naverMapWrite.visibility = View.INVISIBLE
+
+                binding.LocationBoxImage.isClickable = true
 
                 if(::visitDataList.isInitialized)
                     visitDataList.clear()

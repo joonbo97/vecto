@@ -3,7 +3,7 @@
     android:layout_width="300dp"
     android:layout_height="350dp"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:background="@drawable/dialog_background">
+    android:background="@drawable/normal_dialog_box">
 
     <ImageView
         android:id="@+id/DialogImage"
@@ -43,7 +43,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:srcCompat="@drawable/dialog_button_image" />
+        android:background="@drawable/ripple_dialog_large_button" />
 
     <TextView
         android:id="@+id/ButtonText"
@@ -52,7 +52,7 @@
         android:fontFamily="@font/lineseedkr_bd"
         android:text="로그인하러 가기"
         android:textColor="@color/white"
-        android:textSize="20sp"
+        android:textSize="@dimen/text_size_title"
         app:layout_constraintBottom_toBottomOf="@+id/ButtonImage"
         app:layout_constraintEnd_toEndOf="@+id/ButtonImage"
         app:layout_constraintHorizontal_bias="0.5"

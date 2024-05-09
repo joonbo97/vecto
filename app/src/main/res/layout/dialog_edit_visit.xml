@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="300dp"
     android:layout_height="300dp"
-    android:background="@drawable/dialog_background">
+    android:background="@drawable/normal_dialog_box">
 
     <ImageView
         android:id="@+id/DialogImage"
@@ -38,14 +38,14 @@
     <ImageView
         android:id="@+id/EditVisitBox"
         android:layout_width="270dp"
-        android:layout_height="42dp"
+        android:layout_height="40dp"
         app:layout_constraintBottom_toTopOf="@+id/ButtonImage"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/Guide_TextView"
         app:layout_constraintVertical_bias="0.4"
-        app:srcCompat="@drawable/edit_visit_box" />
+        app:srcCompat="@drawable/edit_visit_dialog_box" />
 
     <EditText
         android:id="@+id/EdittextVisit"
@@ -59,6 +59,7 @@
         android:textSize="15sp"
         android:inputType="text"
         android:text=""
+        android:theme="@style/EditTheme"
         app:layout_constraintBottom_toBottomOf="@+id/EditVisitBox"
         app:layout_constraintEnd_toEndOf="@+id/EditVisitBox"
         app:layout_constraintHorizontal_bias="0.5"
@@ -74,7 +75,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:srcCompat="@drawable/dialog_button_image" />
+        android:background="@drawable/ripple_dialog_large_button"/>
 
     <TextView
         android:id="@+id/ButtonText"
@@ -83,7 +84,7 @@
         android:fontFamily="@font/lineseedkr_bd"
         android:text="확인"
         android:textColor="@color/white"
-        android:textSize="20sp"
+        android:textSize="@dimen/text_size_title"
         app:layout_constraintBottom_toBottomOf="@+id/ButtonImage"
         app:layout_constraintEnd_toEndOf="@+id/ButtonImage"
         app:layout_constraintHorizontal_bias="0.5"

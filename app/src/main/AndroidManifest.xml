@@ -35,7 +35,7 @@
             android:name=".ui.likefeed.LikeFeedActivity"
             android:exported="false" />
         <activity
-            android:name=".ui.editfeed.EditPostActivity"
+            android:name=".ui.editfeed.EditFeedActivity"
             android:exported="false"
             android:windowSoftInputMode="adjustPan" />
         <activity

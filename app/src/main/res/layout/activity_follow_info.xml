@@ -34,7 +34,7 @@
             android:layout_height="39dp"
             android:layout_marginStart="5dp"
             android:padding="12dp"
-            android:src="@drawable/write_back"
+            android:src="@drawable/back_button_icon"
             android:background="?attr/selectableItemBackgroundBorderless"
             app:layout_constraintBottom_toBottomOf="@+id/TitleNicknameText"
             app:layout_constraintStart_toStartOf="parent"
