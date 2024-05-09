@@ -27,7 +27,11 @@ class LoginViewModel(private val repository: UserRepository): ViewModel() {
     private val _errorMessage = MutableLiveData<String?>()
     val errorMessage: LiveData<String?> = _errorMessage
 
+    var taskStarted = false
+
     fun loginRequest(loginRequest: VectoService.LoginRequest){
+        taskStarted = true
+
         loginRequestData= loginRequest
 
         viewModelScope.launch {

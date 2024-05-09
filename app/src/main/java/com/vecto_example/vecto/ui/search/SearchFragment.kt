@@ -13,6 +13,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
@@ -53,8 +54,12 @@ class SearchFragment : Fragment(), MainActivity.ScrollToTop, FeedAdapter.OnFeedA
 
     private lateinit var notificationReceiver: BroadcastReceiver
 
+    private lateinit var callBack: OnBackPressedCallback
+
     private var query = ""
     private var queryFlag = false
+
+    private var backPressedTime: Long = 0L
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -517,5 +522,29 @@ class SearchFragment : Fragment(), MainActivity.ScrollToTop, FeedAdapter.OnFeedA
         if(!searchViewModel.checkLoading())
             this.startActivity(intent)
         else
-            Toast.makeText(requireContext(), "이전 작업을 처리중 입니다. 잠시 후 다시 시도해 주세요.", Toast.LENGTH_SHORT).show()    }
+            Toast.makeText(requireContext(), "이전 작업을 처리중 입니다. 잠시 후 다시 시도해 주세요.", Toast.LENGTH_SHORT).show()
+    }
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+
+        callBack = object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if (System.currentTimeMillis() - backPressedTime <= 2000) {
+                    requireActivity().finish()
+                } else {
+                    backPressedTime = System.currentTimeMillis()
+                    Toast.makeText(requireContext(), "뒤로 버튼을 한번 더 누르시면 종료됩니다.", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+
+        requireActivity().onBackPressedDispatcher.addCallback(this, callBack)
+    }
+
+    override fun onDetach() {
+        super.onDetach()
+
+        callBack.remove()
+    }
 }
