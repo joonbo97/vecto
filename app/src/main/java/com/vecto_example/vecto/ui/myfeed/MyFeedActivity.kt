@@ -73,6 +73,7 @@ class MyFeedActivity : AppCompatActivity(), MyFeedAdapter.OnFeedActionListener {
 
         val myFeedRecyclerView = binding.MyFeedRecyclerView
         myFeedRecyclerView.adapter = myFeedAdapter
+        myFeedRecyclerView.itemAnimator = null
 
         myFeedRecyclerView.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
         myFeedRecyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {

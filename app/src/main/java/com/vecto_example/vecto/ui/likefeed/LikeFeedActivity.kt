@@ -207,6 +207,7 @@ class LikeFeedActivity : AppCompatActivity(), FeedAdapter.OnFeedActionListener {
 
         val likePostRecyclerView = binding.LikeFeedRecyclerView
         likePostRecyclerView.adapter = feedAdapter
+        likePostRecyclerView.itemAnimator = null
 
         likePostRecyclerView.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
         likePostRecyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {

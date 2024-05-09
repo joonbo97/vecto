@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -13,23 +12,25 @@
         android:id="@+id/ImageItemBox"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:background="@drawable/post_small_box"
+        android:background="@drawable/normal_box"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintDimensionRatio="1:1"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.516"
+        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <ImageView
         android:id="@+id/UserTouchImage"
         android:layout_width="0dp"
-        android:layout_height="50dp"
+        android:layout_height="60dp"
+        android:layout_marginEnd="-10dp"
+        android:layout_marginStart="-10dp"
         app:layout_constraintStart_toStartOf="@+id/ProfileImage"
         app:layout_constraintBottom_toBottomOf="@+id/ProfileImage"
         app:layout_constraintTop_toTopOf="@id/ProfileImage"
         app:layout_constraintEnd_toEndOf="@id/NicknameText"
-        app:layout_constraintVertical_bias="0.95" />
+        app:layout_constraintVertical_bias="0.5" />
 
     <ImageView
         android:id="@+id/ProfileImage"
@@ -69,7 +70,10 @@
 
     <ImageView
         android:id="@+id/PostMenuImage"
-        android:padding="15dp"
+        android:padding="12dp"
+        android:layout_marginTop="7dp"
+        android:layout_marginEnd="7dp"
+        android:background="@drawable/ripple_effect_white_circle"
         android:layout_width="50dp"
         android:layout_height="50dp"
         android:src="@drawable/post_menu"
@@ -82,7 +86,6 @@
         android:layout_height="0dp"
         android:layout_marginStart="20dp"
         android:layout_marginTop="84dp"
-        android:src="@drawable/error_image"
         app:layout_constraintDimensionRatio="1:1"
         app:layout_constraintEnd_toStartOf="@+id/Image"
         app:layout_constraintStart_toStartOf="parent"
@@ -109,7 +112,6 @@
         android:layout_height="0dp"
         android:layout_marginTop="84dp"
         android:layout_marginEnd="20dp"
-        android:src="@drawable/error_image"
         app:layout_constraintDimensionRatio="1:1"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/guideline2"
@@ -117,17 +119,20 @@
 
     <TextView
         android:id="@+id/TitleText"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="10dp"
         android:fontFamily="@font/lineseedkr_bd"
         android:text="제목입니다"
         android:textColor="@color/black"
         android:textSize="18sp"
-        app:layout_constraintBottom_toTopOf="@+id/LikeImage"
-        app:layout_constraintStart_toStartOf="@+id/LikeImage"
-        app:layout_constraintTop_toBottomOf="@id/MapImageSmall"
-        app:layout_constraintVertical_bias="0.3" />
+        android:maxLines="1"
+        android:ellipsize="end"
+        android:layout_marginEnd="20dp"
+        android:layout_marginTop="15dp"
+        android:layout_marginStart="3dp"
+        app:layout_constraintEnd_toEndOf="@id/ImageItemBox"
+        app:layout_constraintStart_toStartOf="@+id/MapImageSmall"
+        app:layout_constraintTop_toBottomOf="@id/MapImageSmall" />
 
     <TextView
         android:id="@+id/TotalTimeText"
@@ -144,15 +149,24 @@
 
 
     <ImageView
+        android:id="@+id/itemBottomBar"
+        android:layout_width="0dp"
+        android:layout_height="2dp"
+        android:src="@color/vecto_main"
+        android:layout_marginBottom="50dp"
+        app:layout_constraintStart_toStartOf="@+id/ImageItemBox"
+        app:layout_constraintEnd_toEndOf="@+id/ImageItemBox"
+        app:layout_constraintBottom_toBottomOf="@+id/ImageItemBox" />
+
+    <ImageView
         android:id="@+id/LikeTouchImage"
         android:layout_width="70dp"
-        android:layout_height="30dp"
-        android:layout_marginStart="16dp"
-        android:padding="5dp"
-        app:layout_constraintStart_toStartOf="@+id/ImageItemBox"
-        app:layout_constraintBottom_toBottomOf="@+id/ImageItemBox"
-        app:layout_constraintTop_toTopOf="@id/MapImageSmall"
-        app:layout_constraintVertical_bias="0.95" />
+        android:layout_height="40dp"
+        android:background="@drawable/ripple_feed_like"
+        android:backgroundTint="@color/white"
+        app:layout_constraintStart_toStartOf="@+id/LikeImage"
+        app:layout_constraintBottom_toBottomOf="@+id/LikeImage"
+        app:layout_constraintTop_toTopOf="@id/LikeImage" />
 
     <ImageView
         android:id="@+id/LikeImage"
@@ -163,8 +177,8 @@
         android:src="@drawable/post_like_off"
         app:layout_constraintStart_toStartOf="@+id/ImageItemBox"
         app:layout_constraintBottom_toBottomOf="@+id/ImageItemBox"
-        app:layout_constraintTop_toTopOf="@id/MapImageSmall"
-        app:layout_constraintVertical_bias="0.95" />
+        app:layout_constraintTop_toTopOf="@id/itemBottomBar"
+        app:layout_constraintVertical_bias="0.5" />
 
     <TextView
         android:id="@+id/LikeCountText"
@@ -177,19 +191,18 @@
         android:textSize="15sp"
         app:layout_constraintStart_toEndOf="@+id/LikeImage"
         app:layout_constraintBottom_toBottomOf="@+id/ImageItemBox"
-        app:layout_constraintTop_toTopOf="@id/MapImageSmall"
-        app:layout_constraintVertical_bias="0.932" />
+        app:layout_constraintTop_toBottomOf="@id/itemBottomBar"
+        app:layout_constraintVertical_bias="0.5" />
 
     <ImageView
         android:id="@+id/CommentTouchImage"
         android:layout_width="70dp"
-        android:layout_height="30dp"
-        android:padding="5dp"
-        android:layout_marginStart="90dp"
-        app:layout_constraintStart_toStartOf="@+id/ImageItemBox"
-        app:layout_constraintBottom_toBottomOf="@+id/ImageItemBox"
-        app:layout_constraintTop_toTopOf="@id/MapImageSmall"
-        app:layout_constraintVertical_bias="0.95" />
+        android:layout_height="40dp"
+        android:background="@drawable/ripple_feed_like"
+        android:backgroundTint="@color/white"
+        app:layout_constraintStart_toStartOf="@+id/CommentImage"
+        app:layout_constraintBottom_toBottomOf="@+id/CommentImage"
+        app:layout_constraintTop_toTopOf="@id/CommentImage"/>
 
     <ImageView
         android:id="@+id/CommentImage"
@@ -200,8 +213,8 @@
         android:src="@drawable/post_comment"
         app:layout_constraintStart_toStartOf="@+id/ImageItemBox"
         app:layout_constraintBottom_toBottomOf="@+id/ImageItemBox"
-        app:layout_constraintTop_toTopOf="@id/MapImageSmall"
-        app:layout_constraintVertical_bias="0.95" />
+        app:layout_constraintTop_toTopOf="@id/itemBottomBar"
+        app:layout_constraintVertical_bias="0.5" />
 
     <TextView
         android:id="@+id/CommentCountText"
@@ -214,8 +227,8 @@
         android:textSize="15sp"
         app:layout_constraintStart_toEndOf="@+id/CommentImage"
         app:layout_constraintBottom_toBottomOf="@+id/ImageItemBox"
-        app:layout_constraintTop_toTopOf="@id/MapImageSmall"
-        app:layout_constraintVertical_bias="0.932" />
+        app:layout_constraintTop_toBottomOf="@id/itemBottomBar"
+        app:layout_constraintVertical_bias="0.5" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline2"

@@ -58,7 +58,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="2dp"
         android:fontFamily="@font/lineseedkr_bd"
-        android:text="팔로우"
+        android:text="팔로잉"
         android:textColor="@color/white"
         android:textSize="14sp"
         app:layout_constraintBottom_toBottomOf="@+id/FollowButton"

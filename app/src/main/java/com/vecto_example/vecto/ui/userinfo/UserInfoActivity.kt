@@ -366,6 +366,7 @@ class UserInfoActivity : AppCompatActivity(), MyFeedAdapter.OnFeedActionListener
 
         val postRecyclerView = binding.UserPostRecyclerView
         postRecyclerView.adapter = myFeedAdapter
+        postRecyclerView.itemAnimator = null
 
         postRecyclerView.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
         postRecyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
