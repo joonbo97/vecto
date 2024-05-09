@@ -13,11 +13,14 @@ import androidx.recyclerview.widget.RecyclerView
 import com.vecto_example.vecto.R
 import com.vecto_example.vecto.data.Auth
 import com.vecto_example.vecto.databinding.CommentItemBinding
+import com.vecto_example.vecto.dialog.ReportUserDialog
 import com.vecto_example.vecto.popupwindow.EditDeletePopupWindow
+import com.vecto_example.vecto.popupwindow.ReportPopupWindow
 import com.vecto_example.vecto.retrofit.VectoService
 import com.vecto_example.vecto.ui.userinfo.UserInfoActivity
 import com.vecto_example.vecto.utils.LoadImageUtils
 import com.vecto_example.vecto.utils.RequestLoginUtils
+import com.vecto_example.vecto.utils.ServerResponse
 
 class MyCommentAdapter(private val context: Context): RecyclerView.Adapter<MyCommentAdapter.ViewHolder>(){
     val commentInfo = mutableListOf<VectoService.CommentResponse>()
@@ -38,8 +41,13 @@ class MyCommentAdapter(private val context: Context): RecyclerView.Adapter<MyCom
         fun onDelete(commentId: Int)
     }
 
+    interface OnReportActionListener {
+        fun onReportUser(userId: String, reportType: String, content: String?)
+    }
+
     var editActionListener: OnEditActionListener? = null
     var commentActionListener: OnCommentActionListener? = null
+    var reportActionListener: OnReportActionListener ? = null
 
     fun cancelEditing() {
         if (selectedPosition != -1) {
@@ -78,13 +86,9 @@ class MyCommentAdapter(private val context: Context): RecyclerView.Adapter<MyCom
             }
 
             //좋아요 클릭
-            binding.CommentLikeImage.setOnClickListener {
+            binding.LikeTouchImage.setOnClickListener {
                 clickLikeAction(comment)
             }
-            binding.CommentLikeCountText.setOnClickListener {
-                clickLikeAction(comment)
-            }
-
 
             itemView.setOnLongClickListener {
                 if (!editFlag)
@@ -135,55 +139,107 @@ class MyCommentAdapter(private val context: Context): RecyclerView.Adapter<MyCom
 
             var isClicked = false
 
-            val editDeletePopupWindow = EditDeletePopupWindow(context,
-                editListener = {
-                    isClicked = true
+            if(Auth._userId.value != comment.userId){   //다른 User 인 경우
 
-                    if (Auth.loginFlag.value == false) {
-                        RequestLoginUtils.requestLogin(context)
-                        dismissPopupWindow()
-                        return@EditDeletePopupWindow
-                    } else if (editFlag) {
-                        Toast.makeText(context, "한번에 하나의 댓글만 수정할 수 있습니다.", Toast.LENGTH_SHORT)
-                            .show()
-                        return@EditDeletePopupWindow
-                    } else if (Auth._userId.value != comment.userId) {
-                        Toast.makeText(context, "본인의 댓글만 수정할 수 있습니다.", Toast.LENGTH_SHORT).show()
-                        dismissPopupWindow()
-                        return@EditDeletePopupWindow
-                    } else//로그인이 되어있고, 처음 선택하는 것이며, 본인의 댓글인 경우
-                    {
-                        binding.constraintLayout.setBackgroundColor(
-                            ContextCompat.getColor(
-                                context,
-                                R.color.edit_course_highlight
+                val reportPopupWindow = ReportPopupWindow(itemView.context,
+                    reportListener = {
+                        isClicked = true
+
+                        if (Auth.loginFlag.value == false) {
+                            RequestLoginUtils.requestLogin(context)
+                            dismissPopupWindow()
+                            return@ReportPopupWindow
+                        }
+
+                        val reportUserDialog = ReportUserDialog(itemView.context)
+                        reportUserDialog.showDialog()
+                        reportUserDialog.onOkButtonClickListener = { selectedOptionId, detailContent ->
+                            when(selectedOptionId) {
+                                R.id.radioButton0 -> {
+                                    reportActionListener?.onReportUser(comment.userId, ServerResponse.REPORT_TYPE_BAD_MANNER.code, null)
+                                }
+
+                                R.id.radioButton1 -> {
+                                    reportActionListener?.onReportUser(comment.userId, ServerResponse.REPORT_TYPE_INSULT.code, null)
+                                }
+                                R.id.radioButton2 -> {
+                                    reportActionListener?.onReportUser(comment.userId, ServerResponse.REPORT_TYPE_SEXUAL_HARASSMENT.code, null)
+                                }
+                                R.id.radioButton3 -> {
+                                    if (detailContent != null) {
+                                        reportActionListener?.onReportUser(comment.userId, ServerResponse.REPORT_TYPE_OTHER_PROBLEM.code, detailContent)
+                                    }
+                                    else{
+                                        reportActionListener?.onReportUser(comment.userId, ServerResponse.REPORT_TYPE_OTHER_PROBLEM.code, null)
+                                    }
+                                }
+                            }
+
+                            dismissPopupWindow()
+                        }
+                    },
+                    dismissListener = {
+                        if (!isClicked)  //아무것도 선택하지 않고 닫힐 때만 실행
+                            dismissPopupWindow()
+                    }
+                )
+
+                //뷰를 기준으로 팝업 윈도우 표시
+                reportPopupWindow.showPopupWindow(binding.ProfileImage)
+            } else {    //본인 댓글인 경우
+
+                val editDeletePopupWindow = EditDeletePopupWindow(context,
+                    editListener = {
+                        isClicked = true
+
+                        if (Auth.loginFlag.value == false) {
+                            RequestLoginUtils.requestLogin(context)
+                            dismissPopupWindow()
+                            return@EditDeletePopupWindow
+                        } else if (editFlag) {
+                            Toast.makeText(context, "한번에 하나의 댓글만 수정할 수 있습니다.", Toast.LENGTH_SHORT)
+                                .show()
+                            return@EditDeletePopupWindow
+                        } else if (Auth._userId.value != comment.userId) {
+                            Toast.makeText(context, "본인의 댓글만 수정할 수 있습니다.", Toast.LENGTH_SHORT).show()
+                            dismissPopupWindow()
+                            return@EditDeletePopupWindow
+                        } else//로그인이 되어있고, 처음 선택하는 것이며, 본인의 댓글인 경우
+                        {
+                            binding.constraintLayout.setBackgroundColor(
+                                ContextCompat.getColor(
+                                    context,
+                                    R.color.edit_course_highlight
+                                )
                             )
-                        )
-                        editActionListener?.onEditAction(comment.commentId, selectedPosition)
-                    }
+                            editActionListener?.onEditAction(comment.commentId, selectedPosition)
+                        }
 
-                },
-                deleteListener = {
-                    isClicked = true
+                    },
+                    deleteListener = {
+                        isClicked = true
 
-                    if (Auth.loginFlag.value == false) {
-                        RequestLoginUtils.requestLogin(context)
+                        if (Auth.loginFlag.value == false) {
+                            RequestLoginUtils.requestLogin(context)
+                            dismissPopupWindow()
+                            return@EditDeletePopupWindow
+                        }
+
+                        actionPosition = selectedPosition   //adaperposition을 쓰지않는 이유는 popup 때문에 adapterposition이 유효한 값을 가지지 않아서
+                        commentActionListener?.onDelete(comment.commentId)
                         dismissPopupWindow()
-                        return@EditDeletePopupWindow
-                    }
+                    },
 
-                    actionPosition = selectedPosition   //adaperposition을 쓰지않는 이유는 popup 때문에 adapterposition이 유효한 값을 가지지 않아서
-                    commentActionListener?.onDelete(comment.commentId)
-                    dismissPopupWindow()
-                },
+                    dismissListener = {
+                        if (!isClicked)  //아무것도 선택하지 않고 닫힐 때만 실행
+                            dismissPopupWindow()
+                    })
 
-                dismissListener = {
-                    if (!isClicked)  //아무것도 선택하지 않고 닫힐 때만 실행
-                        dismissPopupWindow()
-                })
+                //뷰를 기준으로 팝업 윈도우 표시
+                editDeletePopupWindow.showPopupWindow(binding.ProfileImage)
+            }
 
-            //뷰를 기준으로 팝업 윈도우 표시
-            editDeletePopupWindow.showPopupWindow(binding.ProfileImage)
+
         }
 
         private fun dismissPopupWindow() {

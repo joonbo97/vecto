@@ -12,6 +12,7 @@ import com.vecto_example.vecto.R
 class ReportPopupWindow (
     private val context: Context,
     private val reportListener: () -> Unit,
+    private val dismissListener: () -> Unit
 ) {
     private var popupWindow: PopupWindow? = null
 
@@ -29,6 +30,10 @@ class ReportPopupWindow (
             popupView.findViewById<ImageView>(R.id.reportTouchImage).setOnClickListener {
                 reportListener()
                 dismiss()
+            }
+
+            setOnDismissListener {
+                dismissListener()
             }
 
             // 팝업 윈도우 표시

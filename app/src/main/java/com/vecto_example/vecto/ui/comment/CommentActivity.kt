@@ -12,16 +12,26 @@ import com.vecto_example.vecto.ui.comment.adapter.MyCommentAdapter
 import com.vecto_example.vecto.R
 import com.vecto_example.vecto.data.Auth
 import com.vecto_example.vecto.data.repository.CommentRepository
+import com.vecto_example.vecto.data.repository.FeedRepository
+import com.vecto_example.vecto.data.repository.UserRepository
 import com.vecto_example.vecto.databinding.ActivityCommentBinding
 import com.vecto_example.vecto.retrofit.VectoService
+import com.vecto_example.vecto.ui.userinfo.UserInfoViewModel
+import com.vecto_example.vecto.ui.userinfo.UserInfoViewModelFactory
 import com.vecto_example.vecto.utils.RequestLoginUtils
+import com.vecto_example.vecto.utils.ServerResponse
 
-class CommentActivity : AppCompatActivity(), MyCommentAdapter.OnEditActionListener, MyCommentAdapter.OnCommentActionListener {
+class CommentActivity : AppCompatActivity(), MyCommentAdapter.OnEditActionListener, MyCommentAdapter.OnCommentActionListener,
+    MyCommentAdapter.OnReportActionListener {
     private lateinit var binding: ActivityCommentBinding
     private lateinit var myCommentAdapter: MyCommentAdapter
 
     private val commentViewModel: CommentViewModel by viewModels {
         CommentViewModelFactory(CommentRepository(VectoService.create()))
+    }
+
+    private val userInfoViewModel: UserInfoViewModel by viewModels {
+        UserInfoViewModelFactory(FeedRepository(VectoService.create()), UserRepository(VectoService.create()))
     }
 
     private var editcommentId = -1
@@ -164,6 +174,21 @@ class CommentActivity : AppCompatActivity(), MyCommentAdapter.OnEditActionListen
             else
                 binding.progressBar.visibility = View.GONE
         }
+
+        /*   신고 Observer   */
+        userInfoViewModel.postComplaintResult.observe(this) {
+            if(it) {
+                Toast.makeText(this, "신고처리되었습니다. 검토 후 조치 예정입니다.", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        userInfoViewModel.postComplaintError.observe(this) {
+            if(it == "FAIL"){
+                Toast.makeText(this, "신고하기 요청에 실패하였습니다. 다시 시도해 주세요.", Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(this, getText(R.string.APIErrorToastMessage), Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 
 
@@ -173,6 +198,7 @@ class CommentActivity : AppCompatActivity(), MyCommentAdapter.OnEditActionListen
         myCommentAdapter = MyCommentAdapter(this)
         myCommentAdapter.editActionListener = this
         myCommentAdapter.commentActionListener = this
+        myCommentAdapter.reportActionListener = this
         val commentRecyclerView = binding.CommentRecyclerView
         commentRecyclerView.adapter = myCommentAdapter
         commentRecyclerView.itemAnimator = null
@@ -328,6 +354,10 @@ class CommentActivity : AppCompatActivity(), MyCommentAdapter.OnEditActionListen
             commentViewModel.deleteComment(commentId)
         else
             Toast.makeText(this, "이전 작업을 처리 중입니다. 잠시 후 다시 시도해 주세요", Toast.LENGTH_SHORT).show()
+    }
+
+    override fun onReportUser(userId: String, reportType: String, content: String?) {
+        userInfoViewModel.postComplaint(VectoService.ComplaintRequest(reportType, userId, content))
     }
 
 }

@@ -29,6 +29,7 @@ import com.vecto_example.vecto.ui.myfeed.adapter.MyFeedAdapter
 import com.vecto_example.vecto.utils.FeedDetailType
 import com.vecto_example.vecto.utils.LoadImageUtils
 import com.vecto_example.vecto.utils.RequestLoginUtils
+import com.vecto_example.vecto.utils.ServerResponse
 
 class UserInfoActivity : AppCompatActivity(), MyFeedAdapter.OnFeedActionListener{
     lateinit var binding: ActivityUserInfoBinding
@@ -89,31 +90,38 @@ class UserInfoActivity : AppCompatActivity(), MyFeedAdapter.OnFeedActionListener
         binding.MenuIcon.setOnClickListener {
             val reportPopupWindow = ReportPopupWindow(this,
                 reportListener = {
+                    if (Auth.loginFlag.value == false) {
+                        RequestLoginUtils.requestLogin(this)
+                        return@ReportPopupWindow
+                    }
 
                     val reportUserDialog = ReportUserDialog(this)
                     reportUserDialog.showDialog()
                     reportUserDialog.onOkButtonClickListener = { selectedOptionId, detailContent ->
                         when(selectedOptionId) {
                             R.id.radioButton0 -> {
-                                userInfoViewModel.postComplaint(VectoService.ComplaintRequest("BAD_MANNER", userId, null))
+                                userInfoViewModel.postComplaint(VectoService.ComplaintRequest(ServerResponse.REPORT_TYPE_BAD_MANNER.code, userId, null))
                             }
 
                             R.id.radioButton1 -> {
-                                userInfoViewModel.postComplaint(VectoService.ComplaintRequest("INSULT", userId, null))
+                                userInfoViewModel.postComplaint(VectoService.ComplaintRequest(ServerResponse.REPORT_TYPE_INSULT.code, userId, null))
                             }
                             R.id.radioButton2 -> {
-                                userInfoViewModel.postComplaint(VectoService.ComplaintRequest("SEXUAL_HARASSMENT", userId, null))
+                                userInfoViewModel.postComplaint(VectoService.ComplaintRequest(ServerResponse.REPORT_TYPE_SEXUAL_HARASSMENT.code, userId, null))
                             }
                             R.id.radioButton3 -> {
                                 if (detailContent != null) {
-                                    userInfoViewModel.postComplaint(VectoService.ComplaintRequest("OTHER_PROBLEM", userId, detailContent))
+                                    userInfoViewModel.postComplaint(VectoService.ComplaintRequest(ServerResponse.REPORT_TYPE_OTHER_PROBLEM.code, userId, detailContent))
                                 }
                                 else{
-                                    userInfoViewModel.postComplaint(VectoService.ComplaintRequest("OTHER_PROBLEM", userId, null))
+                                    userInfoViewModel.postComplaint(VectoService.ComplaintRequest(ServerResponse.REPORT_TYPE_OTHER_PROBLEM.code, userId, null))
                                 }
                             }
                         }
                     }
+                } ,
+                dismissListener = {
+
                 }
             )
 
