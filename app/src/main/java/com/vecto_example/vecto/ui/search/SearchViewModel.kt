@@ -10,9 +10,7 @@ import com.vecto_example.vecto.data.repository.FeedRepository
 import com.vecto_example.vecto.data.repository.UserRepository
 import com.vecto_example.vecto.retrofit.VectoService
 import com.vecto_example.vecto.utils.ServerResponse
-import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
-import java.util.Collections.addAll
 
 class SearchViewModel(private val repository: FeedRepository, private val userRepository: UserRepository) : ViewModel() {
     var originLoginFlag: Boolean? = null    //초기 로그인 상태 (처음 get Feed 위해 null 할당)
