@@ -170,6 +170,11 @@ class SearchViewModel(private val repository: FeedRepository, private val userRe
     private fun addFeedInfoData(feedListResponse: Result<VectoService.FeedPageResponse>){
         feedListResponse.onSuccess { feedPageResponse ->
 
+            if(feedPageResponse.feeds.isEmpty()) {
+                getFeedList(false, "Normal")
+                return
+            }
+
             val newFeedInfoWithFollow = feedPageResponse.feeds.map { feedInfo ->
                 VectoService.FeedInfoWithFollow(feedInfo, false)
             }
