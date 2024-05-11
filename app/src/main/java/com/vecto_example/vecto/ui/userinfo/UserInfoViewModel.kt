@@ -125,18 +125,18 @@ class UserInfoViewModel(private val repository: FeedRepository, private val user
                     feedListResponse = repository.getUserFeedList(userId, nextPage)
 
                 feedListResponse.onSuccess { feedPageResponse ->
-                    if(!lastPage) {
-                        if(firstFlag) {
-                            allFeedInfo = feedPageResponse.feeds.toMutableList()
-                        } else {
-                            allFeedInfo.addAll(feedPageResponse.feeds)
-                        }
-                        _feedInfoLiveData.postValue(feedPageResponse)
 
-                        nextPage = feedPageResponse.nextPage    //페이지 정보값 변경
-                        lastPage = feedPageResponse.lastPage
-                        followPage = feedPageResponse.followPage
+                    if(firstFlag) {
+                        allFeedInfo = feedPageResponse.feeds.toMutableList()
+                    } else {
+                        allFeedInfo.addAll(feedPageResponse.feeds)
                     }
+                    _feedInfoLiveData.postValue(feedPageResponse)
+
+                    nextPage = feedPageResponse.nextPage    //페이지 정보값 변경
+                    lastPage = feedPageResponse.lastPage
+                    followPage = feedPageResponse.followPage
+
                 }.onFailure {
                     _feedErrorLiveData.value = it.message
                     endLoading()

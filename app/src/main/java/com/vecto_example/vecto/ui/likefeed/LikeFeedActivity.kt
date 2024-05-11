@@ -44,8 +44,6 @@ class LikeFeedActivity : AppCompatActivity(), FeedAdapter.OnFeedActionListener {
 
             if(!likeFeedViewModel.checkLoading()){
                 likeFeedViewModel.initSetting()
-                clearNoneImage()
-
                 getFeed()
             }
 

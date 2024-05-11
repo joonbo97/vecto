@@ -196,6 +196,7 @@ class MyFeedAdapter(): RecyclerView.Adapter<MyFeedAdapter.ViewHolder>()
     fun deleteFeedSuccess() {
         if(actionPosition != -1) {
             feedInfo.removeAt(actionPosition)
+            lastSize = feedInfo.size
 
             notifyItemRemoved(actionPosition)
         }

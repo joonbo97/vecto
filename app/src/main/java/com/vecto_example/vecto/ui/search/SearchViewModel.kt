@@ -17,6 +17,8 @@ class SearchViewModel(private val repository: FeedRepository, private val userRe
 
     var firstFlag = true    //처음 게시글 정보를 받아볼 경우 확인을 위한 Flag
 
+    var queryFlag = false
+
     /*   Loading 관련   */
     private val _isLoadingCenter = MutableLiveData(false)
     val isLoadingCenter: LiveData<Boolean> = _isLoadingCenter
@@ -86,7 +88,7 @@ class SearchViewModel(private val repository: FeedRepository, private val userRe
         tempLoading = false
     }
 
-    fun getFeedList(queryFlag: Boolean, type: String){
+    fun getFeedList(type: String){
         if(!lastPage)
             startLoading()
 
@@ -140,6 +142,8 @@ class SearchViewModel(private val repository: FeedRepository, private val userRe
                         allFeedInfo.addAll(newFeedInfoWithFollow)
                     }
                     _feedInfoLiveData.postValue(feedPageResponse)
+
+                    endLoading()
                 }.onFailure {
                     if(firstFlag) {
                         allFeedInfo = newFeedInfoWithFollow.toMutableList()
@@ -168,8 +172,8 @@ class SearchViewModel(private val repository: FeedRepository, private val userRe
     private fun addFeedInfoData(feedListResponse: Result<VectoService.FeedPageResponse>){
         feedListResponse.onSuccess { feedPageResponse ->
 
-            if(feedPageResponse.feeds.isEmpty()) {
-                getFeedList(false, "Normal")
+            if(feedPageResponse.feeds.isEmpty() && !lastPage && !queryFlag) {
+                getFeedList("Normal")
                 return
             }
 

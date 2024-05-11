@@ -57,7 +57,6 @@ class SearchFragment : Fragment(), MainActivity.ScrollToTop, FeedAdapter.OnFeedA
     private lateinit var callBack: OnBackPressedCallback
 
     private var query = ""
-    private var queryFlag = false
 
     private var backPressedTime: Long = 0L
 
@@ -86,8 +85,6 @@ class SearchFragment : Fragment(), MainActivity.ScrollToTop, FeedAdapter.OnFeedA
             if(!searchViewModel.checkLoading()){//로딩중이 아니라면
 
                 searchViewModel.initSetting()
-
-                clearNoneImage()
 
                 Log.d("getFeed_REQUEST", "By Refresh")
                 getFeed()
@@ -142,7 +139,7 @@ class SearchFragment : Fragment(), MainActivity.ScrollToTop, FeedAdapter.OnFeedA
 
             searchViewModel.initSetting()
 
-            queryFlag = false
+            searchViewModel.queryFlag = false
 
             getFeed()
         }
@@ -215,15 +212,12 @@ class SearchFragment : Fragment(), MainActivity.ScrollToTop, FeedAdapter.OnFeedA
 
                 feedAdapter.notifyDataSetChanged()
                 searchViewModel.firstFlag = false
-
-                searchViewModel.endLoading()
             }
             else {
                 feedAdapter.addFeedData()
-                searchViewModel.endLoading()
             }
 
-            if(queryFlag && searchViewModel.allFeedInfo.isEmpty() && !searchViewModel.checkLoading()){
+            if(searchViewModel.queryFlag && searchViewModel.allFeedInfo.isEmpty() && !searchViewModel.checkLoading()){
                 setNoneImage()
             } else {
                 clearNoneImage()
@@ -378,17 +372,17 @@ class SearchFragment : Fragment(), MainActivity.ScrollToTop, FeedAdapter.OnFeedA
         if(!searchViewModel.checkLoading()){//로딩중이 아니라면
 
             //게시글 요청 함수
-            if(queryFlag) { //검색 요청인 경우
-                searchViewModel.getFeedList(queryFlag, query)
+            if(searchViewModel.queryFlag) { //검색 요청인 경우
+                searchViewModel.getFeedList(query)
                 Log.d("getFeed", "Query")
             }
             else{
                 if(Auth.loginFlag.value == false) {   //로그인 X인 경우
-                    searchViewModel.getFeedList(queryFlag, "Normal")
+                    searchViewModel.getFeedList("Normal")
                     Log.d("getFeed", "Normal")
                 }
                 else{
-                    searchViewModel.getFeedList(queryFlag, "Personal")
+                    searchViewModel.getFeedList("Personal")
                     Log.d("getFeed", "Personal")
                 }
             }
@@ -404,7 +398,7 @@ class SearchFragment : Fragment(), MainActivity.ScrollToTop, FeedAdapter.OnFeedA
 
             searchViewModel.initSetting()
 
-            queryFlag = false
+            searchViewModel.queryFlag = false
 
             Log.d("getFeed_REQUEST", "By loginFlag Change")
             getFeed()   //로그인 상태 변경시 게시글 다시 불러옴
@@ -428,7 +422,7 @@ class SearchFragment : Fragment(), MainActivity.ScrollToTop, FeedAdapter.OnFeedA
 
             /*   검색 상태 설정   */
             query = binding.editTextSearch.text.toString()
-            queryFlag = true
+            searchViewModel.queryFlag = true
 
             /*   게시글 요청   */
             Log.d("getFeed_REQUEST", "By Search")
@@ -506,7 +500,7 @@ class SearchFragment : Fragment(), MainActivity.ScrollToTop, FeedAdapter.OnFeedA
 
         val intent = Intent(requireContext(), FeedDetailActivity::class.java).apply {
             putExtra("feedInfoListJson", Gson().toJson(subList))
-            if(queryFlag) {
+            if(searchViewModel.queryFlag) {
                 putExtra("type", FeedDetailType.INTENT_QUERY.code)
                 putExtra("query", query)
             }

@@ -59,6 +59,7 @@ class UserInfoActivity : AppCompatActivity(), MyFeedAdapter.OnFeedActionListener
             if(userId == Auth._userId.value) {
                 binding.MenuIcon.visibility = View.GONE
 
+                binding.FollowButton.setBackgroundResource(R.drawable.ripple_effect_following)
                 binding.FollowButtonText.text = "마이페이지"
             }
         }
@@ -73,7 +74,6 @@ class UserInfoActivity : AppCompatActivity(), MyFeedAdapter.OnFeedActionListener
             if(!userInfoViewModel.checkLoading()){
 
                 userInfoViewModel.initSetting()
-                clearNoneImage()
 
                 Log.d("UserInfoActivity", "By Swipe getFeed")
                 getFeed(userId)

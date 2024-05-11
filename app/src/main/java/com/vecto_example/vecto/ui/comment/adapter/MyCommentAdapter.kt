@@ -22,8 +22,10 @@ import com.vecto_example.vecto.utils.LoadImageUtils
 import com.vecto_example.vecto.utils.RequestLoginUtils
 import com.vecto_example.vecto.utils.ServerResponse
 
-class MyCommentAdapter(private val context: Context): RecyclerView.Adapter<MyCommentAdapter.ViewHolder>(){
-    val commentInfo = mutableListOf<VectoService.CommentResponse>()
+class MyCommentAdapter(): RecyclerView.Adapter<MyCommentAdapter.ViewHolder>(){
+    var commentInfo = mutableListOf<VectoService.CommentResponse>()
+    var lastSize = 0
+
     var editFlag = false
 
     var selectedPosition = -1   //댓글 선택 Position
@@ -60,29 +62,47 @@ class MyCommentAdapter(private val context: Context): RecyclerView.Adapter<MyCom
     inner class ViewHolder(val binding: CommentItemBinding): RecyclerView.ViewHolder(binding.root) {
         fun bind(comment: VectoService.CommentResponse) {
             /*댓글 프사 설정*/
-            LoadImageUtils.loadUserProfileImage(context, binding.ProfileImage, comment.profileUrl)
+            LoadImageUtils.loadUserProfileImage(itemView.context, binding.ProfileImage, comment.profileUrl)
 
             /*댓글 닉네임 설정*/
             binding.NicknameText.text = comment.nickName
 
             /*시간 및 수정 여부 설정*/
             if (comment.updatedBefore)
-                binding.CommentTimeText.text = context.getString(R.string.comment_time_edited, comment.timeDifference)
+                binding.CommentTimeText.text = itemView.context.getString(R.string.comment_time_edited, comment.timeDifference)
             else
-                binding.CommentTimeText.text = context.getString(R.string.comment_time, comment.timeDifference)
+                binding.CommentTimeText.text = itemView.context.getString(R.string.comment_time, comment.timeDifference)
 
 
             /*댓글 내용 설정*/
             binding.CommentText.text = comment.content
+
+            // 아이템 선택 상태에 따라 배경색 설정
+            if (selectedPosition == adapterPosition) {
+                // 선택된 아이템의 배경색 변경
+                binding.constraintLayout.setBackgroundColor(ContextCompat.getColor(itemView.context, R.color.edit_course_highlight))
+            } else {
+                // 선택되지 않은 아이템의 배경색을 기본값으로 설정
+                binding.constraintLayout.setBackgroundColor(ContextCompat.getColor(itemView.context, R.color.white))
+            }
+
+            /*좋아요 설정*/
+            if(comment.likeFlag)
+                binding.CommentLikeImage.setImageResource(R.drawable.post_like_on)
+            else
+                binding.CommentLikeImage.setImageResource(R.drawable.post_like_off)
+
+            /*좋아요 개수 설정*/
+            binding.CommentLikeCountText.text = comment.commentCount.toString()
 
 
             /*   리스너 설정   */
 
             //프로필 사진 클릭
             binding.ProfileImage.setOnClickListener {
-                val intent = Intent(context, UserInfoActivity::class.java)
+                val intent = Intent(itemView.context, UserInfoActivity::class.java)
                 intent.putExtra("userId", comment.userId)
-                context.startActivity(intent)
+                itemView.context.startActivity(intent)
             }
 
             //좋아요 클릭
@@ -103,7 +123,7 @@ class MyCommentAdapter(private val context: Context): RecyclerView.Adapter<MyCom
 
             if (Auth.loginFlag.value == false) {
 
-                RequestLoginUtils.requestLogin(context)
+                RequestLoginUtils.requestLogin(itemView.context)
 
             } else if (actionPosition == -1) {
 
@@ -114,7 +134,7 @@ class MyCommentAdapter(private val context: Context): RecyclerView.Adapter<MyCom
 
                 } else {
 
-                    val anim = AnimationUtils.loadAnimation(context, R.anim.like_anim)
+                    val anim = AnimationUtils.loadAnimation(itemView.context, R.anim.like_anim)
 
                     anim.setAnimationListener(object : Animation.AnimationListener {
                         override fun onAnimationStart(animation: Animation?) {}
@@ -146,7 +166,7 @@ class MyCommentAdapter(private val context: Context): RecyclerView.Adapter<MyCom
                         isClicked = true
 
                         if (Auth.loginFlag.value == false) {
-                            RequestLoginUtils.requestLogin(context)
+                            RequestLoginUtils.requestLogin(itemView.context)
                             dismissPopupWindow()
                             return@ReportPopupWindow
                         }
@@ -188,29 +208,26 @@ class MyCommentAdapter(private val context: Context): RecyclerView.Adapter<MyCom
                 reportPopupWindow.showPopupWindow(binding.ProfileImage)
             } else {    //본인 댓글인 경우
 
-                val editDeletePopupWindow = EditDeletePopupWindow(context,
+                val editDeletePopupWindow = EditDeletePopupWindow(itemView.context,
                     editListener = {
                         isClicked = true
 
                         if (Auth.loginFlag.value == false) {
-                            RequestLoginUtils.requestLogin(context)
+                            RequestLoginUtils.requestLogin(itemView.context)
                             dismissPopupWindow()
                             return@EditDeletePopupWindow
                         } else if (editFlag) {
-                            Toast.makeText(context, "한번에 하나의 댓글만 수정할 수 있습니다.", Toast.LENGTH_SHORT)
+                            Toast.makeText(itemView.context, "한번에 하나의 댓글만 수정할 수 있습니다.", Toast.LENGTH_SHORT)
                                 .show()
                             return@EditDeletePopupWindow
                         } else if (Auth._userId.value != comment.userId) {
-                            Toast.makeText(context, "본인의 댓글만 수정할 수 있습니다.", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(itemView.context, "본인의 댓글만 수정할 수 있습니다.", Toast.LENGTH_SHORT).show()
                             dismissPopupWindow()
                             return@EditDeletePopupWindow
                         } else//로그인이 되어있고, 처음 선택하는 것이며, 본인의 댓글인 경우
                         {
                             binding.constraintLayout.setBackgroundColor(
-                                ContextCompat.getColor(
-                                    context,
-                                    R.color.edit_course_highlight
-                                )
+                                ContextCompat.getColor(itemView.context, R.color.edit_course_highlight)
                             )
                             editActionListener?.onEditAction(comment.commentId, selectedPosition)
                         }
@@ -220,7 +237,7 @@ class MyCommentAdapter(private val context: Context): RecyclerView.Adapter<MyCom
                         isClicked = true
 
                         if (Auth.loginFlag.value == false) {
-                            RequestLoginUtils.requestLogin(context)
+                            RequestLoginUtils.requestLogin(itemView.context)
                             dismissPopupWindow()
                             return@EditDeletePopupWindow
                         }
@@ -255,29 +272,10 @@ class MyCommentAdapter(private val context: Context): RecyclerView.Adapter<MyCom
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val comment = commentInfo[position]
         holder.bind(comment)
-
-        // 아이템 선택 상태에 따라 배경색 설정
-        if (selectedPosition == position) {
-            // 선택된 아이템의 배경색 변경
-            holder.binding.constraintLayout.setBackgroundColor(ContextCompat.getColor(context, R.color.edit_course_highlight))
-        } else {
-            // 선택되지 않은 아이템의 배경색을 기본값으로 설정
-            holder.binding.constraintLayout.setBackgroundColor(ContextCompat.getColor(context, R.color.white))
-        }
-
-        /*좋아요 설정*/
-        if(comment.likeFlag)
-            holder.binding.CommentLikeImage.setImageResource(R.drawable.post_like_on)
-        else
-            holder.binding.CommentLikeImage.setImageResource(R.drawable.post_like_off)
-
-        /*좋아요 개수 설정*/
-        holder.binding.CommentLikeCountText.text = comment.commentCount.toString()
-
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val binding = CommentItemBinding.inflate(LayoutInflater.from(context), parent, false)
+        val binding = CommentItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return ViewHolder(binding)
     }
 
@@ -296,7 +294,6 @@ class MyCommentAdapter(private val context: Context): RecyclerView.Adapter<MyCom
 
     //좋아요 취소 성공시 실행 함수
     fun cancelCommentLikeSuccess(){
-
         commentInfo[actionPosition].likeFlag = false
         commentInfo[actionPosition].commentCount--
 
@@ -306,17 +303,16 @@ class MyCommentAdapter(private val context: Context): RecyclerView.Adapter<MyCom
     //삭제 성공시 실행 함수
     fun deleteCommentSuccess(){
         commentInfo.removeAt(actionPosition)
+        lastSize = commentInfo.size
 
         notifyItemRemoved(actionPosition)
     }
 
     //댓글 데이터 추가 함수
-    fun addCommentData(newData: List<VectoService.CommentResponse>){
-        val startIdx = commentInfo.size
-        commentInfo.addAll(newData)
-        notifyItemRangeInserted(startIdx, newData.size)
+    fun addCommentData(){
+        notifyItemRangeInserted(lastSize, commentInfo.size - lastSize)
 
-        Log.d("MyCommentAdapter", "Adapter Size: ${commentInfo.size}")
+        lastSize = commentInfo.size
     }
 
 }

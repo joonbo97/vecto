@@ -48,8 +48,6 @@ class MyFeedActivity : AppCompatActivity(), MyFeedAdapter.OnFeedActionListener {
             if(!viewModel.checkLoading()){
                 viewModel.initSetting()
 
-                clearNoneImage()
-
                 getFeed()
             }
 
