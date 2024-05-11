@@ -1,99 +1,118 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".ui.search.SearchFragment">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/constraintLayout"
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/appBarLayout"
         android:layout_width="match_parent"
-        android:layout_height="150dp"
-        android:background="@color/vecto_theme_orange"
-        app:layout_constraintTop_toTopOf="parent">
+        android:layout_height="wrap_content">
 
-        <ImageView
-            android:id="@+id/VectoTitleImage"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_marginStart="30dp"
-            android:layout_marginTop="55dp"
-            android:layout_marginBottom="20dp"
-            android:src="@drawable/vecto_title"
-            android:background="?attr/selectableItemBackground"
-            app:layout_constraintBottom_toTopOf="@+id/SearchBoxImage"
-            app:layout_constraintDimensionRatio="349:78.62"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <ImageView
-            android:id="@+id/SearchBoxImage"
+        <com.google.android.material.appbar.CollapsingToolbarLayout
+            android:id="@+id/collapsing_toolbar"
             android:layout_width="match_parent"
-            android:layout_height="40dp"
-            android:layout_marginStart="20dp"
-            android:layout_marginEnd="20dp"
-            android:layout_marginBottom="10dp"
-            android:src="@drawable/search_box"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.5"
-            app:layout_constraintStart_toStartOf="parent" />
+            android:layout_height="150dp"
+            app:layout_scrollFlags="scroll|enterAlways|exitUntilCollapsed"
+            app:contentScrim="@android:color/transparent">
 
-        <EditText
-            android:id="@+id/editTextSearch"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="20dp"
-            android:layout_marginEnd="10dp"
-            android:background="@null"
-            android:ems="20"
-            android:hint="가고싶은 장소를 검색해보세요."
-            android:inputType="text"
-            android:imeOptions="actionSearch"
-            android:text=""
-            android:textSize="15sp"
-            android:theme="@style/EditTheme"
-            app:layout_constraintBottom_toBottomOf="@+id/SearchBoxImage"
-            app:layout_constraintEnd_toStartOf="@+id/SearchIconImage"
-            app:layout_constraintHorizontal_bias="0.5"
-            app:layout_constraintStart_toStartOf="@+id/SearchBoxImage"
-            app:layout_constraintTop_toTopOf="@+id/SearchBoxImage"
-            app:layout_constraintVertical_bias="0.5" />
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/constraintLayout"
+                android:layout_width="match_parent"
+                android:layout_height="150dp"
+                android:background="@color/vecto_theme_orange"
+                app:layout_constraintTop_toTopOf="parent">
 
-        <ImageView
-            android:id="@+id/SearchIconImage"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
-            android:layout_marginEnd="20dp"
-            android:src="@drawable/ic_search_on"
-            android:background="@drawable/ripple_effect_white_circle"
-            app:layout_constraintBottom_toBottomOf="@+id/SearchBoxImage"
-            app:layout_constraintEnd_toEndOf="@+id/SearchBoxImage"
-            app:layout_constraintTop_toTopOf="@id/SearchBoxImage"
-            app:layout_constraintVertical_bias="0.5" />
+                <ImageView
+                    android:id="@+id/VectoTitleImage"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_marginStart="30dp"
+                    android:layout_marginTop="55dp"
+                    android:layout_marginBottom="20dp"
+                    android:src="@drawable/vecto_title"
+                    android:background="?attr/selectableItemBackground"
+                    app:layout_constraintBottom_toTopOf="@+id/SearchBoxImage"
+                    app:layout_constraintDimensionRatio="349:78.62"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
 
-        <ImageView
-            android:id="@+id/AlarmIconImage"
-            android:layout_width="45dp"
-            android:layout_height="45dp"
-            android:padding="10dp"
-            android:layout_marginTop="45dp"
-            android:layout_marginEnd="20dp"
-            android:src="@drawable/alarmoff_icon"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+                <ImageView
+                    android:id="@+id/SearchBoxImage"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:layout_marginStart="20dp"
+                    android:layout_marginEnd="20dp"
+                    android:layout_marginBottom="10dp"
+                    android:src="@drawable/search_box"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHorizontal_bias="0.5"
+                    app:layout_constraintStart_toStartOf="parent" />
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+                <EditText
+                    android:id="@+id/editTextSearch"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="20dp"
+                    android:layout_marginEnd="10dp"
+                    android:background="@null"
+                    android:ems="20"
+                    android:hint="가고싶은 장소를 검색해보세요."
+                    android:inputType="text"
+                    android:imeOptions="actionSearch"
+                    android:text=""
+                    android:textSize="15sp"
+                    android:theme="@style/EditTheme"
+                    app:layout_constraintBottom_toBottomOf="@+id/SearchBoxImage"
+                    app:layout_constraintEnd_toStartOf="@+id/SearchIconImage"
+                    app:layout_constraintHorizontal_bias="0.5"
+                    app:layout_constraintStart_toStartOf="@+id/SearchBoxImage"
+                    app:layout_constraintTop_toTopOf="@+id/SearchBoxImage"
+                    app:layout_constraintVertical_bias="0.5" />
+
+                <ImageView
+                    android:id="@+id/SearchIconImage"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_marginEnd="20dp"
+                    android:src="@drawable/ic_search_on"
+                    android:background="@drawable/ripple_effect_white_circle"
+                    app:layout_constraintBottom_toBottomOf="@+id/SearchBoxImage"
+                    app:layout_constraintEnd_toEndOf="@+id/SearchBoxImage"
+                    app:layout_constraintTop_toTopOf="@id/SearchBoxImage"
+                    app:layout_constraintVertical_bias="0.5" />
+
+                <ImageView
+                    android:id="@+id/AlarmIconImage"
+                    android:layout_width="45dp"
+                    android:layout_height="45dp"
+                    android:padding="10dp"
+                    android:layout_marginTop="45dp"
+                    android:layout_marginEnd="20dp"
+                    android:src="@drawable/alarmoff_icon"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+        </com.google.android.material.appbar.CollapsingToolbarLayout>
+
+    </com.google.android.material.appbar.AppBarLayout>
+
 
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
         android:id="@+id/swipeRefreshLayout"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
+        android:layout_height="match_parent"
         android:layout_marginBottom="55dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/constraintLayout">
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        app:layout_constraintTop_toBottomOf="@+id/appBarLayout">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/constraintLayout2"
@@ -173,4 +192,4 @@
 
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
