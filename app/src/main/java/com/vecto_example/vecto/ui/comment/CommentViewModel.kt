@@ -5,6 +5,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.vecto_example.vecto.data.Auth
 import com.vecto_example.vecto.data.repository.CommentRepository
 import com.vecto_example.vecto.retrofit.VectoService
 import kotlinx.coroutines.launch
@@ -14,11 +15,15 @@ class CommentViewModel(private val repository: CommentRepository): ViewModel() {
     var nextPage: Int = 0
     var lastPage: Boolean = false
 
+    var firstFlag = true
+
     private val _commentErrorLiveData = MutableLiveData<Result<VectoService.CommentListResponse>>()
     val commentErrorLiveData: LiveData<Result<VectoService.CommentListResponse>> = _commentErrorLiveData
 
     private val _commentInfoLiveData = MutableLiveData<VectoService.CommentListResponse>()
     val commentInfoLiveData: LiveData<VectoService.CommentListResponse> = _commentInfoLiveData
+
+    var allCommentInfo = mutableListOf<VectoService.CommentResponse>()
 
     private val _isLoadingCenter = MutableLiveData<Boolean>()
     val isLoadingCenter: LiveData<Boolean> = _isLoadingCenter
@@ -43,40 +48,33 @@ class CommentViewModel(private val repository: CommentRepository): ViewModel() {
     private val _deleteCommentResult = MutableLiveData<Result<String>>()
     val deleteCommentResult: LiveData<Result<String>> = _deleteCommentResult
 
-    fun fetchCommentResults(feedId: Int){
-        startLoading()
+    fun getCommentList(feedId: Int){
+        if(!lastPage)
+            startLoading()
 
         viewModelScope.launch {
-            val commentListResponse = repository.getCommentList(feedId, nextPage)
+            if(lastPage)
+                return@launch
+
+            val commentListResponse: Result<VectoService.CommentListResponse>
+
+            if(Auth.loginFlag.value == true)
+                commentListResponse = repository.getPersonalCommentList(feedId, nextPage)
+            else
+                commentListResponse = repository.getCommentList(feedId, nextPage)
 
             commentListResponse.onSuccess {
-                if(!lastPage){  //마지막 page가 아닐 경우에만 실행
-                    _commentInfoLiveData.postValue(it)
 
-                    nextPage = it.nextPage
-                    lastPage = it.lastPage
+                if(firstFlag){
+                    allCommentInfo = it.comments.toMutableList()
+                } else {
+                    allCommentInfo.addAll(it.comments)
                 }
-            }.onFailure {
-                _commentErrorLiveData.value = commentListResponse
-            }
 
-            endLoading()
-        }
-    }
+                _commentInfoLiveData.postValue(it)
 
-    fun fetchPersonalCommentResults(feedId: Int) {
-        startLoading()
-
-        viewModelScope.launch {
-            val commentListResponse = repository.getPersonalCommentList(feedId, nextPage)
-
-            commentListResponse.onSuccess {
-                if(!lastPage){  //마지막 page가 아닐 경우에만 실행
-                    _commentInfoLiveData.postValue(it)
-
-                    nextPage = it.nextPage
-                    lastPage = it.lastPage
-                }
+                nextPage = it.nextPage
+                lastPage = it.lastPage
             }.onFailure {
                 _commentErrorLiveData.value = commentListResponse
             }
@@ -147,7 +145,7 @@ class CommentViewModel(private val repository: CommentRepository): ViewModel() {
         nextPage = 0
         lastPage = false
 
-        _commentInfoLiveData.postValue(VectoService.CommentListResponse(0, emptyList(), false))
+        firstFlag = true
     }
 
     fun checkLoading(): Boolean{
@@ -158,7 +156,7 @@ class CommentViewModel(private val repository: CommentRepository): ViewModel() {
     private fun startLoading(){
         Log.d("STARTLOADING", "START")
 
-        if(nextPage == 0)   //처음 실행하는 경우 center 로딩
+        if(firstFlag)   //처음 실행하는 경우 center 로딩
             _isLoadingCenter.value = true
         else                //하단 스크롤인 경우 bottom 로딩
             _isLoadingBottom.value = true

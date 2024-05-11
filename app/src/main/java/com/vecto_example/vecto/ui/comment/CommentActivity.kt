@@ -1,5 +1,6 @@
 package com.vecto_example.vecto.ui.comment
 
+import android.annotation.SuppressLint
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
@@ -19,7 +20,6 @@ import com.vecto_example.vecto.retrofit.VectoService
 import com.vecto_example.vecto.ui.userinfo.UserInfoViewModel
 import com.vecto_example.vecto.ui.userinfo.UserInfoViewModelFactory
 import com.vecto_example.vecto.utils.RequestLoginUtils
-import com.vecto_example.vecto.utils.ServerResponse
 
 class CommentActivity : AppCompatActivity(), MyCommentAdapter.OnEditActionListener, MyCommentAdapter.OnCommentActionListener,
     MyCommentAdapter.OnReportActionListener {
@@ -34,8 +34,8 @@ class CommentActivity : AppCompatActivity(), MyCommentAdapter.OnEditActionListen
         UserInfoViewModelFactory(FeedRepository(VectoService.create()), UserRepository(VectoService.create()))
     }
 
-    private var editcommentId = -1
-    private var editcommentPosition = -1    //adapter에서 다른 view를 호출 했을 수도 있기 때문에 현재 수정중인 position을 가지고 있어야함
+    private var editCommentId = -1
+    private var editCommentPosition = -1    //adapter에서 다른 view를 호출 했을 수도 있기 때문에 현재 수정중인 position을 가지고 있어야함
     private var feedID = -1
 
     private var content = ""
@@ -57,24 +57,21 @@ class CommentActivity : AppCompatActivity(), MyCommentAdapter.OnEditActionListen
         else
             Toast.makeText(this, "오류가 발생했습니다. 다시 시도해주세요.", Toast.LENGTH_SHORT).show()
 
-        val swipeRefreshLayout = binding.swipeRefreshLayout
-        swipeRefreshLayout.setOnRefreshListener {
-            binding.CommentRecyclerView.adapter = myCommentAdapter
-
-            clearNoneImage()
-            clearData()
-            clearUI()
+        binding.swipeRefreshLayout.setOnRefreshListener {
+            clearUI(false)
+            commentViewModel.initSetting()
 
             if(feedID != -1)
                 loadComment(feedID)
             else
                 Toast.makeText(this, "오류가 발생했습니다. 다시 시도해주세요.", Toast.LENGTH_SHORT).show()
 
-            swipeRefreshLayout.isRefreshing = false
+            binding.swipeRefreshLayout.isRefreshing = false
         }
 
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     private fun initObservers() {
 
         /*   Comment Load 관련 Observer   */
@@ -84,21 +81,29 @@ class CommentActivity : AppCompatActivity(), MyCommentAdapter.OnEditActionListen
         }
 
         commentViewModel.commentInfoLiveData.observe(this) {
-            myCommentAdapter.addCommentData(it.comments)
+            if(commentViewModel.firstFlag){
+                myCommentAdapter.commentInfo = commentViewModel.allCommentInfo
+                myCommentAdapter.lastSize = commentViewModel.allCommentInfo.size
 
-            if (it.comments.isEmpty() && myCommentAdapter.commentInfo.isEmpty() && commentViewModel.lastPage) {
-                setNoneImage()
+                myCommentAdapter.notifyDataSetChanged()
+                commentViewModel.firstFlag = false
+            } else {
+                myCommentAdapter.addCommentData()
             }
-            else
+
+            if(commentViewModel.allCommentInfo.isEmpty()){
+                setNoneImage()
+            } else {
                 clearNoneImage()
+            }
         }
 
         commentViewModel.addCommentResult.observe(this) { commentResult ->
             commentResult.onSuccess {
 
-                clearNoneImage()
-                clearData()
-                clearUI()
+                commentViewModel.initSetting()
+
+                clearUI(true)
 
                 loadComment(feedID)
 
@@ -138,9 +143,9 @@ class CommentActivity : AppCompatActivity(), MyCommentAdapter.OnEditActionListen
         /*   Comment Update Observer   */
         commentViewModel.updateCommentResult.observe(this) { updateCommentResult ->
             updateCommentResult.onSuccess {
-                myCommentAdapter.commentInfo[editcommentPosition].content = content
+                myCommentAdapter.commentInfo[editCommentPosition].content = content
 
-                clearUI()
+                clearUI(true)
 
                 Toast.makeText(this, "변경이 완료되었습니다.", Toast.LENGTH_SHORT).show()
             }.onFailure {
@@ -195,7 +200,7 @@ class CommentActivity : AppCompatActivity(), MyCommentAdapter.OnEditActionListen
     private fun initRecyclerView() {
         /*   RecyclerView 초기화 함수   */
 
-        myCommentAdapter = MyCommentAdapter(this)
+        myCommentAdapter = MyCommentAdapter()
         myCommentAdapter.editActionListener = this
         myCommentAdapter.commentActionListener = this
         myCommentAdapter.reportActionListener = this
@@ -255,8 +260,8 @@ class CommentActivity : AppCompatActivity(), MyCommentAdapter.OnEditActionListen
 
                 if(feedID != -1) {
                     if(!commentViewModel.checkLoading()) {
-                        if (myCommentAdapter.editFlag && editcommentId != -1)   //수정
-                            commentViewModel.updateComment(VectoService.CommentUpdateRequest(editcommentId, content))
+                        if (myCommentAdapter.editFlag && editCommentId != -1)   //수정
+                            commentViewModel.updateComment(VectoService.CommentUpdateRequest(editCommentId, content))
                         else    //댓글 추가
                             commentViewModel.addComment(feedID, content)
                     }
@@ -267,38 +272,31 @@ class CommentActivity : AppCompatActivity(), MyCommentAdapter.OnEditActionListen
 
     private fun loadComment(feedId: Int) {
         if(!commentViewModel.lastPage) {
-            if (Auth.loginFlag.value == true)
-                commentViewModel.fetchPersonalCommentResults(feedId)
-            else
-                commentViewModel.fetchCommentResults(feedId)
+
+            commentViewModel.getCommentList(feedId)
         }
     }
 
     private fun onEditCancelled() {
-        clearUI()
+        clearUI(true)
+        binding.EditContent.text = null
 
         Toast.makeText(this, "댓글 수정이 취소 되었습니다.", Toast.LENGTH_SHORT).show()
     }
 
     //UI 초기화 함수
-    private fun clearUI(){
+    private fun clearUI(flag: Boolean){ //true 면, 사용자 입력 값도 초기화
         binding.EditCommentBox.visibility = View.GONE
         binding.EditCommentText.visibility = View.GONE
 
-        binding.EditContent.text.clear()
-        binding.EditContent.hint = "댓글을 작성해 주세요."
-
-        editcommentId = -1
-        editcommentPosition = -1
+        editCommentId = -1
+        editCommentPosition = -1
         myCommentAdapter.cancelEditing()
 
         clearNoneImage()
-    }
 
-    //데이터 초기화 함수
-    private fun clearData(){
-        myCommentAdapter.commentInfo.clear()
-        commentViewModel.initSetting()
+        if(flag)
+            binding.EditContent.text = null
     }
 
     //NoneImage 제거 함수
@@ -321,14 +319,14 @@ class CommentActivity : AppCompatActivity(), MyCommentAdapter.OnEditActionListen
         binding.EditCommentBox.visibility = View.VISIBLE
         binding.EditCommentText.visibility = View.VISIBLE
 
+        binding.EditContent.setText("${myCommentAdapter.commentInfo[position].content}")
+
         myCommentAdapter.editFlag = true
 
-        editcommentPosition = position
+        editCommentPosition = position
         myCommentAdapter.selectedPosition = position
 
-        editcommentId = commentId
-
-        binding.EditContent.hint = "수정할 내용을 작성해 주세요."
+        editCommentId = commentId
     }
 
     //좋아요 선택시 실행
