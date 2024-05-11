@@ -50,13 +50,4 @@
         app:layout_constraintTop_toTopOf="@+id/notificationBox"
         app:layout_constraintVertical_bias="0.53" />
 
-    <ImageView
-        android:id="@+id/notificationCircle"
-        android:layout_width="5dp"
-        android:layout_height="5dp"
-        android:layout_marginTop="30dp"
-        android:src="@drawable/notification_circle"
-        app:layout_constraintStart_toEndOf="@+id/notificationText"
-        app:layout_constraintTop_toTopOf="parent" />
-
 </androidx.constraintlayout.widget.ConstraintLayout>

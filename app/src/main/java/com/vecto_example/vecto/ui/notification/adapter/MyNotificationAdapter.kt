@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.vecto_example.vecto.ui.comment.CommentActivity
 import com.vecto_example.vecto.R
@@ -18,7 +19,6 @@ class MyNotificationAdapter(private val context: Context): RecyclerView.Adapter<
     inner class ViewHolder(view: View): RecyclerView.ViewHolder(view) {
         val text: TextView = view.findViewById(R.id.notificationText)
         val timeText: TextView = view.findViewById(R.id.PostTimeText)
-        val circle: ImageView = view.findViewById(R.id.notificationCircle)
         val box: ImageView = view.findViewById(R.id.notificationBox)
     }
 
@@ -29,11 +29,11 @@ class MyNotificationAdapter(private val context: Context): RecyclerView.Adapter<
 
         if(!notificationData[position].requestedBefore)//보여지지 않았다면
         {
-            holder.circle.visibility = View.VISIBLE
+            holder.box.setBackgroundResource(R.drawable.ripple_highlight_box)
         }
         else//보여졌다면
         {
-            holder.circle.visibility = View.INVISIBLE
+            holder.box.setBackgroundResource(R.drawable.ripple_normal_box)
         }
 
         holder.itemView.setOnClickListener {
