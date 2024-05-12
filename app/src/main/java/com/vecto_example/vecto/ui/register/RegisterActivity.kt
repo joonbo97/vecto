@@ -5,7 +5,9 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.CountDownTimer
 import android.util.Log
+import android.view.MotionEvent
 import android.view.View
+import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
@@ -365,5 +367,11 @@ class RegisterActivity : AppCompatActivity() {
         textView.setTextColor(ContextCompat.getColor(this, color))
     }
 
+    override fun dispatchTouchEvent(ev: MotionEvent?): Boolean {
 
+        val inputMethodManager = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
+        inputMethodManager.hideSoftInputFromWindow(currentFocus?.windowToken, 0)
+
+        return super.dispatchTouchEvent(ev)
+    }
 }

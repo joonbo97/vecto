@@ -4,7 +4,9 @@ import android.annotation.SuppressLint
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.view.MotionEvent
 import android.view.View
+import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -58,7 +60,10 @@ class CommentActivity : AppCompatActivity(), MyCommentAdapter.OnEditActionListen
             Toast.makeText(this, "오류가 발생했습니다. 다시 시도해주세요.", Toast.LENGTH_SHORT).show()
 
         binding.swipeRefreshLayout.setOnRefreshListener {
-            clearUI(false)
+            if(myCommentAdapter.editFlag)
+                clearUI(true)
+            else
+                clearUI(false)
             commentViewModel.initSetting()
 
             if(feedID != -1)
@@ -311,6 +316,14 @@ class CommentActivity : AppCompatActivity(), MyCommentAdapter.OnEditActionListen
         binding.CommentNullImage.visibility = View.VISIBLE
         binding.CommentNullText.visibility = View.VISIBLE
         Log.d("NONE VISIBLE", "NONE IMAGE IS VISIBLE")
+    }
+
+    override fun dispatchTouchEvent(ev: MotionEvent?): Boolean {
+
+        val inputMethodManager = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
+        inputMethodManager.hideSoftInputFromWindow(currentFocus?.windowToken, 0)
+
+        return super.dispatchTouchEvent(ev)
     }
 
 

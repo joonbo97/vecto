@@ -10,7 +10,9 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Log
+import android.view.MotionEvent
 import android.view.View
+import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -245,6 +247,14 @@ class MyInfoActivity : AppCompatActivity() {
             editor.putString("password", password)
 
         editor.apply()
+    }
+
+    override fun dispatchTouchEvent(ev: MotionEvent?): Boolean {
+
+        val inputMethodManager = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
+        inputMethodManager.hideSoftInputFromWindow(currentFocus?.windowToken, 0)
+
+        return super.dispatchTouchEvent(ev)
     }
 
     /*   uCrop   */

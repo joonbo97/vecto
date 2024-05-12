@@ -12,6 +12,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
+import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.viewModels
@@ -101,7 +102,7 @@ class SearchFragment : Fragment(), MainActivity.ScrollToTop, FeedAdapter.OnFeedA
 
         if(feedAdapter.feedInfoWithFollow.size != searchViewModel.allFeedInfo.size){
             feedAdapter.feedInfoWithFollow = searchViewModel.allFeedInfo
-            feedAdapter.notifyDataSetChanged()
+            feedAdapter.addFeedData()
         }
     }
 
@@ -164,6 +165,9 @@ class SearchFragment : Fragment(), MainActivity.ScrollToTop, FeedAdapter.OnFeedA
         binding.editTextSearch.setOnEditorActionListener { _, actionId, _ ->
             if(actionId == EditorInfo.IME_ACTION_SEARCH) {
                 startSearchRequest()
+
+                val inputMethodManager = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                inputMethodManager.hideSoftInputFromWindow(binding.editTextSearch.windowToken, 0)
 
                 true
             } else {

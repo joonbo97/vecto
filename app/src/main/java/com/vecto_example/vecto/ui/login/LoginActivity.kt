@@ -5,6 +5,8 @@ import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.view.MotionEvent
+import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.activity.viewModels
 import com.vecto_example.vecto.data.Auth
@@ -224,5 +226,11 @@ class LoginActivity : AppCompatActivity() {
         return sharedPreferences.getString("fcm_token", null)
     }
 
+    override fun dispatchTouchEvent(ev: MotionEvent?): Boolean {
 
+        val inputMethodManager = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
+        inputMethodManager.hideSoftInputFromWindow(currentFocus?.windowToken, 0)
+
+        return super.dispatchTouchEvent(ev)
+    }
 }
