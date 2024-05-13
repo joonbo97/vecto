@@ -23,14 +23,12 @@ import androidx.core.os.bundleOf
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.vecto_example.vecto.ui.login.LoginActivity
 import com.vecto_example.vecto.ui.main.MainActivity
 import com.vecto_example.vecto.data.Auth
 import com.vecto_example.vecto.data.model.LocationData
 import com.vecto_example.vecto.data.model.LocationDatabase
 import com.vecto_example.vecto.data.model.VisitData
 import com.vecto_example.vecto.data.model.VisitDatabase
-import com.vecto_example.vecto.dialog.LoginRequestDialog
 import com.vecto_example.vecto.dialog.WriteBottomDialog
 import com.vecto_example.vecto.dialog.WriteNameEmptyDialog
 import com.vecto_example.vecto.retrofit.NaverSearchApiService
@@ -428,6 +426,8 @@ class WriteFragment : Fragment(), OnMapReadyCallback, CalendarDialog.OnDateSelec
         else if(message == "ERROR"){
             Toast.makeText(context, getText(R.string.APIErrorToastMessage), Toast.LENGTH_SHORT).show()
         }
+
+        writeViewModel.finishUpload()
     }
 
     /*   Override 관련   */
@@ -606,4 +606,6 @@ class WriteFragment : Fragment(), OnMapReadyCallback, CalendarDialog.OnDateSelec
 
         myImageAdapter.imageUri.add(Uri.fromFile(file))
     }
+
+
 }

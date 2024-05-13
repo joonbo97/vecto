@@ -50,9 +50,11 @@ class WriteRepository(private val vectoService: VectoService, private val naverS
                 val errorBody = response.errorBody()?.string()
                 val gson = Gson()
                 val errorResponse: VectoService.VectoResponse<*>? = gson.fromJson(errorBody, VectoService.VectoResponse::class.java)
-                //Log.d("addFeed", "FAIL: ${response.errorBody()}")
-                Log.d("addFeed", "FAIL: ${errorBody}")
-                Result.failure(Exception(errorResponse!!.code))
+                Log.d("addFeed", "FAIL: $errorBody")
+                if(errorResponse?.code?.isNotEmpty() == true)
+                    Result.failure(Exception(errorResponse.code))
+                else
+                    Result.failure(Exception("FAIL"))
             }
         } catch (e: Exception) {
             Log.e("addFeed", "ERROR", e)
