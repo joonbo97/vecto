@@ -45,6 +45,7 @@ class LocationService : Service() {
 
     private val locationCallback = object : LocationCallback() {
         override fun onLocationResult(locationResult: LocationResult) {
+            Log.d("LocationService", "Location Result")
 
             for (location in locationResult.locations) {
 
@@ -219,7 +220,7 @@ class LocationService : Service() {
     private fun sendVisitNotification(){
         val notificationManager = getSystemService(NotificationManager::class.java) as NotificationManager
         val notification = MapNotification.createVisitNotification(this)
-        notificationManager.notify(NOTIFICATION_ID_VISIT, notification)
+        notificationManager.notify(System.currentTimeMillis().toInt(), notification)
     }
 
     private fun stopForegroundService() {
@@ -228,8 +229,10 @@ class LocationService : Service() {
 
     private fun requestLocationUpdates() {
         val locationRequest = LocationRequest.create().apply {
+            fastestInterval = 7000
             interval = 10000
-            Priority.PRIORITY_HIGH_ACCURACY
+            maxWaitTime = 13000
+            priority = Priority.PRIORITY_HIGH_ACCURACY
         }
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
@@ -262,7 +265,6 @@ class LocationService : Service() {
 
     companion object {
         const val NOTIFICATION_ID = 12345
-        const val NOTIFICATION_ID_VISIT = 10000
         const val CHECKDISTANCE = 50 //몇M 떨어진 점까지 방문으로 간주할 것인지
     }
     private fun saveLog(type: Int){
