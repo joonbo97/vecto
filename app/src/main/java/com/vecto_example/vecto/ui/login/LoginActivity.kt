@@ -53,8 +53,6 @@ class LoginActivity : AppCompatActivity() {
             }
         }
 
-
-        KakaoSdk.init(this, BuildConfig.KAKAO_KEY)
         initObservers()
         initListeners()
     }

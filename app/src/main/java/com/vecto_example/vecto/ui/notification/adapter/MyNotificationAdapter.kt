@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.vecto_example.vecto.ui.comment.CommentActivity
 import com.vecto_example.vecto.R
 import com.vecto_example.vecto.retrofit.VectoService
+import com.vecto_example.vecto.ui.onefeed.OneFeedActivity
 import com.vecto_example.vecto.ui.userinfo.UserInfoActivity
 
 class MyNotificationAdapter(private val context: Context): RecyclerView.Adapter<MyNotificationAdapter.ViewHolder>(){
@@ -37,6 +38,8 @@ class MyNotificationAdapter(private val context: Context): RecyclerView.Adapter<
         }
 
         holder.itemView.setOnClickListener {
+            notificationData[position].requestedBefore = true
+            notifyItemChanged(position)
 
             if(notificationData[position].notificationType == "follow"){
                 val intent = Intent(context, UserInfoActivity::class.java)
@@ -44,8 +47,10 @@ class MyNotificationAdapter(private val context: Context): RecyclerView.Adapter<
                 context.startActivity(intent)
             }
             else if(notificationData[position].notificationType == "comment"){
-                val intent = Intent(context, CommentActivity::class.java)
-                intent.putExtra("feedID", notificationData[position].feedId)
+                val intent = Intent(context, OneFeedActivity::class.java)
+                intent.putExtra("feedId", notificationData[position].feedId)
+                intent.putExtra("isComment", true)
+
                 context.startActivity(intent)
             }
 

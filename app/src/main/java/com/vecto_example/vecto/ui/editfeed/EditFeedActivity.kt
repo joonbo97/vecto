@@ -76,6 +76,9 @@ class EditFeedActivity : AppCompatActivity(), OnMapReadyCallback, CalendarDialog
     private lateinit var cropResultLauncher: ActivityResultLauncher<Intent>
     private lateinit var galleryResultLauncher: ActivityResultLauncher<Intent>
 
+    private var currentImageIndex = 0 // 현재 크롭 중 인덱스
+    private var selectedImageUris = mutableListOf<Uri>() // 선택된 이미지 URI 목록
+
     private lateinit var locationDataList: MutableList<LocationData>
     private lateinit var visitDataList: MutableList<VisitData>
 
@@ -94,8 +97,8 @@ class EditFeedActivity : AppCompatActivity(), OnMapReadyCallback, CalendarDialog
         binding = ActivityEditFeedBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        val typeofFeedInfo = object : TypeToken<VectoService.FeedInfoResponse>() {}.type
-        val feedInfo = Gson().fromJson<VectoService.FeedInfoResponse>(intent.getStringExtra("feedInfoJson"), typeofFeedInfo)
+        val typeofFeedInfo = object : TypeToken<VectoService.FeedInfo>() {}.type
+        val feedInfo = Gson().fromJson<VectoService.FeedInfo>(intent.getStringExtra("feedInfoJson"), typeofFeedInfo)
         locationDataList = feedInfo.location.toMutableList()
         visitDataList = feedInfo.visit.toMutableList()
         imageUrl = feedInfo.image.toMutableList()
@@ -277,7 +280,7 @@ class EditFeedActivity : AppCompatActivity(), OnMapReadyCallback, CalendarDialog
 
 
     @SuppressLint("NotifyDataSetChanged")
-    private fun initRecyclerView(feedInfo: VectoService.FeedInfoResponse) {
+    private fun initRecyclerView(feedInfo: VectoService.FeedInfo) {
         myEditImageAdapter = MyEditImageAdapter(this)
         myEditImageAdapter.imageUrl.addAll(feedInfo.image)
         myEditImageAdapter.notifyDataSetChanged()
@@ -539,29 +542,30 @@ class EditFeedActivity : AppCompatActivity(), OnMapReadyCallback, CalendarDialog
     private fun setGalleryResult() {
         galleryResultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == Activity.RESULT_OK) {
-                val selectedImages = result.data?.clipData
+                selectedImageUris.clear()
+                currentImageIndex = 0 // 인덱스 초기화
 
-                val totalImage =
-                    if (selectedImages != null)
-                        myEditImageAdapter.itemCount + selectedImages.itemCount
-                    else
-                        myEditImageAdapter.itemCount + 1
-
-                if (totalImage > 10) {
-                    Toast.makeText(this, "최대 10개의 이미지만 선택 가능합니다.", Toast.LENGTH_LONG).show()
+                if (myEditImageAdapter.itemCount + result.data?.clipData!!.itemCount > 10) {
+                    Toast.makeText(this, "최대 10개의 이미지만 추가 가능합니다.", Toast.LENGTH_LONG).show()
                     return@registerForActivityResult
                 }
 
-                if (selectedImages != null) {
-                    for (i in 0 until selectedImages.itemCount) {
-                        val selectedImageUri = selectedImages.getItemAt(selectedImages.itemCount - 1 - i).uri
-                        startCrop(selectedImageUri) // 각 이미지를 UCrop으로 전달
+                val clipData = result.data?.clipData
+                if (clipData != null) {
+                    for (i in 0 until clipData.itemCount) {
+                        selectedImageUris.add(clipData.getItemAt(i).uri)
                     }
-                } else if (result.data?.data != null) {
-                    val imageUri = result.data?.data
-                    startCrop(imageUri!!) // 이미지를 UCrop으로 전달
+                } else {
+                    result.data?.data?.let { selectedImageUris.add(it) }
                 }
+                startNextCrop() // 첫 번째 이미지 크롭 시작
             }
+        }
+    }
+
+    private fun startNextCrop() {
+        if (currentImageIndex < selectedImageUris.size) {
+            startCrop(selectedImageUris[currentImageIndex]) // 현재 인덱스의 이미지를 크롭
         }
     }
 
@@ -594,7 +598,8 @@ class EditFeedActivity : AppCompatActivity(), OnMapReadyCallback, CalendarDialog
             if (result.resultCode == Activity.RESULT_OK) {
                 val resultUri = UCrop.getOutput(result.data!!)
                 addImage(resultUri!!)
-                myEditImageAdapter.notifyDataSetChanged()
+                currentImageIndex++ // 다음 이미지를 위해 인덱스 증가
+                startNextCrop() // 다음 이미지 크롭 시작
             } else if (result.resultCode == UCrop.RESULT_ERROR) {
                 val cropError = UCrop.getError(result.data!!)
                 Log.e("UCrop", "Crop error: $cropError")
@@ -603,12 +608,7 @@ class EditFeedActivity : AppCompatActivity(), OnMapReadyCallback, CalendarDialog
     }
 
     private fun addImage(newImageUri: Uri) {
-        Log.d("ASDASD2", "ADDIMAGE 호출")
-
-        if (myEditImageAdapter.itemCount > 10) {
-            Toast.makeText(this, "최대 10개의 이미지만 추가 가능합니다.", Toast.LENGTH_LONG).show()
-            return
-        }
+        Log.d("uCrop", "addImage")
 
         // 이미지 압축
         val compressedBytes = compressImage(newImageUri)
@@ -650,6 +650,9 @@ class EditFeedActivity : AppCompatActivity(), OnMapReadyCallback, CalendarDialog
         val file = File(this.cacheDir, filename)
         file.outputStream().use { it.write(compressedBytes) }
 
+        Log.d("uCrop", "saveCompressedImage")
+
         myEditImageAdapter.imageUri.add(Uri.fromFile(file))
+        myEditImageAdapter.notifyDataSetChanged()
     }
 }

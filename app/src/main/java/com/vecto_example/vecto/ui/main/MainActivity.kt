@@ -13,6 +13,8 @@ import androidx.core.os.bundleOf
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
+import com.kakao.sdk.common.KakaoSdk
+import com.vecto_example.vecto.BuildConfig
 import com.vecto_example.vecto.R
 import com.vecto_example.vecto.data.Auth
 import com.vecto_example.vecto.data.repository.UserRepository
@@ -21,6 +23,7 @@ import com.vecto_example.vecto.retrofit.VectoService
 import com.vecto_example.vecto.ui.comment.CommentActivity
 import com.vecto_example.vecto.ui.login.LoginViewModel
 import com.vecto_example.vecto.ui.login.LoginViewModelFactory
+import com.vecto_example.vecto.ui.onefeed.OneFeedActivity
 
 
 class MainActivity : AppCompatActivity() {
@@ -35,6 +38,8 @@ class MainActivity : AppCompatActivity() {
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        KakaoSdk.init(this, BuildConfig.KAKAO_KEY)
 
         val navView = binding.navView
         val navController = findNavController(R.id.nav_host_fragment_activity_main)
@@ -56,9 +61,15 @@ class MainActivity : AppCompatActivity() {
             if(it >= 0)//댓글 관련 알림인 경우
             {
 
-                val intent = Intent(this, CommentActivity::class.java)
-                intent.putExtra("feedID", it)
-                this.startActivity(intent)
+                loginViewModel.isLoginFinished.observe(this){ isLoginFinish ->
+                    if(isLoginFinish){
+                        val intent = Intent(this, OneFeedActivity::class.java)
+                        intent.putExtra("feedId", it)
+                        intent.putExtra("isComment", true)
+
+                        this.startActivity(intent)
+                    }
+                }
             }
         }
 
@@ -70,6 +81,30 @@ class MainActivity : AppCompatActivity() {
                 navController.navigate(R.id.EditCourseFragment, bundle)
             }
         }
+
+        intent?.let {
+            if (it.action == Intent.ACTION_VIEW) {
+                it.data?.let { uri ->
+                    val feedId = uri.getQueryParameter("feedId")
+
+                    if(!feedId.isNullOrEmpty()){
+
+                        loginViewModel.isLoginFinished.observe(this){ isLoginFinish ->
+                            if(isLoginFinish){
+                                val intent = Intent(this, OneFeedActivity::class.java)
+                                intent.putExtra("feedId", feedId.toInt())
+                                intent.putExtra("isComment", false)
+
+                                this.startActivity(intent)
+                            }
+                        }
+                    }
+
+                }
+            }
+        }
+
+
         if(Auth.loginFlag.value == false) {
             sendLoginRequest()
         }

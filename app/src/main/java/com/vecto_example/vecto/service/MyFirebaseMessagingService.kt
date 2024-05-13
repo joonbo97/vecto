@@ -12,10 +12,9 @@ import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import com.vecto_example.vecto.ui.main.MainActivity
 import com.vecto_example.vecto.R
-import java.time.LocalDateTime
 
 class MyFirebaseMessagingService:  FirebaseMessagingService(){
-    private val CHANNEL_ID = "vecto"
+    private val CHANNEL_ID = "소셜 알림"
     private val SHARED_PREF_NAME = "fcm_pref"
     private val TOKEN_KEY = "fcm_token"
 
@@ -42,16 +41,12 @@ class MyFirebaseMessagingService:  FirebaseMessagingService(){
 
         if (title != null && body != null) {
             // 알림 제목과 내용이 있을 경우, 알림 표시
-            val currentDateTime = LocalDateTime.now().withNano(0).toString()
 
-            //val notificationDB = NotificationDatabase(this)
             if(feedId != null){
-                //notificationDB.addNotificationData(NotificationData(currentDateTime, feedId.toInt(), body, 0))
-                showNotification(title, body, feedId.toInt())
+                showNotification("댓글 알림", body, feedId.toInt())
             }
             else{
-                //notificationDB.addNotificationData(NotificationData(currentDateTime, -1, body, 0))
-                showNotification(title, body, -1)
+                showNotification("팔로우 알림", body, -1)
             }
 
             LocalBroadcastManager.getInstance(this).sendBroadcast(Intent("NEW_NOTIFICATION"))
@@ -83,9 +78,9 @@ class MyFirebaseMessagingService:  FirebaseMessagingService(){
 
         val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
-        val channel = NotificationChannel(CHANNEL_ID, "FCM Notifications", NotificationManager.IMPORTANCE_DEFAULT)
+        val channel = NotificationChannel(CHANNEL_ID, "소셜 알림", NotificationManager.IMPORTANCE_HIGH)
         notificationManager.createNotificationChannel(channel)
 
-        notificationManager.notify(0, notificationBuilder.build())
+        notificationManager.notify(System.currentTimeMillis().toInt(), notificationBuilder.build())
     }
 }

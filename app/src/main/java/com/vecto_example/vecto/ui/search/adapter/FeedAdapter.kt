@@ -36,6 +36,8 @@ class FeedAdapter(): RecyclerView.Adapter<FeedAdapter.ViewHolder>() {
         fun onDeleteFollow(userId: String)
 
         fun onItemClick(position: Int)
+
+        fun onShareClick(feedInfo: VectoService.FeedInfo)
     }
 
     var feedActionListener: OnFeedActionListener? = null
@@ -126,6 +128,11 @@ class FeedAdapter(): RecyclerView.Adapter<FeedAdapter.ViewHolder>() {
 
             itemView.setOnClickListener {
                 feedActionListener?.onItemClick(adapterPosition)
+            }
+
+            /*   공유   */
+            binding.ShareTouchImage.setOnClickListener {
+                feedActionListener?.onShareClick(feedInfoWithFollow.feedInfo)
             }
         }
 

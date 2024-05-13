@@ -1,6 +1,5 @@
-package com.vecto_example.vecto.ui.likefeed
+package com.vecto_example.vecto.ui.onefeed
 
-import android.annotation.SuppressLint
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -8,24 +7,29 @@ import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.activity.viewModels
+import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.gson.Gson
 import com.vecto_example.vecto.R
+import com.vecto_example.vecto.data.Auth
 import com.vecto_example.vecto.data.repository.FeedRepository
 import com.vecto_example.vecto.data.repository.UserRepository
-import com.vecto_example.vecto.databinding.ActivityLikeFeedBinding
+import com.vecto_example.vecto.databinding.ActivityOneFeedBinding
 import com.vecto_example.vecto.retrofit.VectoService
+import com.vecto_example.vecto.ui.comment.CommentActivity
 import com.vecto_example.vecto.ui.detail.FeedDetailActivity
+import com.vecto_example.vecto.ui.search.SearchViewModel
+import com.vecto_example.vecto.ui.search.SearchViewModelFactory
 import com.vecto_example.vecto.ui.search.adapter.FeedAdapter
 import com.vecto_example.vecto.utils.FeedDetailType
 import com.vecto_example.vecto.utils.ShareFeedUtil
 
-class LikeFeedActivity : AppCompatActivity(), FeedAdapter.OnFeedActionListener {
-    private lateinit var binding: ActivityLikeFeedBinding
+class OneFeedActivity : AppCompatActivity(), FeedAdapter.OnFeedActionListener {
+    private lateinit var binding: ActivityOneFeedBinding
 
-    private val likeFeedViewModel: LikeFeedViewModel by viewModels {
-        LikeFeedViewModelFactory(FeedRepository(VectoService.create()), UserRepository(VectoService.create()))
+    private val viewModel: SearchViewModel by viewModels {
+        SearchViewModelFactory(FeedRepository(VectoService.create()), UserRepository(VectoService.create()))
     }
 
     private lateinit var feedAdapter: FeedAdapter
@@ -33,22 +37,25 @@ class LikeFeedActivity : AppCompatActivity(), FeedAdapter.OnFeedActionListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        binding = ActivityLikeFeedBinding.inflate(layoutInflater)
+        binding = ActivityOneFeedBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        val feedId = intent.getIntExtra("feedId", -1)
+        val isComment = intent.getBooleanExtra("isComment", false)
 
         initListener()
         initRecyclerView()
         initObservers()
-        getFeed()
 
-        binding.swipeRefreshLayout.setOnRefreshListener {
+        if(feedId != -1)
+            viewModel.getOneFeed(feedId)
+        else
+            Toast.makeText(this, "게시글 정보가 올바르지 않습니다. 다시 시도해 주세요.", Toast.LENGTH_SHORT).show()
 
-            if(!likeFeedViewModel.checkLoading()){
-                likeFeedViewModel.initSetting()
-                getFeed()
-            }
-
-            binding.swipeRefreshLayout.isRefreshing = false
+        if(isComment){
+            val intent = Intent(this, CommentActivity::class.java)
+            intent.putExtra("feedID", feedId)
+            this.startActivity(intent)
         }
     }
 
@@ -60,51 +67,36 @@ class LikeFeedActivity : AppCompatActivity(), FeedAdapter.OnFeedActionListener {
             finish()
         }
     }
+    private fun initRecyclerView() {
+        /*   Recycler 초기화 함수   */
+        feedAdapter = FeedAdapter()
+        feedAdapter.feedActionListener = this
 
-    @SuppressLint("NotifyDataSetChanged")
+        val oneFeedRecyclerView = binding.oneFeedRecyclerView
+        oneFeedRecyclerView.adapter = feedAdapter
+
+        oneFeedRecyclerView.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
+        oneFeedRecyclerView.itemAnimator = null
+    }
+
     private fun initObservers() {
         /*   게시글 관련 Observer   */
-        likeFeedViewModel.feedInfoLiveData.observe(this) {
-            if(likeFeedViewModel.firstFlag) {
-                feedAdapter.feedInfoWithFollow = likeFeedViewModel.allFeedInfo
-                feedAdapter.lastSize = likeFeedViewModel.allFeedInfo.size
+        viewModel.oneFeedLiveData.observe(this) {
+            feedAdapter.feedInfoWithFollow.add(it)
 
-                feedAdapter.notifyDataSetChanged()
-                likeFeedViewModel.firstFlag = false
-
-                likeFeedViewModel.endLoading()
-            } else {
-                feedAdapter.addFeedData()
-
-                likeFeedViewModel.endLoading()
-            }
-
-
-            if(likeFeedViewModel.allFeedInfo.isEmpty()){
-                setNoneImage()
-            } else {
-                clearNoneImage()
-            }
+            feedAdapter.notifyItemInserted(0)
         }
 
         /*   로딩 관련 Observer   */
-        likeFeedViewModel.isLoadingCenter.observe(this) {
+        viewModel.isLoadingCenter.observe(this) {
             if(it)
                 binding.progressBarCenter.visibility = View.VISIBLE
             else
                 binding.progressBarCenter.visibility = View.GONE
         }
-        likeFeedViewModel.isLoadingBottom.observe(this) {
-            if(it)
-                binding.progressBar.visibility = View.VISIBLE
-            else
-                binding.progressBar.visibility = View.GONE
-        }
-
-        /*   게시물 상호 작용 관련 Observer   */
 
         /*   게시글 좋아요   */
-        likeFeedViewModel.postFeedLikeResult.observe(this) { postFeedLikeResult ->
+        viewModel.postFeedLikeResult.observe(this) { postFeedLikeResult ->
             if(feedAdapter.actionPosition != -1)
             {
                 postFeedLikeResult.onSuccess {
@@ -117,7 +109,7 @@ class LikeFeedActivity : AppCompatActivity(), FeedAdapter.OnFeedActionListener {
             }
         }
 
-        likeFeedViewModel.deleteFeedLikeResult.observe(this) { deleteFeedLikeResult ->
+        viewModel.deleteFeedLikeResult.observe(this) { deleteFeedLikeResult ->
             if(feedAdapter.actionPosition != -1) {
                 deleteFeedLikeResult.onSuccess {
                     feedAdapter.deleteFeedLikeSuccess()
@@ -130,26 +122,26 @@ class LikeFeedActivity : AppCompatActivity(), FeedAdapter.OnFeedActionListener {
         }
 
         //팔로우
-        likeFeedViewModel.postFollowResult.observe(this) {
+        viewModel.postFollowResult.observe(this) {
             if(feedAdapter.actionPosition != -1) {
                 if (it) {
                     feedAdapter.postFollowSuccess()
-                    Toast.makeText(this, "${likeFeedViewModel.allFeedInfo[feedAdapter.actionPosition].feedInfo.nickName} 님을 팔로우하기 시작했습니다.", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "${feedAdapter.feedInfoWithFollow[0].feedInfo.nickName} 님을 팔로우하기 시작했습니다.", Toast.LENGTH_SHORT).show()
                 } else {
-                    Toast.makeText(this, "이미 ${likeFeedViewModel.allFeedInfo[feedAdapter.actionPosition].feedInfo.nickName} 님을 팔로우 중입니다.", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "이미 ${feedAdapter.feedInfoWithFollow[0].feedInfo.nickName} 님을 팔로우 중입니다.", Toast.LENGTH_SHORT).show()
                 }
 
                 feedAdapter.actionPosition = -1
             }
         }
 
-        likeFeedViewModel.deleteFollowResult.observe(this) {
+        viewModel.deleteFollowResult.observe(this) {
             if(feedAdapter.actionPosition != -1) {
                 if (it) {
                     feedAdapter.deleteFollowSuccess()
-                    Toast.makeText(this, "${likeFeedViewModel.allFeedInfo[feedAdapter.actionPosition].feedInfo.nickName} 님 팔로우를 취소하였습니다.", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "${feedAdapter.feedInfoWithFollow[0].feedInfo.nickName} 님 팔로우를 취소하였습니다.", Toast.LENGTH_SHORT).show()
                 } else {
-                    Toast.makeText(this, "이미 ${likeFeedViewModel.allFeedInfo[feedAdapter.actionPosition].feedInfo.nickName} 님을 팔로우하지 않습니다.", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "이미 ${feedAdapter.feedInfoWithFollow[0].feedInfo.nickName} 님을 팔로우하지 않습니다.", Toast.LENGTH_SHORT).show()
                 }
 
                 feedAdapter.actionPosition = -1
@@ -157,7 +149,7 @@ class LikeFeedActivity : AppCompatActivity(), FeedAdapter.OnFeedActionListener {
         }
 
         /*   오류 관련 Observer   */
-        likeFeedViewModel.feedErrorLiveData.observe(this) {
+        viewModel.feedErrorLiveData.observe(this) {
             if(it == "FAIL") {
                 Toast.makeText(this, "게시글 불러오기에 실패하였습니다. 다시 시도해 주세요.", Toast.LENGTH_SHORT).show()
             } else if(it == "ERROR") {
@@ -165,7 +157,7 @@ class LikeFeedActivity : AppCompatActivity(), FeedAdapter.OnFeedActionListener {
             }
         }
 
-        likeFeedViewModel.followErrorLiveData.observe(this) {
+        viewModel.followErrorLiveData.observe(this) {
             if(it == "FAIL") {
                 Toast.makeText(this, "팔로우 정보 불러오기에 실패하였습니다.", Toast.LENGTH_SHORT).show()
             } else if(it == "ERROR") {
@@ -174,7 +166,7 @@ class LikeFeedActivity : AppCompatActivity(), FeedAdapter.OnFeedActionListener {
 
         }
 
-        likeFeedViewModel.postFollowError.observe(this) {
+        viewModel.postFollowError.observe(this) {
             if(feedAdapter.actionPosition != -1) {
                 if (it == "FAIL") {
                     Toast.makeText(this, "팔로우 요청에 실패하였습니다. 다시 시도해 주세요.", Toast.LENGTH_SHORT).show()
@@ -186,7 +178,7 @@ class LikeFeedActivity : AppCompatActivity(), FeedAdapter.OnFeedActionListener {
             }
         }
 
-        likeFeedViewModel.deleteFollowError.observe(this) {
+        viewModel.deleteFollowError.observe(this) {
             if(feedAdapter.actionPosition != -1) {
                 if (it == "FAIL") {
                     Toast.makeText(this, "팔로우 취소 요청에 실패하였습니다. 다시 시도해 주세요.", Toast.LENGTH_SHORT).show()
@@ -199,57 +191,11 @@ class LikeFeedActivity : AppCompatActivity(), FeedAdapter.OnFeedActionListener {
         }
     }
 
-    @SuppressLint("NotifyDataSetChanged")
-    private fun initRecyclerView() {
-        feedAdapter = FeedAdapter()
-        feedAdapter.feedActionListener = this
-
-        val likePostRecyclerView = binding.LikeFeedRecyclerView
-        likePostRecyclerView.adapter = feedAdapter
-        likePostRecyclerView.itemAnimator = null
-
-        likePostRecyclerView.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
-        likePostRecyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
-            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                super.onScrolled(recyclerView, dx, dy)
-
-                if (!recyclerView.canScrollVertically(1)) {
-                    if(!likeFeedViewModel.checkLoading()){
-                        getFeed()
-                    }
-                }
-            }
-        })
-
-        if(likeFeedViewModel.allFeedInfo.isNotEmpty()){
-            feedAdapter.feedInfoWithFollow = likeFeedViewModel.allFeedInfo
-            feedAdapter.notifyDataSetChanged()
-        }
-    }
-
-    private fun getFeed() {
-        likeFeedViewModel.getLikeFeedList()
-        Log.d("getFeed", "Like Feed")
-    }
-
-    //좋아요 게시물 None 이미지
-    private fun setNoneImage() {
-        binding.NoneImage.visibility = View.VISIBLE
-        binding.NoneText.visibility = View.VISIBLE
-        Log.d("NONE SET", "NONE IMAGE SET")
-    }
-
-
-    private fun clearNoneImage() {
-        binding.NoneImage.visibility = View.GONE
-        binding.NoneText.visibility = View.GONE
-        Log.d("NONE GONE", "NONE IMAGE IS GONE")
-    }
 
     /*   Adapter CallBack 관련   */
     override fun onPostFeedLike(feedId: Int) {
-        if(!likeFeedViewModel.checkLoading()) {
-            likeFeedViewModel.postFeedLike(feedId)
+        if(!viewModel.checkLoading()) {
+            viewModel.postFeedLike(feedId)
         } else {
             Toast.makeText(this, "이전 작업을 처리 중입니다. 잠시 후 다시 시도해 주세요", Toast.LENGTH_SHORT).show()
             feedAdapter.actionPosition = -1
@@ -257,8 +203,8 @@ class LikeFeedActivity : AppCompatActivity(), FeedAdapter.OnFeedActionListener {
     }
 
     override fun onDeleteFeedLike(feedId: Int) {
-        if(!likeFeedViewModel.checkLoading()) {
-            likeFeedViewModel.deleteFeedLike(feedId)
+        if(!viewModel.checkLoading()) {
+            viewModel.deleteFeedLike(feedId)
         } else {
             Toast.makeText(this, "이전 작업을 처리 중입니다. 잠시 후 다시 시도해 주세요", Toast.LENGTH_SHORT).show()
             feedAdapter.actionPosition = -1
@@ -266,8 +212,8 @@ class LikeFeedActivity : AppCompatActivity(), FeedAdapter.OnFeedActionListener {
     }
 
     override fun onPostFollow(userId: String) {
-        if(!likeFeedViewModel.checkLoading()) {
-            likeFeedViewModel.postFollow(userId)
+        if(!viewModel.checkLoading()) {
+            viewModel.postFollow(userId)
         } else {
             Toast.makeText(this, "이전 작업을 처리 중입니다. 잠시 후 다시 시도해 주세요", Toast.LENGTH_SHORT).show()
             feedAdapter.actionPosition = -1
@@ -275,8 +221,8 @@ class LikeFeedActivity : AppCompatActivity(), FeedAdapter.OnFeedActionListener {
     }
 
     override fun onDeleteFollow(userId: String) {
-        if(!likeFeedViewModel.checkLoading()) {
-            likeFeedViewModel.deleteFollow(userId)
+        if(!viewModel.checkLoading()) {
+            viewModel.deleteFollow(userId)
         } else {
             Toast.makeText(this, "이전 작업을 처리 중입니다. 잠시 후 다시 시도해 주세요", Toast.LENGTH_SHORT).show()
             feedAdapter.actionPosition = -1
@@ -284,21 +230,24 @@ class LikeFeedActivity : AppCompatActivity(), FeedAdapter.OnFeedActionListener {
     }
 
     override fun onItemClick(position: Int) {
-        var subList = likeFeedViewModel.allFeedInfo.subList(position, likeFeedViewModel.allFeedInfo.size)
+        var subList = viewModel.allFeedInfo.subList(position, viewModel.allFeedInfo.size)
         if(subList.size > 10) {
             subList = subList.subList(0, 10)
         }
 
+
         val intent = Intent(this, FeedDetailActivity::class.java).apply {
             putExtra("feedInfoListJson", Gson().toJson(subList))
-            putExtra("type", FeedDetailType.INTENT_LIKE.code)
+
+            putExtra("type", FeedDetailType.INTENT_NORMAL.code)
             putExtra("query", "")
-            putExtra("nextPage", likeFeedViewModel.nextPage)
-            putExtra("followPage", likeFeedViewModel.followPage)
-            putExtra("lastPage", likeFeedViewModel.lastPage)
+
+            putExtra("nextPage", 0)
+            putExtra("followPage", true)
+            putExtra("lastPage", false)
         }
 
-        if(!likeFeedViewModel.checkLoading())
+        if(!viewModel.checkLoading())
             this.startActivity(intent)
         else
             Toast.makeText(this, "이전 작업을 처리중 입니다. 잠시 후 다시 시도해 주세요.", Toast.LENGTH_SHORT).show()
@@ -307,4 +256,5 @@ class LikeFeedActivity : AppCompatActivity(), FeedAdapter.OnFeedActionListener {
     override fun onShareClick(feedInfo: VectoService.FeedInfo) {
         ShareFeedUtil.shareFeed(this, feedInfo)
     }
+
 }

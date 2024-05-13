@@ -5,6 +5,13 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.kakao.sdk.share.ShareClient
+import com.kakao.sdk.template.model.Button
+import com.kakao.sdk.template.model.Content
+import com.kakao.sdk.template.model.FeedTemplate
+import com.kakao.sdk.template.model.ItemContent
+import com.kakao.sdk.template.model.Link
+import com.kakao.sdk.template.model.Social
 import com.vecto_example.vecto.data.Auth
 import com.vecto_example.vecto.data.repository.FeedRepository
 import com.vecto_example.vecto.data.repository.UserRepository
@@ -37,6 +44,9 @@ class SearchViewModel(private val repository: FeedRepository, private val userRe
     val feedInfoLiveData: LiveData<VectoService.FeedPageResponse> = _feedInfoLiveData
 
     var allFeedInfo = mutableListOf<VectoService.FeedInfoWithFollow>()
+
+    private val _oneFeedLiveData = MutableLiveData<VectoService.FeedInfoWithFollow>()
+    val oneFeedLiveData: LiveData<VectoService.FeedInfoWithFollow> = _oneFeedLiveData
 
     /*   좋아요   */
     private val _postFeedLikeResult = MutableLiveData<Result<String>>()
@@ -86,6 +96,52 @@ class SearchViewModel(private val repository: FeedRepository, private val userRe
         _isLoadingBottom.value = false
 
         tempLoading = false
+    }
+
+    fun getOneFeed(feedId: Int) {
+        startLoading()
+
+        viewModelScope.launch {
+            val feedResponse = repository.getFeedInfo(feedId)
+
+            feedResponse.onSuccess { feedDataResponse ->
+
+                val newFeedInfoWithFollow = VectoService.FeedInfoWithFollow(feedDataResponse, false)
+
+                if(Auth.loginFlag.value == true) {
+                    val userIdList = mutableListOf<String>()
+                    userIdList.add(feedDataResponse.userId)
+
+                    viewModelScope.launch {
+                        val followResponse = userRepository.getFollowRelation(userIdList)
+
+                        followResponse.onSuccess { followStatuses ->
+
+                            newFeedInfoWithFollow.isFollowing =
+                                followStatuses.followRelations[0].relation == "followed" || followStatuses.followRelations[0].relation == "all"
+                            _oneFeedLiveData.value = newFeedInfoWithFollow
+                            allFeedInfo.add(newFeedInfoWithFollow)
+
+                            endLoading()
+
+                        }.onFailure {
+                            _followErrorLiveData.value = it.message
+                            _oneFeedLiveData.value = newFeedInfoWithFollow
+                            allFeedInfo.add(newFeedInfoWithFollow)
+                            endLoading()
+                        }
+                    }
+                } else {
+                    allFeedInfo.add(newFeedInfoWithFollow)
+                    _oneFeedLiveData.value = newFeedInfoWithFollow
+                    endLoading()
+                }
+            }.onFailure {
+                _feedErrorLiveData.value = it.message
+                endLoading()
+            }
+        }
+
     }
 
     fun getFeedList(type: String){

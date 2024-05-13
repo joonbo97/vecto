@@ -151,22 +151,29 @@ class FeedRepository (private val vectoService: VectoService) {
         }
     }
 
-    suspend fun getFeedInfo(feedId: Int): VectoService.FeedInfoResponse {
+    suspend fun getFeedInfo(feedId: Int): Result<VectoService.FeedInfo> {
         /*   FeedId를 통해 게시물 상세 정보를 확인 할 수 있는 함수   */
+        return try {
 
-        val response = if (Auth.loginFlag.value == true) {
-            vectoService.getFeedInfo("Bearer ${Auth.token}", feedId)
-        } else {
-            vectoService.getFeedInfo(feedId)
-        }
+            val response = if (Auth.loginFlag.value == true) {
+                vectoService.getFeedInfo("Bearer ${Auth.token}", feedId)
+            } else {
+                vectoService.getFeedInfo(feedId)
+            }
 
-        if(response.isSuccessful){
-            return response.body()!!.result!!
-        }
-        else{
-            Log.d("getUserFeedList", "FAIL: ${response.errorBody()}")
+            if(response.isSuccessful){
+                Log.d("getFeedInfo", "SUCCESS: ${response.body()}")
 
-            throw Exception("FAIL")
+                Result.success(response.body()!!.result!!)
+            }
+            else{
+                Log.d("getFeedInfo", "FAIL: ${response.errorBody()?.string()}")
+
+                Result.failure(Exception("FAIL"))
+            }
+        } catch (e: Exception) {
+            Log.e("getFeedInfo", "ERROR", e)
+            Result.failure(Exception("ERROR"))
         }
     }
 

@@ -77,6 +77,10 @@ class WriteFragment : Fragment(), OnMapReadyCallback, CalendarDialog.OnDateSelec
     private lateinit var cropResultLauncher: ActivityResultLauncher<Intent>
     private lateinit var galleryResultLauncher: ActivityResultLauncher<Intent>
 
+    private var currentImageIndex = 0 // 현재 크롭 중 인덱스
+    private var selectedImageUris = mutableListOf<Uri>() // 선택된 이미지 URI 목록
+
+
     private lateinit var locationDataList: MutableList<LocationData>
     private lateinit var visitDataList: MutableList<VisitData>
 
@@ -488,30 +492,30 @@ class WriteFragment : Fragment(), OnMapReadyCallback, CalendarDialog.OnDateSelec
     private fun setGalleryResult() {
         galleryResultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == Activity.RESULT_OK) {
-                val selectedImages = result.data?.clipData
+                selectedImageUris.clear()
+                currentImageIndex = 0 // 인덱스 초기화
 
-                val totalImage =
-                    if (selectedImages != null)
-                        myImageAdapter.itemCount + selectedImages.itemCount
-                    else
-                        myImageAdapter.itemCount + 1
-
-                if (totalImage > 10) {
-                    Toast.makeText(requireContext(), "최대 10개의 이미지만 선택 가능합니다.", Toast.LENGTH_LONG).show()
+                if (myImageAdapter.itemCount + result.data?.clipData!!.itemCount > 10) {
+                    Toast.makeText(requireContext(), "최대 10개의 이미지만 추가 가능합니다.", Toast.LENGTH_LONG).show()
                     return@registerForActivityResult
                 }
 
-
-                if (selectedImages != null) {
-                    for (i in 0 until selectedImages.itemCount) {
-                        val selectedImageUri = selectedImages.getItemAt(selectedImages.itemCount - 1 - i).uri
-                        startCrop(selectedImageUri) // 각 이미지를 UCrop으로 전달
+                val clipData = result.data?.clipData
+                if (clipData != null) {
+                    for (i in 0 until clipData.itemCount) {
+                        selectedImageUris.add(clipData.getItemAt(i).uri)
                     }
-                } else if (result.data?.data != null) {
-                    val imageUri = result.data?.data
-                    startCrop(imageUri!!) // 이미지를 UCrop으로 전달
+                } else {
+                    result.data?.data?.let { selectedImageUris.add(it) }
                 }
+                startNextCrop() // 첫 번째 이미지 크롭 시작
             }
+        }
+    }
+
+    private fun startNextCrop() {
+        if (currentImageIndex < selectedImageUris.size) {
+            startCrop(selectedImageUris[currentImageIndex]) // 현재 인덱스의 이미지를 크롭
         }
     }
 
@@ -521,9 +525,9 @@ class WriteFragment : Fragment(), OnMapReadyCallback, CalendarDialog.OnDateSelec
         val destinationUri = Uri.fromFile(File(requireContext().cacheDir, destinationFileName))
         val uCropIntent = UCrop.of(sourceUri, destinationUri)
             .withOptions(uCropOptions())
-            .withAspectRatio(1f, 1f) // 1:1 비율로 자르기
+            .withAspectRatio(1f, 1f)
             .getIntent(requireContext())
-        cropResultLauncher.launch(uCropIntent)  //Crop 결과를 cropResultLauncher 에게 전달
+        cropResultLauncher.launch(uCropIntent) // 크롭 결과를 cropResultLauncher로 전달
     }
 
     //uCrop 옵션
@@ -548,6 +552,8 @@ class WriteFragment : Fragment(), OnMapReadyCallback, CalendarDialog.OnDateSelec
                 val resultUri = UCrop.getOutput(result.data!!)
                 addImage(resultUri!!)
                 myImageAdapter.notifyDataSetChanged()
+                currentImageIndex++ // 다음 이미지를 위해 인덱스 증가
+                startNextCrop() // 다음 이미지 크롭 시작
             } else if (result.resultCode == UCrop.RESULT_ERROR) {
                 val cropError = UCrop.getError(result.data!!)
                 Log.e("UCrop", "Crop error: $cropError")
@@ -557,18 +563,12 @@ class WriteFragment : Fragment(), OnMapReadyCallback, CalendarDialog.OnDateSelec
 
     //Crop 된 이미지를 전달 받아 adapter 에 추가 하기 위한 전처리 작업 수행
     private fun addImage(newImageUri: Uri) {
-
-        if (myImageAdapter.itemCount > 10) {
-            Toast.makeText(requireContext(), "최대 10개의 이미지만 추가 가능합니다.", Toast.LENGTH_LONG).show()
-            return
-        }
+        Log.d("uCrop", "addImage")
 
         // 이미지 압축
         val compressedBytes = compressImage(newImageUri)
         saveCompressedImage(compressedBytes)
 
-
-        // 가장 앞쪽의 ImageView에 새 이미지를 셋팅
         binding.PhotoIconText.text = "${myImageAdapter.itemCount}/10"
     }
 
@@ -605,6 +605,5 @@ class WriteFragment : Fragment(), OnMapReadyCallback, CalendarDialog.OnDateSelec
         file.outputStream().use { it.write(compressedBytes) }
 
         myImageAdapter.imageUri.add(Uri.fromFile(file))
-        Log.d("ASD", "${myImageAdapter.imageUri.size}")
     }
 }

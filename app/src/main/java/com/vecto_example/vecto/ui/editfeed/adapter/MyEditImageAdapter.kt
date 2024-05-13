@@ -60,7 +60,7 @@ class MyEditImageAdapter (private val context: Context): RecyclerView.Adapter<My
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         if(position > imageUrl.lastIndex) {
-            holder.bindUri(imageUri[position])
+            holder.bindUri(imageUri[position - imageUrl.lastIndex - 1])
         } else {
             holder.bindUrl(imageUrl[position])
         }

@@ -38,6 +38,7 @@ import com.vecto_example.vecto.ui.notification.NotificationViewModelFactory
 import com.vecto_example.vecto.ui.search.adapter.FeedAdapter
 import com.vecto_example.vecto.utils.FeedDetailType
 import com.vecto_example.vecto.utils.RequestLoginUtils
+import com.vecto_example.vecto.utils.ShareFeedUtil
 
 class SearchFragment : Fragment(), MainActivity.ScrollToTop, FeedAdapter.OnFeedActionListener {
     private lateinit var binding: FragmentSearchBinding
@@ -497,30 +498,34 @@ class SearchFragment : Fragment(), MainActivity.ScrollToTop, FeedAdapter.OnFeedA
 
     override fun onItemClick(position: Int) {
         var subList = searchViewModel.allFeedInfo.subList(position, searchViewModel.allFeedInfo.size)
-        if(subList.size > 10) {
-            subList = subList.subList(0, 10)
+        if(subList.size > 1) {
+            subList = subList.subList(0, 1)
         }
 
-
-        val intent = Intent(requireContext(), FeedDetailActivity::class.java).apply {
-            putExtra("feedInfoListJson", Gson().toJson(subList))
-            if(searchViewModel.queryFlag) {
-                putExtra("type", FeedDetailType.INTENT_QUERY.code)
-                putExtra("query", query)
+        if(!searchViewModel.checkLoading()) {
+            val intent = Intent(requireContext(), FeedDetailActivity::class.java).apply {
+                putExtra("feedInfoListJson", Gson().toJson(subList))
+                if(searchViewModel.queryFlag) {
+                    putExtra("type", FeedDetailType.INTENT_QUERY.code)
+                    putExtra("query", query)
+                }
+                else {
+                    putExtra("type", FeedDetailType.INTENT_NORMAL.code)
+                    putExtra("query", "")
+                }
+                putExtra("nextPage", searchViewModel.nextPage)
+                putExtra("followPage", searchViewModel.followPage)
+                putExtra("lastPage", searchViewModel.lastPage)
             }
-            else {
-                putExtra("type", FeedDetailType.INTENT_NORMAL.code)
-                putExtra("query", "")
-            }
-            putExtra("nextPage", searchViewModel.nextPage)
-            putExtra("followPage", searchViewModel.followPage)
-            putExtra("lastPage", searchViewModel.lastPage)
-        }
 
-        if(!searchViewModel.checkLoading())
             this.startActivity(intent)
+        }
         else
             Toast.makeText(requireContext(), "이전 작업을 처리중 입니다. 잠시 후 다시 시도해 주세요.", Toast.LENGTH_SHORT).show()
+    }
+
+    override fun onShareClick(feedInfo: VectoService.FeedInfo) {
+        ShareFeedUtil.shareFeed(requireContext(), feedInfo)
     }
 
     override fun onAttach(context: Context) {
@@ -545,4 +550,7 @@ class SearchFragment : Fragment(), MainActivity.ScrollToTop, FeedAdapter.OnFeedA
 
         callBack.remove()
     }
+
+
+
 }

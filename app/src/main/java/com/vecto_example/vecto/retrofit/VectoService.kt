@@ -126,14 +126,14 @@ interface VectoService {
     @GET("feed/{feedId}")
     suspend fun getFeedInfo(
         @Path("feedId") feedId: Int
-    ): Response<VectoResponse<FeedInfoResponse>>
+    ): Response<VectoResponse<FeedInfo>>
 
     //게시글 정보 확인 (로그인)
     @POST("feed/{feedId}")
     suspend fun getFeedInfo(
         @Header("Authorization") authorization: String,
         @Path("feedId") feedId: Int
-    ): Response<VectoResponse<FeedInfoResponse>>
+    ): Response<VectoResponse<FeedInfo>>
 
     //게시글 목록 조회 (비 로그인)
     @GET("feed/feedList")
@@ -382,23 +382,6 @@ interface VectoService {
     data class FeedInfoWithFollow(
         val feedInfo: FeedInfo,
         var isFollowing: Boolean
-    )
-
-
-    data class FeedInfoResponse(
-        val title: String,
-        val content: String,
-        val timeDifference: String,
-        val image: List<String>,
-        val location: List<LocationData>,
-        val visit: List<VisitData>,
-        var likeCount: Int,
-        val commentCount: Int,
-        val nickName: String,
-        val userProfile: String?,
-        val userId: String,
-        val mapImage: List<String>,
-        var likeFlag: Boolean
     )
 
     data class CommentListResponse(

@@ -22,6 +22,7 @@ import com.vecto_example.vecto.ui.myfeed.adapter.MyFeedAdapter
 import com.vecto_example.vecto.ui.userinfo.UserInfoViewModel
 import com.vecto_example.vecto.ui.userinfo.UserInfoViewModelFactory
 import com.vecto_example.vecto.utils.FeedDetailType
+import com.vecto_example.vecto.utils.ShareFeedUtil
 
 class MyFeedActivity : AppCompatActivity(), MyFeedAdapter.OnFeedActionListener {
     private lateinit var binding: ActivityMyFeedBinding
@@ -238,5 +239,9 @@ class MyFeedActivity : AppCompatActivity(), MyFeedAdapter.OnFeedActionListener {
             startActivity(intent)
         else
             Toast.makeText(this, "이전 작업을 처리중 입니다. 잠시 후 다시 시도해 주세요.", Toast.LENGTH_SHORT).show()
+    }
+
+    override fun onShareClick(feedInfo: VectoService.FeedInfo) {
+        ShareFeedUtil.shareFeed(this, feedInfo)
     }
 }

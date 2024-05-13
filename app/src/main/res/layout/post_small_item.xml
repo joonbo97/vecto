@@ -14,7 +14,6 @@
         android:layout_height="0dp"
         android:background="@drawable/normal_box"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintDimensionRatio="1:1"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
@@ -167,10 +166,10 @@
         android:layout_width="0dp"
         android:layout_height="2dp"
         android:src="@color/vecto_main"
-        android:layout_marginBottom="50dp"
+        android:layout_marginTop="15dp"
         app:layout_constraintStart_toStartOf="@+id/ImageItemBox"
         app:layout_constraintEnd_toEndOf="@+id/ImageItemBox"
-        app:layout_constraintBottom_toBottomOf="@+id/ImageItemBox" />
+        app:layout_constraintTop_toBottomOf="@+id/TotalTimeText" />
 
     <ImageView
         android:id="@+id/LikeTouchImage"
@@ -189,10 +188,11 @@
         android:layout_marginStart="16dp"
         android:padding="5dp"
         android:src="@drawable/post_like_off"
+        android:layout_marginTop="15dp"
+        android:layout_marginBottom="15dp"
         app:layout_constraintStart_toStartOf="@+id/ImageItemBox"
-        app:layout_constraintBottom_toBottomOf="@+id/ImageItemBox"
         app:layout_constraintTop_toTopOf="@id/itemBottomBar"
-        app:layout_constraintVertical_bias="0.5" />
+        app:layout_constraintBottom_toBottomOf="@id/ImageItemBox"/>
 
     <TextView
         android:id="@+id/LikeCountText"
@@ -204,8 +204,8 @@
         android:textColor="@color/vecto_likecolor"
         android:textSize="15sp"
         app:layout_constraintStart_toEndOf="@+id/LikeImage"
-        app:layout_constraintBottom_toBottomOf="@+id/ImageItemBox"
-        app:layout_constraintTop_toBottomOf="@id/itemBottomBar"
+        app:layout_constraintTop_toTopOf="@id/LikeImage"
+        app:layout_constraintBottom_toBottomOf="@id/LikeImage"
         app:layout_constraintVertical_bias="0.5" />
 
     <ImageView
@@ -214,6 +214,7 @@
         android:layout_height="40dp"
         android:background="@drawable/ripple_feed_like"
         android:backgroundTint="@color/white"
+        app:layout_constraintVertical_bias="0.5"
         app:layout_constraintStart_toStartOf="@+id/CommentImage"
         app:layout_constraintBottom_toBottomOf="@+id/CommentImage"
         app:layout_constraintTop_toTopOf="@id/CommentImage"/>
@@ -225,10 +226,11 @@
         android:padding="5dp"
         android:layout_marginStart="90dp"
         android:src="@drawable/post_comment"
+        android:layout_marginTop="15dp"
+        android:layout_marginBottom="15dp"
         app:layout_constraintStart_toStartOf="@+id/ImageItemBox"
-        app:layout_constraintBottom_toBottomOf="@+id/ImageItemBox"
         app:layout_constraintTop_toTopOf="@id/itemBottomBar"
-        app:layout_constraintVertical_bias="0.5" />
+        app:layout_constraintBottom_toBottomOf="@id/ImageItemBox" />
 
     <TextView
         android:id="@+id/CommentCountText"
@@ -240,8 +242,8 @@
         android:textColor="@color/vecto_commentcolor"
         android:textSize="15sp"
         app:layout_constraintStart_toEndOf="@+id/CommentImage"
-        app:layout_constraintBottom_toBottomOf="@+id/ImageItemBox"
-        app:layout_constraintTop_toBottomOf="@id/itemBottomBar"
+        app:layout_constraintBottom_toBottomOf="@id/CommentImage"
+        app:layout_constraintTop_toTopOf="@id/CommentImage"
         app:layout_constraintVertical_bias="0.5" />
 
     <androidx.constraintlayout.widget.Guideline
@@ -250,5 +252,31 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         app:layout_constraintGuide_percent="0.5" />
+
+    <ImageView
+        android:id="@+id/ShareTouchImage"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:background="@drawable/ripple_effect_white_circle"
+        android:backgroundTint="@color/white"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintVertical_bias="0.5"
+        app:layout_constraintEnd_toEndOf="@id/ShareImage"
+        app:layout_constraintStart_toStartOf="@+id/ShareImage"
+        app:layout_constraintBottom_toBottomOf="@+id/ShareImage"
+        app:layout_constraintTop_toTopOf="@id/ShareImage"/>
+
+    <ImageView
+        android:id="@+id/ShareImage"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:padding="5dp"
+        android:layout_marginStart="90dp"
+        android:src="@drawable/post_comment"
+        android:layout_marginEnd="16dp"
+        app:layout_constraintEnd_toEndOf="@+id/ImageItemBox"
+        app:layout_constraintBottom_toBottomOf="@+id/ImageItemBox"
+        app:layout_constraintTop_toTopOf="@id/itemBottomBar"
+        app:layout_constraintVertical_bias="0.5" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
