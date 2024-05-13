@@ -43,6 +43,8 @@ class MyFeedDetailAdapter(): RecyclerView.Adapter<MyFeedDetailAdapter.ViewHolder
 
         fun onTitleClick(position: Int)
 
+        fun onShareClick(feedInfoWithFollow: VectoService.FeedInfoWithFollow)
+
         fun onVisitItemClick(visitData: VisitData, itemPosition: Int)
 
         fun onPathItemClick(pathData: PathData)
@@ -169,6 +171,10 @@ class MyFeedDetailAdapter(): RecyclerView.Adapter<MyFeedDetailAdapter.ViewHolder
 
             binding.FollowButton.setOnClickListener {
                 clickFollowAction(feedInfoWithFollow)
+            }
+
+            binding.ShareTouchImage.setOnClickListener {
+                feedActionListener?.onShareClick(feedInfoWithFollow)
             }
 
         }

@@ -241,8 +241,8 @@
 
     <ImageView
         android:id="@+id/ShareTouchImage"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
         android:background="@drawable/ripple_effect_white_circle"
         android:backgroundTint="@color/white"
         app:layout_constraintHorizontal_bias="0.5"
@@ -258,7 +258,7 @@
         android:layout_height="30dp"
         android:padding="5dp"
         android:layout_marginStart="90dp"
-        android:src="@drawable/post_comment"
+        android:src="@drawable/share_icon"
         android:layout_marginEnd="16dp"
         app:layout_constraintEnd_toEndOf="@+id/ImageItemBox"
         app:layout_constraintBottom_toBottomOf="@+id/ImageItemBox"

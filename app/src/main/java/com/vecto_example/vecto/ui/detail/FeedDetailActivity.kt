@@ -31,6 +31,7 @@ import com.vecto_example.vecto.data.repository.UserRepository
 import com.vecto_example.vecto.databinding.ActivityFeedDetailBinding
 import com.vecto_example.vecto.utils.MapMarkerManager
 import com.vecto_example.vecto.utils.MapOverlayManager
+import com.vecto_example.vecto.utils.ShareFeedUtil
 
 class FeedDetailActivity : AppCompatActivity(), OnMapReadyCallback, MyFeedDetailAdapter.OnFeedActionListener {
     private lateinit var binding: ActivityFeedDetailBinding
@@ -417,6 +418,10 @@ class FeedDetailActivity : AppCompatActivity(), OnMapReadyCallback, MyFeedDetail
             mapOverlayManager.moveCameraForVisitOffset(myFeedDetailAdapter.feedInfoWithFollow[position].feedInfo.visit.first(), offset)
         else
             mapOverlayManager.moveCameraForPathOffset(myFeedDetailAdapter.feedInfoWithFollow[position].feedInfo.location.toMutableList(), dpToPx((offset + 20).toFloat(), this))
+    }
+
+    override fun onShareClick(feedInfoWithFollow: VectoService.FeedInfoWithFollow) {
+        ShareFeedUtil.shareFeed(this, feedInfoWithFollow.feedInfo)
     }
 
     override fun onVisitItemClick(visitData: VisitData, itemPosition: Int) {
