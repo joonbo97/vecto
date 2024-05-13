@@ -82,6 +82,20 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        intent.getStringExtra("type").let {
+            when(it){
+                "EditCourseFragment" -> {
+                    updateBottomNavigationSelection(R.id.EditCourseFragment)
+                    navController.navigate(R.id.EditCourseFragment)
+                }
+
+                "TodayCourseFragment" -> {
+                    updateBottomNavigationSelection(R.id.TodayCourseFragment)
+                    navController.navigate(R.id.TodayCourseFragment)
+                }
+            }
+        }
+
         intent?.let {
             if (it.action == Intent.ACTION_VIEW) {
                 it.data?.let { uri ->
