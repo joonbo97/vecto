@@ -498,8 +498,8 @@ class SearchFragment : Fragment(), MainActivity.ScrollToTop, FeedAdapter.OnFeedA
 
     override fun onItemClick(position: Int) {
         var subList = searchViewModel.allFeedInfo.subList(position, searchViewModel.allFeedInfo.size)
-        if(subList.size > 1) {
-            subList = subList.subList(0, 1)
+        if(subList.size > 10) {
+            subList = subList.subList(0, 10)
         }
 
         if(!searchViewModel.checkLoading()) {
