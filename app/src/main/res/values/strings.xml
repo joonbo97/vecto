@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">VECTO</string>
     <string name="action_settings">Settings</string>
+
     <!-- Strings used for fragments for navigation -->
     <string name="first_fragment_label">First Fragment</string>
     <string name="second_fragment_label">Second Fragment</string>
@@ -29,4 +30,55 @@
     </string>
 
     <string name="sendlog"><u>개발자에게 로그 보내기</u></string>
+
+    <!-- Toast Message -->
+    <string name="basic_error">오류가 발생했습니다. 다시 시도해주세요.</string>
+
+    <string name="get_feed_fail">게시글 불러오기에 실패하였습니다. 다시 시도해 주세요.</string>
+
+    <string name="delete_feed_success">게시글 삭제가 완료되었습니다.</string>
+
+    <string name="get_search_empty_query">검색어를 입력해주세요.</string>
+    <string name="get_search_success">%s에 대한 결과입니다.</string>
+
+    <string name="get_follow_relation_fail">팔로우 정보 불러오기에 실패하였습니다.</string>
+
+    <string name="post_follow_success">%s 님을 팔로우하기 시작했습니다.</string>
+    <string name="post_follow_already">이미 %s 님을 팔로우 중입니다.</string>
+    <string name="post_follow_fail">팔로우 요청에 실패하였습니다. 다시 시도해 주세요.</string>
+
+    <string name="delete_follow_success">%s 님 팔로우를 취소하였습니다.</string>
+    <string name="delete_follow_already">이미 %s 님을 팔로우하지 않습니다.</string>
+    <string name="delete_follow_fail">팔로우 취소 요청에 실패하였습니다. 다시 시도해 주세요.</string>
+
+    <string name="task_duplication">이전 작업을 처리중 입니다. 잠시 후 다시 시도해 주세요.</string>
+
+    <string name="back_pressed">뒤로 버튼을 한번 더 누르시면 종료됩니다.</string>
+
+    <string name="comment_edit_error_only">한번에 하나의 댓글만 수정할 수 있습니다.</string>
+    <string name="comment_edit_error_mine">본인의 댓글만 수정할 수 있습니다.</string>
+    <string name="comment_edit_error_empty">댓글 수정 내용을 작성해 주세요.</string>
+    <string name="comment_edit_cancel">댓글 수정이 취소 되었습니다.</string>
+
+    <string name="comment_error_empty">댓글을 작성해 주세요.</string>
+
+    <string name="comment_add_success">댓글을 등록하였습니다.</string>
+    <string name="comment_update_success">댓글 수정이 완료되었습니다.</string>
+    <string name="comment_delete_success">댓글이 삭제되었습니다.</string>
+
+    <string name="report_success">신고처리되었습니다. 검토 후 조치 예정입니다.</string>
+
+    <string name="course_edit_cancel">경로 수정이 취소 되었습니다.</string>
+
+    <string name="course_edit_success">경로 변경이 완료되었습니다.</string>
+    <string name="visit_delete_success">방문지 삭제가 완료되었습니다.</string>
+    <string name="visit_out_range">허용범위 외부의 장소입니다.</string>
+    <string name="visit_edit_success">방문지 수정이 완료되었습니다.</string>
+
+    <string name="login_none">사용자 정보가 존재하지 않습니다.</string>
+    <string name="login_wrong">아이디 혹은 비밀번호가 일치하지 않습니다.</string>
 </resources>
+
+    <!--
+    ToastMessageUtils.showToast(requireContext(), getString(R.string.task_duplication))
+    -->

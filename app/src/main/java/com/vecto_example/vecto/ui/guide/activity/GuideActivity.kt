@@ -31,8 +31,6 @@ class GuideActivity : AppCompatActivity() {
         guideViewPager.adapter = adapter
         guideViewPager.isUserInputEnabled = false
 
-
-        //TODO 페이지 인디케이터를 통해 하단에 진척도 표시
     }
 
     fun moveToNextFragment() {

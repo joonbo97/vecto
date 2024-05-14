@@ -3,7 +3,6 @@ package com.vecto_example.vecto.ui.comment
 import android.annotation.SuppressLint
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import android.view.inputmethod.InputMethodManager
@@ -22,6 +21,7 @@ import com.vecto_example.vecto.retrofit.VectoService
 import com.vecto_example.vecto.ui.userinfo.UserInfoViewModel
 import com.vecto_example.vecto.ui.userinfo.UserInfoViewModelFactory
 import com.vecto_example.vecto.utils.RequestLoginUtils
+import com.vecto_example.vecto.utils.ToastMessageUtils
 
 class CommentActivity : AppCompatActivity(), MyCommentAdapter.OnEditActionListener, MyCommentAdapter.OnCommentActionListener,
     MyCommentAdapter.OnReportActionListener {
@@ -57,8 +57,7 @@ class CommentActivity : AppCompatActivity(), MyCommentAdapter.OnEditActionListen
         if(feedID != -1)
             loadComment(feedID)
         else
-            Toast.makeText(this, "오류가 발생했습니다. 다시 시도해주세요.", Toast.LENGTH_SHORT).show()
-
+            ToastMessageUtils.showToast(this, getString(R.string.basic_error))
         binding.swipeRefreshLayout.setOnRefreshListener {
             if(myCommentAdapter.editFlag)
                 clearUI(true)
@@ -69,7 +68,7 @@ class CommentActivity : AppCompatActivity(), MyCommentAdapter.OnEditActionListen
             if(feedID != -1)
                 loadComment(feedID)
             else
-                Toast.makeText(this, "오류가 발생했습니다. 다시 시도해주세요.", Toast.LENGTH_SHORT).show()
+                ToastMessageUtils.showToast(this, getString(R.string.basic_error))
 
             binding.swipeRefreshLayout.isRefreshing = false
         }
@@ -81,8 +80,7 @@ class CommentActivity : AppCompatActivity(), MyCommentAdapter.OnEditActionListen
 
         /*   Comment Load 관련 Observer   */
         commentViewModel.commentErrorLiveData.observe(this) {
-            Toast.makeText(this, getString(R.string.APIErrorToastMessage), Toast.LENGTH_SHORT)
-                .show()
+            ToastMessageUtils.showToast(this, getString(R.string.APIErrorToastMessage))
         }
 
         commentViewModel.commentInfoLiveData.observe(this) {
@@ -112,14 +110,12 @@ class CommentActivity : AppCompatActivity(), MyCommentAdapter.OnEditActionListen
 
                 loadComment(feedID)
 
-                Toast.makeText(this, "댓글을 등록하였습니다.", Toast.LENGTH_SHORT).show()
+                ToastMessageUtils.showToast(this, getString(R.string.comment_add_success))
             }.onFailure {
                 if (it.message == "FAIL") {
-                    Toast.makeText(this, getText(R.string.APIFailToastMessage), Toast.LENGTH_SHORT)
-                        .show()
+                    ToastMessageUtils.showToast(this, getString(R.string.APIFailToastMessage))
                 } else if (it.message == "ERROR") {
-                    Toast.makeText(this, getText(R.string.APIErrorToastMessage), Toast.LENGTH_SHORT)
-                        .show()
+                    ToastMessageUtils.showToast(this, getString(R.string.APIErrorToastMessage))
                 }
             }
         }
@@ -129,7 +125,7 @@ class CommentActivity : AppCompatActivity(), MyCommentAdapter.OnEditActionListen
             sendCommentLikeResult.onSuccess {
                 myCommentAdapter.sendCommentLikeSuccess()
             }.onFailure {
-                Toast.makeText(this, getText(R.string.APIErrorToastMessage), Toast.LENGTH_SHORT).show()
+                ToastMessageUtils.showToast(this, getString(R.string.APIErrorToastMessage))
             }
 
             myCommentAdapter.actionPosition = -1
@@ -139,7 +135,7 @@ class CommentActivity : AppCompatActivity(), MyCommentAdapter.OnEditActionListen
             cancelCommentLikeResult.onSuccess {
                 myCommentAdapter.cancelCommentLikeSuccess()
             }.onFailure {
-                Toast.makeText(this, getText(R.string.APIErrorToastMessage), Toast.LENGTH_SHORT).show()
+                ToastMessageUtils.showToast(this, getString(R.string.APIErrorToastMessage))
             }
 
             myCommentAdapter.actionPosition = -1
@@ -152,9 +148,9 @@ class CommentActivity : AppCompatActivity(), MyCommentAdapter.OnEditActionListen
 
                 clearUI(true)
 
-                Toast.makeText(this, "변경이 완료되었습니다.", Toast.LENGTH_SHORT).show()
+                ToastMessageUtils.showToast(this, getString(R.string.comment_update_success))
             }.onFailure {
-                Toast.makeText(this, getText(R.string.APIErrorToastMessage), Toast.LENGTH_SHORT).show()
+                ToastMessageUtils.showToast(this, getString(R.string.APIErrorToastMessage))
             }
 
         }
@@ -163,9 +159,9 @@ class CommentActivity : AppCompatActivity(), MyCommentAdapter.OnEditActionListen
         commentViewModel.deleteCommentResult.observe(this) { deleteCommentResult ->
             deleteCommentResult.onSuccess {
                 myCommentAdapter.deleteCommentSuccess()
-                Toast.makeText(this, "댓글이 삭제되었습니다.", Toast.LENGTH_SHORT).show()
+                ToastMessageUtils.showToast(this, getString(R.string.comment_delete_success))
             }.onFailure {
-                Toast.makeText(this, getText(R.string.APIErrorToastMessage), Toast.LENGTH_SHORT).show()
+                ToastMessageUtils.showToast(this, getString(R.string.APIErrorToastMessage))
             }
 
             myCommentAdapter.actionPosition = -1
@@ -188,15 +184,15 @@ class CommentActivity : AppCompatActivity(), MyCommentAdapter.OnEditActionListen
         /*   신고 Observer   */
         userInfoViewModel.postComplaintResult.observe(this) {
             if(it) {
-                Toast.makeText(this, "신고처리되었습니다. 검토 후 조치 예정입니다.", Toast.LENGTH_SHORT).show()
+                ToastMessageUtils.showToast(this, getString(R.string.report_success))
             }
         }
 
         userInfoViewModel.postComplaintError.observe(this) {
             if(it == "FAIL"){
-                Toast.makeText(this, "신고하기 요청에 실패하였습니다. 다시 시도해 주세요.", Toast.LENGTH_SHORT).show()
+                ToastMessageUtils.showToast(this, getString(R.string.basic_error))
             } else {
-                Toast.makeText(this, getText(R.string.APIErrorToastMessage), Toast.LENGTH_SHORT).show()
+                ToastMessageUtils.showToast(this, getString(R.string.APIErrorToastMessage))
             }
         }
     }
@@ -255,9 +251,9 @@ class CommentActivity : AppCompatActivity(), MyCommentAdapter.OnEditActionListen
 
             if(binding.EditContent.text.isEmpty()) {
                 if (myCommentAdapter.editFlag)
-                    Toast.makeText(this, "댓글 수정 내용을 작성해 주세요.", Toast.LENGTH_SHORT).show()
+                    ToastMessageUtils.showToast(this, getString(R.string.comment_edit_error_empty))
                 else
-                    Toast.makeText(this, "댓글을 작성해 주세요.", Toast.LENGTH_SHORT).show()
+                    ToastMessageUtils.showToast(this, getString(R.string.comment_error_empty))
             }
             else
             {
@@ -286,7 +282,7 @@ class CommentActivity : AppCompatActivity(), MyCommentAdapter.OnEditActionListen
         clearUI(true)
         binding.EditContent.text = null
 
-        Toast.makeText(this, "댓글 수정이 취소 되었습니다.", Toast.LENGTH_SHORT).show()
+        ToastMessageUtils.showToast(this, getString(R.string.comment_edit_cancel))
     }
 
     //UI 초기화 함수
@@ -308,14 +304,12 @@ class CommentActivity : AppCompatActivity(), MyCommentAdapter.OnEditActionListen
     private fun clearNoneImage() {
         binding.CommentNullImage.visibility = View.GONE
         binding.CommentNullText.visibility = View.GONE
-        Log.d("NONE GONE", "NONE IMAGE IS GONE")
     }
 
     //NoneImage 호출 함수
     private fun setNoneImage() {
         binding.CommentNullImage.visibility = View.VISIBLE
         binding.CommentNullText.visibility = View.VISIBLE
-        Log.d("NONE VISIBLE", "NONE IMAGE IS VISIBLE")
     }
 
     override fun dispatchTouchEvent(ev: MotionEvent?): Boolean {
@@ -348,7 +342,7 @@ class CommentActivity : AppCompatActivity(), MyCommentAdapter.OnEditActionListen
             commentViewModel.sendCommentLike(commentId)
         }
         else
-            Toast.makeText(this, "이전 작업을 처리 중입니다. 잠시 후 다시 시도해 주세요", Toast.LENGTH_SHORT).show()
+            ToastMessageUtils.showToast(this, getString(R.string.task_duplication))
     }
 
     //좋아요 취소시 실행
@@ -356,7 +350,7 @@ class CommentActivity : AppCompatActivity(), MyCommentAdapter.OnEditActionListen
         if(!commentViewModel.checkLoading())
             commentViewModel.cancelCommentLike(commentId)
         else
-            Toast.makeText(this, "이전 작업을 처리 중입니다. 잠시 후 다시 시도해 주세요", Toast.LENGTH_SHORT).show()
+            ToastMessageUtils.showToast(this, getString(R.string.task_duplication))
     }
 
     //댓글 삭제시 실행
@@ -364,7 +358,7 @@ class CommentActivity : AppCompatActivity(), MyCommentAdapter.OnEditActionListen
         if(!commentViewModel.checkLoading())
             commentViewModel.deleteComment(commentId)
         else
-            Toast.makeText(this, "이전 작업을 처리 중입니다. 잠시 후 다시 시도해 주세요", Toast.LENGTH_SHORT).show()
+            ToastMessageUtils.showToast(this, getString(R.string.task_duplication))
     }
 
     override fun onReportUser(userId: String, reportType: String, content: String?) {

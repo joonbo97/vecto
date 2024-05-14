@@ -40,6 +40,7 @@ import com.vecto_example.vecto.ui.editcourse.adapter.MyCourseAdapter
 import com.vecto_example.vecto.utils.DateTimeUtils
 import com.vecto_example.vecto.utils.MapMarkerManager
 import com.vecto_example.vecto.utils.MapOverlayManager
+import com.vecto_example.vecto.utils.ToastMessageUtils
 import ted.gun0912.clustering.clustering.Cluster
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -150,7 +151,7 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
             mapOverlayManager.deleteOverlay()
             mapOverlayManager.addPathOverlayForLocation(getSelectedPathData().coordinates)
 
-            Toast.makeText(requireContext(), "경로 변경이 취소되었습니다.", Toast.LENGTH_SHORT).show()
+            ToastMessageUtils.showToast(requireContext(), getString(R.string.course_edit_cancel))
 
             editCourseViewModel.setButtonVisibility(EditCourseViewModel.ButtonType.EDIT_PATH.name)
         }
@@ -212,7 +213,7 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
         mapOverlayManager.deleteOverlay()
         mapOverlayManager.addPathOverlayForLocation(getSelectedPathData().coordinates)
 
-        Toast.makeText(requireContext(), "해당 경로 변경이 완료되었습니다.", Toast.LENGTH_SHORT).show()
+        ToastMessageUtils.showToast(requireContext(), getString(R.string.course_edit_success))
 
         editCourseViewModel.setButtonVisibility(EditCourseViewModel.ButtonType.EDIT_PATH.name)
     }
@@ -243,9 +244,9 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
         /*   API 오류 Observer   */
         editCourseViewModel.responseErrorLiveData.observe(viewLifecycleOwner){
             if(it == "FAIL")
-                Toast.makeText(requireContext(), getText(R.string.APIFailToastMessage), Toast.LENGTH_SHORT).show()
+                ToastMessageUtils.showToast(requireContext(), getString(R.string.APIFailToastMessage))
             else if(it == "ERROR")
-                Toast.makeText(requireContext(), getText(R.string.APIErrorToastMessage), Toast.LENGTH_SHORT).show()
+                ToastMessageUtils.showToast(requireContext(), getString(R.string.APIErrorToastMessage))
         }
 
         /*   경로 추천 API 응답 Observer   */
@@ -525,7 +526,7 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
         deleteVisitDialog.onOkButtonClickListener = {
             deleteVisit(visitData, p)
 
-            Toast.makeText(context, "방문지 삭제가 완료되었습니다.", Toast.LENGTH_SHORT).show()
+            ToastMessageUtils.showToast(requireContext(), getString(R.string.visit_delete_success))
             mapOverlayManager.deleteOverlay()
             mapMarkerManager.addVisitMarkerBasic(visitData)
             mapOverlayManager.addCircleOverlay(visitData)
@@ -551,7 +552,7 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
     private fun updateVisitData(name: String, lat: Double, lng: Double) {
         if(!editCourseViewModel.checkDistance(LatLng(getSelectedVisitData().lat, getSelectedVisitData().lng),
                 LatLng(lat, lng), LocationService.CHECKDISTANCE)) {
-            Toast.makeText(context, "허용범위 외부의 장소입니다.", Toast.LENGTH_SHORT).show()
+            ToastMessageUtils.showToast(requireContext(), getString(R.string.visit_out_range))
 
             return
         }
@@ -570,7 +571,7 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
 
         editCourseViewModel.overlayDone()
 
-        Toast.makeText(context, "방문지 수정이 완료되었습니다.", Toast.LENGTH_SHORT).show()
+        ToastMessageUtils.showToast(requireContext(), getString(R.string.visit_edit_success))
     }
 
     private fun deleteVisit(visitData: VisitData, position: Int) {

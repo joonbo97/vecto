@@ -78,7 +78,6 @@ class WriteFragment : Fragment(), OnMapReadyCallback, CalendarDialog.OnDateSelec
     private var currentImageIndex = 0 // 현재 크롭 중 인덱스
     private var selectedImageUris = mutableListOf<Uri>() // 선택된 이미지 URI 목록
 
-
     private lateinit var locationDataList: MutableList<LocationData>
     private lateinit var visitDataList: MutableList<VisitData>
 
@@ -142,10 +141,9 @@ class WriteFragment : Fragment(), OnMapReadyCallback, CalendarDialog.OnDateSelec
         }
 
         writeViewModel.imageUrls.observe(viewLifecycleOwner){
-            if((writeViewModel.mapImageDone.value == true && uploadStarted)){  //Normal Image 와 지도 이미지 모두 완료된 경우
+            if((writeViewModel.normalImageDone.value == true && writeViewModel.mapImageDone.value == true && uploadStarted)){  //Normal Image 와 지도 이미지 모두 완료된 경우
                 uploadData(writeViewModel.imageUrls.value?.toMutableList())
             }
-
         }
 
         writeViewModel.addFeedResult.observe(viewLifecycleOwner){
@@ -214,7 +212,6 @@ class WriteFragment : Fragment(), OnMapReadyCallback, CalendarDialog.OnDateSelec
                 RequestLoginUtils.requestLogin(requireContext())
                 return@setOnClickListener
             }
-
 
             if(::visitDataList.isInitialized) {
                 if (binding.EditTitle.text.isEmpty())
@@ -335,8 +332,8 @@ class WriteFragment : Fragment(), OnMapReadyCallback, CalendarDialog.OnDateSelec
         val width = (w * density)
         val height = (h * density)
 
-        params.width = width.toInt() // 원하는 가로길이
-        params.height = height.toInt() // 원하는 세로 길이
+        params.width = width.toInt()
+        params.height = height.toInt()
 
         binding.naverMapWrite.layoutParams = params
     }
@@ -413,7 +410,7 @@ class WriteFragment : Fragment(), OnMapReadyCallback, CalendarDialog.OnDateSelec
         if(message == "FAIL"){
             when(type){
                 "errorLiveData" -> {
-                    Toast.makeText(context, "방문지 역지오코딩에 실패하였습니다.", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "방문지 역지오코딩에 실패하였습니다. 경로를 다시 등록 해주세요.", Toast.LENGTH_SHORT).show()
                 }
                 "feedErrorLiveData" -> {
                     Toast.makeText(context, "게시글 업로드에 실패하였습니다.", Toast.LENGTH_SHORT).show()

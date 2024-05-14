@@ -202,6 +202,7 @@ class WriteViewModel(private val repository: WriteRepository): ViewModel() {
         Log.d("WriteViewModel", "deleteCourseData")
 
         _isCourseDataLoaded.value = false
+        _mapImageDone.value = false
     }
 
     fun finishUpload(){

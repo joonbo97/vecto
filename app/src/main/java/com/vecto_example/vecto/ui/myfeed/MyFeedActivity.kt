@@ -23,6 +23,7 @@ import com.vecto_example.vecto.ui.userinfo.UserInfoViewModel
 import com.vecto_example.vecto.ui.userinfo.UserInfoViewModelFactory
 import com.vecto_example.vecto.utils.FeedDetailType
 import com.vecto_example.vecto.utils.ShareFeedUtil
+import com.vecto_example.vecto.utils.ToastMessageUtils
 
 class MyFeedActivity : AppCompatActivity(), MyFeedAdapter.OnFeedActionListener {
     private lateinit var binding: ActivityMyFeedBinding
@@ -125,7 +126,7 @@ class MyFeedActivity : AppCompatActivity(), MyFeedAdapter.OnFeedActionListener {
             postFeedLikeResult.onSuccess {
                 myFeedAdapter.postFeedLikeSuccess()
             }.onFailure {
-                Toast.makeText(this, getText(R.string.APIErrorToastMessage), Toast.LENGTH_SHORT).show()
+                ToastMessageUtils.showToast(this, getString(R.string.APIErrorToastMessage))
             }
 
             myFeedAdapter.actionPosition = -1
@@ -135,7 +136,7 @@ class MyFeedActivity : AppCompatActivity(), MyFeedAdapter.OnFeedActionListener {
             deleteFeedLikeResult.onSuccess {
                 myFeedAdapter.deleteFeedLikeSuccess()
             }.onFailure {
-                Toast.makeText(this, getText(R.string.APIErrorToastMessage), Toast.LENGTH_SHORT).show()
+                ToastMessageUtils.showToast(this, getString(R.string.APIErrorToastMessage))
             }
 
             myFeedAdapter.actionPosition = -1
@@ -145,9 +146,9 @@ class MyFeedActivity : AppCompatActivity(), MyFeedAdapter.OnFeedActionListener {
         viewModel.deleteFeedResult.observe(this) { deleteFeedResult ->
             deleteFeedResult.onSuccess {
                 myFeedAdapter.deleteFeedSuccess()
-                Toast.makeText(this, "게시글 삭제가 완료되었습니다.", Toast.LENGTH_SHORT).show()
+                ToastMessageUtils.showToast(this, getString(R.string.delete_feed_success))
             }.onFailure {
-                Toast.makeText(this, getText(R.string.APIErrorToastMessage), Toast.LENGTH_SHORT).show()
+                ToastMessageUtils.showToast(this, getString(R.string.APIErrorToastMessage))
             }
 
             myFeedAdapter.actionPosition = -1
@@ -170,9 +171,9 @@ class MyFeedActivity : AppCompatActivity(), MyFeedAdapter.OnFeedActionListener {
         /*   오류 관련 Observer   */
         viewModel.feedErrorLiveData.observe(this) {
             if(it == "FAIL") {
-                Toast.makeText(this, "게시글 불러오기에 실패하였습니다. 다시 시도해 주세요.", Toast.LENGTH_SHORT).show()
+                ToastMessageUtils.showToast(this, getString(R.string.get_feed_fail))
             } else if(it == "ERROR") {
-                Toast.makeText(this, getText(R.string.APIErrorToastMessage), Toast.LENGTH_SHORT).show()
+                ToastMessageUtils.showToast(this, getString(R.string.APIErrorToastMessage))
             }
         }
     }
@@ -199,21 +200,21 @@ class MyFeedActivity : AppCompatActivity(), MyFeedAdapter.OnFeedActionListener {
         if(!viewModel.checkLoading())
             viewModel.postFeedLike(feedID)
         else
-            Toast.makeText(this, "이전 작업을 처리 중입니다. 잠시 후 다시 시도해 주세요", Toast.LENGTH_SHORT).show()
+            ToastMessageUtils.showToast(this, getString(R.string.task_duplication))
     }
 
     override fun onDeleteLike(feedID: Int) {
         if(!viewModel.checkLoading())
             viewModel.deleteFeedLike(feedID)
         else
-            Toast.makeText(this, "이전 작업을 처리 중입니다. 잠시 후 다시 시도해 주세요", Toast.LENGTH_SHORT).show()
+            ToastMessageUtils.showToast(this, getString(R.string.task_duplication))
     }
 
     override fun onDeleteFeed(feedID: Int) {
         if(!viewModel.checkLoading())
             viewModel.deleteFeed(feedID)
         else
-            Toast.makeText(this, "이전 작업을 처리중 입니다. 잠시 후 다시 시도해 주세요", Toast.LENGTH_SHORT).show()
+            ToastMessageUtils.showToast(this, getString(R.string.task_duplication))
     }
 
     override fun onItemViewClick(position: Int) {
@@ -238,7 +239,7 @@ class MyFeedActivity : AppCompatActivity(), MyFeedAdapter.OnFeedActionListener {
         if(!viewModel.checkLoading())
             startActivity(intent)
         else
-            Toast.makeText(this, "이전 작업을 처리중 입니다. 잠시 후 다시 시도해 주세요.", Toast.LENGTH_SHORT).show()
+            ToastMessageUtils.showToast(this, getString(R.string.task_duplication))
     }
 
     override fun onShareClick(feedInfo: VectoService.FeedInfo) {

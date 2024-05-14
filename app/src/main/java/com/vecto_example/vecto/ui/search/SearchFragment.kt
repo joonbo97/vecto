@@ -13,7 +13,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
-import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
@@ -39,6 +38,8 @@ import com.vecto_example.vecto.ui.search.adapter.FeedAdapter
 import com.vecto_example.vecto.utils.FeedDetailType
 import com.vecto_example.vecto.utils.RequestLoginUtils
 import com.vecto_example.vecto.utils.ShareFeedUtil
+import com.vecto_example.vecto.utils.ToastMessageUtils
+import com.vecto_example.vecto.utils.ToastMessageUtils.errorMessageHandler
 
 class SearchFragment : Fragment(), MainActivity.ScrollToTop, FeedAdapter.OnFeedActionListener {
     private lateinit var binding: FragmentSearchBinding
@@ -81,19 +82,6 @@ class SearchFragment : Fragment(), MainActivity.ScrollToTop, FeedAdapter.OnFeedA
         initObservers()
         initListeners()
         initReceiver()
-
-        val swipeRefreshLayout = binding.swipeRefreshLayout
-        swipeRefreshLayout.setOnRefreshListener {
-            if(!searchViewModel.checkLoading()){//로딩중이 아니라면
-
-                searchViewModel.initSetting()
-
-                Log.d("getFeed_REQUEST", "By Refresh")
-                getFeed()
-            }
-
-            swipeRefreshLayout.isRefreshing = false
-        }
     }
 
     override fun onResume() {
@@ -117,7 +105,6 @@ class SearchFragment : Fragment(), MainActivity.ScrollToTop, FeedAdapter.OnFeedA
 
     private fun initReceiver() {
         /*   Receiver 초기화 함수   */
-
         notificationReceiver = object : BroadcastReceiver() {
             override fun onReceive(p0: Context?, p1: Intent?) {
                 notificationViewModel.getNewNotificationFlag()
@@ -252,7 +239,7 @@ class SearchFragment : Fragment(), MainActivity.ScrollToTop, FeedAdapter.OnFeedA
                 postFeedLikeResult.onSuccess {
                     feedAdapter.postFeedLikeSuccess()
                 }.onFailure {
-                    Toast.makeText(requireContext(), getText(R.string.APIErrorToastMessage), Toast.LENGTH_SHORT).show()
+                    ToastMessageUtils.showToast(requireContext(), getString(R.string.APIErrorToastMessage))
                 }
 
                 feedAdapter.actionPosition = -1
@@ -264,7 +251,7 @@ class SearchFragment : Fragment(), MainActivity.ScrollToTop, FeedAdapter.OnFeedA
                 deleteFeedLikeResult.onSuccess {
                     feedAdapter.deleteFeedLikeSuccess()
                 }.onFailure {
-                    Toast.makeText(requireContext(), getText(R.string.APIErrorToastMessage), Toast.LENGTH_SHORT).show()
+                    ToastMessageUtils.showToast(requireContext(), getString(R.string.APIErrorToastMessage))
                 }
 
                 feedAdapter.actionPosition = -1
@@ -276,9 +263,9 @@ class SearchFragment : Fragment(), MainActivity.ScrollToTop, FeedAdapter.OnFeedA
             if(feedAdapter.actionPosition != -1) {
                 if (it) {
                     feedAdapter.postFollowSuccess()
-                    Toast.makeText(requireContext(), "${searchViewModel.allFeedInfo[feedAdapter.actionPosition].feedInfo.nickName} 님을 팔로우하기 시작했습니다.", Toast.LENGTH_SHORT).show()
+                    ToastMessageUtils.showToast(requireContext(), getString(R.string.post_follow_success, searchViewModel.allFeedInfo[feedAdapter.actionPosition].feedInfo.nickName))
                 } else {
-                    Toast.makeText(requireContext(), "이미 ${searchViewModel.allFeedInfo[feedAdapter.actionPosition].feedInfo.nickName} 님을 팔로우 중입니다.", Toast.LENGTH_SHORT).show()
+                    ToastMessageUtils.showToast(requireContext(), getString(R.string.post_follow_already, searchViewModel.allFeedInfo[feedAdapter.actionPosition].feedInfo.nickName))
                 }
 
                 feedAdapter.actionPosition = -1
@@ -289,9 +276,9 @@ class SearchFragment : Fragment(), MainActivity.ScrollToTop, FeedAdapter.OnFeedA
             if(feedAdapter.actionPosition != -1) {
                 if (it) {
                     feedAdapter.deleteFollowSuccess()
-                    Toast.makeText(requireContext(), "${searchViewModel.allFeedInfo[feedAdapter.actionPosition].feedInfo.nickName} 님 팔로우를 취소하였습니다.", Toast.LENGTH_SHORT).show()
+                    ToastMessageUtils.showToast(requireContext(), getString(R.string.delete_follow_success, searchViewModel.allFeedInfo[feedAdapter.actionPosition].feedInfo.nickName))
                 } else {
-                    Toast.makeText(requireContext(), "이미 ${searchViewModel.allFeedInfo[feedAdapter.actionPosition].feedInfo.nickName} 님을 팔로우하지 않습니다.", Toast.LENGTH_SHORT).show()
+                    ToastMessageUtils.showToast(requireContext(), getString(R.string.delete_follow_already, searchViewModel.allFeedInfo[feedAdapter.actionPosition].feedInfo.nickName))
                 }
 
                 feedAdapter.actionPosition = -1
@@ -300,48 +287,27 @@ class SearchFragment : Fragment(), MainActivity.ScrollToTop, FeedAdapter.OnFeedA
 
         /*   오류 관련 Observer   */
         searchViewModel.feedErrorLiveData.observe(viewLifecycleOwner) {
-            if(it == "FAIL") {
-                Toast.makeText(requireContext(), "게시글 불러오기에 실패하였습니다. 다시 시도해 주세요.", Toast.LENGTH_SHORT).show()
-            } else if(it == "ERROR") {
-                Toast.makeText(requireContext(), getText(R.string.APIErrorToastMessage), Toast.LENGTH_SHORT).show()
-            }
+            errorMessageHandler(requireContext(), ToastMessageUtils.ValueType.FEED.name, it)
         }
 
         searchViewModel.followErrorLiveData.observe(viewLifecycleOwner) {
-            if(it == "FAIL") {
-                Toast.makeText(requireContext(), "팔로우 정보 불러오기에 실패하였습니다.", Toast.LENGTH_SHORT).show()
-            } else if(it == "ERROR") {
-                Toast.makeText(requireContext(), getText(R.string.APIErrorToastMessage), Toast.LENGTH_SHORT).show()
-            }
-
+            errorMessageHandler(requireContext(), ToastMessageUtils.ValueType.FOLLOW.name, it)
         }
 
         searchViewModel.postFollowError.observe(viewLifecycleOwner) {
             if(feedAdapter.actionPosition != -1) {
-                if (it == "FAIL") {
-                    Toast.makeText(requireContext(), "팔로우 요청에 실패하였습니다. 다시 시도해 주세요.", Toast.LENGTH_SHORT).show()
-                } else {
-                    Toast.makeText(requireContext(), getText(R.string.APIErrorToastMessage), Toast.LENGTH_SHORT).show()
-                }
-
+                errorMessageHandler(requireContext(), ToastMessageUtils.ValueType.FOLLOW_POST.name, it)
                 feedAdapter.actionPosition = -1
             }
         }
 
         searchViewModel.deleteFollowError.observe(viewLifecycleOwner) {
             if(feedAdapter.actionPosition != -1) {
-                if (it == "FAIL") {
-                    Toast.makeText(requireContext(), "팔로우 취소 요청에 실패하였습니다. 다시 시도해 주세요.", Toast.LENGTH_SHORT).show()
-                } else {
-                    Toast.makeText(requireContext(), getText(R.string.APIErrorToastMessage), Toast.LENGTH_SHORT).show()
-                }
-
+                errorMessageHandler(requireContext(), ToastMessageUtils.ValueType.FOLLOW_DELETE.name, it)
                 feedAdapter.actionPosition = -1
             }
         }
     }
-
-
 
     @SuppressLint("NotifyDataSetChanged")
     private fun initRecyclerView() {
@@ -370,6 +336,19 @@ class SearchFragment : Fragment(), MainActivity.ScrollToTop, FeedAdapter.OnFeedA
         if(searchViewModel.allFeedInfo.isNotEmpty()){
             feedAdapter.feedInfoWithFollow = searchViewModel.allFeedInfo
             feedAdapter.notifyDataSetChanged()
+        }
+
+        val swipeRefreshLayout = binding.swipeRefreshLayout
+        swipeRefreshLayout.setOnRefreshListener {
+            if(!searchViewModel.checkLoading()){//로딩중이 아니라면
+
+                searchViewModel.initSetting()
+
+                Log.d("getFeed_REQUEST", "By Refresh")
+                getFeed()
+            }
+
+            swipeRefreshLayout.isRefreshing = false
         }
     }
 
@@ -420,7 +399,7 @@ class SearchFragment : Fragment(), MainActivity.ScrollToTop, FeedAdapter.OnFeedA
     private fun startSearchRequest() {
         if(binding.editTextSearch.text.isEmpty())
         {
-            Toast.makeText(requireContext(), "검색어를 입력해주세요.", Toast.LENGTH_SHORT).show()
+            ToastMessageUtils.showToast(requireContext(), getString(R.string.get_search_empty_query))
         } else {
             clearNoneImage()
             searchViewModel.initSetting()
@@ -432,8 +411,7 @@ class SearchFragment : Fragment(), MainActivity.ScrollToTop, FeedAdapter.OnFeedA
             /*   게시글 요청   */
             Log.d("getFeed_REQUEST", "By Search")
             getFeed()
-
-            Toast.makeText(requireContext(), "${binding.editTextSearch.text}에 대한 결과입니다.", Toast.LENGTH_SHORT).show()
+            ToastMessageUtils.showToast(requireContext(), getString(R.string.get_search_success, query))
         }
     }
 
@@ -464,7 +442,7 @@ class SearchFragment : Fragment(), MainActivity.ScrollToTop, FeedAdapter.OnFeedA
         if(!searchViewModel.checkLoading()) {
             searchViewModel.postFeedLike(feedId)
         } else {
-            Toast.makeText(requireContext(), "이전 작업을 처리 중입니다. 잠시 후 다시 시도해 주세요", Toast.LENGTH_SHORT).show()
+            ToastMessageUtils.showToast(requireContext(), getString(R.string.task_duplication))
             feedAdapter.actionPosition = -1
         }
     }
@@ -473,7 +451,7 @@ class SearchFragment : Fragment(), MainActivity.ScrollToTop, FeedAdapter.OnFeedA
         if(!searchViewModel.checkLoading()) {
             searchViewModel.deleteFeedLike(feedId)
         } else {
-            Toast.makeText(requireContext(), "이전 작업을 처리 중입니다. 잠시 후 다시 시도해 주세요", Toast.LENGTH_SHORT).show()
+            ToastMessageUtils.showToast(requireContext(), getString(R.string.task_duplication))
             feedAdapter.actionPosition = -1
         }
     }
@@ -482,7 +460,7 @@ class SearchFragment : Fragment(), MainActivity.ScrollToTop, FeedAdapter.OnFeedA
         if(!searchViewModel.checkLoading()) {
             searchViewModel.postFollow(userId)
         } else {
-            Toast.makeText(requireContext(), "이전 작업을 처리 중입니다. 잠시 후 다시 시도해 주세요", Toast.LENGTH_SHORT).show()
+            ToastMessageUtils.showToast(requireContext(), getString(R.string.task_duplication))
             feedAdapter.actionPosition = -1
         }
     }
@@ -491,7 +469,7 @@ class SearchFragment : Fragment(), MainActivity.ScrollToTop, FeedAdapter.OnFeedA
         if(!searchViewModel.checkLoading()) {
             searchViewModel.deleteFollow(userId)
         } else {
-            Toast.makeText(requireContext(), "이전 작업을 처리 중입니다. 잠시 후 다시 시도해 주세요", Toast.LENGTH_SHORT).show()
+            ToastMessageUtils.showToast(requireContext(), getString(R.string.task_duplication))
             feedAdapter.actionPosition = -1
         }
     }
@@ -521,7 +499,7 @@ class SearchFragment : Fragment(), MainActivity.ScrollToTop, FeedAdapter.OnFeedA
             this.startActivity(intent)
         }
         else
-            Toast.makeText(requireContext(), "이전 작업을 처리중 입니다. 잠시 후 다시 시도해 주세요.", Toast.LENGTH_SHORT).show()
+            ToastMessageUtils.showToast(requireContext(), getString(R.string.task_duplication))
     }
 
     override fun onShareClick(feedInfo: VectoService.FeedInfo) {
@@ -537,7 +515,7 @@ class SearchFragment : Fragment(), MainActivity.ScrollToTop, FeedAdapter.OnFeedA
                     requireActivity().finish()
                 } else {
                     backPressedTime = System.currentTimeMillis()
-                    Toast.makeText(requireContext(), "뒤로 버튼을 한번 더 누르시면 종료됩니다.", Toast.LENGTH_SHORT).show()
+                    ToastMessageUtils.showToast(requireContext(), getString(R.string.back_pressed))
                 }
             }
         }

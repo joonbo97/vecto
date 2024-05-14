@@ -20,6 +20,8 @@ import com.vecto_example.vecto.ui.detail.FeedDetailActivity
 import com.vecto_example.vecto.ui.search.adapter.FeedAdapter
 import com.vecto_example.vecto.utils.FeedDetailType
 import com.vecto_example.vecto.utils.ShareFeedUtil
+import com.vecto_example.vecto.utils.ToastMessageUtils
+import com.vecto_example.vecto.utils.ToastMessageUtils.errorMessageHandler
 
 class LikeFeedActivity : AppCompatActivity(), FeedAdapter.OnFeedActionListener {
     private lateinit var binding: ActivityLikeFeedBinding
@@ -110,7 +112,7 @@ class LikeFeedActivity : AppCompatActivity(), FeedAdapter.OnFeedActionListener {
                 postFeedLikeResult.onSuccess {
                     feedAdapter.postFeedLikeSuccess()
                 }.onFailure {
-                    Toast.makeText(this, getText(R.string.APIErrorToastMessage), Toast.LENGTH_SHORT).show()
+                    ToastMessageUtils.showToast(this, getString(R.string.APIErrorToastMessage))
                 }
 
                 feedAdapter.actionPosition = -1
@@ -122,7 +124,7 @@ class LikeFeedActivity : AppCompatActivity(), FeedAdapter.OnFeedActionListener {
                 deleteFeedLikeResult.onSuccess {
                     feedAdapter.deleteFeedLikeSuccess()
                 }.onFailure {
-                    Toast.makeText(this, getText(R.string.APIErrorToastMessage), Toast.LENGTH_SHORT).show()
+                    ToastMessageUtils.showToast(this, getString(R.string.APIErrorToastMessage))
                 }
 
                 feedAdapter.actionPosition = -1
@@ -134,9 +136,9 @@ class LikeFeedActivity : AppCompatActivity(), FeedAdapter.OnFeedActionListener {
             if(feedAdapter.actionPosition != -1) {
                 if (it) {
                     feedAdapter.postFollowSuccess()
-                    Toast.makeText(this, "${likeFeedViewModel.allFeedInfo[feedAdapter.actionPosition].feedInfo.nickName} 님을 팔로우하기 시작했습니다.", Toast.LENGTH_SHORT).show()
+                    ToastMessageUtils.showToast(this, getString(R.string.post_follow_success, likeFeedViewModel.allFeedInfo[feedAdapter.actionPosition].feedInfo.nickName))
                 } else {
-                    Toast.makeText(this, "이미 ${likeFeedViewModel.allFeedInfo[feedAdapter.actionPosition].feedInfo.nickName} 님을 팔로우 중입니다.", Toast.LENGTH_SHORT).show()
+                    ToastMessageUtils.showToast(this, getString(R.string.post_follow_already, likeFeedViewModel.allFeedInfo[feedAdapter.actionPosition].feedInfo.nickName))
                 }
 
                 feedAdapter.actionPosition = -1
@@ -147,9 +149,9 @@ class LikeFeedActivity : AppCompatActivity(), FeedAdapter.OnFeedActionListener {
             if(feedAdapter.actionPosition != -1) {
                 if (it) {
                     feedAdapter.deleteFollowSuccess()
-                    Toast.makeText(this, "${likeFeedViewModel.allFeedInfo[feedAdapter.actionPosition].feedInfo.nickName} 님 팔로우를 취소하였습니다.", Toast.LENGTH_SHORT).show()
+                    ToastMessageUtils.showToast(this, getString(R.string.delete_follow_success, likeFeedViewModel.allFeedInfo[feedAdapter.actionPosition].feedInfo.nickName))
                 } else {
-                    Toast.makeText(this, "이미 ${likeFeedViewModel.allFeedInfo[feedAdapter.actionPosition].feedInfo.nickName} 님을 팔로우하지 않습니다.", Toast.LENGTH_SHORT).show()
+                    ToastMessageUtils.showToast(this, getString(R.string.delete_follow_already, likeFeedViewModel.allFeedInfo[feedAdapter.actionPosition].feedInfo.nickName))
                 }
 
                 feedAdapter.actionPosition = -1
@@ -158,29 +160,17 @@ class LikeFeedActivity : AppCompatActivity(), FeedAdapter.OnFeedActionListener {
 
         /*   오류 관련 Observer   */
         likeFeedViewModel.feedErrorLiveData.observe(this) {
-            if(it == "FAIL") {
-                Toast.makeText(this, "게시글 불러오기에 실패하였습니다. 다시 시도해 주세요.", Toast.LENGTH_SHORT).show()
-            } else if(it == "ERROR") {
-                Toast.makeText(this, getText(R.string.APIErrorToastMessage), Toast.LENGTH_SHORT).show()
-            }
+            errorMessageHandler(this, ToastMessageUtils.ValueType.FEED.name, it)
         }
 
         likeFeedViewModel.followErrorLiveData.observe(this) {
-            if(it == "FAIL") {
-                Toast.makeText(this, "팔로우 정보 불러오기에 실패하였습니다.", Toast.LENGTH_SHORT).show()
-            } else if(it == "ERROR") {
-                Toast.makeText(this, getText(R.string.APIErrorToastMessage), Toast.LENGTH_SHORT).show()
-            }
+            errorMessageHandler(this, ToastMessageUtils.ValueType.FOLLOW.name, it)
 
         }
 
         likeFeedViewModel.postFollowError.observe(this) {
             if(feedAdapter.actionPosition != -1) {
-                if (it == "FAIL") {
-                    Toast.makeText(this, "팔로우 요청에 실패하였습니다. 다시 시도해 주세요.", Toast.LENGTH_SHORT).show()
-                } else {
-                    Toast.makeText(this, getText(R.string.APIErrorToastMessage), Toast.LENGTH_SHORT).show()
-                }
+                errorMessageHandler(this, ToastMessageUtils.ValueType.FOLLOW_POST.name, it)
 
                 feedAdapter.actionPosition = -1
             }
@@ -188,11 +178,7 @@ class LikeFeedActivity : AppCompatActivity(), FeedAdapter.OnFeedActionListener {
 
         likeFeedViewModel.deleteFollowError.observe(this) {
             if(feedAdapter.actionPosition != -1) {
-                if (it == "FAIL") {
-                    Toast.makeText(this, "팔로우 취소 요청에 실패하였습니다. 다시 시도해 주세요.", Toast.LENGTH_SHORT).show()
-                } else {
-                    Toast.makeText(this, getText(R.string.APIErrorToastMessage), Toast.LENGTH_SHORT).show()
-                }
+                errorMessageHandler(this, ToastMessageUtils.ValueType.FOLLOW_DELETE.name, it)
 
                 feedAdapter.actionPosition = -1
             }
@@ -236,14 +222,12 @@ class LikeFeedActivity : AppCompatActivity(), FeedAdapter.OnFeedActionListener {
     private fun setNoneImage() {
         binding.NoneImage.visibility = View.VISIBLE
         binding.NoneText.visibility = View.VISIBLE
-        Log.d("NONE SET", "NONE IMAGE SET")
     }
 
 
     private fun clearNoneImage() {
         binding.NoneImage.visibility = View.GONE
         binding.NoneText.visibility = View.GONE
-        Log.d("NONE GONE", "NONE IMAGE IS GONE")
     }
 
     /*   Adapter CallBack 관련   */
@@ -251,7 +235,7 @@ class LikeFeedActivity : AppCompatActivity(), FeedAdapter.OnFeedActionListener {
         if(!likeFeedViewModel.checkLoading()) {
             likeFeedViewModel.postFeedLike(feedId)
         } else {
-            Toast.makeText(this, "이전 작업을 처리 중입니다. 잠시 후 다시 시도해 주세요", Toast.LENGTH_SHORT).show()
+            ToastMessageUtils.showToast(this, getString(R.string.task_duplication))
             feedAdapter.actionPosition = -1
         }
     }
@@ -260,7 +244,7 @@ class LikeFeedActivity : AppCompatActivity(), FeedAdapter.OnFeedActionListener {
         if(!likeFeedViewModel.checkLoading()) {
             likeFeedViewModel.deleteFeedLike(feedId)
         } else {
-            Toast.makeText(this, "이전 작업을 처리 중입니다. 잠시 후 다시 시도해 주세요", Toast.LENGTH_SHORT).show()
+            ToastMessageUtils.showToast(this, getString(R.string.task_duplication))
             feedAdapter.actionPosition = -1
         }
     }
@@ -269,7 +253,7 @@ class LikeFeedActivity : AppCompatActivity(), FeedAdapter.OnFeedActionListener {
         if(!likeFeedViewModel.checkLoading()) {
             likeFeedViewModel.postFollow(userId)
         } else {
-            Toast.makeText(this, "이전 작업을 처리 중입니다. 잠시 후 다시 시도해 주세요", Toast.LENGTH_SHORT).show()
+            ToastMessageUtils.showToast(this, getString(R.string.task_duplication))
             feedAdapter.actionPosition = -1
         }
     }
@@ -278,7 +262,7 @@ class LikeFeedActivity : AppCompatActivity(), FeedAdapter.OnFeedActionListener {
         if(!likeFeedViewModel.checkLoading()) {
             likeFeedViewModel.deleteFollow(userId)
         } else {
-            Toast.makeText(this, "이전 작업을 처리 중입니다. 잠시 후 다시 시도해 주세요", Toast.LENGTH_SHORT).show()
+            ToastMessageUtils.showToast(this, getString(R.string.task_duplication))
             feedAdapter.actionPosition = -1
         }
     }
@@ -301,7 +285,7 @@ class LikeFeedActivity : AppCompatActivity(), FeedAdapter.OnFeedActionListener {
         if(!likeFeedViewModel.checkLoading())
             this.startActivity(intent)
         else
-            Toast.makeText(this, "이전 작업을 처리중 입니다. 잠시 후 다시 시도해 주세요.", Toast.LENGTH_SHORT).show()
+            ToastMessageUtils.showToast(this, getString(R.string.task_duplication))
     }
 
     override fun onShareClick(feedInfo: VectoService.FeedInfo) {

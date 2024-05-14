@@ -24,6 +24,7 @@ import com.vecto_example.vecto.R
 import com.vecto_example.vecto.ui.register.RegisterActivity
 import com.vecto_example.vecto.data.repository.UserRepository
 import com.vecto_example.vecto.databinding.ActivityLoginBinding
+import com.vecto_example.vecto.utils.ToastMessageUtils
 
 class LoginActivity : AppCompatActivity() {
     private lateinit var binding: ActivityLoginBinding
@@ -150,7 +151,7 @@ class LoginActivity : AppCompatActivity() {
                 if(it.message == "FAIL"){
 
                     if(provider == "vecto"){    //vecto 로그인 인 경우
-                        Toast.makeText(this, "아이디 혹은 비밀번호가 일치하지 않습니다.", Toast.LENGTH_SHORT).show()
+                        ToastMessageUtils.showToast(this, getString(R.string.login_wrong))
                     }
                     else{                       //kakao 로그인 인 경우
                         loginViewModel.registerRequest(VectoService.RegisterRequest(
@@ -159,7 +160,7 @@ class LoginActivity : AppCompatActivity() {
                     }
                 }
                 else{
-                    Toast.makeText(this, getText(R.string.APIErrorToastMessage), Toast.LENGTH_SHORT).show()
+                    ToastMessageUtils.showToast(this, getString(R.string.APIErrorToastMessage))
                 }
             }
         }
@@ -169,7 +170,7 @@ class LoginActivity : AppCompatActivity() {
                 loginViewModel.loginRequest(VectoService.LoginRequest(loginViewModel.loginRequestData.userId, null, fcmtoken))
             }
                 .onFailure {
-                    Toast.makeText(this, getText(R.string.APIErrorToastMessage), Toast.LENGTH_SHORT).show()
+                    ToastMessageUtils.showToast(this, getString(R.string.APIErrorToastMessage))
                 }
         }
 
@@ -181,10 +182,10 @@ class LoginActivity : AppCompatActivity() {
                 finish()
             }.onFailure {
                 if(it.message == "E020"){
-                    Toast.makeText(this, "사용자 정보가 존재하지 않습니다.", Toast.LENGTH_SHORT).show()
+                    ToastMessageUtils.showToast(this, getString(R.string.login_none))
                 }
                 else{
-                    Toast.makeText(this, getText(R.string.APIErrorToastMessage), Toast.LENGTH_SHORT).show()
+                    ToastMessageUtils.showToast(this, getString(R.string.APIErrorToastMessage))
                 }
             }
         }

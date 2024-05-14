@@ -21,6 +21,7 @@ import com.vecto_example.vecto.ui.userinfo.UserInfoActivity
 import com.vecto_example.vecto.utils.LoadImageUtils
 import com.vecto_example.vecto.utils.RequestLoginUtils
 import com.vecto_example.vecto.utils.ServerResponse
+import com.vecto_example.vecto.utils.ToastMessageUtils
 
 class MyCommentAdapter(): RecyclerView.Adapter<MyCommentAdapter.ViewHolder>(){
     var commentInfo = mutableListOf<VectoService.CommentResponse>()
@@ -217,11 +218,10 @@ class MyCommentAdapter(): RecyclerView.Adapter<MyCommentAdapter.ViewHolder>(){
                             dismissPopupWindow()
                             return@EditDeletePopupWindow
                         } else if (editFlag) {
-                            Toast.makeText(itemView.context, "한번에 하나의 댓글만 수정할 수 있습니다.", Toast.LENGTH_SHORT)
-                                .show()
+                            ToastMessageUtils.showToast(itemView.context, itemView.context.getString(R.string.comment_edit_error_only))
                             return@EditDeletePopupWindow
                         } else if (Auth._userId.value != comment.userId) {
-                            Toast.makeText(itemView.context, "본인의 댓글만 수정할 수 있습니다.", Toast.LENGTH_SHORT).show()
+                            ToastMessageUtils.showToast(itemView.context, itemView.context.getString(R.string.comment_edit_error_mine))
                             dismissPopupWindow()
                             return@EditDeletePopupWindow
                         } else//로그인이 되어있고, 처음 선택하는 것이며, 본인의 댓글인 경우

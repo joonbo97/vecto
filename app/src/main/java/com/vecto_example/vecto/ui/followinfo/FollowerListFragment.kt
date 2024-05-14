@@ -13,6 +13,8 @@ import com.vecto_example.vecto.data.repository.UserRepository
 import com.vecto_example.vecto.databinding.FragmentFollowerListBinding
 import com.vecto_example.vecto.retrofit.VectoService
 import com.vecto_example.vecto.ui.followinfo.adapter.FollowListAdapter
+import com.vecto_example.vecto.utils.ToastMessageUtils
+import com.vecto_example.vecto.utils.ToastMessageUtils.errorMessageHandler
 
 class FollowerListFragment : Fragment(), FollowListAdapter.OnFollowActionListener {
     lateinit var binding: FragmentFollowerListBinding
@@ -57,9 +59,9 @@ class FollowerListFragment : Fragment(), FollowListAdapter.OnFollowActionListene
             if(followListAdapter.actionPosition != -1) {
                 if(it) {
                     followListAdapter.postFollowSuccess()
-                    Toast.makeText(requireContext(), "${followListAdapter.followList[followListAdapter.actionPosition].nickName} 님을 팔로우하기 시작했습니다.", Toast.LENGTH_SHORT).show()
+                    ToastMessageUtils.showToast(requireContext(), getString(R.string.post_follow_success, followListAdapter.followList[followListAdapter.actionPosition].nickName))
                 } else {
-                    Toast.makeText(requireContext(), "이미 ${followListAdapter.followList[followListAdapter.actionPosition].nickName} 님을 팔로우 중입니다.", Toast.LENGTH_SHORT).show()
+                    ToastMessageUtils.showToast(requireContext(), getString(R.string.post_follow_already, followListAdapter.followList[followListAdapter.actionPosition].nickName))
                 }
 
                 followListAdapter.actionPosition = -1
@@ -69,10 +71,10 @@ class FollowerListFragment : Fragment(), FollowListAdapter.OnFollowActionListene
         viewModel.deleteFollowResult.observe(viewLifecycleOwner) {
             if(followListAdapter.actionPosition != -1) {
                 if(it) {
-                    Toast.makeText(requireContext(), "${followListAdapter.followList[followListAdapter.actionPosition].nickName} 님 팔로우를 취소하였습니다.", Toast.LENGTH_SHORT).show()
+                    ToastMessageUtils.showToast(requireContext(), getString(R.string.delete_follow_success, followListAdapter.followList[followListAdapter.actionPosition].nickName))
                     followListAdapter.deleteFollowSuccess()
                 } else {
-                    Toast.makeText(requireContext(), "이미 ${followListAdapter.followList[followListAdapter.actionPosition].nickName} 님을 팔로우하지 않습니다.", Toast.LENGTH_SHORT).show()
+                    ToastMessageUtils.showToast(requireContext(), getString(R.string.delete_follow_already, followListAdapter.followList[followListAdapter.actionPosition].nickName))
                 }
             }
 
@@ -81,24 +83,14 @@ class FollowerListFragment : Fragment(), FollowListAdapter.OnFollowActionListene
 
         viewModel.postFollowError.observe(viewLifecycleOwner) {
             if(followListAdapter.actionPosition != -1) {
-                if (it == "FAIL") {
-                    Toast.makeText(requireContext(), "팔로우 요청에 실패하였습니다. 다시 시도해 주세요.", Toast.LENGTH_SHORT).show()
-                } else {
-                    Toast.makeText(requireContext(), getText(R.string.APIErrorToastMessage), Toast.LENGTH_SHORT).show()
-                }
-
+                errorMessageHandler(requireContext(), ToastMessageUtils.ValueType.FOLLOW_POST.name, it)
                 followListAdapter.actionPosition = -1
             }
         }
 
         viewModel.deleteFollowError.observe(viewLifecycleOwner) {
             if(followListAdapter.actionPosition != -1) {
-                if (it == "FAIL") {
-                    Toast.makeText(requireContext(), "팔로우 취소 요청에 실패하였습니다. 다시 시도해 주세요.", Toast.LENGTH_SHORT).show()
-                } else {
-                    Toast.makeText(requireContext(), getText(R.string.APIErrorToastMessage), Toast.LENGTH_SHORT).show()
-                }
-
+                errorMessageHandler(requireContext(), ToastMessageUtils.ValueType.FOLLOW_DELETE.name, it)
                 followListAdapter.actionPosition = -1
             }
         }
@@ -122,7 +114,7 @@ class FollowerListFragment : Fragment(), FollowListAdapter.OnFollowActionListene
         if(!viewModel.checkLoading()) {
             viewModel.postFollow(userId)
         } else {
-            Toast.makeText(requireContext(), "이전 작업을 처리 중입니다. 잠시 후 다시 시도해 주세요", Toast.LENGTH_SHORT).show()
+            ToastMessageUtils.showToast(requireContext(), getString(R.string.task_duplication))
             followListAdapter.actionPosition = -1
         }
     }
@@ -131,7 +123,7 @@ class FollowerListFragment : Fragment(), FollowListAdapter.OnFollowActionListene
         if(!viewModel.checkLoading()) {
             viewModel.deleteFollow(userId)
         } else {
-            Toast.makeText(requireContext(), "이전 작업을 처리 중입니다. 잠시 후 다시 시도해 주세요", Toast.LENGTH_SHORT).show()
+            ToastMessageUtils.showToast(requireContext(), getString(R.string.task_duplication))
             followListAdapter.actionPosition = -1
         }
     }
