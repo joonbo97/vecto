@@ -24,6 +24,7 @@ import com.vecto_example.vecto.ui.userinfo.UserInfoViewModelFactory
 import com.vecto_example.vecto.utils.FeedDetailType
 import com.vecto_example.vecto.utils.ShareFeedUtil
 import com.vecto_example.vecto.utils.ToastMessageUtils
+import com.vecto_example.vecto.utils.ToastMessageUtils.errorMessageHandler
 
 class MyFeedActivity : AppCompatActivity(), MyFeedAdapter.OnFeedActionListener {
     private lateinit var binding: ActivityMyFeedBinding
@@ -129,7 +130,7 @@ class MyFeedActivity : AppCompatActivity(), MyFeedAdapter.OnFeedActionListener {
                 ToastMessageUtils.showToast(this, getString(R.string.APIErrorToastMessage))
             }
 
-            myFeedAdapter.actionPosition = -1
+            myFeedAdapter.postLikePosition = -1
         }
 
         viewModel.deleteFeedLikeResult.observe(this) { deleteFeedLikeResult ->
@@ -139,7 +140,7 @@ class MyFeedActivity : AppCompatActivity(), MyFeedAdapter.OnFeedActionListener {
                 ToastMessageUtils.showToast(this, getString(R.string.APIErrorToastMessage))
             }
 
-            myFeedAdapter.actionPosition = -1
+            myFeedAdapter.deleteLikePosition = -1
         }
 
         /*   게시글 삭제   */
@@ -151,7 +152,7 @@ class MyFeedActivity : AppCompatActivity(), MyFeedAdapter.OnFeedActionListener {
                 ToastMessageUtils.showToast(this, getString(R.string.APIErrorToastMessage))
             }
 
-            myFeedAdapter.actionPosition = -1
+            myFeedAdapter.deleteFeedPosition = -1
         }
 
         /*   로딩 관련 Observer   */
@@ -170,11 +171,7 @@ class MyFeedActivity : AppCompatActivity(), MyFeedAdapter.OnFeedActionListener {
 
         /*   오류 관련 Observer   */
         viewModel.feedErrorLiveData.observe(this) {
-            if(it == "FAIL") {
-                ToastMessageUtils.showToast(this, getString(R.string.get_feed_fail))
-            } else if(it == "ERROR") {
-                ToastMessageUtils.showToast(this, getString(R.string.APIErrorToastMessage))
-            }
+            errorMessageHandler(this, ToastMessageUtils.UserInterActionType.FEED.name, it)
         }
     }
 
@@ -197,24 +194,30 @@ class MyFeedActivity : AppCompatActivity(), MyFeedAdapter.OnFeedActionListener {
     }
 
     override fun onPostLike(feedID: Int) {
-        if(!viewModel.checkLoading())
+        if(!viewModel.postLikeLoading)
             viewModel.postFeedLike(feedID)
-        else
+        else {
             ToastMessageUtils.showToast(this, getString(R.string.task_duplication))
+            myFeedAdapter.postLikePosition = -1
+        }
     }
 
     override fun onDeleteLike(feedID: Int) {
-        if(!viewModel.checkLoading())
+        if(!viewModel.deleteLikeLoading)
             viewModel.deleteFeedLike(feedID)
-        else
+        else{
             ToastMessageUtils.showToast(this, getString(R.string.task_duplication))
+            myFeedAdapter.deleteLikePosition = -1
+        }
     }
 
     override fun onDeleteFeed(feedID: Int) {
         if(!viewModel.checkLoading())
             viewModel.deleteFeed(feedID)
-        else
+        else{
             ToastMessageUtils.showToast(this, getString(R.string.task_duplication))
+            myFeedAdapter.deleteFeedPosition = -1
+        }
     }
 
     override fun onItemViewClick(position: Int) {
@@ -236,10 +239,7 @@ class MyFeedActivity : AppCompatActivity(), MyFeedAdapter.OnFeedActionListener {
             putExtra("lastPage", viewModel.lastPage)
         }
 
-        if(!viewModel.checkLoading())
-            startActivity(intent)
-        else
-            ToastMessageUtils.showToast(this, getString(R.string.task_duplication))
+        startActivity(intent)
     }
 
     override fun onShareClick(feedInfo: VectoService.FeedInfo) {

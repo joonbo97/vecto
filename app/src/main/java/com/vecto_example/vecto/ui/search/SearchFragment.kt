@@ -171,16 +171,13 @@ class SearchFragment : Fragment(), MainActivity.ScrollToTop, FeedAdapter.OnFeedA
         notificationViewModel.newNotificationFlag.observe(viewLifecycleOwner) {
             it.onSuccess { newNotificationFlag->
                 if(newNotificationFlag){    //새로운 알림이 있을 경우
-                    Log.d("SEARCH_INIT_UI", "SUCCESS_TRUE")
                     binding.AlarmIconImage.setImageResource(R.drawable.alarmon_icon)
                 }
                 else{   //새로운 알림이 없는 경우
-                    Log.d("SEARCH_INIT_UI", "SUCCESS_FALSE")
                     binding.AlarmIconImage.setImageResource(R.drawable.alarmoff_icon)
                 }
             }
                 .onFailure {//실패한 경우
-                    Log.d("SEARCH_INIT_UI", "FAIL")
                     binding.AlarmIconImage.setImageResource(R.drawable.alarmoff_icon)
                 }
         }
@@ -234,7 +231,7 @@ class SearchFragment : Fragment(), MainActivity.ScrollToTop, FeedAdapter.OnFeedA
 
         /*   게시글 좋아요   */
         searchViewModel.postFeedLikeResult.observe(viewLifecycleOwner) { postFeedLikeResult ->
-            if(feedAdapter.actionPosition != -1)
+            if(feedAdapter.postLikePosition != -1)
             {
                 postFeedLikeResult.onSuccess {
                     feedAdapter.postFeedLikeSuccess()
@@ -242,69 +239,69 @@ class SearchFragment : Fragment(), MainActivity.ScrollToTop, FeedAdapter.OnFeedA
                     ToastMessageUtils.showToast(requireContext(), getString(R.string.APIErrorToastMessage))
                 }
 
-                feedAdapter.actionPosition = -1
+                feedAdapter.postLikePosition = -1
             }
         }
 
         searchViewModel.deleteFeedLikeResult.observe(viewLifecycleOwner) { deleteFeedLikeResult ->
-            if(feedAdapter.actionPosition != -1) {
+            if(feedAdapter.deleteLikePosition != -1) {
                 deleteFeedLikeResult.onSuccess {
                     feedAdapter.deleteFeedLikeSuccess()
                 }.onFailure {
                     ToastMessageUtils.showToast(requireContext(), getString(R.string.APIErrorToastMessage))
                 }
 
-                feedAdapter.actionPosition = -1
+                feedAdapter.deleteLikePosition = -1
             }
         }
 
         //팔로우
         searchViewModel.postFollowResult.observe(viewLifecycleOwner) {
-            if(feedAdapter.actionPosition != -1) {
+            if(feedAdapter.postFollowPosition != -1) {
                 if (it) {
                     feedAdapter.postFollowSuccess()
-                    ToastMessageUtils.showToast(requireContext(), getString(R.string.post_follow_success, searchViewModel.allFeedInfo[feedAdapter.actionPosition].feedInfo.nickName))
+                    ToastMessageUtils.showToast(requireContext(), getString(R.string.post_follow_success, searchViewModel.allFeedInfo[feedAdapter.postFollowPosition].feedInfo.nickName))
                 } else {
-                    ToastMessageUtils.showToast(requireContext(), getString(R.string.post_follow_already, searchViewModel.allFeedInfo[feedAdapter.actionPosition].feedInfo.nickName))
+                    ToastMessageUtils.showToast(requireContext(), getString(R.string.post_follow_already, searchViewModel.allFeedInfo[feedAdapter.postFollowPosition].feedInfo.nickName))
                 }
 
-                feedAdapter.actionPosition = -1
+                feedAdapter.postFollowPosition = -1
             }
         }
 
         searchViewModel.deleteFollowResult.observe(viewLifecycleOwner) {
-            if(feedAdapter.actionPosition != -1) {
+            if(feedAdapter.deleteFollowPosition != -1) {
                 if (it) {
                     feedAdapter.deleteFollowSuccess()
-                    ToastMessageUtils.showToast(requireContext(), getString(R.string.delete_follow_success, searchViewModel.allFeedInfo[feedAdapter.actionPosition].feedInfo.nickName))
+                    ToastMessageUtils.showToast(requireContext(), getString(R.string.delete_follow_success, searchViewModel.allFeedInfo[feedAdapter.deleteFollowPosition].feedInfo.nickName))
                 } else {
-                    ToastMessageUtils.showToast(requireContext(), getString(R.string.delete_follow_already, searchViewModel.allFeedInfo[feedAdapter.actionPosition].feedInfo.nickName))
+                    ToastMessageUtils.showToast(requireContext(), getString(R.string.delete_follow_already, searchViewModel.allFeedInfo[feedAdapter.deleteFollowPosition].feedInfo.nickName))
                 }
 
-                feedAdapter.actionPosition = -1
+                feedAdapter.deleteFollowPosition = -1
             }
         }
 
         /*   오류 관련 Observer   */
         searchViewModel.feedErrorLiveData.observe(viewLifecycleOwner) {
-            errorMessageHandler(requireContext(), ToastMessageUtils.ValueType.FEED.name, it)
+            errorMessageHandler(requireContext(), ToastMessageUtils.UserInterActionType.FEED.name, it)
         }
 
         searchViewModel.followErrorLiveData.observe(viewLifecycleOwner) {
-            errorMessageHandler(requireContext(), ToastMessageUtils.ValueType.FOLLOW.name, it)
+            errorMessageHandler(requireContext(), ToastMessageUtils.UserInterActionType.FOLLOW.name, it)
         }
 
         searchViewModel.postFollowError.observe(viewLifecycleOwner) {
-            if(feedAdapter.actionPosition != -1) {
-                errorMessageHandler(requireContext(), ToastMessageUtils.ValueType.FOLLOW_POST.name, it)
-                feedAdapter.actionPosition = -1
+            if(feedAdapter.postFollowPosition != -1) {
+                errorMessageHandler(requireContext(), ToastMessageUtils.UserInterActionType.FOLLOW_POST.name, it)
+                feedAdapter.postFollowPosition = -1
             }
         }
 
         searchViewModel.deleteFollowError.observe(viewLifecycleOwner) {
-            if(feedAdapter.actionPosition != -1) {
-                errorMessageHandler(requireContext(), ToastMessageUtils.ValueType.FOLLOW_DELETE.name, it)
-                feedAdapter.actionPosition = -1
+            if(feedAdapter.deleteFollowPosition != -1) {
+                errorMessageHandler(requireContext(), ToastMessageUtils.UserInterActionType.FOLLOW_DELETE.name, it)
+                feedAdapter.deleteFollowPosition = -1
             }
         }
     }
@@ -439,38 +436,38 @@ class SearchFragment : Fragment(), MainActivity.ScrollToTop, FeedAdapter.OnFeedA
 
     /*   Adapter CallBack 관련   */
     override fun onPostFeedLike(feedId: Int) {
-        if(!searchViewModel.checkLoading()) {
+        if(!searchViewModel.postLikeLoading) {
             searchViewModel.postFeedLike(feedId)
         } else {
             ToastMessageUtils.showToast(requireContext(), getString(R.string.task_duplication))
-            feedAdapter.actionPosition = -1
+            feedAdapter.postLikePosition = -1
         }
     }
 
     override fun onDeleteFeedLike(feedId: Int) {
-        if(!searchViewModel.checkLoading()) {
+        if(!searchViewModel.deleteLikeLoading) {
             searchViewModel.deleteFeedLike(feedId)
         } else {
             ToastMessageUtils.showToast(requireContext(), getString(R.string.task_duplication))
-            feedAdapter.actionPosition = -1
+            feedAdapter.deleteLikePosition = -1
         }
     }
 
     override fun onPostFollow(userId: String) {
-        if(!searchViewModel.checkLoading()) {
+        if(!searchViewModel.postFollowLoading) {
             searchViewModel.postFollow(userId)
         } else {
             ToastMessageUtils.showToast(requireContext(), getString(R.string.task_duplication))
-            feedAdapter.actionPosition = -1
+            feedAdapter.postFollowPosition = -1
         }
     }
 
     override fun onDeleteFollow(userId: String) {
-        if(!searchViewModel.checkLoading()) {
+        if(!searchViewModel.deleteFollowLoading) {
             searchViewModel.deleteFollow(userId)
         } else {
             ToastMessageUtils.showToast(requireContext(), getString(R.string.task_duplication))
-            feedAdapter.actionPosition = -1
+            feedAdapter.deleteFollowPosition = -1
         }
     }
 
@@ -480,26 +477,24 @@ class SearchFragment : Fragment(), MainActivity.ScrollToTop, FeedAdapter.OnFeedA
             subList = subList.subList(0, 10)
         }
 
-        if(!searchViewModel.checkLoading()) {
-            val intent = Intent(requireContext(), FeedDetailActivity::class.java).apply {
-                putExtra("feedInfoListJson", Gson().toJson(subList))
-                if(searchViewModel.queryFlag) {
-                    putExtra("type", FeedDetailType.INTENT_QUERY.code)
-                    putExtra("query", query)
-                }
-                else {
-                    putExtra("type", FeedDetailType.INTENT_NORMAL.code)
-                    putExtra("query", "")
-                }
-                putExtra("nextPage", searchViewModel.nextPage)
-                putExtra("followPage", searchViewModel.followPage)
-                putExtra("lastPage", searchViewModel.lastPage)
-            }
 
-            this.startActivity(intent)
+        val intent = Intent(requireContext(), FeedDetailActivity::class.java).apply {
+            putExtra("feedInfoListJson", Gson().toJson(subList))
+            if(searchViewModel.queryFlag) {
+                putExtra("type", FeedDetailType.INTENT_QUERY.code)
+                putExtra("query", query)
+            }
+            else {
+                putExtra("type", FeedDetailType.INTENT_NORMAL.code)
+                putExtra("query", "")
+            }
+            putExtra("nextPage", searchViewModel.nextPage)
+            putExtra("followPage", searchViewModel.followPage)
+            putExtra("lastPage", searchViewModel.lastPage)
         }
-        else
-            ToastMessageUtils.showToast(requireContext(), getString(R.string.task_duplication))
+
+        this.startActivity(intent)
+
     }
 
     override fun onShareClick(feedInfo: VectoService.FeedInfo) {

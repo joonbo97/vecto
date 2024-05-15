@@ -32,7 +32,8 @@ class UserInfoViewModel(private val repository: FeedRepository, private val user
     private val _isLoadingBottom = MutableLiveData<Boolean>()
     val isLoadingBottom: LiveData<Boolean> = _isLoadingBottom
 
-    private var tempLoading = false
+    var postLikeLoading = false
+    var deleteLikeLoading = false
 
     /*   게시글   */
     private val _feedInfoLiveData = MutableLiveData<VectoService.FeedPageResponse>()
@@ -107,7 +108,8 @@ class UserInfoViewModel(private val repository: FeedRepository, private val user
         _isLoadingCenter.value = false
         _isLoadingBottom.value = false
 
-        tempLoading = false
+        postLikeLoading = false
+        deleteLikeLoading = false
     }
 
     fun fetchUserFeedResults(userId: String){
@@ -249,7 +251,7 @@ class UserInfoViewModel(private val repository: FeedRepository, private val user
     }
 
     fun postFeedLike(feedId: Int) {
-        tempLoading = true
+        postLikeLoading = true
 
         viewModelScope.launch {
             val postFeedLikeResponse = repository.postFeedLike(feedId)
@@ -261,7 +263,7 @@ class UserInfoViewModel(private val repository: FeedRepository, private val user
     }
 
     fun deleteFeedLike(feedId: Int) {
-        tempLoading = true
+        deleteLikeLoading = true
 
         viewModelScope.launch {
             val deleteFeedLikeResponse = repository.deleteFeedLike(feedId)
@@ -293,6 +295,6 @@ class UserInfoViewModel(private val repository: FeedRepository, private val user
 
     fun checkLoading(): Boolean{
         //로딩중이 아니라면 false, 로딩중이라면 true
-        return !(isLoadingBottom.value == false && isLoadingCenter.value == false && !tempLoading)
+        return !(isLoadingBottom.value == false && isLoadingCenter.value == false)
     }
 }

@@ -35,6 +35,11 @@ class SearchViewModel(private val repository: FeedRepository, private val userRe
 
     private var tempLoading = false
 
+    var postLikeLoading = false
+    var deleteLikeLoading = false
+    var postFollowLoading = false
+    var deleteFollowLoading = false
+
     /*   게시글 정보   */
     var nextPage: Int = 0
     var lastPage: Boolean = false
@@ -95,7 +100,10 @@ class SearchViewModel(private val repository: FeedRepository, private val userRe
         _isLoadingCenter.value = false
         _isLoadingBottom.value = false
 
-        tempLoading = false
+        postLikeLoading = false
+        deleteLikeLoading = false
+        postFollowLoading = false
+        deleteFollowLoading = false
     }
 
     fun getOneFeed(feedId: Int) {
@@ -249,7 +257,7 @@ class SearchViewModel(private val repository: FeedRepository, private val userRe
     }
 
     fun postFeedLike(feedId: Int) {
-        tempLoading = true
+        postLikeLoading = true
 
         viewModelScope.launch {
             val postFeedLikeResponse = repository.postFeedLike(feedId)
@@ -261,7 +269,7 @@ class SearchViewModel(private val repository: FeedRepository, private val userRe
     }
 
     fun deleteFeedLike(feedId: Int) {
-        tempLoading = true
+        deleteLikeLoading = true
 
         viewModelScope.launch {
             val deleteFeedLikeResponse = repository.deleteFeedLike(feedId)
@@ -273,7 +281,7 @@ class SearchViewModel(private val repository: FeedRepository, private val userRe
     }
 
     fun postFollow(userId: String) {
-        tempLoading = true
+        postFollowLoading = true
 
         viewModelScope.launch {
             val followResponse = userRepository.postFollow(userId)
@@ -295,7 +303,7 @@ class SearchViewModel(private val repository: FeedRepository, private val userRe
     }
 
     fun deleteFollow(userId: String) {
-        tempLoading = true
+        deleteFollowLoading = true
 
         viewModelScope.launch {
             val followResponse = userRepository.deleteFollow(userId)
@@ -328,6 +336,6 @@ class SearchViewModel(private val repository: FeedRepository, private val userRe
 
     fun checkLoading(): Boolean{
         //로딩중이 아니라면 false, 로딩중이라면 true
-        return !(isLoadingBottom.value == false && isLoadingCenter.value == false && !tempLoading)
+        return !(isLoadingBottom.value == false && isLoadingCenter.value == false)
     }
 }

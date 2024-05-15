@@ -5,7 +5,6 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.vecto_example.vecto.R
@@ -83,14 +82,14 @@ class FollowerListFragment : Fragment(), FollowListAdapter.OnFollowActionListene
 
         viewModel.postFollowError.observe(viewLifecycleOwner) {
             if(followListAdapter.actionPosition != -1) {
-                errorMessageHandler(requireContext(), ToastMessageUtils.ValueType.FOLLOW_POST.name, it)
+                errorMessageHandler(requireContext(), ToastMessageUtils.UserInterActionType.FOLLOW_POST.name, it)
                 followListAdapter.actionPosition = -1
             }
         }
 
         viewModel.deleteFollowError.observe(viewLifecycleOwner) {
             if(followListAdapter.actionPosition != -1) {
-                errorMessageHandler(requireContext(), ToastMessageUtils.ValueType.FOLLOW_DELETE.name, it)
+                errorMessageHandler(requireContext(), ToastMessageUtils.UserInterActionType.FOLLOW_DELETE.name, it)
                 followListAdapter.actionPosition = -1
             }
         }

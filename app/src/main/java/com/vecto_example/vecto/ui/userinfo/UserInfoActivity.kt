@@ -6,10 +6,8 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.View
-import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.core.content.ContextCompat
-import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.gson.Gson
@@ -262,7 +260,7 @@ class UserInfoActivity : AppCompatActivity(), MyFeedAdapter.OnFeedActionListener
                 ToastMessageUtils.showToast(this, getString(R.string.APIErrorToastMessage))
             }
 
-            myFeedAdapter.actionPosition = -1
+            myFeedAdapter.postLikePosition = -1
         }
 
         userInfoViewModel.deleteFeedLikeResult.observe(this) { deleteFeedLikeResult ->
@@ -272,7 +270,7 @@ class UserInfoActivity : AppCompatActivity(), MyFeedAdapter.OnFeedActionListener
                 ToastMessageUtils.showToast(this, getString(R.string.APIErrorToastMessage))
             }
 
-            myFeedAdapter.actionPosition = -1
+            myFeedAdapter.deleteLikePosition = -1
         }
 
         /*   게시글 삭제   */
@@ -284,7 +282,7 @@ class UserInfoActivity : AppCompatActivity(), MyFeedAdapter.OnFeedActionListener
                 ToastMessageUtils.showToast(this, getString(R.string.APIErrorToastMessage))
             }
 
-            myFeedAdapter.actionPosition = -1
+            myFeedAdapter.deleteFeedPosition = -1
         }
 
         /*   Follow 정보 Observer   */
@@ -318,17 +316,17 @@ class UserInfoActivity : AppCompatActivity(), MyFeedAdapter.OnFeedActionListener
         /*   오류 관련 Observer   */
 
         userInfoViewModel.getFollowRelationError.observe(this) {
-            ToastMessageUtils.errorMessageHandler(this, ToastMessageUtils.ValueType.FOLLOW.name, it)
+            ToastMessageUtils.errorMessageHandler(this, ToastMessageUtils.UserInterActionType.FOLLOW.name, it)
 
             setFollowButton(false)
         }
 
         userInfoViewModel.postFollowError.observe(this) {
-            ToastMessageUtils.errorMessageHandler(this, ToastMessageUtils.ValueType.FOLLOW_POST.name, it)
+            ToastMessageUtils.errorMessageHandler(this, ToastMessageUtils.UserInterActionType.FOLLOW_POST.name, it)
         }
 
         userInfoViewModel.deleteFollowError.observe(this) {
-            ToastMessageUtils.errorMessageHandler(this, ToastMessageUtils.ValueType.FOLLOW_DELETE.name, it)
+            ToastMessageUtils.errorMessageHandler(this, ToastMessageUtils.UserInterActionType.FOLLOW_DELETE.name, it)
         }
 
         userInfoViewModel.postComplaintError.observe(this) {
@@ -340,7 +338,7 @@ class UserInfoActivity : AppCompatActivity(), MyFeedAdapter.OnFeedActionListener
         }
 
         userInfoViewModel.feedErrorLiveData.observe(this) {
-            ToastMessageUtils.errorMessageHandler(this, ToastMessageUtils.ValueType.FEED.name, it)
+            ToastMessageUtils.errorMessageHandler(this, ToastMessageUtils.UserInterActionType.FEED.name, it)
         }
 
     }
@@ -439,20 +437,20 @@ class UserInfoActivity : AppCompatActivity(), MyFeedAdapter.OnFeedActionListener
     /*   Adapter CallBack 관련   */
 
     override fun onPostLike(feedID: Int) {
-        if(!userInfoViewModel.checkLoading())
+        if(!userInfoViewModel.postLikeLoading)
             userInfoViewModel.postFeedLike(feedID)
         else{
             ToastMessageUtils.showToast(this, getString(R.string.task_duplication))
-            myFeedAdapter.actionPosition = -1
+            myFeedAdapter.postLikePosition = -1
         }
     }
 
     override fun onDeleteLike(feedID: Int) {
-        if(!userInfoViewModel.checkLoading())
+        if(!userInfoViewModel.deleteLikeLoading)
             userInfoViewModel.deleteFeedLike(feedID)
         else {
             ToastMessageUtils.showToast(this, getString(R.string.task_duplication))
-            myFeedAdapter.actionPosition = -1
+            myFeedAdapter.deleteLikePosition = -1
         }
     }
 
@@ -461,7 +459,7 @@ class UserInfoActivity : AppCompatActivity(), MyFeedAdapter.OnFeedActionListener
             userInfoViewModel.deleteFeed(feedID)
         else{
             ToastMessageUtils.showToast(this, getString(R.string.task_duplication))
-            myFeedAdapter.actionPosition = -1
+            myFeedAdapter.deleteFeedPosition = -1
         }
     }
 
@@ -484,10 +482,7 @@ class UserInfoActivity : AppCompatActivity(), MyFeedAdapter.OnFeedActionListener
             putExtra("lastPage", userInfoViewModel.lastPage)
         }
 
-        if(!userInfoViewModel.checkLoading())
-            this.startActivity(intent)
-        else
-            ToastMessageUtils.showToast(this, getString(R.string.task_duplication))
+        this.startActivity(intent)
     }
 
     override fun onShareClick(feedInfo: VectoService.FeedInfo) {

@@ -21,7 +21,10 @@ class LikeFeedViewModel(private val feedRepository: FeedRepository, private val 
     private val _isLoadingBottom = MutableLiveData<Boolean>()
     val isLoadingBottom: LiveData<Boolean> = _isLoadingBottom
 
-    private var tempLoading = false
+    var postLikeLoading = false
+    var deleteLikeLoading = false
+    var postFollowLoading = false
+    var deleteFollowLoading = false
 
     /*   게시글 정보   */
     var nextPage: Int = 0
@@ -81,7 +84,10 @@ class LikeFeedViewModel(private val feedRepository: FeedRepository, private val 
         _isLoadingCenter.value = false
         _isLoadingBottom.value = false
 
-        tempLoading = false
+        postLikeLoading = false
+        deleteLikeLoading = false
+        postFollowLoading = false
+        deleteFollowLoading = false
     }
 
     fun getLikeFeedList(){
@@ -149,7 +155,7 @@ class LikeFeedViewModel(private val feedRepository: FeedRepository, private val 
     }
 
     fun postFeedLike(feedId: Int) {
-        tempLoading = true
+        postLikeLoading = true
 
         viewModelScope.launch {
             val postFeedLikeResponse = feedRepository.postFeedLike(feedId)
@@ -161,7 +167,7 @@ class LikeFeedViewModel(private val feedRepository: FeedRepository, private val 
     }
 
     fun deleteFeedLike(feedId: Int) {
-        tempLoading = true
+        deleteLikeLoading = true
 
         viewModelScope.launch {
             val deleteFeedLikeResponse = feedRepository.deleteFeedLike(feedId)
@@ -173,7 +179,7 @@ class LikeFeedViewModel(private val feedRepository: FeedRepository, private val 
     }
 
     fun postFollow(userId: String) {
-        tempLoading = true
+        postFollowLoading = true
 
         viewModelScope.launch {
             val followResponse = userRepository.postFollow(userId)
@@ -195,7 +201,7 @@ class LikeFeedViewModel(private val feedRepository: FeedRepository, private val 
     }
 
     fun deleteFollow(userId: String) {
-        tempLoading = true
+        deleteFollowLoading = true
 
         viewModelScope.launch {
             val followResponse = userRepository.deleteFollow(userId)
@@ -227,6 +233,6 @@ class LikeFeedViewModel(private val feedRepository: FeedRepository, private val 
 
     fun checkLoading(): Boolean{
         //로딩중이 아니라면 false, 로딩중이라면 true
-        return !(isLoadingBottom.value == false && isLoadingCenter.value == false && !tempLoading)
+        return !(isLoadingBottom.value == false && isLoadingCenter.value == false)
     }
 }

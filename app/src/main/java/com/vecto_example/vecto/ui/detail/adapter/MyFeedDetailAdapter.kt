@@ -27,10 +27,13 @@ import com.vecto_example.vecto.utils.LoadImageUtils
 import com.vecto_example.vecto.utils.RequestLoginUtils
 
 class MyFeedDetailAdapter(): RecyclerView.Adapter<MyFeedDetailAdapter.ViewHolder>() {
-    var actionPosition = -1
-
     var feedInfoWithFollow = mutableListOf<VectoService.FeedInfoWithFollow>()
     var lastSize = 0
+
+    var postLikePosition = -1
+    var deleteLikePosition = -1
+    var postFollowPosition = -1
+    var deleteFollowPosition = -1
 
     interface OnFeedActionListener {
         fun onPostFeedLike(feedId: Int)
@@ -182,28 +185,26 @@ class MyFeedDetailAdapter(): RecyclerView.Adapter<MyFeedDetailAdapter.ViewHolder
         private fun clickLikeAction(feedInfoWithFollow: VectoService.FeedInfoWithFollow) {
             if(Auth.loginFlag.value == false) {
                 RequestLoginUtils.requestLogin(itemView.context)
-            } else if(actionPosition == -1) {
+                return
+            }
 
-                if(feedInfoWithFollow.feedInfo.likeFlag) {
-                    feedActionListener?.onDeleteFeedLike(feedInfoWithFollow.feedInfo.feedId)
-                } else {
+            if(feedInfoWithFollow.feedInfo.likeFlag && deleteLikePosition == -1) {
+                feedActionListener?.onDeleteFeedLike(feedInfoWithFollow.feedInfo.feedId)
+                deleteLikePosition = bindingAdapterPosition
+            } else if(!feedInfoWithFollow.feedInfo.likeFlag && postLikePosition == -1) {
 
-                    val anim = AnimationUtils.loadAnimation(itemView.context, R.anim.like_anim)
+                val anim = AnimationUtils.loadAnimation(itemView.context, R.anim.like_anim)
 
-                    anim.setAnimationListener(object : Animation.AnimationListener {
-                        override fun onAnimationStart(animation: Animation?) {}
-                        override fun onAnimationEnd(animation: Animation?) {}
-                        override fun onAnimationRepeat(animation: Animation?) {}
-                    })
+                anim.setAnimationListener(object : Animation.AnimationListener {
+                    override fun onAnimationStart(animation: Animation?) {}
+                    override fun onAnimationEnd(animation: Animation?) {}
+                    override fun onAnimationRepeat(animation: Animation?) {}
+                })
 
-                    binding.LikeImage.startAnimation(anim)
+                binding.LikeImage.startAnimation(anim)
 
-                    feedActionListener?.onPostFeedLike(feedInfoWithFollow.feedInfo.feedId)
-
-                }
-
-                actionPosition = adapterPosition
-
+                feedActionListener?.onPostFeedLike(feedInfoWithFollow.feedInfo.feedId)
+                postLikePosition = bindingAdapterPosition
             }
         }
 
@@ -211,15 +212,15 @@ class MyFeedDetailAdapter(): RecyclerView.Adapter<MyFeedDetailAdapter.ViewHolder
 
             if(Auth.loginFlag.value == false) {
                 RequestLoginUtils.requestLogin(itemView.context)
-            } else if(actionPosition == -1) {
+            } else {
 
-                if(feedInfoWithFollow.isFollowing){
+                if(feedInfoWithFollow.isFollowing && deleteFollowPosition == -1){
                     feedActionListener?.onDeleteFollow(feedInfoWithFollow.feedInfo.userId)
-                } else {
+                    deleteFollowPosition = bindingAdapterPosition
+                } else if(!feedInfoWithFollow.isFollowing && postFollowPosition == -1){
                     feedActionListener?.onPostFollow(feedInfoWithFollow.feedInfo.userId)
+                    postFollowPosition = bindingAdapterPosition
                 }
-
-                actionPosition = adapterPosition
             }
         }
 
@@ -289,36 +290,36 @@ class MyFeedDetailAdapter(): RecyclerView.Adapter<MyFeedDetailAdapter.ViewHolder
     }
 
     fun postFeedLikeSuccess() {
-        if(actionPosition != -1 ) {
-            feedInfoWithFollow[actionPosition].feedInfo.likeFlag = true
-            feedInfoWithFollow[actionPosition].feedInfo.likeCount++
+        if(postLikePosition != -1 && postLikePosition < itemCount) {
+            feedInfoWithFollow[postLikePosition].feedInfo.likeFlag = true
+            feedInfoWithFollow[postLikePosition].feedInfo.likeCount++
 
-            notifyItemChanged(actionPosition)
+            notifyItemChanged(postLikePosition)
         }
     }
 
     fun deleteFeedLikeSuccess() {
-        if(actionPosition != -1 ) {
-            feedInfoWithFollow[actionPosition].feedInfo.likeFlag = false
-            feedInfoWithFollow[actionPosition].feedInfo.likeCount--
+        if(deleteLikePosition != -1 && deleteLikePosition < itemCount) {
+            feedInfoWithFollow[deleteLikePosition].feedInfo.likeFlag = false
+            feedInfoWithFollow[deleteLikePosition].feedInfo.likeCount--
 
-            notifyItemChanged(actionPosition)
+            notifyItemChanged(deleteLikePosition)
         }
     }
 
     fun postFollowSuccess() {
-        if(actionPosition != -1 ) {
-            feedInfoWithFollow[actionPosition].isFollowing = true
+        if(postFollowPosition != -1 && postFollowPosition < itemCount) {
+            feedInfoWithFollow[postFollowPosition].isFollowing = true
 
-            notifyItemChanged(actionPosition)
+            notifyItemChanged(postFollowPosition)
         }
     }
 
     fun deleteFollowSuccess() {
-        if(actionPosition != -1 ) {
-            feedInfoWithFollow[actionPosition].isFollowing = false
+        if(deleteFollowPosition != -1 && deleteFollowPosition < itemCount) {
+            feedInfoWithFollow[deleteFollowPosition].isFollowing = false
 
-            notifyItemChanged(actionPosition)
+            notifyItemChanged(deleteFollowPosition)
         }
     }
 

@@ -3,16 +3,11 @@ package com.vecto_example.vecto.ui.onefeed
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
 import android.view.View
-import android.widget.Toast
 import androidx.activity.viewModels
-import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.google.gson.Gson
 import com.vecto_example.vecto.R
-import com.vecto_example.vecto.data.Auth
 import com.vecto_example.vecto.data.repository.FeedRepository
 import com.vecto_example.vecto.data.repository.UserRepository
 import com.vecto_example.vecto.databinding.ActivityOneFeedBinding
@@ -99,7 +94,7 @@ class OneFeedActivity : AppCompatActivity(), FeedAdapter.OnFeedActionListener {
 
         /*   게시글 좋아요   */
         viewModel.postFeedLikeResult.observe(this) { postFeedLikeResult ->
-            if(feedAdapter.actionPosition != -1)
+            if(feedAdapter.postLikePosition != -1)
             {
                 postFeedLikeResult.onSuccess {
                     feedAdapter.postFeedLikeSuccess()
@@ -107,25 +102,25 @@ class OneFeedActivity : AppCompatActivity(), FeedAdapter.OnFeedActionListener {
                     ToastMessageUtils.showToast(this, getString(R.string.APIErrorToastMessage))
                 }
 
-                feedAdapter.actionPosition = -1
+                feedAdapter.postLikePosition = -1
             }
         }
 
         viewModel.deleteFeedLikeResult.observe(this) { deleteFeedLikeResult ->
-            if(feedAdapter.actionPosition != -1) {
+            if(feedAdapter.deleteLikePosition != -1) {
                 deleteFeedLikeResult.onSuccess {
                     feedAdapter.deleteFeedLikeSuccess()
                 }.onFailure {
                     ToastMessageUtils.showToast(this, getString(R.string.APIErrorToastMessage))
                 }
 
-                feedAdapter.actionPosition = -1
+                feedAdapter.deleteLikePosition = -1
             }
         }
 
         //팔로우
         viewModel.postFollowResult.observe(this) {
-            if(feedAdapter.actionPosition != -1) {
+            if(feedAdapter.postFollowPosition != -1) {
                 if (it) {
                     feedAdapter.postFollowSuccess()
                     ToastMessageUtils.showToast(this, getString(R.string.post_follow_success, viewModel.allFeedInfo[0].feedInfo.nickName))
@@ -133,12 +128,12 @@ class OneFeedActivity : AppCompatActivity(), FeedAdapter.OnFeedActionListener {
                     ToastMessageUtils.showToast(this, getString(R.string.post_follow_already, viewModel.allFeedInfo[0].feedInfo.nickName))
                 }
 
-                feedAdapter.actionPosition = -1
+                feedAdapter.postFollowPosition = -1
             }
         }
 
         viewModel.deleteFollowResult.observe(this) {
-            if(feedAdapter.actionPosition != -1) {
+            if(feedAdapter.deleteFollowPosition != -1) {
                 if (it) {
                     feedAdapter.deleteFollowSuccess()
                     ToastMessageUtils.showToast(this, getString(R.string.delete_follow_success, viewModel.allFeedInfo[0].feedInfo.nickName))
@@ -146,33 +141,33 @@ class OneFeedActivity : AppCompatActivity(), FeedAdapter.OnFeedActionListener {
                     ToastMessageUtils.showToast(this, getString(R.string.delete_follow_already, viewModel.allFeedInfo[0].feedInfo.nickName))
                 }
 
-                feedAdapter.actionPosition = -1
+                feedAdapter.deleteFollowPosition = -1
             }
         }
 
         /*   오류 관련 Observer   */
         viewModel.feedErrorLiveData.observe(this) {
-            errorMessageHandler(this, ToastMessageUtils.ValueType.FEED.name, it)
+            errorMessageHandler(this, ToastMessageUtils.UserInterActionType.FEED.name, it)
         }
 
         viewModel.followErrorLiveData.observe(this) {
-            errorMessageHandler(this, ToastMessageUtils.ValueType.FOLLOW.name, it)
+            errorMessageHandler(this, ToastMessageUtils.UserInterActionType.FOLLOW.name, it)
 
         }
 
         viewModel.postFollowError.observe(this) {
-            if(feedAdapter.actionPosition != -1) {
-                errorMessageHandler(this, ToastMessageUtils.ValueType.FOLLOW_POST.name, it)
+            if(feedAdapter.postFollowPosition != -1) {
+                errorMessageHandler(this, ToastMessageUtils.UserInterActionType.FOLLOW_POST.name, it)
 
-                feedAdapter.actionPosition = -1
+                feedAdapter.postFollowPosition = -1
             }
         }
 
         viewModel.deleteFollowError.observe(this) {
-            if(feedAdapter.actionPosition != -1) {
-                errorMessageHandler(this, ToastMessageUtils.ValueType.FOLLOW_DELETE.name, it)
+            if(feedAdapter.deleteFollowPosition != -1) {
+                errorMessageHandler(this, ToastMessageUtils.UserInterActionType.FOLLOW_DELETE.name, it)
 
-                feedAdapter.actionPosition = -1
+                feedAdapter.deleteFollowPosition = -1
             }
         }
     }
@@ -180,38 +175,38 @@ class OneFeedActivity : AppCompatActivity(), FeedAdapter.OnFeedActionListener {
 
     /*   Adapter CallBack 관련   */
     override fun onPostFeedLike(feedId: Int) {
-        if(!viewModel.checkLoading()) {
+        if(!viewModel.postLikeLoading) {
             viewModel.postFeedLike(feedId)
         } else {
             ToastMessageUtils.showToast(this, getString(R.string.task_duplication))
-            feedAdapter.actionPosition = -1
+            feedAdapter.postLikePosition = -1
         }
     }
 
     override fun onDeleteFeedLike(feedId: Int) {
-        if(!viewModel.checkLoading()) {
+        if(!viewModel.deleteLikeLoading) {
             viewModel.deleteFeedLike(feedId)
         } else {
             ToastMessageUtils.showToast(this, getString(R.string.task_duplication))
-            feedAdapter.actionPosition = -1
+            feedAdapter.deleteLikePosition = -1
         }
     }
 
     override fun onPostFollow(userId: String) {
-        if(!viewModel.checkLoading()) {
+        if(!viewModel.postFollowLoading) {
             viewModel.postFollow(userId)
         } else {
             ToastMessageUtils.showToast(this, getString(R.string.task_duplication))
-            feedAdapter.actionPosition = -1
+            feedAdapter.postFollowPosition = -1
         }
     }
 
     override fun onDeleteFollow(userId: String) {
-        if(!viewModel.checkLoading()) {
+        if(!viewModel.deleteFollowLoading) {
             viewModel.deleteFollow(userId)
         } else {
             ToastMessageUtils.showToast(this, getString(R.string.task_duplication))
-            feedAdapter.actionPosition = -1
+            feedAdapter.deleteFollowPosition = -1
         }
     }
 
@@ -233,10 +228,7 @@ class OneFeedActivity : AppCompatActivity(), FeedAdapter.OnFeedActionListener {
             putExtra("lastPage", false)
         }
 
-        if(!viewModel.checkLoading())
-            this.startActivity(intent)
-        else
-            ToastMessageUtils.showToast(this, getString(R.string.task_duplication))
+        this.startActivity(intent)
     }
 
     override fun onShareClick(feedInfo: VectoService.FeedInfo) {

@@ -22,9 +22,13 @@ import com.vecto_example.vecto.utils.LoadImageUtils
 import com.vecto_example.vecto.utils.RequestLoginUtils
 
 class FeedAdapter(): RecyclerView.Adapter<FeedAdapter.ViewHolder>() {
-    var actionPosition = -1
     var feedInfoWithFollow = mutableListOf<VectoService.FeedInfoWithFollow>()
     var lastSize = 0
+
+    var postLikePosition = -1
+    var deleteLikePosition = -1
+    var postFollowPosition = -1
+    var deleteFollowPosition = -1
 
     interface OnFeedActionListener {
         fun onPostFeedLike(feedId: Int)
@@ -140,11 +144,11 @@ class FeedAdapter(): RecyclerView.Adapter<FeedAdapter.ViewHolder>() {
 
             if(Auth.loginFlag.value == false) {
                 RequestLoginUtils.requestLogin(itemView.context)
-            } else if(actionPosition == -1){
-
-                if(feedInfoWithFollow.feedInfo.likeFlag){
+            } else {
+                if(feedInfoWithFollow.feedInfo.likeFlag && deleteLikePosition == -1){
                     feedActionListener?.onDeleteFeedLike(feedInfoWithFollow.feedInfo.feedId)
-                } else {
+                    deleteLikePosition = bindingAdapterPosition
+                } else if(!feedInfoWithFollow.feedInfo.likeFlag && postLikePosition == -1) {
 
                     val anim = AnimationUtils.loadAnimation(itemView.context, R.anim.like_anim)
 
@@ -157,27 +161,23 @@ class FeedAdapter(): RecyclerView.Adapter<FeedAdapter.ViewHolder>() {
                     binding.LikeImage.startAnimation(anim)
 
                     feedActionListener?.onPostFeedLike(feedInfoWithFollow.feedInfo.feedId)
+                    postLikePosition = bindingAdapterPosition
                 }
-
-                actionPosition = adapterPosition
-
             }
-
         }
 
         private fun clickFollowAction(feedInfoWithFollow: VectoService.FeedInfoWithFollow) {
 
             if(Auth.loginFlag.value == false) {
                 RequestLoginUtils.requestLogin(itemView.context)
-            } else if(actionPosition == -1) {
-
-                if(feedInfoWithFollow.isFollowing){
+            } else {
+                if(feedInfoWithFollow.isFollowing && deleteFollowPosition == -1){
                     feedActionListener?.onDeleteFollow(feedInfoWithFollow.feedInfo.userId)
-                } else {
+                    deleteFollowPosition = bindingAdapterPosition
+                } else if(!feedInfoWithFollow.isFollowing && postFollowPosition == -1){
                     feedActionListener?.onPostFollow(feedInfoWithFollow.feedInfo.userId)
+                    postFollowPosition = bindingAdapterPosition
                 }
-
-                actionPosition = adapterPosition
             }
         }
     }
@@ -197,39 +197,39 @@ class FeedAdapter(): RecyclerView.Adapter<FeedAdapter.ViewHolder>() {
 
     //좋아요 성공시 실행 함수
     fun postFeedLikeSuccess(){
-        if(actionPosition != -1 ) {
-            feedInfoWithFollow[actionPosition].feedInfo.likeFlag = true
-            feedInfoWithFollow[actionPosition].feedInfo.likeCount++
+        if(postLikePosition != -1 && postLikePosition < itemCount) {
+            feedInfoWithFollow[postLikePosition].feedInfo.likeFlag = true
+            feedInfoWithFollow[postLikePosition].feedInfo.likeCount++
 
-            notifyItemChanged(actionPosition)
+            notifyItemChanged(postLikePosition)
         }
     }
 
     //좋아요 취소 성공시 실행 함수
     fun deleteFeedLikeSuccess(){
-        if(actionPosition != -1 ) {
-            feedInfoWithFollow[actionPosition].feedInfo.likeFlag = false
-            feedInfoWithFollow[actionPosition].feedInfo.likeCount--
+        if(deleteLikePosition != -1 && deleteLikePosition < itemCount) {
+            feedInfoWithFollow[deleteLikePosition].feedInfo.likeFlag = false
+            feedInfoWithFollow[deleteLikePosition].feedInfo.likeCount--
 
-            notifyItemChanged(actionPosition)
+            notifyItemChanged(deleteLikePosition)
         }
     }
 
     //팔로우 요청 성공시 실행 함수
     fun postFollowSuccess(){
-        if(actionPosition != -1 ) {
-            feedInfoWithFollow[actionPosition].isFollowing = true
+        if(postFollowPosition != -1 && postFollowPosition < itemCount) {
+            feedInfoWithFollow[postFollowPosition].isFollowing = true
 
-            notifyItemChanged(actionPosition)
+            notifyItemChanged(postFollowPosition)
         }
     }
 
     //팔로우 삭제 요청 성공시 실행 함수
     fun deleteFollowSuccess(){
-        if(actionPosition != -1 ) {
-            feedInfoWithFollow[actionPosition].isFollowing = false
+        if(deleteFollowPosition != -1 && deleteFollowPosition < itemCount) {
+            feedInfoWithFollow[deleteFollowPosition].isFollowing = false
 
-            notifyItemChanged(actionPosition)
+            notifyItemChanged(deleteFollowPosition)
         }
     }
 

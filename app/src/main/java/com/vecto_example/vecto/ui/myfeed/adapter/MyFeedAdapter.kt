@@ -22,9 +22,12 @@ import com.vecto_example.vecto.utils.RequestLoginUtils
 
 class MyFeedAdapter(): RecyclerView.Adapter<MyFeedAdapter.ViewHolder>()
 {
-    var actionPosition = -1
     var feedInfo = mutableListOf<VectoService.FeedInfo>()
     var lastSize = 0
+
+    var deleteFeedPosition = -1
+    var postLikePosition = -1
+    var deleteLikePosition = -1
 
 
     interface OnFeedActionListener {
@@ -73,7 +76,7 @@ class MyFeedAdapter(): RecyclerView.Adapter<MyFeedAdapter.ViewHolder>()
             binding.TotalTimeText.text = DateTimeUtils.getCourseTime(feed.visit.first().datetime, feed.visit.last().datetime)
 
             /*   게시글 메뉴   */
-            if(Auth._userId.value != feedInfo[adapterPosition].userId) {
+            if(Auth._userId.value != feedInfo[bindingAdapterPosition].userId) {
                 binding.PostMenuImage.visibility = View.GONE
             }
 
@@ -82,17 +85,19 @@ class MyFeedAdapter(): RecyclerView.Adapter<MyFeedAdapter.ViewHolder>()
                     val editDeletePopupWindow = EditDeletePopupWindow(itemView.context,
                         editListener = {
                             val intent = Intent(itemView.context, EditFeedActivity::class.java).apply {
-                                putExtra("feedInfoJson", Gson().toJson(feedInfo[adapterPosition]))
-                                putExtra("feedId", feedInfo[adapterPosition].feedId)
+                                putExtra("feedInfoJson", Gson().toJson(feedInfo[bindingAdapterPosition]))
+                                putExtra("feedId", feedInfo[bindingAdapterPosition].feedId)
                             }
                             itemView.context.startActivity(intent)
                         },
                         deleteListener = {
-                            val deletePostDialog = DeletePostDialog(itemView.context)
-                            deletePostDialog.showDialog()
-                            deletePostDialog.onOkButtonClickListener = {
-                                actionPosition = adapterPosition
-                                feedActionListener?.onDeleteFeed(feedInfo[adapterPosition].feedId)
+                            if(deleteFeedPosition == -1) {
+                                val deletePostDialog = DeletePostDialog(itemView.context)
+                                deletePostDialog.showDialog()
+                                deletePostDialog.onOkButtonClickListener = {
+                                    deleteFeedPosition = bindingAdapterPosition
+                                    feedActionListener?.onDeleteFeed(feedInfo[bindingAdapterPosition].feedId)
+                                }
                             }
                         },
                         dismissListener = {
@@ -113,7 +118,7 @@ class MyFeedAdapter(): RecyclerView.Adapter<MyFeedAdapter.ViewHolder>()
             binding.LikeCountText.text = feed.likeCount.toString()
 
             binding.LikeTouchImage.setOnClickListener {
-                clickLikeAction(feedInfo[adapterPosition])
+                clickLikeAction(feedInfo[bindingAdapterPosition])
             }
 
             /*   댓글   */
@@ -121,44 +126,43 @@ class MyFeedAdapter(): RecyclerView.Adapter<MyFeedAdapter.ViewHolder>()
 
             binding.CommentTouchImage.setOnClickListener {
                 val intent = Intent(itemView.context, CommentActivity::class.java)
-                intent.putExtra("feedID", feedInfo[adapterPosition].feedId)
+                intent.putExtra("feedID", feedInfo[bindingAdapterPosition].feedId)
                 itemView.context.startActivity(intent)
             }
 
             itemView.setOnClickListener {
-                feedActionListener?.onItemViewClick(adapterPosition)
+                feedActionListener?.onItemViewClick(bindingAdapterPosition)
             }
 
             /*   공유   */
             binding.ShareTouchImage.setOnClickListener {
-                feedActionListener?.onShareClick(feedInfo[adapterPosition])
+                feedActionListener?.onShareClick(feedInfo[bindingAdapterPosition])
             }
         }
 
         //좋아요 클릭시 실행 함수
         private fun clickLikeAction(feed: VectoService.FeedInfo) {
-
-            if(Auth.loginFlag.value == true && actionPosition == -1) {
-                if (feed.likeFlag) {
-                    feedActionListener?.onDeleteLike(feedInfo[adapterPosition].feedId)
-                } else {
-                    val anim = AnimationUtils.loadAnimation(itemView.context, R.anim.like_anim)
-
-                    anim.setAnimationListener(object : Animation.AnimationListener {
-                        override fun onAnimationStart(animation: Animation?) {}
-                        override fun onAnimationEnd(animation: Animation?) {}
-                        override fun onAnimationRepeat(animation: Animation?) {}
-                    })
-
-                    binding.LikeImage.startAnimation(anim)
-
-                    feedActionListener?.onPostLike(feedInfo[adapterPosition].feedId)
-                }
-
-                actionPosition = adapterPosition
-            }
-            else {
+            if(Auth.loginFlag.value == false){
                 RequestLoginUtils.requestLogin(itemView.context)
+                return
+            }
+
+            if (feed.likeFlag && deleteLikePosition == -1) {
+                feedActionListener?.onDeleteLike(feedInfo[bindingAdapterPosition].feedId)
+                deleteLikePosition = bindingAdapterPosition
+            } else if(!feed.likeFlag && postLikePosition == -1) {
+                val anim = AnimationUtils.loadAnimation(itemView.context, R.anim.like_anim)
+
+                anim.setAnimationListener(object : Animation.AnimationListener {
+                    override fun onAnimationStart(animation: Animation?) {}
+                    override fun onAnimationEnd(animation: Animation?) {}
+                    override fun onAnimationRepeat(animation: Animation?) {}
+                })
+
+                binding.LikeImage.startAnimation(anim)
+
+                feedActionListener?.onPostLike(feedInfo[bindingAdapterPosition].feedId)
+                postLikePosition = bindingAdapterPosition
             }
 
         }
@@ -181,31 +185,31 @@ class MyFeedAdapter(): RecyclerView.Adapter<MyFeedAdapter.ViewHolder>()
 
     //좋아요 성공 시 실행 함수
     fun postFeedLikeSuccess() {
-        if(actionPosition != -1) {
-            feedInfo[actionPosition].likeFlag = true
-            feedInfo[actionPosition].likeCount++
+        if(postLikePosition != -1 && postLikePosition < itemCount) {
+            feedInfo[postLikePosition].likeFlag = true
+            feedInfo[postLikePosition].likeCount++
 
-            notifyItemChanged(actionPosition)
+            notifyItemChanged(postLikePosition)
         }
     }
 
     //좋아요 삭제 성공 시 실행 함수
     fun deleteFeedLikeSuccess() {
-        if(actionPosition != -1) {
-            feedInfo[actionPosition].likeFlag = false
-            feedInfo[actionPosition].likeCount--
+        if(deleteLikePosition != -1 && deleteLikePosition < itemCount) {
+            feedInfo[deleteLikePosition].likeFlag = false
+            feedInfo[deleteLikePosition].likeCount--
 
-            notifyItemChanged(actionPosition)
+            notifyItemChanged(deleteLikePosition)
         }
     }
 
     //게시글 삭제 성공 시 실행 함수
     fun deleteFeedSuccess() {
-        if(actionPosition != -1) {
-            feedInfo.removeAt(actionPosition)
+        if(deleteFeedPosition != -1 && deleteFeedPosition < itemCount) {
+            feedInfo.removeAt(deleteFeedPosition)
             lastSize = feedInfo.size
 
-            notifyItemRemoved(actionPosition)
+            notifyItemRemoved(deleteFeedPosition)
         }
     }
 
