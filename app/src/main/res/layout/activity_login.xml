@@ -52,21 +52,32 @@
         app:layout_constraintTop_toBottomOf="@+id/LoginBoxID"
         app:srcCompat="@drawable/login_box" />
 
-    <com.google.android.material.button.MaterialButton
+    <ImageView
         android:id="@+id/LoginButton"
         android:layout_width="320dp"
         android:layout_height="48dp"
         android:layout_marginTop="10dp"
-        android:text="로그인"
-        android:background="@drawable/login_button"
+        android:background="@drawable/ripple_orange_login_box"
         android:fontFamily="@font/lineseedkr_bd"
-        android:textColor="@color/white"
-        android:textSize="20sp"
-        app:backgroundTint="@null"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/LoginBoxPW" />
+
+    <TextView
+        android:id="@+id/LoginButtonText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/lineseedkr_bd"
+        android:text="로그인"
+        android:textColor="@color/white"
+        android:textSize="20sp"
+        app:layout_constraintStart_toStartOf="@+id/LoginButton"
+        app:layout_constraintEnd_toEndOf="@+id/LoginButton"
+        app:layout_constraintTop_toTopOf="@+id/LoginButton"
+        app:layout_constraintBottom_toBottomOf="@+id/LoginButton"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintVertical_bias="0.53"/>
 
     <ImageView
         android:id="@+id/LoginBar"
@@ -84,6 +95,8 @@
         android:layout_width="320dp"
         android:layout_height="48dp"
         android:layout_marginTop="10dp"
+        android:background="@drawable/ripple_orange_login_box"
+        android:backgroundTint="@color/vecto_transparenct"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
@@ -148,5 +161,27 @@
         app:layout_constraintStart_toStartOf="@+id/LoginBoxPW"
         app:layout_constraintTop_toTopOf="@+id/LoginBoxPW"
         app:layout_constraintVertical_bias="0.5" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/constraintProgress"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/progress_background"
+        android:visibility="gone">
+
+        <ProgressBar
+            android:id="@+id/progressBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:indeterminateDrawable="@drawable/vecto_loading"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.5" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

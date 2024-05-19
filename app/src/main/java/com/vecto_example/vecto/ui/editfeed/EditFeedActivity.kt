@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Rect
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -13,8 +14,11 @@ import android.os.Handler
 import android.os.Looper
 import android.provider.MediaStore
 import android.util.Log
+import android.view.MotionEvent
 import android.view.View
+import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
@@ -34,6 +38,7 @@ import com.vecto_example.vecto.data.model.LocationData
 import com.vecto_example.vecto.data.model.LocationDatabase
 import com.vecto_example.vecto.data.model.VisitData
 import com.vecto_example.vecto.data.model.VisitDatabase
+import com.vecto_example.vecto.data.repository.TokenRepository
 import com.vecto_example.vecto.databinding.ActivityEditFeedBinding
 import com.vecto_example.vecto.dialog.CalendarDialog
 import com.vecto_example.vecto.dialog.WriteBottomDialog
@@ -48,6 +53,8 @@ import com.vecto_example.vecto.utils.DateTimeUtils
 import com.vecto_example.vecto.utils.MapMarkerManager
 import com.vecto_example.vecto.utils.MapOverlayManager
 import com.vecto_example.vecto.utils.RequestLoginUtils
+import com.vecto_example.vecto.utils.SaveLoginDataUtils
+import com.vecto_example.vecto.utils.ToastMessageUtils
 import com.yalantis.ucrop.UCrop
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
@@ -60,7 +67,7 @@ class EditFeedActivity : AppCompatActivity(), OnMapReadyCallback, CalendarDialog
     lateinit var binding: ActivityEditFeedBinding
 
     private val writeViewModel: WriteViewModel by viewModels {
-        WriteViewModelFactory(WriteRepository(VectoService.create(), NaverSearchApiService.create()))
+        WriteViewModelFactory(WriteRepository(VectoService.create(), NaverSearchApiService.create()), TokenRepository(VectoService.create()))
     }
 
     private lateinit var myEditImageAdapter: MyEditImageAdapter
@@ -79,9 +86,6 @@ class EditFeedActivity : AppCompatActivity(), OnMapReadyCallback, CalendarDialog
     private var currentImageIndex = 0 // 현재 크롭 중 인덱스
     private var selectedImageUris = mutableListOf<Uri>() // 선택된 이미지 URI 목록
 
-    private lateinit var locationDataList: MutableList<LocationData>
-    private lateinit var visitDataList: MutableList<VisitData>
-
     private var mapSnapshot = mutableListOf<Bitmap>()
     private var imageUrl = mutableListOf<String>()
 
@@ -91,28 +95,35 @@ class EditFeedActivity : AppCompatActivity(), OnMapReadyCallback, CalendarDialog
     private var content = ""
     private var feedId = -1
 
+    private var originalWidth = 0
+    private var originalHeight = 0
+
+    private var backPressedTime: Long = 0L
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         binding = ActivityEditFeedBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        originalWidth = binding.naverMapEditPost.layoutParams.width
+        originalHeight = binding.naverMapEditPost.layoutParams.height
+
         val typeofFeedInfo = object : TypeToken<VectoService.FeedInfo>() {}.type
         val feedInfo = Gson().fromJson<VectoService.FeedInfo>(intent.getStringExtra("feedInfoJson"), typeofFeedInfo)
-        locationDataList = feedInfo.location.toMutableList()
-        visitDataList = feedInfo.visit.toMutableList()
+        writeViewModel.locationDataList.addAll(feedInfo.location.toMutableList())
+        writeViewModel.visitDataList.addAll(feedInfo.visit.toMutableList())
         imageUrl = feedInfo.image.toMutableList()
         title = feedInfo.title
         content = feedInfo.content
 
-        writeViewModel.reverseGeocode(visitDataList)
+        writeViewModel.reverseGeocode()
 
         feedId = intent.getIntExtra("feedId", -1)
 
         if(feedId != -1) {
             initUI()
 
-            initMap()
             initRecyclerView(feedInfo)
             initListeners()
             initObservers()
@@ -121,8 +132,22 @@ class EditFeedActivity : AppCompatActivity(), OnMapReadyCallback, CalendarDialog
             setCropResult()
 
         } else {
-            Toast.makeText(this, "게시글 정보 불러오기에 실패했습니다. 다시 시도해 주세요.", Toast.LENGTH_SHORT).show()
+            ToastMessageUtils.showToast(this, getString(R.string.get_feed_fail))
         }
+
+        // OnBackPressedCallback 등록
+        val callback = object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if (System.currentTimeMillis() - backPressedTime <= 2000) {
+                    finish()
+                } else {
+                    backPressedTime = System.currentTimeMillis()
+                    ToastMessageUtils.showToast(this@EditFeedActivity, getString(R.string.back_pressed_edit))
+                }
+            }
+        }
+
+        onBackPressedDispatcher.addCallback(this, callback)
     }
 
     private fun initObservers() {
@@ -142,6 +167,8 @@ class EditFeedActivity : AppCompatActivity(), OnMapReadyCallback, CalendarDialog
                 binding.DeleteButton.visibility = View.VISIBLE
                 binding.naverMapEditPost.visibility = View.VISIBLE
 
+                initMap()
+
                 binding.LocationBoxImage.isClickable = false
             } else {
                 binding.DeleteButton.visibility = View.GONE
@@ -149,18 +176,15 @@ class EditFeedActivity : AppCompatActivity(), OnMapReadyCallback, CalendarDialog
 
                 binding.LocationBoxImage.isClickable = true
 
-                visitDataList.clear()
-                locationDataList.clear()
+                writeViewModel.visitDataList.clear()
+                writeViewModel.locationDataList.clear()
+
                 mapOverlayManager.deleteOverlay()
             }
         }
 
         writeViewModel.mapImageUrls.observe(this){
             val allImageUrl: List<String> = imageUrl + (writeViewModel.imageUrls.value ?: emptyList())
-
-            Log.d("EditPost", "VISIT DATA SIZE : ${writeViewModel.visitDataForWriteList.size}")
-            Log.d("EditPost", "ORIGINAL IMAGE SIZE: ${imageUrl.size}")
-            Log.d("EditPost", "NEW IMAGE SIZE: ${writeViewModel.imageUrls.value?.size}")
 
             if(myEditImageAdapter.imageUri.isEmpty() && uploadStarted){   //업로드 할 Normal Image 가 없는 경우
                 Log.d("EditPost", "업로드 할 이미지가 없고 지도 이미지 업로드가 완료되었습니다.")
@@ -176,10 +200,6 @@ class EditFeedActivity : AppCompatActivity(), OnMapReadyCallback, CalendarDialog
         writeViewModel.imageUrls.observe(this){
             val allImageUrl: List<String> = imageUrl + (writeViewModel.imageUrls.value ?: emptyList())
 
-            Log.d("EditPost", "VISIT DATA SIZE : ${writeViewModel.visitDataForWriteList.size}")
-            Log.d("EditPost", "ORIGINAL IMAGE SIZE: ${imageUrl.size}")
-            Log.d("EditPost", "NEW IMAGE SIZE: ${writeViewModel.imageUrls.value?.size}")
-
             if(writeViewModel.mapImageDone.value == true && uploadStarted){  //Normal Image 와 지도 이미지 모두 완료된 경우
                 Log.d("EditPost", "업로드 할 이미지가 있고 지도 이미지 업로드는 완료되었습니다.")
 
@@ -190,22 +210,37 @@ class EditFeedActivity : AppCompatActivity(), OnMapReadyCallback, CalendarDialog
 
         writeViewModel.updateFeedResult.observe(this){
             if(it == "SUCCESS"){
-                Toast.makeText(this, "게시글 수정이 완료되었습니다.", Toast.LENGTH_SHORT).show()
+                ToastMessageUtils.showToast(this, getString(R.string.update_feed_success))
 
                 finish()
             }
         }
 
-        writeViewModel.errorLiveData.observe(this){
-            sendFailMessage(it, this, "errorLiveData")
+        writeViewModel.reissueResponse.observe(this){
+            when(it){
+                WriteViewModel.Function.UploadMapImages.name -> {
+                    writeViewModel.uploadImages(WriteViewModel.ImageType.MAP.name, writeViewModel.mapImagePart)
+                }
+                WriteViewModel.Function.UploadNormalImages.name -> {
+                    writeViewModel.uploadImages(WriteViewModel.ImageType.NORMAL.name, writeViewModel.normalImagePart)
+                }
+                WriteViewModel.Function.UpdateFeed.name -> {
+                    writeViewModel.updateFeed(writeViewModel.updateFeedRequest)
+                }
+            }
         }
 
-        writeViewModel.feedErrorLiveData.observe(this){
-            sendFailMessage(it, this, "feedErrorLiveData")
-        }
+        writeViewModel.errorMessage.observe(this){
+            ToastMessageUtils.showToast(this, getString(it))
 
-        writeViewModel.imageErrorLiveData.observe(this){
-            sendFailMessage(it, this, "imageErrorLiveData")
+            if(it == R.string.expired_login) {
+                SaveLoginDataUtils.deleteData(this)
+                finish()
+            }
+
+            uploadStarted = false
+            writeViewModel.failUpload()
+            changeMapSize(originalWidth, originalHeight)
         }
 
     }
@@ -217,7 +252,7 @@ class EditFeedActivity : AppCompatActivity(), OnMapReadyCallback, CalendarDialog
                 binding.EditTitle.text.toString(),
                 binding.EditContent.text.toString(),
                 allImageUrl.toMutableList(),
-                locationDataList,
+                writeViewModel.locationDataList,
                 writeViewModel.visitDataForWriteList,
                 writeViewModel.mapImageUrls.value?.toMutableList()
             ))
@@ -234,7 +269,6 @@ class EditFeedActivity : AppCompatActivity(), OnMapReadyCallback, CalendarDialog
         binding.LocationBoxImage.setOnClickListener {
             if(writeViewModel.isCourseDataLoaded.value == false) {
                 initMap()
-                showDatePickerDialog()
             }
         }
 
@@ -249,18 +283,17 @@ class EditFeedActivity : AppCompatActivity(), OnMapReadyCallback, CalendarDialog
             }
 
             if(!writeViewModel.isAllVisitDataValid()){  //방문지 유효성 검사
-                Toast.makeText(this, "경로 정보가 유효하지 않습니다. 경로를 재등록 해주세요.", Toast.LENGTH_SHORT).show()
+                ToastMessageUtils.showToast(this, getString(R.string.feed_visit_error))
 
                 return@setOnClickListener
             }
 
             if (binding.EditTitle.text.isEmpty())
-                Toast.makeText(this, "제목을 입력해주세요.", Toast.LENGTH_SHORT).show()
-            else if (visitDataList.size == 0 || locationDataList.size == 0)
-                Toast.makeText(this, "경로를 선택해주세요.", Toast.LENGTH_SHORT).show()
+                ToastMessageUtils.showToast(this, getString(R.string.feed_title_empty))
+            else if (writeViewModel.visitDataList.size == 0 || writeViewModel.locationDataList.size == 0)
+                ToastMessageUtils.showToast(this, getString(R.string.feed_visit_empty))
             else {
-                binding.progressBar.visibility = View.VISIBLE
-                binding.constraintProgress.visibility = View.VISIBLE
+                writeViewModel.startLoading()
 
                 uploadStarted = true
                 takeSnapForMap()
@@ -317,7 +350,7 @@ class EditFeedActivity : AppCompatActivity(), OnMapReadyCallback, CalendarDialog
     }
 
     private fun selectVisit(selectedDate: String) = //특정 날짜에 해당하는 방문지를 선택하는 함수
-        if(visitDataList.any{ it.name.isEmpty() })//이름항목이 하나라도 비어있을 경우
+        if(writeViewModel.visitDataList.any{ it.name.isEmpty() })//이름항목이 하나라도 비어있을 경우
         {
             val writeNameEmptyDialog = WriteNameEmptyDialog(this)
             writeNameEmptyDialog.showDialog()
@@ -326,40 +359,32 @@ class EditFeedActivity : AppCompatActivity(), OnMapReadyCallback, CalendarDialog
                 intent.putExtra("editCourse", selectedDate)
                 this.startActivity(intent)
             }
+
+            writeViewModel.visitDataList.clear()
         }
         else//완성된 경우
         {
             val writeBottomDialog = WriteBottomDialog(this)
-            writeBottomDialog.showDialog(visitDataList) { selectedItems -> //구간을 선택함 (모든 정보 완료)
+            writeBottomDialog.showDialog(writeViewModel.visitDataList) { selectedItems -> //구간을 선택함 (모든 정보 완료)
 
                 if(selectedItems.size > 9){
-                    Toast.makeText(this, "방문지는 최대 9개까지 선택이 가능합니다.", Toast.LENGTH_SHORT).show()
+                    ToastMessageUtils.showToast(this, getString(R.string.feed_visit_max))
+                    writeViewModel.visitDataList.clear()
                     return@showDialog
                 }
 
-                mapOverlayManager.deleteOverlay()
-
                 //선택한 날짜의 방문지의 처음과 끝까지의 경로
-                locationDataList = LocationDatabase(this).getBetweenLocationData(selectedItems.first().datetime, selectedItems.last().datetime)
+                writeViewModel.locationDataList.addAll(LocationDatabase(this).getBetweenLocationData(selectedItems.first().datetime, selectedItems.last().datetime))
 
-                mapOverlayManager.addPathOverlayForLocation(locationDataList)
-
-                if(selectedItems.size == 1)
-                    mapOverlayManager.moveCameraForVisitUpload(selectedItems[0])
-                else
-                    mapOverlayManager.moveCameraForPathUpload(locationDataList)
                 val locationDataForPath = mutableListOf<LocationData>()
 
                 //location 첫 좌표 넣어줌.
                 locationDataForPath.add(LocationData(selectedItems[0].datetime, selectedItems[0].lat_set, selectedItems[0].lng_set))
 
-                for (visitdatalist in selectedItems){
-                    mapMarkerManager.addVisitMarkerBasic(visitdatalist)
-                }
+                writeViewModel.visitDataList.clear()
+                writeViewModel.visitDataList.addAll(selectedItems.toMutableList())
 
-                visitDataList = selectedItems.toMutableList()
-
-                writeViewModel.reverseGeocode(visitDataList)
+                writeViewModel.reverseGeocode()
             }
         }
 
@@ -385,10 +410,10 @@ class EditFeedActivity : AppCompatActivity(), OnMapReadyCallback, CalendarDialog
 
 
         changeMapSize(340, 340)
-        if(visitDataList.size == 1)
-            mapOverlayManager.moveCameraForVisitUpload(visitDataList[0])
+        if(writeViewModel.visitDataList.size == 1)
+            mapOverlayManager.moveCameraForVisitUpload(writeViewModel.visitDataList[0])
         else
-            mapOverlayManager.moveCameraForPathUpload(locationDataList)
+            mapOverlayManager.moveCameraForPathUpload(writeViewModel.locationDataList)
 
         Handler(Looper.getMainLooper()).postDelayed({
             naverMap.takeSnapshot {
@@ -401,10 +426,10 @@ class EditFeedActivity : AppCompatActivity(), OnMapReadyCallback, CalendarDialog
         }, 1000)
 
         Handler(Looper.getMainLooper()).postDelayed({
-            if(visitDataList.size == 1)
-                mapOverlayManager.moveCameraForVisitUpload(visitDataList[0])
+            if(writeViewModel.visitDataList.size == 1)
+                mapOverlayManager.moveCameraForVisitUpload(writeViewModel.visitDataList[0])
             else
-                mapOverlayManager.moveCameraForPathUpload(locationDataList)
+                mapOverlayManager.moveCameraForPathUpload(writeViewModel.locationDataList)
         }, 1100)
 
         Handler(Looper.getMainLooper()).postDelayed({
@@ -448,25 +473,6 @@ class EditFeedActivity : AppCompatActivity(), OnMapReadyCallback, CalendarDialog
 
     }
 
-    private fun sendFailMessage(message: String, context: Context, type: String) {
-        if(message == "FAIL"){
-            when(type){
-                "errorLiveData" -> {
-                    Toast.makeText(context, "방문지 역지오코딩에 실패하였습니다.", Toast.LENGTH_SHORT).show()
-                }
-                "feedErrorLiveData" -> {
-                    Toast.makeText(context, "게시글 수정에 실패하였습니다.", Toast.LENGTH_SHORT).show()
-                }
-                "imageErrorLiveData" -> {
-                    Toast.makeText(context, "이미지 업로드에 실패하였습니다.", Toast.LENGTH_SHORT).show()
-                }
-            }
-        }
-        else if(message == "ERROR"){
-            Toast.makeText(context, getText(R.string.APIErrorToastMessage), Toast.LENGTH_SHORT).show()
-        }
-    }
-
     override fun onDateSelected(date: String) {
         val previousDate = DateTimeUtils.getPreviousDate(date)
 
@@ -476,15 +482,16 @@ class EditFeedActivity : AppCompatActivity(), OnMapReadyCallback, CalendarDialog
             visitDate == previousDate && endDate == date
         }
 
-        visitDataList = VisitDatabase(this).getAllVisitData().filter {
+        writeViewModel.visitDataList.clear()
+        writeViewModel.visitDataList.addAll(VisitDatabase(this).getAllVisitData().filter {
             it.datetime.startsWith(date)
-        }.toMutableList()
+        }.toMutableList())
 
         //종료 시간이 선택 날짜인 방문지 추가
         if(filteredData.isNotEmpty())
-            visitDataList.add(0, filteredData[0])
+            writeViewModel.visitDataList.add(0, filteredData[0])
 
-        if(visitDataList.isNotEmpty()){
+        if(writeViewModel.visitDataList.isNotEmpty()){
             //방문 장소가 있을 경우
 
             selectVisit(date)
@@ -497,7 +504,6 @@ class EditFeedActivity : AppCompatActivity(), OnMapReadyCallback, CalendarDialog
 
     override fun onMapReady(naverMap: NaverMap) {
         this.naverMap = naverMap
-        naverMap.moveCamera(CameraUpdate.zoomTo(18.0))
         naverMap.uiSettings.isZoomControlEnabled = false
         naverMap.uiSettings.isScrollGesturesEnabled = false
         naverMap.uiSettings.isScaleBarEnabled = false
@@ -508,26 +514,20 @@ class EditFeedActivity : AppCompatActivity(), OnMapReadyCallback, CalendarDialog
         mapMarkerManager = MapMarkerManager(this, naverMap)
         mapOverlayManager = MapOverlayManager(this, mapMarkerManager, naverMap)
 
-        if(locationDataList.isNotEmpty() && visitDataList.isNotEmpty()) {//원본 경로 설정
-            mapOverlayManager.addPathOverlayForLocation(locationDataList)
+        if(writeViewModel.visitDataList.isNotEmpty()){
+            mapOverlayManager.deleteOverlay()
 
-            if (visitDataList.size == 1)
-                mapOverlayManager.moveCameraForVisitUpload(visitDataList[0])
-            else
-                mapOverlayManager.moveCameraForPathUpload(locationDataList)
-            val locationDataForPath = mutableListOf<LocationData>()
-
-            locationDataForPath.add(
-                LocationData(
-                    visitDataList[0].datetime,
-                    visitDataList[0].lat_set,
-                    visitDataList[0].lng_set
-                )
-            )
-
-            for (visitdatalist in visitDataList) {
+            mapOverlayManager.addPathOverlayForLocation(writeViewModel.locationDataList)
+            for (visitdatalist in writeViewModel.visitDataList){
                 mapMarkerManager.addVisitMarkerBasic(visitdatalist)
             }
+
+            if(writeViewModel.visitDataList.size == 1)
+                mapOverlayManager.moveCameraForVisitUpload(writeViewModel.visitDataList[0])
+            else
+                mapOverlayManager.moveCameraForPathUpload(writeViewModel.locationDataList)
+        } else {
+            showDatePickerDialog()
         }
     }
 
@@ -546,7 +546,7 @@ class EditFeedActivity : AppCompatActivity(), OnMapReadyCallback, CalendarDialog
                 currentImageIndex = 0 // 인덱스 초기화
 
                 if (myEditImageAdapter.itemCount + result.data?.clipData!!.itemCount > 10) {
-                    Toast.makeText(this, "최대 10개의 이미지만 추가 가능합니다.", Toast.LENGTH_LONG).show()
+                    ToastMessageUtils.showToast(this, getString(R.string.feed_image_max))
                     return@registerForActivityResult
                 }
 
@@ -598,6 +598,7 @@ class EditFeedActivity : AppCompatActivity(), OnMapReadyCallback, CalendarDialog
             if (result.resultCode == Activity.RESULT_OK) {
                 val resultUri = UCrop.getOutput(result.data!!)
                 addImage(resultUri!!)
+                myEditImageAdapter.notifyItemInserted(currentImageIndex)
                 currentImageIndex++ // 다음 이미지를 위해 인덱스 증가
                 startNextCrop() // 다음 이미지 크롭 시작
             } else if (result.resultCode == UCrop.RESULT_ERROR) {
@@ -653,6 +654,21 @@ class EditFeedActivity : AppCompatActivity(), OnMapReadyCallback, CalendarDialog
         Log.d("uCrop", "saveCompressedImage")
 
         myEditImageAdapter.imageUri.add(Uri.fromFile(file))
-        myEditImageAdapter.notifyDataSetChanged()
+    }
+
+    override fun dispatchTouchEvent(ev: MotionEvent?): Boolean {
+
+        currentFocus?.let { view ->
+            val inputMethodManager = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
+            if (ev?.action == MotionEvent.ACTION_DOWN) {
+                val outRect = Rect()
+                view.getGlobalVisibleRect(outRect)
+                if (!outRect.contains(ev.rawX.toInt(), ev.rawY.toInt())) {
+                    view.clearFocus()
+                    inputMethodManager.hideSoftInputFromWindow(view.windowToken, 0)
+                }
+            }
+        }
+        return super.dispatchTouchEvent(ev)
     }
 }

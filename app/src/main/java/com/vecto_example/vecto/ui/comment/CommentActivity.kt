@@ -15,12 +15,14 @@ import com.vecto_example.vecto.R
 import com.vecto_example.vecto.data.Auth
 import com.vecto_example.vecto.data.repository.CommentRepository
 import com.vecto_example.vecto.data.repository.FeedRepository
+import com.vecto_example.vecto.data.repository.TokenRepository
 import com.vecto_example.vecto.data.repository.UserRepository
 import com.vecto_example.vecto.databinding.ActivityCommentBinding
 import com.vecto_example.vecto.retrofit.VectoService
 import com.vecto_example.vecto.ui.userinfo.UserInfoViewModel
 import com.vecto_example.vecto.ui.userinfo.UserInfoViewModelFactory
 import com.vecto_example.vecto.utils.RequestLoginUtils
+import com.vecto_example.vecto.utils.SaveLoginDataUtils
 import com.vecto_example.vecto.utils.ToastMessageUtils
 
 class CommentActivity : AppCompatActivity(), MyCommentAdapter.OnEditActionListener, MyCommentAdapter.OnCommentActionListener,
@@ -29,11 +31,11 @@ class CommentActivity : AppCompatActivity(), MyCommentAdapter.OnEditActionListen
     private lateinit var myCommentAdapter: MyCommentAdapter
 
     private val commentViewModel: CommentViewModel by viewModels {
-        CommentViewModelFactory(CommentRepository(VectoService.create()))
+        CommentViewModelFactory(CommentRepository(VectoService.create()), TokenRepository(VectoService.create()))
     }
 
     private val userInfoViewModel: UserInfoViewModel by viewModels {
-        UserInfoViewModelFactory(FeedRepository(VectoService.create()), UserRepository(VectoService.create()))
+        UserInfoViewModelFactory(FeedRepository(VectoService.create()), UserRepository(VectoService.create()), TokenRepository(VectoService.create()))
     }
 
     private var editCommentId = -1
@@ -77,6 +79,37 @@ class CommentActivity : AppCompatActivity(), MyCommentAdapter.OnEditActionListen
 
     @SuppressLint("NotifyDataSetChanged")
     private fun initObservers() {
+        commentViewModel.reissueResponse.observe(this) {
+            SaveLoginDataUtils.changeToken(this, commentViewModel.accessToken, commentViewModel.refreshToken)
+
+            when(it){
+                CommentViewModel.Function.GetCommentList.name -> {
+                    loadComment(feedID)
+                }
+                CommentViewModel.Function.AddComment.name -> {
+                    commentViewModel.addComment(feedID, content)
+                }
+                CommentViewModel.Function.SendCommentLike.name -> {
+                    commentViewModel.sendCommentLike(commentViewModel.sendCommentLikeId)
+                }
+                CommentViewModel.Function.CancelCommentLike.name -> {
+                    commentViewModel.cancelCommentLike(commentViewModel.cancelCommnetLikeId)
+                }
+                CommentViewModel.Function.UpdateComment.name -> {
+                    commentViewModel.updateComment(VectoService.CommentUpdateRequest(editCommentId, content))
+                }
+                CommentViewModel.Function.DeleteComment.name -> {
+                    commentViewModel.deleteComment(commentViewModel.deleteCommentId)
+                }
+            }
+        }
+
+        commentViewModel.errorMessage.observe(this) {
+            ToastMessageUtils.showToast(this, getString(it))
+
+            if(it == R.string.expired_login)
+                SaveLoginDataUtils.deleteData(this)
+        }
 
         /*   Comment Load 관련 Observer   */
         commentViewModel.commentErrorLiveData.observe(this) {
@@ -188,13 +221,18 @@ class CommentActivity : AppCompatActivity(), MyCommentAdapter.OnEditActionListen
             }
         }
 
-        userInfoViewModel.postComplaintError.observe(this) {
-            if(it == "FAIL"){
-                ToastMessageUtils.showToast(this, getString(R.string.basic_error))
-            } else {
-                ToastMessageUtils.showToast(this, getString(R.string.APIErrorToastMessage))
+        userInfoViewModel.errorMessage.observe(this) {
+            ToastMessageUtils.showToast(this, getString(it))
+        }
+
+        userInfoViewModel.reissueResponse.observe(this) {
+            SaveLoginDataUtils.changeToken(this, userInfoViewModel.accessToken, userInfoViewModel.refreshToken)
+
+            if(it == UserInfoViewModel.Function.PostComplaint.name){
+                userInfoViewModel.postComplaint(userInfoViewModel.complaintRequest)
             }
         }
+
     }
 
 

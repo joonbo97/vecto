@@ -14,6 +14,7 @@ import com.google.gson.Gson
 import com.vecto_example.vecto.R
 import com.vecto_example.vecto.data.Auth
 import com.vecto_example.vecto.data.repository.FeedRepository
+import com.vecto_example.vecto.data.repository.TokenRepository
 import com.vecto_example.vecto.data.repository.UserRepository
 import com.vecto_example.vecto.databinding.ActivityUserInfoBinding
 import com.vecto_example.vecto.popupwindow.ReportPopupWindow
@@ -27,6 +28,7 @@ import com.vecto_example.vecto.ui.myfeed.adapter.MyFeedAdapter
 import com.vecto_example.vecto.utils.FeedDetailType
 import com.vecto_example.vecto.utils.LoadImageUtils
 import com.vecto_example.vecto.utils.RequestLoginUtils
+import com.vecto_example.vecto.utils.SaveLoginDataUtils
 import com.vecto_example.vecto.utils.ServerResponse
 import com.vecto_example.vecto.utils.ShareFeedUtil
 import com.vecto_example.vecto.utils.ToastMessageUtils
@@ -35,7 +37,7 @@ class UserInfoActivity : AppCompatActivity(), MyFeedAdapter.OnFeedActionListener
     lateinit var binding: ActivityUserInfoBinding
 
     private val userInfoViewModel: UserInfoViewModel by viewModels {
-        UserInfoViewModelFactory(FeedRepository(VectoService.create()), UserRepository(VectoService.create()))
+        UserInfoViewModelFactory(FeedRepository(VectoService.create()), UserRepository(VectoService.create()), TokenRepository(VectoService.create()))
     }
 
     private lateinit var myFeedAdapter: MyFeedAdapter
@@ -56,7 +58,7 @@ class UserInfoActivity : AppCompatActivity(), MyFeedAdapter.OnFeedActionListener
             Log.d("UserInfoActivity", "Init getFeed")
             getFeed(it)
 
-            if(userId == Auth._userId.value) {
+            if(userId == Auth.userId.value) {
                 binding.MenuIcon.visibility = View.GONE
 
                 binding.FollowButton.setBackgroundResource(R.drawable.ripple_effect_following)
@@ -133,7 +135,7 @@ class UserInfoActivity : AppCompatActivity(), MyFeedAdapter.OnFeedActionListener
             if(Auth.loginFlag.value == false)
             {
                 RequestLoginUtils.requestLogin(this)
-            } else if(Auth._userId.value == userId){
+            } else if(Auth.userId.value == userId){
                 val intent = Intent(this, MainActivity::class.java)
                 intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
                 intent.putExtra("MyPage", R.id.MypageFragment)
@@ -181,7 +183,6 @@ class UserInfoActivity : AppCompatActivity(), MyFeedAdapter.OnFeedActionListener
 
     @SuppressLint("NotifyDataSetChanged")
     private fun initObservers() {
-
         Auth.loginFlag.observe(this){
             if(Auth.loginFlag.value != originalLoginFlag) {
 
@@ -233,19 +234,6 @@ class UserInfoActivity : AppCompatActivity(), MyFeedAdapter.OnFeedActionListener
         }
 
         /*   사용자 정보 Observer   */
-        userInfoViewModel.userInfoResult.observe(this) { userInfoResult ->
-            userInfoResult.onSuccess {
-
-            }.onFailure {
-                if(it.message == "E020"){
-                    ToastMessageUtils.showToast(this, getString(R.string.login_none))
-                }
-                else{
-                    ToastMessageUtils.showToast(this, getString(R.string.APIErrorToastMessage))
-                }
-            }
-        }
-
         userInfoViewModel.userInfo.observe(this) {
             if(it.userId.isNotEmpty()) {
                 setUserProfile(it)
@@ -313,34 +301,45 @@ class UserInfoActivity : AppCompatActivity(), MyFeedAdapter.OnFeedActionListener
             }
         }
 
-        /*   오류 관련 Observer   */
+        userInfoViewModel.reissueResponse.observe(this){
+            SaveLoginDataUtils.changeToken(this, userInfoViewModel.accessToken, userInfoViewModel.refreshToken)
 
-        userInfoViewModel.getFollowRelationError.observe(this) {
-            ToastMessageUtils.errorMessageHandler(this, ToastMessageUtils.UserInterActionType.FOLLOW.name, it)
-
-            setFollowButton(false)
-        }
-
-        userInfoViewModel.postFollowError.observe(this) {
-            ToastMessageUtils.errorMessageHandler(this, ToastMessageUtils.UserInterActionType.FOLLOW_POST.name, it)
-        }
-
-        userInfoViewModel.deleteFollowError.observe(this) {
-            ToastMessageUtils.errorMessageHandler(this, ToastMessageUtils.UserInterActionType.FOLLOW_DELETE.name, it)
-        }
-
-        userInfoViewModel.postComplaintError.observe(this) {
-            if(it == "FAIL"){
-                ToastMessageUtils.showToast(this, getString(R.string.basic_error))
-            } else {
-                ToastMessageUtils.showToast(this, getString(R.string.APIErrorToastMessage))
+            when(it){
+                UserInfoViewModel.Function.FetchUserFeedResults.name -> {
+                    getFeed(userId)
+                }
+                UserInfoViewModel.Function.CheckFollow.name -> {
+                    userInfoViewModel.checkFollow(userId)
+                }
+                UserInfoViewModel.Function.PostFollow.name -> {
+                    userInfoViewModel.postFollow(userId)
+                }
+                UserInfoViewModel.Function.DeleteFollow.name -> {
+                    userInfoViewModel.deleteFollow(userId)
+                }
+                UserInfoViewModel.Function.PostComplaint.name -> {
+                    userInfoViewModel.postComplaint(userInfoViewModel.complaintRequest)
+                }
+                UserInfoViewModel.Function.PostFeedLike.name -> {
+                    userInfoViewModel.postFeedLike(userInfoViewModel.postFeedLikeId)
+                }
+                UserInfoViewModel.Function.DeleteFeedLike.name -> {
+                    userInfoViewModel.deleteFeedLike(userInfoViewModel.deleteFeedLikeId)
+                }
+                UserInfoViewModel.Function.DeleteFeed.name -> {
+                    userInfoViewModel.deleteFeed(userInfoViewModel.deleteFeedId)
+                }
             }
         }
 
-        userInfoViewModel.feedErrorLiveData.observe(this) {
-            ToastMessageUtils.errorMessageHandler(this, ToastMessageUtils.UserInterActionType.FEED.name, it)
-        }
+        /*   오류 관련 Observer   */
+        userInfoViewModel.errorMessage.observe(this){
+            ToastMessageUtils.showToast(this, getString(it))
 
+            if(it == R.string.expired_login) {
+                SaveLoginDataUtils.deleteData(this)
+            }
+        }
     }
 
     private fun initRecyclerView(){
@@ -399,7 +398,7 @@ class UserInfoActivity : AppCompatActivity(), MyFeedAdapter.OnFeedActionListener
 
     //팔로우 버튼 설정
     private fun setFollowButton(isFollowing: Boolean){
-        if(userId != Auth._userId.value)
+        if(userId != Auth.userId.value)
         {
             when(isFollowing){
                 true -> {

@@ -26,10 +26,12 @@ import com.vecto_example.vecto.data.Auth
 import com.vecto_example.vecto.data.model.PathData
 import com.vecto_example.vecto.data.model.VisitData
 import com.vecto_example.vecto.data.repository.FeedRepository
+import com.vecto_example.vecto.data.repository.TokenRepository
 import com.vecto_example.vecto.data.repository.UserRepository
 import com.vecto_example.vecto.databinding.ActivityFeedDetailBinding
 import com.vecto_example.vecto.utils.MapMarkerManager
 import com.vecto_example.vecto.utils.MapOverlayManager
+import com.vecto_example.vecto.utils.SaveLoginDataUtils
 import com.vecto_example.vecto.utils.ShareFeedUtil
 import com.vecto_example.vecto.utils.ToastMessageUtils
 import com.vecto_example.vecto.utils.ToastMessageUtils.errorMessageHandler
@@ -40,7 +42,7 @@ class FeedDetailActivity : AppCompatActivity(), OnMapReadyCallback, MyFeedDetail
     private lateinit var mapOverlayManager: MapOverlayManager
 
     private val viewModel: FeedDetailViewModel by viewModels {
-        FeedDetailViewModelFactory(FeedRepository(VectoService.create()), UserRepository(VectoService.create()))
+        FeedDetailViewModelFactory(FeedRepository(VectoService.create()), UserRepository(VectoService.create()), TokenRepository(VectoService.create()))
     }
 
     private lateinit var myFeedDetailAdapter: MyFeedDetailAdapter
@@ -328,13 +330,34 @@ class FeedDetailActivity : AppCompatActivity(), OnMapReadyCallback, MyFeedDetail
             }
         }
 
-        /*   오류 관련 Observer   */
-        viewModel.feedErrorLiveData.observe(this) {
-            errorMessageHandler(this, ToastMessageUtils.UserInterActionType.FEED.name, it)
+        viewModel.reissueResponse.observe(this) {
+            SaveLoginDataUtils.changeToken(this, viewModel.accessToken, viewModel.refreshToken)
+
+            when(it){
+                FeedDetailViewModel.Function.GetFeedList.name -> {
+                    getFeed()
+                }
+                FeedDetailViewModel.Function.PostFeedLike.name -> {
+                    viewModel.postFeedLike(viewModel.postFeedLikeId)
+                }
+                FeedDetailViewModel.Function.DeleteFeedLike.name -> {
+                    viewModel.deleteFeedLike(viewModel.deleteFeedLikeId)
+                }
+                FeedDetailViewModel.Function.PostFollow.name -> {
+                    viewModel.postFollow(viewModel.postFollowId)
+                }
+                FeedDetailViewModel.Function.DeleteFollow.name -> {
+                    viewModel.deleteFollow(viewModel.deleteFollowId)
+                }
+            }
         }
 
-        viewModel.followErrorLiveData.observe(this) {
-            errorMessageHandler(this, ToastMessageUtils.UserInterActionType.FOLLOW.name, it)
+        /*   오류 관련 Observer   */
+        viewModel.errorMessage.observe(this){
+            ToastMessageUtils.showToast(this, getString(it))
+
+            if(it == R.string.expired_login)
+                SaveLoginDataUtils.deleteData(this)
         }
 
         viewModel.postFollowError.observe(this) {

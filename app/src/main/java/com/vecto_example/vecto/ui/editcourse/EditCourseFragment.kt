@@ -11,7 +11,6 @@ import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -22,7 +21,6 @@ import com.vecto_example.vecto.data.model.LocationDatabase
 import com.vecto_example.vecto.data.model.PathData
 import com.vecto_example.vecto.data.model.VisitData
 import com.vecto_example.vecto.data.model.VisitDatabase
-import com.vecto_example.vecto.dialog.DeleteVisitDialog
 import com.vecto_example.vecto.dialog.EditVisitDialog
 import com.vecto_example.vecto.retrofit.TMapAPIService
 import com.naver.maps.geometry.LatLng
@@ -35,6 +33,7 @@ import com.vecto_example.vecto.R
 import com.vecto_example.vecto.data.repository.TMapRepository
 import com.vecto_example.vecto.databinding.FragmentEditCourseBinding
 import com.vecto_example.vecto.dialog.CalendarDialog
+import com.vecto_example.vecto.dialog.DeleteDialog
 import com.vecto_example.vecto.popupwindow.PlacePopupWindow
 import com.vecto_example.vecto.ui.editcourse.adapter.MyCourseAdapter
 import com.vecto_example.vecto.utils.DateTimeUtils
@@ -521,9 +520,9 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
     }
 
     private fun deleteVisitButtonClick(visitData: VisitData, p: Int) {  //방문지 삭제 선택
-        val deleteVisitDialog = DeleteVisitDialog(requireContext())
-        deleteVisitDialog.showDialog()
-        deleteVisitDialog.onOkButtonClickListener = {
+        val deleteDialog = DeleteDialog(requireContext(), DeleteDialog.VISIT)
+        deleteDialog.showDialog()
+        deleteDialog.onOkButtonClickListener = {
             deleteVisit(visitData, p)
 
             ToastMessageUtils.showToast(requireContext(), getString(R.string.visit_delete_success))

@@ -8,8 +8,6 @@ import android.view.ViewGroup
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
 import androidx.core.content.ContextCompat
-import androidx.recyclerview.widget.DiffUtil
-import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.vecto_example.vecto.R
 import com.vecto_example.vecto.data.Auth
@@ -24,6 +22,11 @@ import com.vecto_example.vecto.utils.RequestLoginUtils
 class FeedAdapter(): RecyclerView.Adapter<FeedAdapter.ViewHolder>() {
     var feedInfoWithFollow = mutableListOf<VectoService.FeedInfoWithFollow>()
     var lastSize = 0
+
+    companion object {
+        const val VIEW_TYPE_POST = 0
+        const val VIEW_TYPE_AD = 1
+    }
 
     var postLikePosition = -1
     var deleteLikePosition = -1
@@ -84,7 +87,7 @@ class FeedAdapter(): RecyclerView.Adapter<FeedAdapter.ViewHolder>() {
             binding.TotalTimeText.text = DateTimeUtils.getCourseTime(feedInfoWithFollow.feedInfo.visit.first().datetime, feedInfoWithFollow.feedInfo.visit.last().endtime)    //코스 소요 시간
 
             /*   팔로우   */
-            if(Auth._userId.value == feedInfoWithFollow.feedInfo.userId){   //내 게시글 인 경우
+            if(Auth.userId.value == feedInfoWithFollow.feedInfo.userId){   //내 게시글 인 경우
                 binding.FollowButton.visibility = View.GONE
                 binding.ButtonText.visibility = View.GONE
             } else {

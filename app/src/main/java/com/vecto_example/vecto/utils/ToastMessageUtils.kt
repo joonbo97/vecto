@@ -17,10 +17,6 @@ object ToastMessageUtils {
         FEED, FOLLOW, FOLLOW_POST, FOLLOW_DELETE
     }
 
-    enum class FeedInterActionType {
-        LIKE_POST, LIKE_DELETE
-    }
-
     fun errorMessageHandler(context: Context, type: String, message: String){
 
         if(message == "FAIL"){
@@ -41,9 +37,5 @@ object ToastMessageUtils {
         } else {
             showToast(context, context.getString(R.string.APIErrorToastMessage))
         }
-    }
-
-    fun followMessageHandler(context: Context, type: String, message: String, nickName: String){
-
     }
 }

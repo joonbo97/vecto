@@ -2,6 +2,7 @@ package com.vecto_example.vecto.ui.main
 
 import android.content.Context
 import android.content.Intent
+import android.graphics.Rect
 import android.os.Bundle
 import android.util.Log
 import android.view.MotionEvent
@@ -13,24 +14,28 @@ import androidx.core.os.bundleOf
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
+import com.google.android.gms.ads.MobileAds
+import com.google.android.gms.ads.RequestConfiguration
 import com.kakao.sdk.common.KakaoSdk
 import com.vecto_example.vecto.BuildConfig
 import com.vecto_example.vecto.R
 import com.vecto_example.vecto.data.Auth
+import com.vecto_example.vecto.data.repository.TokenRepository
 import com.vecto_example.vecto.data.repository.UserRepository
 import com.vecto_example.vecto.databinding.ActivityMainBinding
 import com.vecto_example.vecto.retrofit.VectoService
-import com.vecto_example.vecto.ui.comment.CommentActivity
 import com.vecto_example.vecto.ui.login.LoginViewModel
 import com.vecto_example.vecto.ui.login.LoginViewModelFactory
 import com.vecto_example.vecto.ui.onefeed.OneFeedActivity
+import com.vecto_example.vecto.utils.SaveLoginDataUtils
+import com.vecto_example.vecto.utils.ToastMessageUtils
 
 
 class MainActivity : AppCompatActivity() {
     lateinit var binding: ActivityMainBinding
 
-    val loginViewModel: LoginViewModel by viewModels {
-        LoginViewModelFactory(UserRepository(VectoService.create()))
+    private val loginViewModel: LoginViewModel by viewModels {
+        LoginViewModelFactory(UserRepository(VectoService.create()), TokenRepository(VectoService.create()))
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -38,6 +43,9 @@ class MainActivity : AppCompatActivity() {
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        MobileAds.initialize(this) {}
+        RequestConfiguration.Builder().setTestDeviceIds(listOf("D5F84871B664B1ACC82BC5AC602EC128"))
 
         KakaoSdk.init(this, BuildConfig.KAKAO_KEY)
 
@@ -55,12 +63,10 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-
         /*Notification Intent 관련*/
         intent.getIntExtra("feedId", -1).let{
             if(it >= 0)//댓글 관련 알림인 경우
             {
-
                 loginViewModel.isLoginFinished.observe(this){ isLoginFinish ->
                     if(isLoginFinish){
                         val intent = Intent(this, OneFeedActivity::class.java)
@@ -130,13 +136,14 @@ class MainActivity : AppCompatActivity() {
         val sharedPreferences = this.getSharedPreferences("MyAppPreferences", Context.MODE_PRIVATE)
 
         // 저장된 로그인 정보 가져오기
-        val userId = sharedPreferences.getString("username", null) // 기본값은 null
-        val password = sharedPreferences.getString("password", null) // 기본값은 null
-        val provider = sharedPreferences.getString("provider", null) // 기본값은 null
-        val fcmtoken = sharedPreferences.getString("FCM", null) // FCM 토큰 가져오기, 기본값은 null
+        loginViewModel.userId = sharedPreferences.getString("userId", null)
+        loginViewModel.accessToken = sharedPreferences.getString("accessToken", null)
+        loginViewModel.refreshToken = sharedPreferences.getString("refreshToken", null)
+        val fcmToken = sharedPreferences.getString("FCM", null)
 
-        if(userId != null && fcmtoken != null) {
-            loginViewModel.loginRequest(VectoService.LoginRequest(userId, password, fcmtoken))
+        if(loginViewModel.userId != null && loginViewModel.accessToken != null && loginViewModel.refreshToken != null && fcmToken != null) {
+            Auth.setToken(VectoService.UserToken(loginViewModel.accessToken!!, loginViewModel.refreshToken!!))
+            loginViewModel.reissueToken()
         } else {
             loginViewModel.loginFinish()
         }
@@ -145,39 +152,21 @@ class MainActivity : AppCompatActivity() {
 
 
     private fun initObservers() {
-        loginViewModel.loginResult.observe(this){ loginResult ->
-            loginResult.onSuccess {
-                Auth.token = it
+        loginViewModel.userInfoResult.observe(this) {
+            Auth.setLoginFlag(true)
 
-                loginViewModel.getUserInfo()
-            }.onFailure {
-                if(it.message == "FAIL"){
-                    Toast.makeText(this, "로그인 정보가 일치하지 않습니다. 다시 시도해주세요.", Toast.LENGTH_SHORT).show()
-                }
-                else{
-                    Toast.makeText(this, getText(R.string.APIErrorToastMessage), Toast.LENGTH_SHORT).show()
-                }
-
-                loginViewModel.loginFinish()
-            }
+            Auth.setUserData(it.provider, it.userId, it.profileUrl, it.nickName, it.email)
+            loginViewModel.loginFinish()
         }
 
-        loginViewModel.userInfoResult.observe(this) { userInfoResult ->
-            userInfoResult.onSuccess {
-                Auth.setLoginFlag(true)
+        loginViewModel.reissueResponse.observe(this){
+            SaveLoginDataUtils.changeToken(this, loginViewModel.accessToken, loginViewModel.refreshToken)
+            loginViewModel.getUserInfo()
+        }
 
-                Auth.setUserData(it.provider, it.userId, it.profileUrl, it.nickName, it.email)
-                loginViewModel.loginFinish()
-            }.onFailure {
-                if(it.message == "E020"){
-                    Toast.makeText(this, "사용자 정보가 존재하지 않습니다.", Toast.LENGTH_SHORT).show()
-                }
-                else{
-                    Toast.makeText(this, getText(R.string.APIErrorToastMessage), Toast.LENGTH_SHORT).show()
-                }
-
-                loginViewModel.loginFinish()
-            }
+        loginViewModel.errorMessage.observe(this){
+            ToastMessageUtils.showToast(this, getString(it))
+            loginViewModel.loginFinish()
         }
     }
 
@@ -195,7 +184,7 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
 
-        if(!loginViewModel.taskStarted && Auth.loginFlag.value == true){    //재시작 된 경우
+        if(loginViewModel.isLoginFinished.value == false && Auth.loginFlag.value == true){    //재시작 된 경우
 
             sendLoginRequest()
         }
@@ -209,10 +198,17 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun dispatchTouchEvent(ev: MotionEvent?): Boolean {
-
-        val inputMethodManager = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
-        inputMethodManager.hideSoftInputFromWindow(currentFocus?.windowToken, 0)
-
+        currentFocus?.let { view ->
+            val inputMethodManager = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
+            if (ev?.action == MotionEvent.ACTION_DOWN) {
+                val outRect = Rect()
+                view.getGlobalVisibleRect(outRect)
+                if (!outRect.contains(ev.rawX.toInt(), ev.rawY.toInt())) {
+                    view.clearFocus()
+                    inputMethodManager.hideSoftInputFromWindow(view.windowToken, 0)
+                }
+            }
+        }
         return super.dispatchTouchEvent(ev)
     }
 }

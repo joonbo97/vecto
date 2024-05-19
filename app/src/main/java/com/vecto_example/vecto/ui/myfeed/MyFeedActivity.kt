@@ -6,7 +6,6 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.View
-import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -14,6 +13,7 @@ import com.google.gson.Gson
 import com.vecto_example.vecto.R
 import com.vecto_example.vecto.data.Auth
 import com.vecto_example.vecto.data.repository.FeedRepository
+import com.vecto_example.vecto.data.repository.TokenRepository
 import com.vecto_example.vecto.data.repository.UserRepository
 import com.vecto_example.vecto.databinding.ActivityMyFeedBinding
 import com.vecto_example.vecto.retrofit.VectoService
@@ -22,6 +22,7 @@ import com.vecto_example.vecto.ui.myfeed.adapter.MyFeedAdapter
 import com.vecto_example.vecto.ui.userinfo.UserInfoViewModel
 import com.vecto_example.vecto.ui.userinfo.UserInfoViewModelFactory
 import com.vecto_example.vecto.utils.FeedDetailType
+import com.vecto_example.vecto.utils.SaveLoginDataUtils
 import com.vecto_example.vecto.utils.ShareFeedUtil
 import com.vecto_example.vecto.utils.ToastMessageUtils
 import com.vecto_example.vecto.utils.ToastMessageUtils.errorMessageHandler
@@ -30,7 +31,7 @@ class MyFeedActivity : AppCompatActivity(), MyFeedAdapter.OnFeedActionListener {
     private lateinit var binding: ActivityMyFeedBinding
 
     private val viewModel: UserInfoViewModel by viewModels {
-        UserInfoViewModelFactory(FeedRepository(VectoService.create()), UserRepository(VectoService.create()))
+        UserInfoViewModelFactory(FeedRepository(VectoService.create()), UserRepository(VectoService.create()), TokenRepository(VectoService.create()))
     }
 
     private lateinit var myFeedAdapter: MyFeedAdapter
@@ -169,14 +170,38 @@ class MyFeedActivity : AppCompatActivity(), MyFeedAdapter.OnFeedActionListener {
                 binding.progressBar.visibility = View.GONE
         }
 
+        viewModel.reissueResponse.observe(this){
+            SaveLoginDataUtils.changeToken(this, viewModel.accessToken, viewModel.refreshToken)
+
+            when(it){
+                UserInfoViewModel.Function.FetchUserFeedResults.name -> {
+                    getFeed()
+                }
+                UserInfoViewModel.Function.PostFeedLike.name -> {
+                    viewModel.postFeedLike(viewModel.postFeedLikeId)
+                }
+                UserInfoViewModel.Function.DeleteFeedLike.name -> {
+                    viewModel.deleteFeedLike(viewModel.deleteFeedLikeId)
+                }
+                UserInfoViewModel.Function.DeleteFeed.name -> {
+                    viewModel.deleteFeed(viewModel.deleteFeedId)
+                }
+            }
+        }
+
         /*   오류 관련 Observer   */
-        viewModel.feedErrorLiveData.observe(this) {
-            errorMessageHandler(this, ToastMessageUtils.UserInterActionType.FEED.name, it)
+        viewModel.errorMessage.observe(this) {
+            ToastMessageUtils.showToast(this, getString(it))
+
+            if(it == R.string.expired_login) {
+                SaveLoginDataUtils.deleteData(this)
+                finish()
+            }
         }
     }
 
     private fun getFeed() {
-        viewModel.fetchUserFeedResults(Auth._userId.value.toString())
+        viewModel.fetchUserFeedResults(Auth.userId.value.toString())
         Log.d("getFeed", "My Feed")
     }
 

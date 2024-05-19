@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.vecto_example.vecto.R
 import com.vecto_example.vecto.data.model.VisitData
 import com.vecto_example.vecto.databinding.WritecourseItemBinding
+import com.vecto_example.vecto.utils.ToastMessageUtils
 
 class MyWriteCourseAdapter(): RecyclerView.Adapter<MyWriteCourseAdapter.ViewHolder>() {
     var myVisit = mutableListOf<VisitData>()
@@ -67,6 +68,10 @@ class MyWriteCourseAdapter(): RecyclerView.Adapter<MyWriteCourseAdapter.ViewHold
                     for(i in idx_first until idx_second + 1)
                         selectedItems.add(myVisit[i])
                     onItemsSelectedListener?.invoke(selectedItems)
+                } else {
+                    ToastMessageUtils.showToast(itemView.context,
+                        R.string.select_visit_wrong_position.toString()
+                    )
                 }
             }
 

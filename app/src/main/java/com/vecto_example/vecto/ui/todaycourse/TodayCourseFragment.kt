@@ -84,6 +84,7 @@ class TodayCourseFragment : Fragment(), OnMapReadyCallback {
 
     private fun initButton() {
         val smallButton = binding.ButtonSmall
+        val smallButtonText = binding.ButtonSmallText
         val largeButton = binding.ButtonLarge
         var moveValue = 0.0f
         var serviceFlag = isServiceRunning(LocationService::class.java)
@@ -93,13 +94,14 @@ class TodayCourseFragment : Fragment(), OnMapReadyCallback {
         val layoutListener = ViewTreeObserver.OnGlobalLayoutListener {
             // 버튼의 크기 정보
             if(!onlyFlag) {
-                moveValue = largeButton.width.toFloat() - smallButton.width.toFloat() - 50f
+                moveValue = largeButton.width.toFloat() / 2
 
                 if (!serviceFlag) {
                     smallButton.animate().translationXBy(moveValue).duration = 0
+                    smallButtonText.animate().translationXBy(moveValue).duration = 0
                     binding.TextForLargeRight.visibility = View.INVISIBLE
                     binding.TextForLargeLeft.visibility = View.VISIBLE
-                    smallButton.text = "위치 수집 종료"
+                    smallButtonText.text = "위치 수집 종료"
                 }
 
                 onlyFlag = true
@@ -116,10 +118,11 @@ class TodayCourseFragment : Fragment(), OnMapReadyCallback {
                 endServiceDialog.showDialog()
                 endServiceDialog.onOkButtonClickListener = {
                     smallButton.animate().translationXBy(moveValue).duration = 500
+                    smallButtonText.animate().translationXBy(moveValue).duration = 500
                     binding.TextForLargeRight.visibility = View.INVISIBLE
                     binding.TextForLargeLeft.visibility = View.VISIBLE
 
-                    smallButton.text = "위치 수집 종료"
+                    smallButtonText.text = "위치 수집 종료"
                     serviceFlag = false
 
                     val serviceIntent = Intent(requireContext(), LocationService::class.java)
@@ -131,10 +134,11 @@ class TodayCourseFragment : Fragment(), OnMapReadyCallback {
                 startServiceDialog.showDialog()
                 startServiceDialog.onOkButtonClickListener = {
                     smallButton.animate().translationXBy(-moveValue).duration = 500
+                    smallButtonText.animate().translationXBy(-moveValue).duration = 500
                     binding.TextForLargeRight.visibility = View.VISIBLE
                     binding.TextForLargeLeft.visibility = View.INVISIBLE
 
-                    smallButton.text = "위치 수집 시작"
+                    smallButtonText.text = "위치 수집 시작"
                     serviceFlag = true
 
                     val serviceIntent = Intent(requireContext(), LocationService::class.java)

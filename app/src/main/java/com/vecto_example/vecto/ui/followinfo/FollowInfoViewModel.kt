@@ -5,12 +5,20 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.vecto_example.vecto.R
+import com.vecto_example.vecto.data.repository.TokenRepository
 import com.vecto_example.vecto.data.repository.UserRepository
 import com.vecto_example.vecto.retrofit.VectoService
+import com.vecto_example.vecto.ui.detail.FeedDetailViewModel
 import com.vecto_example.vecto.utils.ServerResponse
 import kotlinx.coroutines.launch
 
-class FollowInfoViewModel(private val repository: UserRepository): ViewModel() {
+class FollowInfoViewModel(private val repository: UserRepository, private val tokenRepository: TokenRepository): ViewModel() {
+    private val _reissueResponse = MutableLiveData<String>()
+    val reissueResponse: LiveData<String> = _reissueResponse
+
+    var accessToken: String? = null
+    var refreshToken: String? = null
 
     private val _followListResponse = MutableLiveData<VectoService.FollowListResponse>()
     val followListResponse: LiveData<VectoService.FollowListResponse> = _followListResponse
@@ -21,6 +29,10 @@ class FollowInfoViewModel(private val repository: UserRepository): ViewModel() {
 
     private var tempLoading = false
 
+    var userId = ""
+    var postFollowId = ""
+    var deleteFollowId = ""
+
     //팔로우 요청
     private val _postFollowResult = MutableLiveData<Boolean>()
     val postFollowResult: LiveData<Boolean> = _postFollowResult
@@ -30,14 +42,18 @@ class FollowInfoViewModel(private val repository: UserRepository): ViewModel() {
     val deleteFollowResult: LiveData<Boolean> = _deleteFollowResult
 
     /*   에러   */
-    private val _getFollowError = MutableLiveData<String>()
-    val getFollowError: LiveData<String> = _getFollowError
+    private val _errorMessage = MutableLiveData<Int>()
+    val errorMessage: LiveData<Int> = _errorMessage
 
     private val _postFollowError = MutableLiveData<String>()
     val postFollowError: LiveData<String> = _postFollowError
 
     private val _deleteFollowError = MutableLiveData<String>()
     val deleteFollowError: LiveData<String> = _deleteFollowError
+
+    enum class Function {
+        GetFollowerList, GetFollowingList, PostFollow, DeleteFollow
+    }
 
     private fun startLoading(){
         Log.d("FollowInfoViewModel", "Start Loading")
@@ -54,6 +70,8 @@ class FollowInfoViewModel(private val repository: UserRepository): ViewModel() {
     }
 
     fun getFollowerList(userId: String){
+        this.userId = userId
+
         startLoading()
 
         viewModelScope.launch {
@@ -64,7 +82,19 @@ class FollowInfoViewModel(private val repository: UserRepository): ViewModel() {
 
                 endLoading()
             }.onFailure {
-                _getFollowError.value = it.message
+                when(it.message){
+                    ServerResponse.ACCESS_TOKEN_INVALID_ERROR.code -> {
+                        reissueToken(Function.GetFollowerList.name)
+                    }
+                    ServerResponse.ERROR.code -> {
+                        _errorMessage.postValue(R.string.APIErrorToastMessage)
+                        endLoading()
+                    }
+                    else -> {
+                        _errorMessage.postValue(R.string.get_follower_list_fail)
+                        endLoading()
+                    }
+                }
 
                 endLoading()
             }
@@ -72,6 +102,7 @@ class FollowInfoViewModel(private val repository: UserRepository): ViewModel() {
     }
 
     fun getFollowingList(userId: String){
+        this.userId = userId
         startLoading()
 
         viewModelScope.launch {
@@ -82,7 +113,19 @@ class FollowInfoViewModel(private val repository: UserRepository): ViewModel() {
 
                 endLoading()
             }.onFailure {
-                _getFollowError.value = it.message
+                when(it.message){
+                    ServerResponse.ACCESS_TOKEN_INVALID_ERROR.code -> {
+                        reissueToken(Function.GetFollowingList.name)
+                    }
+                    ServerResponse.ERROR.code -> {
+                        _errorMessage.postValue(R.string.APIErrorToastMessage)
+                        endLoading()
+                    }
+                    else -> {
+                        _errorMessage.postValue(R.string.get_following_list_fail)
+                        endLoading()
+                    }
+                }
 
                 endLoading()
             }
@@ -91,6 +134,7 @@ class FollowInfoViewModel(private val repository: UserRepository): ViewModel() {
 
     fun postFollow(userId: String) {
         tempLoading = true
+        postFollowId = userId
 
         viewModelScope.launch {
             val followResponse = repository.postFollow(userId)
@@ -104,6 +148,11 @@ class FollowInfoViewModel(private val repository: UserRepository): ViewModel() {
 
                 endLoading()
             }.onFailure {
+                if(it.message == ServerResponse.ACCESS_TOKEN_INVALID_ERROR.code){
+                    reissueToken(Function.PostFollow.name)
+                    return@launch
+                }
+
                 _postFollowError.value = it.message
 
                 endLoading()
@@ -113,6 +162,7 @@ class FollowInfoViewModel(private val repository: UserRepository): ViewModel() {
 
     fun deleteFollow(userId: String) {
         tempLoading = true
+        deleteFollowId = userId
 
         viewModelScope.launch {
             val followResponse = repository.deleteFollow(userId)
@@ -126,8 +176,38 @@ class FollowInfoViewModel(private val repository: UserRepository): ViewModel() {
 
                 endLoading()
             }.onFailure {
+                if(it.message == ServerResponse.ACCESS_TOKEN_INVALID_ERROR.code){
+                    reissueToken(Function.DeleteFollow.name)
+                    return@launch
+                }
+
                 _deleteFollowError.value = it.message
 
+                endLoading()
+            }
+        }
+    }
+
+    private fun reissueToken(function: String){
+        viewModelScope.launch {
+            val reissueResponse = tokenRepository.reissueToken()
+
+            reissueResponse.onSuccess { //Access Token이 만료되어서 갱신됨
+                accessToken = it.accessToken
+                refreshToken = it.refreshToken
+                _reissueResponse.postValue(function)
+            }.onFailure {
+                when(it.message){
+                    //아직 유효한 경우
+                    ServerResponse.ACCESS_TOKEN_VALID_ERROR.code -> {}
+                    //Refresh Token 만료
+                    ServerResponse.REFRESH_TOKEN_INVALID_ERROR.code -> {
+                        _errorMessage.postValue(R.string.expired_login)
+                    }
+                    else -> {
+                        _errorMessage.postValue(R.string.APIFailToastMessage)
+                    }
+                }
                 endLoading()
             }
         }

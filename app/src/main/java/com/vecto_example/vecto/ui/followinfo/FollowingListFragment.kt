@@ -8,10 +8,12 @@ import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.vecto_example.vecto.R
+import com.vecto_example.vecto.data.repository.TokenRepository
 import com.vecto_example.vecto.data.repository.UserRepository
 import com.vecto_example.vecto.databinding.FragmentFollowingListBinding
 import com.vecto_example.vecto.retrofit.VectoService
 import com.vecto_example.vecto.ui.followinfo.adapter.FollowListAdapter
+import com.vecto_example.vecto.utils.SaveLoginDataUtils
 import com.vecto_example.vecto.utils.ToastMessageUtils
 import com.vecto_example.vecto.utils.ToastMessageUtils.errorMessageHandler
 
@@ -19,7 +21,7 @@ class FollowingListFragment : Fragment(), FollowListAdapter.OnFollowActionListen
     lateinit var binding: FragmentFollowingListBinding
 
     private val viewModel: FollowInfoViewModel by viewModels {
-        FollowInfoViewModelFactory(UserRepository(VectoService.create()))
+        FollowInfoViewModelFactory(UserRepository(VectoService.create()), TokenRepository(VectoService.create()))
     }
 
     private lateinit var followListAdapter: FollowListAdapter
@@ -78,6 +80,30 @@ class FollowingListFragment : Fragment(), FollowListAdapter.OnFollowActionListen
             }
 
             followListAdapter.actionPosition = -1
+        }
+
+        viewModel.reissueResponse.observe(viewLifecycleOwner) {
+            SaveLoginDataUtils.changeToken(requireContext(), viewModel.accessToken, viewModel.refreshToken)
+
+            when(it){
+                FollowInfoViewModel.Function.GetFollowingList.name -> {
+                    viewModel.getFollowingList(viewModel.userId)
+                }
+                FollowInfoViewModel.Function.PostFollow.name -> {
+                    viewModel.postFollow(viewModel.postFollowId)
+                }
+                FollowInfoViewModel.Function.DeleteFollow.name -> {
+                    viewModel.deleteFollow(viewModel.deleteFollowId)
+                }
+            }
+        }
+
+        viewModel.errorMessage.observe(viewLifecycleOwner) {
+            ToastMessageUtils.showToast(requireContext(), getString(it))
+
+            if(it == R.string.expired_login){
+                SaveLoginDataUtils.deleteData(requireContext())
+            }
         }
 
         viewModel.postFollowError.observe(viewLifecycleOwner) {

@@ -1,13 +1,10 @@
 package com.vecto_example.vecto.ui.comment.adapter
 
-import android.content.Context
 import android.content.Intent
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
-import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.vecto_example.vecto.R
@@ -160,7 +157,7 @@ class MyCommentAdapter(): RecyclerView.Adapter<MyCommentAdapter.ViewHolder>(){
 
             var isClicked = false
 
-            if(Auth._userId.value != comment.userId){   //다른 User 인 경우
+            if(Auth.userId.value != comment.userId){   //다른 User 인 경우
 
                 val reportPopupWindow = ReportPopupWindow(itemView.context,
                     reportListener = {
@@ -220,7 +217,7 @@ class MyCommentAdapter(): RecyclerView.Adapter<MyCommentAdapter.ViewHolder>(){
                         } else if (editFlag) {
                             ToastMessageUtils.showToast(itemView.context, itemView.context.getString(R.string.comment_edit_error_only))
                             return@EditDeletePopupWindow
-                        } else if (Auth._userId.value != comment.userId) {
+                        } else if (Auth.userId.value != comment.userId) {
                             ToastMessageUtils.showToast(itemView.context, itemView.context.getString(R.string.comment_edit_error_mine))
                             dismissPopupWindow()
                             return@EditDeletePopupWindow

@@ -25,10 +25,12 @@ import com.vecto_example.vecto.R
 import com.vecto_example.vecto.data.Auth
 import com.vecto_example.vecto.data.repository.FeedRepository
 import com.vecto_example.vecto.data.repository.NotificationRepository
+import com.vecto_example.vecto.data.repository.TokenRepository
 import com.vecto_example.vecto.data.repository.UserRepository
 import com.vecto_example.vecto.databinding.FragmentSearchBinding
 import com.vecto_example.vecto.retrofit.VectoService
 import com.vecto_example.vecto.ui.detail.FeedDetailActivity
+import com.vecto_example.vecto.ui.detail.FeedDetailViewModel
 import com.vecto_example.vecto.ui.login.LoginViewModel
 import com.vecto_example.vecto.ui.login.LoginViewModelFactory
 import com.vecto_example.vecto.ui.main.MainActivity
@@ -37,6 +39,7 @@ import com.vecto_example.vecto.ui.notification.NotificationViewModelFactory
 import com.vecto_example.vecto.ui.search.adapter.FeedAdapter
 import com.vecto_example.vecto.utils.FeedDetailType
 import com.vecto_example.vecto.utils.RequestLoginUtils
+import com.vecto_example.vecto.utils.SaveLoginDataUtils
 import com.vecto_example.vecto.utils.ShareFeedUtil
 import com.vecto_example.vecto.utils.ToastMessageUtils
 import com.vecto_example.vecto.utils.ToastMessageUtils.errorMessageHandler
@@ -45,10 +48,11 @@ class SearchFragment : Fragment(), MainActivity.ScrollToTop, FeedAdapter.OnFeedA
     private lateinit var binding: FragmentSearchBinding
 
     private val searchViewModel: SearchViewModel by viewModels {
-        SearchViewModelFactory(FeedRepository(VectoService.create()), UserRepository(VectoService.create()))
+        SearchViewModelFactory(FeedRepository(VectoService.create()), UserRepository(VectoService.create()), TokenRepository(VectoService.create())
+        )
     }
     private val notificationViewModel: NotificationViewModel by viewModels {
-        NotificationViewModelFactory(NotificationRepository(VectoService.create()))
+        NotificationViewModelFactory(NotificationRepository(VectoService.create()), TokenRepository(VectoService.create()))
     }
 
     private lateinit var loginViewModel: LoginViewModel
@@ -75,13 +79,26 @@ class SearchFragment : Fragment(), MainActivity.ScrollToTop, FeedAdapter.OnFeedA
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        loginViewModel = ViewModelProvider(requireActivity(), LoginViewModelFactory(UserRepository(VectoService.create())))[LoginViewModel::class.java]
+        loginViewModel = ViewModelProvider(requireActivity(), LoginViewModelFactory(UserRepository(VectoService.create()), TokenRepository(VectoService.create())))[LoginViewModel::class.java]
 
         initUI()
+        initAds()
         initRecyclerView()
         initObservers()
         initListeners()
         initReceiver()
+    }
+
+    private fun initAds() {
+/*
+        // Create a new ad view.
+        val adView = binding.adView
+
+        // Create an ad request.
+        val adRequest = AdRequest.Builder().build()
+
+        // Start loading the ad in the background.
+        adView.loadAd(adRequest)*/
     }
 
     override fun onResume() {
@@ -269,6 +286,36 @@ class SearchFragment : Fragment(), MainActivity.ScrollToTop, FeedAdapter.OnFeedA
             }
         }
 
+        searchViewModel.reissueResponse.observe(viewLifecycleOwner) {
+            SaveLoginDataUtils.changeToken(requireContext(), searchViewModel.accessToken, searchViewModel.refreshToken)
+
+            when(it){
+                SearchViewModel.Function.GetFeedList.name -> {
+                    getFeed()
+                }
+                SearchViewModel.Function.PostFeedLike.name -> {
+                    searchViewModel.postFollow(searchViewModel.postFollowId)
+                }
+                SearchViewModel.Function.DeleteFeedLike.name -> {
+                    searchViewModel.deleteFeedLike(searchViewModel.deleteFeedLikeId)
+                }
+                SearchViewModel.Function.PostFollow.name -> {
+                    searchViewModel.postFollow(searchViewModel.postFollowId)
+                }
+                SearchViewModel.Function.DeleteFollow.name -> {
+                    searchViewModel.deleteFollow(searchViewModel.deleteFollowId)
+                }
+            }
+        }
+
+        notificationViewModel.reissueResponse.observe(viewLifecycleOwner) {
+            SaveLoginDataUtils.changeToken(requireContext(), searchViewModel.accessToken, searchViewModel.refreshToken)
+
+            if(it == NotificationViewModel.Function.GetNewNotificationFlag.name){
+                notificationViewModel.getNewNotificationFlag()
+            }
+        }
+
         searchViewModel.deleteFollowResult.observe(viewLifecycleOwner) {
             if(feedAdapter.deleteFollowPosition != -1) {
                 if (it) {
@@ -283,9 +330,18 @@ class SearchFragment : Fragment(), MainActivity.ScrollToTop, FeedAdapter.OnFeedA
         }
 
         /*   오류 관련 Observer   */
-        searchViewModel.feedErrorLiveData.observe(viewLifecycleOwner) {
-            errorMessageHandler(requireContext(), ToastMessageUtils.UserInterActionType.FEED.name, it)
+        searchViewModel.errorMessage.observe(viewLifecycleOwner) {
+            ToastMessageUtils.showToast(requireContext(), getString(it))
+
+            if(it == R.string.expired_login)
+                SaveLoginDataUtils.deleteData(requireContext())
         }
+
+        notificationViewModel.errorMessage.observe(viewLifecycleOwner) {
+            if(it == R.string.expired_login)
+                SaveLoginDataUtils.deleteData(requireContext())
+        }
+
 
         searchViewModel.followErrorLiveData.observe(viewLifecycleOwner) {
             errorMessageHandler(requireContext(), ToastMessageUtils.UserInterActionType.FOLLOW.name, it)

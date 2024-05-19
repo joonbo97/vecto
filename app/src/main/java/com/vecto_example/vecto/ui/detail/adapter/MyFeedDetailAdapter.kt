@@ -164,7 +164,7 @@ class MyFeedDetailAdapter(): RecyclerView.Adapter<MyFeedDetailAdapter.ViewHolder
                 binding.FollowButtonText.setTextColor(ContextCompat.getColor(itemView.context, R.color.white))
             }
 
-            if(Auth._userId.value == feedInfoWithFollow.feedInfo.userId){
+            if(Auth.userId.value == feedInfoWithFollow.feedInfo.userId){
                 binding.FollowButton.visibility = View.GONE
                 binding.FollowButtonText.visibility = View.GONE
             } else {

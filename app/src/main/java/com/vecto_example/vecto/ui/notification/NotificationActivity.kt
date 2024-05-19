@@ -7,17 +7,21 @@ import android.view.View
 import androidx.activity.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.vecto_example.vecto.R
 import com.vecto_example.vecto.ui.notification.adapter.MyNotificationAdapter
 import com.vecto_example.vecto.data.repository.NotificationRepository
+import com.vecto_example.vecto.data.repository.TokenRepository
 import com.vecto_example.vecto.databinding.ActivityNotificationBinding
 import com.vecto_example.vecto.retrofit.VectoService
+import com.vecto_example.vecto.utils.SaveLoginDataUtils
+import com.vecto_example.vecto.utils.ToastMessageUtils
 
 class NotificationActivity : AppCompatActivity() {
     lateinit var binding: ActivityNotificationBinding
     private lateinit var myNotificationAdapter: MyNotificationAdapter
 
     private val notificationViewModel: NotificationViewModel by viewModels {
-        NotificationViewModelFactory(NotificationRepository(VectoService.create()))
+        NotificationViewModelFactory(NotificationRepository(VectoService.create()), TokenRepository(VectoService.create()))
     }
 
 
@@ -49,6 +53,23 @@ class NotificationActivity : AppCompatActivity() {
 
             if(notificationViewModel.allNotifications.isEmpty()){
                 setNoneImage()
+            }
+        }
+
+        notificationViewModel.errorMessage.observe(this) {
+            ToastMessageUtils.showToast(this, getString(it))
+
+            if(it == R.string.expired_login){
+                SaveLoginDataUtils.deleteData(this)
+                finish()
+            }
+        }
+
+        notificationViewModel.reissueResponse.observe(this){
+            SaveLoginDataUtils.changeToken(this, notificationViewModel.accessToken, notificationViewModel.refreshToken)
+
+            if(it == NotificationViewModel.Function.GetNotificationResults.name){
+                getNotification()
             }
         }
 

@@ -15,7 +15,7 @@ class WriteRepository(private val vectoService: VectoService, private val naverS
         /*   여러 장의 이미지를 S3에 업로드 후, url 을 응답 값으로 받는 함수   */
 
         return try {
-            val response = vectoService.uploadImages("Bearer ${Auth.token}", imageParts)
+            val response = vectoService.uploadImages("Bearer ${Auth.accessToken}", imageParts)
 
             if(response.isSuccessful){
                 Log.d("uploadImages", "SUCCESS: ${response.body()}")
@@ -23,12 +23,13 @@ class WriteRepository(private val vectoService: VectoService, private val naverS
             }
             else{
                 val errorBody = response.errorBody()?.string()
-                //val gson = Gson()
-                //val errorResponse: VectoService.VectoResponse<*>? = gson.fromJson(errorBody, VectoService.VectoResponse::class.java)
-                Log.d("uploadImages", "FAIL: ${errorBody}")
-                //Log.d("uploadImages", "FAIL: ${response.errorBody()}")
-                //Result.failure(Exception(errorResponse!!.code))
-                Result.failure(Exception("FAIL"))
+                val gson = Gson()
+                val errorResponse: VectoService.VectoResponse<*>? = gson.fromJson(errorBody, VectoService.VectoResponse::class.java)
+                Log.d("uploadImages", "FAIL: $errorBody")
+                if(errorResponse?.code?.isNotEmpty() == true)
+                    Result.failure(Exception(errorResponse.code))
+                else
+                    Result.failure(Exception("FAIL"))
             }
         } catch (e: Exception) {
             Log.e("uploadImages", "ERROR", e)
@@ -40,7 +41,7 @@ class WriteRepository(private val vectoService: VectoService, private val naverS
         /*   게시글 업로드   */
 
         return try {
-            val response = vectoService.addFeed("Bearer ${Auth.token}", feedDataForUpload)
+            val response = vectoService.addFeed("Bearer ${Auth.accessToken}", feedDataForUpload)
 
             if(response.isSuccessful){
                 Log.d("addFeed", "SUCCESS: ${response.body()}")
@@ -66,7 +67,7 @@ class WriteRepository(private val vectoService: VectoService, private val naverS
         /*   게시글 수정   */
 
         return try {
-            val response = vectoService.updateFeed("Bearer ${Auth.token}", updateFeedRequest)
+            val response = vectoService.updateFeed("Bearer ${Auth.accessToken}", updateFeedRequest)
 
             if(response.isSuccessful){
                 Log.d("updateFeed", "SUCCESS: ${response.body()}")
@@ -77,7 +78,10 @@ class WriteRepository(private val vectoService: VectoService, private val naverS
                 val gson = Gson()
                 val errorResponse: VectoService.VectoResponse<*>? = gson.fromJson(errorBody, VectoService.VectoResponse::class.java)
                 Log.d("updateFeed", "FAIL: ${response.errorBody()}")
-                Result.failure(Exception(errorResponse!!.code))
+                if(errorResponse?.code?.isNotEmpty() == true)
+                    Result.failure(Exception(errorResponse.code))
+                else
+                    Result.failure(Exception("FAIL"))
             }
         } catch (e: Exception) {
             Log.e("updateFeed", "ERROR", e)

@@ -9,13 +9,13 @@ import android.view.animation.AnimationUtils
 import androidx.recyclerview.widget.RecyclerView
 import com.vecto_example.vecto.ui.comment.CommentActivity
 import com.vecto_example.vecto.data.Auth
-import com.vecto_example.vecto.dialog.DeletePostDialog
 import com.vecto_example.vecto.popupwindow.EditDeletePopupWindow
 import com.vecto_example.vecto.retrofit.VectoService
 import com.google.gson.Gson
 import com.vecto_example.vecto.ui.editfeed.EditFeedActivity
 import com.vecto_example.vecto.R
 import com.vecto_example.vecto.databinding.MypostItemBinding
+import com.vecto_example.vecto.dialog.DeleteDialog
 import com.vecto_example.vecto.utils.DateTimeUtils
 import com.vecto_example.vecto.utils.LoadImageUtils
 import com.vecto_example.vecto.utils.RequestLoginUtils
@@ -76,7 +76,7 @@ class MyFeedAdapter(): RecyclerView.Adapter<MyFeedAdapter.ViewHolder>()
             binding.TotalTimeText.text = DateTimeUtils.getCourseTime(feed.visit.first().datetime, feed.visit.last().datetime)
 
             /*   게시글 메뉴   */
-            if(Auth._userId.value != feedInfo[bindingAdapterPosition].userId) {
+            if(Auth.userId.value != feedInfo[bindingAdapterPosition].userId) {
                 binding.PostMenuImage.visibility = View.GONE
             }
 
@@ -92,9 +92,9 @@ class MyFeedAdapter(): RecyclerView.Adapter<MyFeedAdapter.ViewHolder>()
                         },
                         deleteListener = {
                             if(deleteFeedPosition == -1) {
-                                val deletePostDialog = DeletePostDialog(itemView.context)
-                                deletePostDialog.showDialog()
-                                deletePostDialog.onOkButtonClickListener = {
+                                val deleteDialog = DeleteDialog(itemView.context, DeleteDialog.FEED)
+                                deleteDialog.showDialog()
+                                deleteDialog.onOkButtonClickListener = {
                                     deleteFeedPosition = bindingAdapterPosition
                                     feedActionListener?.onDeleteFeed(feedInfo[bindingAdapterPosition].feedId)
                                 }

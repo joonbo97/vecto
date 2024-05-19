@@ -5,8 +5,13 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.kakao.sdk.user.UserApiClient
+import com.vecto_example.vecto.R
+import com.vecto_example.vecto.data.Auth
+import com.vecto_example.vecto.data.repository.TokenRepository
 import com.vecto_example.vecto.data.repository.UserRepository
 import com.vecto_example.vecto.retrofit.VectoService
+import com.vecto_example.vecto.utils.ServerResponse
 import com.vecto_example.vecto.utils.ValidationUtils
 import kotlinx.coroutines.launch
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -14,48 +19,155 @@ import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
 import java.io.File
 
-class MypageSettingViewModel (private val repository: UserRepository): ViewModel() {
-    private val _updateResult = MutableLiveData<Result<String>>()
-    val updateResult: LiveData<Result<String>> = _updateResult
+class MypageSettingViewModel (private val userRepository: UserRepository, private val tokenRepository: TokenRepository): ViewModel() {
+    private val _reissueResponse = MutableLiveData<String>()
+    val reissueResponse: LiveData<String> = _reissueResponse
 
-    private val _idDuplicateResult = MutableLiveData<Result<String>>()
-    val idDuplicateResult: LiveData<Result<String>> = _idDuplicateResult
+    var accessToken: String? = null
+    var refreshToken: String? = null
+
+    private val _updateResult = MutableLiveData<String>()
+    val updateResult: LiveData<String> = _updateResult
+
+    private val _idDuplicateResult = MutableLiveData<String>()
+    val idDuplicateResult: LiveData<String> = _idDuplicateResult
+
+    private val _uploadImageResult = MutableLiveData<String>(Auth.profileImage.value)
+    val uploadImageResult: LiveData<String> = _uploadImageResult
+
+    //탈퇴
+    private val _deleteAccount = MutableLiveData<String>()
+    val deleteAccount: LiveData<String> = _deleteAccount
+
+    //에러
+    private val _errorMessage = MutableLiveData<Int>()
+    val errorMessage: LiveData<Int> = _errorMessage
+
+    //로딩
+    private val _isLoading = MutableLiveData(false)
+    val isLoading: LiveData<Boolean> = _isLoading
 
     var idCheckFinished = false
+
+    var imageUri: Uri? = null
 
     enum class Type {
         ID, NICKNAME, PASSWORD
     }
 
+    enum class Function {
+        UpdateUserProfile, UploadProfileImage, DeleteAccount
+    }
+
     fun updateUserProfile(updateData: VectoService.UserUpdateData){
+        startLoading()
 
         viewModelScope.launch {
-            val result = repository.patchUserProfile(updateData)
-            _updateResult.value = result
+            val result = userRepository.patchUserProfile(updateData)
+
+            result.onSuccess {
+                _updateResult.value = it
+            }.onFailure {
+                when(it.message){
+                    ServerResponse.ACCESS_TOKEN_INVALID_ERROR.code -> {
+                        reissueToken(Function.UpdateUserProfile.name)
+                    }
+                    ServerResponse.ERROR.code -> {
+                        _errorMessage.postValue(R.string.APIErrorToastMessage)
+                    }
+                    else -> {
+                        _errorMessage.postValue(R.string.update_user_fail)
+                    }
+                }
+            }
+            endLoading()
+        }
+    }
+
+    private fun reissueToken(function: String){
+        viewModelScope.launch {
+            val reissueResponse = tokenRepository.reissueToken()
+
+            reissueResponse.onSuccess { //Access Token이 만료되어서 갱신됨
+                accessToken = it.accessToken
+                refreshToken = it.refreshToken
+                _reissueResponse.postValue(function)
+            }.onFailure {
+                when(it.message){
+                    //아직 유효한 경우
+                    ServerResponse.ACCESS_TOKEN_VALID_ERROR.code -> {}
+                    //Refresh Token 만료
+                    ServerResponse.REFRESH_TOKEN_INVALID_ERROR.code -> {
+                        _errorMessage.postValue(R.string.expired_login)
+                    }
+                    else -> {
+                        _errorMessage.postValue(R.string.APIFailToastMessage)
+                    }
+                }
+                endLoading()
+            }
+        }
+    }
+    fun uploadProfileImage(){
+        if(imageUri == null) {
+            _errorMessage.postValue(R.string.compress_error)
+            return
         }
 
-    }
-    fun uploadProfileImage(image: Uri){
-        val file = File(image.path!!)
+        startLoading()
+
+        val file = File(imageUri?.path!!)
         val requestFile = file.asRequestBody("image/*".toMediaTypeOrNull())
         val imagePart = MultipartBody.Part.createFormData("image", file.name, requestFile)
 
         viewModelScope.launch {
-            try {
-                repository.postUploadProfileImage(imagePart)
-            } catch (e: Exception) {
-                throw Exception("uploadProfileImage Failed")
-            } finally {
+            val uploadProfileImageResponse = userRepository.postUploadProfileImage(imagePart)
 
+            uploadProfileImageResponse.onSuccess {
+                _uploadImageResult.postValue(it)
+            }.onFailure {
+                when(it.message){
+                    ServerResponse.ACCESS_TOKEN_INVALID_ERROR.code -> {
+                        reissueToken(Function.UpdateUserProfile.name)
+                    }
+                    ServerResponse.FAIL.code -> {
+                        _errorMessage.postValue(R.string.upload_image_fail)
+                    }
+                    ServerResponse.ERROR.code -> {
+                        _errorMessage.postValue(R.string.APIErrorToastMessage)
+                    }
+                    else -> {
+                        _errorMessage.postValue(R.string.APIFailToastMessage)
+                    }
+                }
             }
+
+            endLoading()
         }
     }
 
     fun checkIdDuplicate(userId: String) {
-        viewModelScope.launch {
-            val result = repository.checkUserId(userId)
+        startLoading()
 
-            _idDuplicateResult.value = result
+        viewModelScope.launch {
+            val checkUserIdResponse = userRepository.checkUserId(userId)
+
+            checkUserIdResponse.onSuccess {
+                _idDuplicateResult.postValue(it)
+                idCheckFinished = true
+            }.onFailure {
+                when(it.message){
+                    ServerResponse.FAIL_DUPLICATED_USERID.code ->{
+                        _errorMessage.postValue(R.string.duplicate_id)
+                    }
+                    ServerResponse.ERROR.code -> {
+                        _errorMessage.postValue(R.string.APIErrorToastMessage)
+                    }
+                    else -> {
+                        _errorMessage.postValue(R.string.APIFailToastMessage)
+                    }
+                }
+            }
         }
     }
 
@@ -124,6 +236,50 @@ class MypageSettingViewModel (private val repository: UserRepository): ViewModel
                 handleValidationResult(ValidationUtils.isValidNickname(input), Type.NICKNAME)
             }
         }
+    }
+
+    fun accountCancellation(){
+        if(Auth.provider == "kakao"){
+            UserApiClient.instance.unlink { error ->
+                if (error != null) {
+                    _errorMessage.postValue(R.string.delete_kakao_error)
+                }else {
+                    deleteAccount()
+                }
+            }
+        } else {
+            deleteAccount()
+        }
+    }
+
+    private fun deleteAccount(){
+        viewModelScope.launch {
+            val deleteResponse = userRepository.deleteAccount()
+
+            deleteResponse.onSuccess {
+                _deleteAccount.postValue(it)
+            }.onFailure {
+                when(it.message){
+                    ServerResponse.ACCESS_TOKEN_INVALID_ERROR.code -> {
+                        reissueToken(Function.UpdateUserProfile.name)
+                    }
+                    ServerResponse.ERROR.code -> {
+                        _errorMessage.postValue(R.string.APIErrorToastMessage)
+                    }
+                    else -> {
+                        _errorMessage.postValue(R.string.APIFailToastMessage)
+                    }
+                }
+            }
+        }
+    }
+
+    fun startLoading(){
+        _isLoading.postValue(true)
+    }
+
+    fun endLoading(){
+        _isLoading.postValue(false)
     }
 
 }

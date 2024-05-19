@@ -12,8 +12,8 @@ android {
         applicationId "com.vecto_example.vecto"
         minSdk 28
         targetSdk 34
-        versionCode 4
-        versionName "1.03"
+        versionCode 5
+        versionName "1.10"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
@@ -56,6 +56,20 @@ android{
         buildConfigField "String","TMAP_KEY",properties['tmapkey']
         buildConfigField "String","KAKAO_KEY",properties['kakaokey']
     }
+    buildTypes {
+        debug {
+            manifestPlaceholders["KAKAO_KEY"] = properties["kakao"] as String
+            manifestPlaceholders["NAVER_KEY"] = properties["naver"] as String
+        }
+        release {
+            manifestPlaceholders["KAKAO_KEY"] = properties["kakao"] as String
+            manifestPlaceholders["NAVER_KEY"] = properties["naver"] as String
+            proguardFiles(
+                    getDefaultProguardFile("proguard-android-optimize.txt"),
+                    "proguard-rules.pro"
+            )
+        }
+    }
 }
 
 
@@ -88,6 +102,8 @@ dependencies {
 
     implementation 'androidx.datastore:datastore-preferences:1.1.0'
 
+    implementation 'com.google.android.gms:play-services-ads:23.0.0'
+
     // Kakao Login
     implementation 'com.kakao.sdk:v2-user:2.14.0'
 
@@ -95,7 +111,7 @@ dependencies {
     implementation "com.kakao.sdk:v2-share:2.11.2"
 
     //FCM
-    // Import the Firebase BoM
+    // Import the Firebase Bom
     implementation platform('com.google.firebase:firebase-bom:32.1.0')
     implementation 'com.google.firebase:firebase-analytics-ktx'
     implementation 'com.google.firebase:firebase-messaging:23.4.1'

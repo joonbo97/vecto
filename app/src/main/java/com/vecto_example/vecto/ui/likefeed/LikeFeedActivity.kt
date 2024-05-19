@@ -12,12 +12,15 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.gson.Gson
 import com.vecto_example.vecto.R
 import com.vecto_example.vecto.data.repository.FeedRepository
+import com.vecto_example.vecto.data.repository.TokenRepository
 import com.vecto_example.vecto.data.repository.UserRepository
 import com.vecto_example.vecto.databinding.ActivityLikeFeedBinding
 import com.vecto_example.vecto.retrofit.VectoService
 import com.vecto_example.vecto.ui.detail.FeedDetailActivity
+import com.vecto_example.vecto.ui.detail.FeedDetailViewModel
 import com.vecto_example.vecto.ui.search.adapter.FeedAdapter
 import com.vecto_example.vecto.utils.FeedDetailType
+import com.vecto_example.vecto.utils.SaveLoginDataUtils
 import com.vecto_example.vecto.utils.ShareFeedUtil
 import com.vecto_example.vecto.utils.ToastMessageUtils
 import com.vecto_example.vecto.utils.ToastMessageUtils.errorMessageHandler
@@ -26,7 +29,7 @@ class LikeFeedActivity : AppCompatActivity(), FeedAdapter.OnFeedActionListener {
     private lateinit var binding: ActivityLikeFeedBinding
 
     private val likeFeedViewModel: LikeFeedViewModel by viewModels {
-        LikeFeedViewModelFactory(FeedRepository(VectoService.create()), UserRepository(VectoService.create()))
+        LikeFeedViewModelFactory(FeedRepository(VectoService.create()), UserRepository(VectoService.create()), TokenRepository(VectoService.create()))
     }
 
     private lateinit var feedAdapter: FeedAdapter
@@ -157,9 +160,36 @@ class LikeFeedActivity : AppCompatActivity(), FeedAdapter.OnFeedActionListener {
             }
         }
 
+        likeFeedViewModel.reissueResponse.observe(this) {
+            SaveLoginDataUtils.changeToken(this, likeFeedViewModel.accessToken, likeFeedViewModel.refreshToken)
+
+            when(it){
+                LikeFeedViewModel.Function.GetLikeFeedList.name -> {
+                    getFeed()
+                }
+                LikeFeedViewModel.Function.PostFeedLike.name -> {
+                    likeFeedViewModel.postFollow(likeFeedViewModel.postFollowId)
+                }
+                LikeFeedViewModel.Function.DeleteFeedLike.name -> {
+                    likeFeedViewModel.deleteFeedLike(likeFeedViewModel.deleteFeedLikeId)
+                }
+                LikeFeedViewModel.Function.PostFollow.name -> {
+                    likeFeedViewModel.postFollow(likeFeedViewModel.postFollowId)
+                }
+                LikeFeedViewModel.Function.DeleteFollow.name -> {
+                    likeFeedViewModel.deleteFollow(likeFeedViewModel.deleteFollowId)
+                }
+            }
+        }
+
         /*   오류 관련 Observer   */
-        likeFeedViewModel.feedErrorLiveData.observe(this) {
-            errorMessageHandler(this, ToastMessageUtils.UserInterActionType.FEED.name, it)
+        likeFeedViewModel.errorMessage.observe(this){
+            ToastMessageUtils.showToast(this, getString(it))
+
+            if(it == R.string.expired_login) {
+                SaveLoginDataUtils.deleteData(this)
+                finish()
+            }
         }
 
         likeFeedViewModel.followErrorLiveData.observe(this) {

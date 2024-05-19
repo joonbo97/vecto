@@ -5,17 +5,32 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.vecto_example.vecto.R
 import com.vecto_example.vecto.data.Auth
 import com.vecto_example.vecto.data.repository.CommentRepository
+import com.vecto_example.vecto.data.repository.TokenRepository
 import com.vecto_example.vecto.retrofit.VectoService
+import com.vecto_example.vecto.utils.ServerResponse
 import kotlinx.coroutines.launch
 
-class CommentViewModel(private val repository: CommentRepository): ViewModel() {
+class CommentViewModel(private val repository: CommentRepository, private val tokenRepository: TokenRepository): ViewModel() {
+    private val _reissueResponse = MutableLiveData<String>()
+    val reissueResponse: LiveData<String> = _reissueResponse
+
+    var accessToken: String? = null
+    var refreshToken: String? = null
 
     var nextPage: Int = 0
     var lastPage: Boolean = false
 
     var firstFlag = true
+
+    var sendCommentLikeId = -1
+    var cancelCommnetLikeId = -1
+    var deleteCommentId = -1
+
+    private val _errorMessage = MutableLiveData<Int>()
+    val errorMessage: LiveData<Int> = _errorMessage
 
     private val _commentErrorLiveData = MutableLiveData<Result<VectoService.CommentListResponse>>()
     val commentErrorLiveData: LiveData<Result<VectoService.CommentListResponse>> = _commentErrorLiveData
@@ -48,6 +63,11 @@ class CommentViewModel(private val repository: CommentRepository): ViewModel() {
     private val _deleteCommentResult = MutableLiveData<Result<String>>()
     val deleteCommentResult: LiveData<Result<String>> = _deleteCommentResult
 
+    enum class Function{
+        GetCommentList, AddComment, SendCommentLike, CancelCommentLike, UpdateComment, DeleteComment
+    }
+
+
     fun getCommentList(feedId: Int){
         if(!lastPage)
             startLoading()
@@ -76,6 +96,10 @@ class CommentViewModel(private val repository: CommentRepository): ViewModel() {
                 nextPage = it.nextPage
                 lastPage = it.lastPage
             }.onFailure {
+                if(it.message == ServerResponse.ACCESS_TOKEN_INVALID_ERROR.code){
+                    reissueToken(Function.GetCommentList.name)
+                }
+
                 _commentErrorLiveData.value = commentListResponse
             }
 
@@ -88,6 +112,12 @@ class CommentViewModel(private val repository: CommentRepository): ViewModel() {
         viewModelScope.launch {
             val addCommentResponse = repository.addComment(feedId, content)
 
+            addCommentResponse.onFailure {
+                if(it.message == ServerResponse.ACCESS_TOKEN_INVALID_ERROR.code){
+                    reissueToken(Function.AddComment.name)
+                }
+            }
+
             _addCommentResult.value = addCommentResponse
 
             endLoading()
@@ -96,8 +126,16 @@ class CommentViewModel(private val repository: CommentRepository): ViewModel() {
 
     fun sendCommentLike(commentId: Int) {
         tempLoading = true
+        sendCommentLikeId = commentId
+
         viewModelScope.launch {
             val sendCommentLikeResponse = repository.sendCommentLike(commentId)
+
+            sendCommentLikeResponse.onFailure {
+                if(it.message == ServerResponse.ACCESS_TOKEN_INVALID_ERROR.code){
+                    reissueToken(Function.SendCommentLike.name)
+                }
+            }
 
             _sendCommentLikeResult.value = sendCommentLikeResponse
 
@@ -107,8 +145,16 @@ class CommentViewModel(private val repository: CommentRepository): ViewModel() {
 
     fun cancelCommentLike(commentId: Int) {
         tempLoading = true
+        cancelCommnetLikeId = commentId
+
         viewModelScope.launch {
             val cancelCommentLikeResponse = repository.cancelCommentLike(commentId)
+
+            cancelCommentLikeResponse.onFailure {
+                if(it.message == ServerResponse.ACCESS_TOKEN_INVALID_ERROR.code){
+                    reissueToken(Function.CancelCommentLike.name)
+                }
+            }
 
             _cancelCommentLikeResult.value = cancelCommentLikeResponse
 
@@ -121,6 +167,12 @@ class CommentViewModel(private val repository: CommentRepository): ViewModel() {
         viewModelScope.launch {
             val updateCommentResponse = repository.updateComment(commentUpdateRequest)
 
+            updateCommentResponse.onFailure {
+                if(it.message == ServerResponse.ACCESS_TOKEN_INVALID_ERROR.code){
+                    reissueToken(Function.UpdateComment.name)
+                }
+            }
+
             _updateCommentResult.value = updateCommentResponse
 
             endLoading()
@@ -128,15 +180,48 @@ class CommentViewModel(private val repository: CommentRepository): ViewModel() {
     }
 
     fun deleteComment(commentInt: Int) {
+        deleteCommentId = commentInt
+
         startCenterLoading()
         viewModelScope.launch {
             val deleteCommentResponse = repository.deleteComment(commentInt)
+
+            deleteCommentResponse.onFailure {
+                if(it.message == ServerResponse.ACCESS_TOKEN_INVALID_ERROR.code){
+                    reissueToken(Function.DeleteComment.name)
+                }
+            }
 
             _deleteCommentResult.value = deleteCommentResponse
 
             endLoading()
         }
 
+    }
+
+    private fun reissueToken(function: String){
+        viewModelScope.launch {
+            val reissueResponse = tokenRepository.reissueToken()
+
+            reissueResponse.onSuccess { //Access Token이 만료되어서 갱신됨
+                accessToken = it.accessToken
+                refreshToken = it.refreshToken
+                _reissueResponse.postValue(function)
+            }.onFailure {
+                when(it.message){
+                    //아직 유효한 경우
+                    ServerResponse.ACCESS_TOKEN_VALID_ERROR.code -> {}
+                    //Refresh Token 만료
+                    ServerResponse.REFRESH_TOKEN_INVALID_ERROR.code -> {
+                        _errorMessage.postValue(R.string.expired_login)
+                    }
+                    else -> {
+                        _errorMessage.postValue(R.string.APIFailToastMessage)
+                    }
+                }
+                endLoading()
+            }
+        }
     }
 
     fun initSetting(){

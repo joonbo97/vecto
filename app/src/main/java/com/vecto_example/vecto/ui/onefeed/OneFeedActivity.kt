@@ -9,6 +9,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.gson.Gson
 import com.vecto_example.vecto.R
 import com.vecto_example.vecto.data.repository.FeedRepository
+import com.vecto_example.vecto.data.repository.TokenRepository
 import com.vecto_example.vecto.data.repository.UserRepository
 import com.vecto_example.vecto.databinding.ActivityOneFeedBinding
 import com.vecto_example.vecto.retrofit.VectoService
@@ -18,6 +19,7 @@ import com.vecto_example.vecto.ui.search.SearchViewModel
 import com.vecto_example.vecto.ui.search.SearchViewModelFactory
 import com.vecto_example.vecto.ui.search.adapter.FeedAdapter
 import com.vecto_example.vecto.utils.FeedDetailType
+import com.vecto_example.vecto.utils.SaveLoginDataUtils
 import com.vecto_example.vecto.utils.ShareFeedUtil
 import com.vecto_example.vecto.utils.ToastMessageUtils
 import com.vecto_example.vecto.utils.ToastMessageUtils.errorMessageHandler
@@ -26,7 +28,7 @@ class OneFeedActivity : AppCompatActivity(), FeedAdapter.OnFeedActionListener {
     private lateinit var binding: ActivityOneFeedBinding
 
     private val viewModel: SearchViewModel by viewModels {
-        SearchViewModelFactory(FeedRepository(VectoService.create()), UserRepository(VectoService.create()))
+        SearchViewModelFactory(FeedRepository(VectoService.create()), UserRepository(VectoService.create()), TokenRepository(VectoService.create()))
     }
 
     private lateinit var feedAdapter: FeedAdapter
@@ -145,9 +147,28 @@ class OneFeedActivity : AppCompatActivity(), FeedAdapter.OnFeedActionListener {
             }
         }
 
+        viewModel.reissueResponse.observe(this) {
+            SaveLoginDataUtils.changeToken(this, viewModel.accessToken, viewModel.refreshToken)
+
+            when(it){
+                SearchViewModel.Function.PostFeedLike.name -> {
+                    viewModel.postFollow(viewModel.postFollowId)
+                }
+                SearchViewModel.Function.DeleteFeedLike.name -> {
+                    viewModel.deleteFeedLike(viewModel.deleteFeedLikeId)
+                }
+                SearchViewModel.Function.PostFollow.name -> {
+                    viewModel.postFollow(viewModel.postFollowId)
+                }
+                SearchViewModel.Function.DeleteFollow.name -> {
+                    viewModel.deleteFollow(viewModel.deleteFollowId)
+                }
+            }
+        }
+
         /*   오류 관련 Observer   */
-        viewModel.feedErrorLiveData.observe(this) {
-            errorMessageHandler(this, ToastMessageUtils.UserInterActionType.FEED.name, it)
+        viewModel.errorMessage.observe(this) {
+            ToastMessageUtils.showToast(this, getString(it))
         }
 
         viewModel.followErrorLiveData.observe(this) {

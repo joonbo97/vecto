@@ -6,33 +6,31 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.MotionEvent
+import android.view.View
 import android.view.inputmethod.InputMethodManager
-import android.widget.Toast
 import androidx.activity.viewModels
 import com.vecto_example.vecto.data.Auth
 import com.vecto_example.vecto.retrofit.VectoService
 import com.google.firebase.messaging.FirebaseMessaging
 import com.kakao.sdk.auth.AuthApiClient
 import com.kakao.sdk.auth.model.OAuthToken
-import com.kakao.sdk.common.KakaoSdk
 import com.kakao.sdk.common.model.ClientError
 import com.kakao.sdk.common.model.ClientErrorCause
 import com.kakao.sdk.common.model.KakaoSdkError
 import com.kakao.sdk.user.UserApiClient
-import com.vecto_example.vecto.BuildConfig
-import com.vecto_example.vecto.R
+import com.vecto_example.vecto.data.repository.TokenRepository
 import com.vecto_example.vecto.ui.register.RegisterActivity
 import com.vecto_example.vecto.data.repository.UserRepository
 import com.vecto_example.vecto.databinding.ActivityLoginBinding
+import com.vecto_example.vecto.utils.SaveLoginDataUtils
 import com.vecto_example.vecto.utils.ToastMessageUtils
 
 class LoginActivity : AppCompatActivity() {
     private lateinit var binding: ActivityLoginBinding
     private val loginViewModel: LoginViewModel by viewModels {
-        LoginViewModelFactory(UserRepository(VectoService.create()))
+        LoginViewModelFactory(UserRepository(VectoService.create()), TokenRepository(VectoService.create()))
     }
 
-    private lateinit var nickname: String
     private lateinit var fcmtoken: String
 
     var provider = "vecto"
@@ -47,8 +45,8 @@ class LoginActivity : AppCompatActivity() {
             if (task.isSuccessful) {
                 val token = task.result
                 Log.i("FCM Token", token)
-                val sharedPreferences = getSharedPreferences("fcm_pref", Context.MODE_PRIVATE)
-                sharedPreferences.edit().putString("fcm_token", token).apply()
+                val sharedPreferences = getSharedPreferences("MyAppPreferences", Context.MODE_PRIVATE)
+                sharedPreferences.edit().putString("FCM", token).apply()
             } else {
                 Log.w("FCM Token", "Fetching FCM registration token failed", task.exception)
             }
@@ -65,11 +63,12 @@ class LoginActivity : AppCompatActivity() {
         }
 
         binding.LoginButton.setOnClickListener {
-            val userid = binding.editTextID.text.toString()
-            val userpw = binding.editTextPW.text.toString()
+            val userId = binding.editTextID.text.toString()
+            val userPw = binding.editTextPW.text.toString()
 
+            loginViewModel.userId = userId
             fcmtoken = getTokenFromSharedPref(this).toString()
-            loginViewModel.loginRequest(VectoService.LoginRequest(userid, userpw, fcmtoken))
+            loginViewModel.loginRequest(VectoService.LoginRequest(userId, userPw, fcmtoken))
             provider = "vecto"
         }
 
@@ -116,7 +115,8 @@ class LoginActivity : AppCompatActivity() {
                                         } else if (user != null) {
                                             Log.e("TAG", "사용자 정보 요청 성공 : $user")
 
-                                            nickname = user.kakaoAccount?.profile?.nickname.toString()
+                                            loginViewModel.nickname = user.kakaoAccount?.profile?.nickname.toString()
+                                            loginViewModel.userId = user.id.toString()
                                             fcmtoken = getTokenFromSharedPref(this).toString()
 
                                             loginViewModel.loginRequest(VectoService.LoginRequest(user.id.toString(), null, fcmtoken))
@@ -137,78 +137,38 @@ class LoginActivity : AppCompatActivity() {
     }
 
     private fun initObservers() {
-
-        loginViewModel.loginResult.observe(this){ loginResult ->
-            loginResult.onSuccess {
-                Auth.token = it
-
-                saveLoginInformation(loginViewModel.loginRequestData.userId,
-                    loginViewModel.loginRequestData.userPw,
-                    provider)
-
-                loginViewModel.getUserInfo()
-            }.onFailure {
-                if(it.message == "FAIL"){
-
-                    if(provider == "vecto"){    //vecto 로그인 인 경우
-                        ToastMessageUtils.showToast(this, getString(R.string.login_wrong))
-                    }
-                    else{                       //kakao 로그인 인 경우
-                        loginViewModel.registerRequest(VectoService.RegisterRequest(
-                            loginViewModel.loginRequestData.userId, null, provider, nickname, null, null
-                        ))
-                    }
-                }
-                else{
-                    ToastMessageUtils.showToast(this, getString(R.string.APIErrorToastMessage))
-                }
+        loginViewModel.isLoading.observe(this){
+            if(it){
+                binding.constraintProgress.visibility = View.VISIBLE
+                binding.progressBar.visibility = View.VISIBLE
+            } else {
+                binding.constraintProgress.visibility = View.GONE
+                binding.progressBar.visibility = View.GONE
             }
         }
 
-        loginViewModel.registerResult.observe(this){ registerResult ->
-            registerResult.onSuccess {
-                loginViewModel.loginRequest(VectoService.LoginRequest(loginViewModel.loginRequestData.userId, null, fcmtoken))
-            }
-                .onFailure {
-                    ToastMessageUtils.showToast(this, getString(R.string.APIErrorToastMessage))
-                }
+        loginViewModel.loginResult.observe(this){
+            Auth.setToken(it)
+
+            SaveLoginDataUtils.saveLoginInformation(this, loginViewModel.userId!!, provider, fcmtoken)
+
+            loginViewModel.getUserInfo()
         }
 
-        loginViewModel.userInfoResult.observe(this) { userInfoResult ->
-            userInfoResult.onSuccess {
-                Auth.setLoginFlag(true)
-
-                Auth.setUserData(it.provider, it.userId, it.profileUrl, it.nickName, it.email)
-                finish()
-            }.onFailure {
-                if(it.message == "E020"){
-                    ToastMessageUtils.showToast(this, getString(R.string.login_none))
-                }
-                else{
-                    ToastMessageUtils.showToast(this, getString(R.string.APIErrorToastMessage))
-                }
-            }
+        loginViewModel.registerResult.observe(this){
+            loginViewModel.loginRequest(VectoService.LoginRequest(loginViewModel.loginRequestData.userId, null, fcmtoken))
         }
-    }
 
-    private fun saveLoginInformation(userId: String, password: String?, provider: String) {
-        val sharedPreferences = this.getSharedPreferences("MyAppPreferences", Context.MODE_PRIVATE)
+        loginViewModel.userInfoResult.observe(this) {
+            Auth.setLoginFlag(true)
 
-        val editor = sharedPreferences.edit()
-        // 기존 정보 삭제
-        editor.remove("userId")
-        editor.remove("password")
-        editor.remove("provider")
-        editor.apply()
-
-        // 새로운 정보 저장
-        editor.putString("username", userId)
-        editor.putString("password", password)
-        editor.putString("provider", provider)
-        if (!sharedPreferences.contains("FCM")) {
-            editor.putString("FCM", fcmtoken)
+            Auth.setUserData(it.provider, it.userId, it.profileUrl, it.nickName, it.email)
+            finish()
         }
-        editor.apply()
+
+        loginViewModel.errorMessage.observe(this) {
+            ToastMessageUtils.showToast(this, getString(it))
+        }
     }
 
     private val mCallback: (OAuthToken?, Throwable?) -> Unit = { token, error ->
@@ -221,8 +181,8 @@ class LoginActivity : AppCompatActivity() {
 
 
     private fun getTokenFromSharedPref(context: Context): String? {
-        val sharedPreferences = context.getSharedPreferences("fcm_pref", Context.MODE_PRIVATE)
-        return sharedPreferences.getString("fcm_token", null)
+        val sharedPreferences = context.getSharedPreferences("MyAppPreferences", Context.MODE_PRIVATE)
+        return sharedPreferences.getString("FCM", null)
     }
 
     override fun dispatchTouchEvent(ev: MotionEvent?): Boolean {

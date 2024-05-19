@@ -13,6 +13,7 @@ import com.vecto_example.vecto.ui.main.MainActivity
 import com.vecto_example.vecto.R
 import com.vecto_example.vecto.data.Auth
 import com.vecto_example.vecto.data.repository.FeedRepository
+import com.vecto_example.vecto.data.repository.TokenRepository
 import com.vecto_example.vecto.data.repository.UserRepository
 import com.vecto_example.vecto.databinding.FragmentMypageBinding
 import com.vecto_example.vecto.dialog.UserProfileImageDialog
@@ -33,7 +34,7 @@ class MypageFragment : Fragment() {
     }
 
     private val userInfoViewModel: UserInfoViewModel by viewModels {
-        UserInfoViewModelFactory(FeedRepository(VectoService.create()), UserRepository(VectoService.create()))
+        UserInfoViewModelFactory(FeedRepository(VectoService.create()), UserRepository(VectoService.create()), TokenRepository(VectoService.create()))
     }
 
 
@@ -56,7 +57,7 @@ class MypageFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        userInfoViewModel.getUserInfo(Auth._userId.value.toString())
+        userInfoViewModel.getUserInfo(Auth.userId.value.toString())
 
         initObservers()
         initListeners()
@@ -65,13 +66,13 @@ class MypageFragment : Fragment() {
     private fun initListeners() {
         /*   리스너 초기화 함수   */
         binding.ProfileImage.setOnClickListener {
-            UserProfileImageDialog(requireContext(), Auth._profileImage.value).showDialog()
+            UserProfileImageDialog(requireContext(), Auth.profileImage.value).showDialog()
         }
 
         binding.FollowerTouchImage.setOnClickListener {
             val intent = Intent(context, FollowInfoActivity::class.java)
-            intent.putExtra("userId", Auth._userId.value)
-            intent.putExtra("nickName", Auth._nickName.value)
+            intent.putExtra("userId", Auth.userId.value)
+            intent.putExtra("nickName", Auth.nickName.value)
             intent.putExtra("type", "follower")
             intent.putExtra("follower", binding.FollowerCount.text.toString().toInt())
             intent.putExtra("following", binding.FollowingCount.text.toString().toInt())
@@ -80,8 +81,8 @@ class MypageFragment : Fragment() {
 
         binding.FollowingTouchImage.setOnClickListener {
             val intent = Intent(context, FollowInfoActivity::class.java)
-            intent.putExtra("userId", Auth._userId.value)
-            intent.putExtra("nickName", Auth._nickName.value)
+            intent.putExtra("userId", Auth.userId.value)
+            intent.putExtra("nickName", Auth.nickName.value)
             intent.putExtra("type", "following")
             intent.putExtra("follower", binding.FollowerCount.text.toString().toInt())
             intent.putExtra("following", binding.FollowingCount.text.toString().toInt())
@@ -121,12 +122,12 @@ class MypageFragment : Fragment() {
     }
 
     private fun initObservers() {
-        Auth._profileImage.observe(viewLifecycleOwner) {
-            LoadImageUtils.loadUserProfileImage(requireContext(), binding.ProfileImage, Auth._profileImage.value)
+        Auth.profileImage.observe(viewLifecycleOwner) {
+            LoadImageUtils.loadUserProfileImage(requireContext(), binding.ProfileImage, Auth.profileImage.value)
         }
 
-        Auth._nickName.observe(viewLifecycleOwner) {
-            binding.UserNameText.text = Auth._nickName.value
+        Auth.nickName.observe(viewLifecycleOwner) {
+            binding.UserNameText.text = Auth.nickName.value
         }
 
         /*   사용자 정보 Observer   */

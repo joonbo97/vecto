@@ -1,6 +1,7 @@
 package com.vecto_example.vecto.data
 
 import androidx.lifecycle.MutableLiveData
+import com.vecto_example.vecto.retrofit.VectoService
 
 object Auth {
     val loginFlag: MutableLiveData<Boolean> = MutableLiveData<Boolean>(false)
@@ -9,23 +10,25 @@ object Auth {
     }
 
     /*사용자 정보 관련*/
-    var token: String = ""
+    var accessToken: String = ""
+    var refreshToken: String = ""
 
     var provider = ""
-
-    val _userId: MutableLiveData<String> = MutableLiveData("")
-
-    val _profileImage: MutableLiveData<String?> = MutableLiveData(null)
-
-    val _nickName: MutableLiveData<String> = MutableLiveData("")
-
+    val userId: MutableLiveData<String> = MutableLiveData("")
+    val profileImage: MutableLiveData<String?> = MutableLiveData(null)
+    val nickName: MutableLiveData<String> = MutableLiveData("")
     var email: String? = ""
 
     fun setUserData(prov: String, id: String, image: String?, nick: String, em: String?) {
-        _userId.value = id
+        userId.value = id
         provider = prov
-        _profileImage.value = image
-        _nickName.value = nick
+        profileImage.value = image
+        nickName.value = nick
         email = em
+    }
+
+    fun setToken(loginResponse: VectoService.UserToken){
+        accessToken = loginResponse.accessToken
+        refreshToken = loginResponse.refreshToken
     }
 }

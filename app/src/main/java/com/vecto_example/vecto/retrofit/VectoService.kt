@@ -26,7 +26,16 @@ interface VectoService {
     @POST("login")
     suspend fun loginUser(
         @Body request: LoginRequest
-    ): Response<VectoResponse<String>>
+    ): Response<VectoResponse<UserToken>>
+
+    //토큰 갱신
+    @GET("reissue")
+    suspend fun reissueToken(
+        @Header("AUTHORIZATION")
+        accessToken: String,
+        @Header("AUTHORIZATION-REFRESH")
+        refreshToken: String,
+    ): Response<VectoResponse<UserToken>>
 
     //가입
     @POST("user")
@@ -74,6 +83,12 @@ interface VectoService {
         @Header("Authorization") authorization: String,
         @Body request: ComplaintRequest
     ): Response<VectoResponse<Unit>>
+
+    //탈퇴
+    @DELETE("user")
+    suspend fun deleteAccount(
+        @Header("Authorization") authorization: String
+    ): Response<VectoResponse<String>>
 
 
     /*   게시글 관련   */
@@ -290,6 +305,7 @@ interface VectoService {
 
 
 
+
     companion object {
         fun create(): VectoService {
             val retrofit = Retrofit.Builder()
@@ -328,6 +344,11 @@ interface VectoService {
         val code: String,
         val message: String,
         val result: T?
+    )
+
+    data class UserToken(
+        val accessToken: String,
+        val refreshToken: String
     )
 
     data class UserInfoResponse(

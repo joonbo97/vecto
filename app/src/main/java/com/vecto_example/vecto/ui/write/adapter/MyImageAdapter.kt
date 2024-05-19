@@ -13,7 +13,7 @@ import com.vecto_example.vecto.R
 
 
 class MyImageAdapter (private val context: Context): RecyclerView.Adapter<MyImageAdapter.ViewHolder>(){
-    val imageUri = mutableListOf<Uri>()
+    var imageUri = mutableListOf<Uri>()
     lateinit var recyclerView: RecyclerView
 
     inner class ViewHolder(view: View): RecyclerView.ViewHolder(view){

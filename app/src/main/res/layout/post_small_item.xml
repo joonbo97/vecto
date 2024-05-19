@@ -73,9 +73,9 @@
         android:layout_width="74dp"
         android:layout_height="33dp"
         android:layout_marginTop="24dp"
-        android:layout_marginEnd="14dp"
+        android:layout_marginEnd="20dp"
         android:background="@drawable/ripple_effect_feed_following"
-        app:layout_constraintEnd_toEndOf="@+id/ImageItemBox"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@+id/ImageItemBox" />
 
     <TextView
@@ -84,7 +84,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="2dp"
         android:fontFamily="@font/lineseedkr_bd"
-        android:text="팔로우"
+        android:text="팔로잉"
         android:textColor="@color/vecto_theme_orange"
         android:textSize="14sp"
         app:layout_constraintBottom_toBottomOf="@+id/FollowButton"

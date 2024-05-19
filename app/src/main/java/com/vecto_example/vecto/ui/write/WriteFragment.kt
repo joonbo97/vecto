@@ -15,7 +15,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
@@ -27,17 +27,16 @@ import com.vecto_example.vecto.ui.main.MainActivity
 import com.vecto_example.vecto.data.Auth
 import com.vecto_example.vecto.data.model.LocationData
 import com.vecto_example.vecto.data.model.LocationDatabase
-import com.vecto_example.vecto.data.model.VisitData
 import com.vecto_example.vecto.data.model.VisitDatabase
 import com.vecto_example.vecto.dialog.WriteBottomDialog
 import com.vecto_example.vecto.dialog.WriteNameEmptyDialog
 import com.vecto_example.vecto.retrofit.NaverSearchApiService
 import com.vecto_example.vecto.retrofit.VectoService
-import com.naver.maps.map.CameraUpdate
 import com.naver.maps.map.MapFragment
 import com.naver.maps.map.NaverMap
 import com.naver.maps.map.OnMapReadyCallback
 import com.vecto_example.vecto.R
+import com.vecto_example.vecto.data.repository.TokenRepository
 import com.vecto_example.vecto.databinding.FragmentWriteBinding
 import com.vecto_example.vecto.dialog.CalendarDialog
 import com.vecto_example.vecto.ui.write.adapter.MyImageAdapter
@@ -46,7 +45,12 @@ import com.vecto_example.vecto.utils.DateTimeUtils
 import com.vecto_example.vecto.utils.MapMarkerManager
 import com.vecto_example.vecto.utils.MapOverlayManager
 import com.vecto_example.vecto.utils.RequestLoginUtils
+import com.vecto_example.vecto.utils.SaveLoginDataUtils
+import com.vecto_example.vecto.utils.ToastMessageUtils
 import com.yalantis.ucrop.UCrop
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
@@ -59,8 +63,9 @@ class WriteFragment : Fragment(), OnMapReadyCallback, CalendarDialog.OnDateSelec
     private lateinit var binding: FragmentWriteBinding
 
     private val writeViewModel: WriteViewModel by viewModels {
-        WriteViewModelFactory(WriteRepository(VectoService.create(), NaverSearchApiService.create()))
+        WriteViewModelFactory(WriteRepository(VectoService.create(), NaverSearchApiService.create()), TokenRepository(VectoService.create()))
     }
+    private lateinit var callBack: OnBackPressedCallback
 
     private lateinit var myImageAdapter: MyImageAdapter
 
@@ -78,13 +83,12 @@ class WriteFragment : Fragment(), OnMapReadyCallback, CalendarDialog.OnDateSelec
     private var currentImageIndex = 0 // 현재 크롭 중 인덱스
     private var selectedImageUris = mutableListOf<Uri>() // 선택된 이미지 URI 목록
 
-    private lateinit var locationDataList: MutableList<LocationData>
-    private lateinit var visitDataList: MutableList<VisitData>
-
     private var mapSnapshot = mutableListOf<Bitmap>()
 
     private var uploadStarted = false
 
+    private var originalWidth = 0
+    private var originalHeight = 0
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -92,11 +96,26 @@ class WriteFragment : Fragment(), OnMapReadyCallback, CalendarDialog.OnDateSelec
     ): View {
         binding = FragmentWriteBinding.inflate(inflater, container, false)
 
+        originalWidth = binding.naverMapWrite.layoutParams.width
+        originalHeight = binding.naverMapWrite.layoutParams.height
+
         initRecyclerView()
         initListeners()
         initObservers()
 
         return binding.root
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        if(writeViewModel.imageUris.isNotEmpty()) {
+            myImageAdapter.imageUri = writeViewModel.imageUris
+            writeViewModel.imageUris = myImageAdapter.imageUri
+            myImageAdapter.notifyDataSetChanged()
+
+            binding.PhotoIconText.text = "${myImageAdapter.itemCount}/10"
+        }
     }
 
     private fun initObservers() {
@@ -116,6 +135,8 @@ class WriteFragment : Fragment(), OnMapReadyCallback, CalendarDialog.OnDateSelec
                 binding.DeleteButton.visibility = View.VISIBLE
                 binding.naverMapWrite.visibility = View.VISIBLE
 
+                initMap()
+
                 binding.LocationBoxImage.isClickable = false
             } else {
                 binding.DeleteButton.visibility = View.GONE
@@ -123,10 +144,9 @@ class WriteFragment : Fragment(), OnMapReadyCallback, CalendarDialog.OnDateSelec
 
                 binding.LocationBoxImage.isClickable = true
 
-                if(::visitDataList.isInitialized)
-                    visitDataList.clear()
-                if(::locationDataList.isInitialized)
-                    locationDataList.clear()
+                writeViewModel.visitDataList.clear()
+                writeViewModel.locationDataList.clear()
+
                 if(::mapOverlayManager.isInitialized)
                     mapOverlayManager.deleteOverlay()
             }
@@ -148,32 +168,50 @@ class WriteFragment : Fragment(), OnMapReadyCallback, CalendarDialog.OnDateSelec
 
         writeViewModel.addFeedResult.observe(viewLifecycleOwner){
             if(it == "SUCCESS"){
-                Toast.makeText(requireContext(), "게시글 작성이 완료되었습니다.", Toast.LENGTH_SHORT).show()
+                ToastMessageUtils.showToast(requireContext(), getString(R.string.post_feed_success))
 
                 writeViewModel.finishUpload()
-                visitDataList.clear()
-                locationDataList.clear()
-                mapSnapshot.clear()
+
                 myImageAdapter.imageUri.clear()
+
+                mapSnapshot.clear()
                 mapOverlayManager.deleteOverlay()
+
                 binding.EditTitle.text.clear()
                 binding.EditContent.text.clear()
 
+                uploadStarted = false
+                changeMapSize(originalWidth, originalHeight)
+
+                deleteCompressedImages()
                 (activity as? MainActivity)?.binding?.navView?.selectedItemId = R.id.SearchFragment
             }
         }
 
-        //API 오류 메시지
-        writeViewModel.errorLiveData.observe(viewLifecycleOwner){
-            sendFailMessage(it, requireContext(), "errorLiveData")
+        writeViewModel.reissueResponse.observe(viewLifecycleOwner){
+            when(it){
+                WriteViewModel.Function.UploadMapImages.name -> {
+                    writeViewModel.uploadImages(WriteViewModel.ImageType.MAP.name, writeViewModel.mapImagePart)
+                }
+                WriteViewModel.Function.UploadNormalImages.name -> {
+                    writeViewModel.uploadImages(WriteViewModel.ImageType.NORMAL.name, writeViewModel.normalImagePart)
+                }
+                WriteViewModel.Function.AddFeed.name -> {
+                    writeViewModel.addFeed(writeViewModel.feedDataForUpload)
+                }
+            }
         }
 
-        writeViewModel.feedErrorLiveData.observe(viewLifecycleOwner){
-            sendFailMessage(it, requireContext(), "feedErrorLiveData")
-        }
+        //오류
+        writeViewModel.errorMessage.observe(viewLifecycleOwner) {
+            ToastMessageUtils.showToast(requireContext(), getString(it))
 
-        writeViewModel.imageErrorLiveData.observe(viewLifecycleOwner){
-            sendFailMessage(it, requireContext(), "imageErrorLiveData")
+            if(it == R.string.expired_login)
+                SaveLoginDataUtils.deleteData(requireContext())
+
+            uploadStarted = false
+            writeViewModel.failUpload()
+            changeMapSize(originalWidth, originalHeight)
         }
 
     }
@@ -185,7 +223,7 @@ class WriteFragment : Fragment(), OnMapReadyCallback, CalendarDialog.OnDateSelec
                 binding.EditContent.text.toString(),
                 LocalDateTime.now().withNano(0).toString(),
                 allImageUrl,
-                locationDataList,
+                writeViewModel.locationDataList,
                 writeViewModel.visitDataForWriteList,
                 writeViewModel.mapImageUrls.value?.toMutableList()
             ))
@@ -213,26 +251,24 @@ class WriteFragment : Fragment(), OnMapReadyCallback, CalendarDialog.OnDateSelec
                 return@setOnClickListener
             }
 
-            if(::visitDataList.isInitialized) {
-                if (binding.EditTitle.text.isEmpty())
-                    Toast.makeText(requireContext(), "제목을 입력해주세요.", Toast.LENGTH_SHORT).show()
-                else if (visitDataList.size == 0)
-                    Toast.makeText(requireContext(), "경로를 선택해주세요.", Toast.LENGTH_SHORT).show()
-                else {
-                    if(!writeViewModel.isAllVisitDataValid()){  //방문지 유효성 검사
-                        Toast.makeText(requireContext(), "경로 정보가 유효하지 않습니다. 경로를 재등록 해주세요.", Toast.LENGTH_SHORT).show()
 
-                        return@setOnClickListener
-                    }
+            if (binding.EditTitle.text.isEmpty())
+                ToastMessageUtils.showToast(requireContext(), getString(R.string.feed_title_empty))
+            else if (writeViewModel.visitDataList.size == 0)
+                ToastMessageUtils.showToast(requireContext(), getString(R.string.feed_visit_empty))
+            else {
+                if(!writeViewModel.isAllVisitDataValid()){  //방문지 유효성 검사
+                    ToastMessageUtils.showToast(requireContext(), getString(R.string.feed_visit_error))
 
-                    writeViewModel.startLoading()
-
-                    uploadStarted = true
-                    takeSnapForMap()
+                    return@setOnClickListener
                 }
-            } else {
-                Toast.makeText(requireContext(), "경로를 선택해주세요.", Toast.LENGTH_SHORT).show()
+
+                writeViewModel.startLoading()
+
+                uploadStarted = true
+                takeSnapForMap()
             }
+
 
         }
 
@@ -277,7 +313,7 @@ class WriteFragment : Fragment(), OnMapReadyCallback, CalendarDialog.OnDateSelec
     }
 
     private fun selectVisit(selectedDate: String) = //특정 날짜에 해당하는 방문지를 선택하는 함수
-        if(visitDataList.any{ it.name.isEmpty() })//이름항목이 하나라도 비어있을 경우
+        if(writeViewModel.visitDataList.any{ it.name.isEmpty() })//이름항목이 하나라도 비어있을 경우
         {
             val writeNameEmptyDialog = WriteNameEmptyDialog(requireContext())
             writeNameEmptyDialog.showDialog()
@@ -287,41 +323,38 @@ class WriteFragment : Fragment(), OnMapReadyCallback, CalendarDialog.OnDateSelec
                 val bundle = bundleOf("selectedDateKey" to selectedDate)
                 navController.navigate(R.id.EditCourseFragment, bundle)
             }
+
+            writeViewModel.visitDataList.clear()
         }
         else//완성된 경우
         {
             val writeBottomDialog = WriteBottomDialog(requireContext())
-            writeBottomDialog.showDialog(visitDataList) { selectedItems -> //구간을 선택함 (모든 정보 완료)
+            writeBottomDialog.showDialog(writeViewModel.visitDataList) { selectedItems -> //구간을 선택함 (모든 정보 완료)
 
                 if(selectedItems.size > 9){
-                    Toast.makeText(requireContext(), "방문지는 최대 9개까지 선택이 가능합니다.", Toast.LENGTH_SHORT).show()
+                    ToastMessageUtils.showToast(requireContext(), getString(R.string.feed_visit_max))
+                    writeViewModel.visitDataList.clear()
                     return@showDialog
                 }
 
-                binding.naverMapWrite.visibility = View.VISIBLE
                 mapOverlayManager.deleteOverlay()
 
                 //선택한 날짜의 방문지의 처음과 끝까지의 경로
-                locationDataList = LocationDatabase(requireContext()).getBetweenLocationData(selectedItems.first().datetime, selectedItems.last().datetime)
-
-                mapOverlayManager.addPathOverlayForLocation(locationDataList)
+                writeViewModel.locationDataList.addAll(LocationDatabase(requireContext()).getBetweenLocationData(selectedItems.first().datetime, selectedItems.last().datetime))
 
                 if(selectedItems.size == 1)
                     mapOverlayManager.moveCameraForVisitUpload(selectedItems[0])
                 else
-                    mapOverlayManager.moveCameraForPathUpload(locationDataList)
-                val locationDataforPath = mutableListOf<LocationData>()
+                    mapOverlayManager.moveCameraForPathUpload(writeViewModel.locationDataList)
+                val locationDataForPath = mutableListOf<LocationData>()
 
                 //location 첫 좌표 넣어줌.
-                locationDataforPath.add(LocationData(selectedItems[0].datetime, selectedItems[0].lat_set, selectedItems[0].lng_set))
+                locationDataForPath.add(LocationData(selectedItems[0].datetime, selectedItems[0].lat_set, selectedItems[0].lng_set))
 
-                for (visitdatalist in selectedItems){
-                    mapMarkerManager.addVisitMarkerBasic(visitdatalist)
-                }
+                writeViewModel.visitDataList.clear()
+                writeViewModel.visitDataList.addAll(selectedItems.toMutableList())
 
-                visitDataList = selectedItems.toMutableList()
-
-                writeViewModel.reverseGeocode(visitDataList)
+                writeViewModel.reverseGeocode()
             }
         }
 
@@ -345,10 +378,10 @@ class WriteFragment : Fragment(), OnMapReadyCallback, CalendarDialog.OnDateSelec
         mapSnapshot.clear()
 
         changeMapSize(340, 340)
-        if(visitDataList.size == 1)
-            mapOverlayManager.moveCameraForVisitUpload(visitDataList[0])
+        if(writeViewModel.visitDataList.size == 1)
+            mapOverlayManager.moveCameraForVisitUpload(writeViewModel.visitDataList[0])
         else
-            mapOverlayManager.moveCameraForPathUpload(locationDataList)
+            mapOverlayManager.moveCameraForPathUpload(writeViewModel.locationDataList)
 
         Handler(Looper.getMainLooper()).postDelayed({
             naverMap.takeSnapshot {
@@ -361,10 +394,10 @@ class WriteFragment : Fragment(), OnMapReadyCallback, CalendarDialog.OnDateSelec
         }, 1000)
 
         Handler(Looper.getMainLooper()).postDelayed({
-            if(visitDataList.size == 1)
-                mapOverlayManager.moveCameraForVisitUpload(visitDataList[0])
+            if(writeViewModel.visitDataList.size == 1)
+                mapOverlayManager.moveCameraForVisitUpload(writeViewModel.visitDataList[0])
             else
-                mapOverlayManager.moveCameraForPathUpload(locationDataList)
+                mapOverlayManager.moveCameraForPathUpload(writeViewModel.locationDataList)
         }, 1100)
 
         Handler(Looper.getMainLooper()).postDelayed({
@@ -388,7 +421,7 @@ class WriteFragment : Fragment(), OnMapReadyCallback, CalendarDialog.OnDateSelec
                 mapImageParts.add(part)
             }
 
-            writeViewModel.uploadImages("MAP", mapImageParts)
+            writeViewModel.uploadImages(WriteViewModel.ImageType.MAP.name, mapImageParts)
 
             val imageParts: MutableList<MultipartBody.Part> = mutableListOf()
 
@@ -400,31 +433,10 @@ class WriteFragment : Fragment(), OnMapReadyCallback, CalendarDialog.OnDateSelec
                     imageParts.add(imagePart)
                 }
 
-                writeViewModel.uploadImages("NORMAL", imageParts)
+                writeViewModel.uploadImages(WriteViewModel.ImageType.NORMAL.name, imageParts)
             }
 
         }, 2200)
-    }
-
-    private fun sendFailMessage(message: String, context: Context, type: String) {
-        if(message == "FAIL"){
-            when(type){
-                "errorLiveData" -> {
-                    Toast.makeText(context, "방문지 역지오코딩에 실패하였습니다. 경로를 다시 등록 해주세요.", Toast.LENGTH_SHORT).show()
-                }
-                "feedErrorLiveData" -> {
-                    Toast.makeText(context, "게시글 업로드에 실패하였습니다.", Toast.LENGTH_SHORT).show()
-                }
-                "imageErrorLiveData" -> {
-                    Toast.makeText(context, "이미지 업로드에 실패하였습니다.", Toast.LENGTH_SHORT).show()
-                }
-            }
-        }
-        else if(message == "ERROR"){
-            Toast.makeText(context, getText(R.string.APIErrorToastMessage), Toast.LENGTH_SHORT).show()
-        }
-
-        writeViewModel.finishUpload()
     }
 
     /*   Override 관련   */
@@ -436,19 +448,18 @@ class WriteFragment : Fragment(), OnMapReadyCallback, CalendarDialog.OnDateSelec
             val endDate = visitData.endtime.substring(0, 10)
             visitDate == previousDate && endDate == date
         }
-
-        visitDataList = VisitDatabase(requireContext()).getAllVisitData().filter {
+        writeViewModel.visitDataList.clear()
+        writeViewModel.visitDataList.addAll(VisitDatabase(requireContext()).getAllVisitData().filter {
             it.datetime.startsWith(date)
-        }.toMutableList()
+        }.toMutableList())
 
 
         //종료 시간이 선택 날짜인 방문지 추가
         if(filteredData.isNotEmpty())
-            visitDataList.add(0, filteredData[0])
+            writeViewModel.visitDataList.add(0, filteredData[0])
 
-        if(visitDataList.isNotEmpty()){
+        if(writeViewModel.visitDataList.isNotEmpty()){
             //방문 장소가 있을 경우
-
             selectVisit(date)
         }
         else{
@@ -459,7 +470,6 @@ class WriteFragment : Fragment(), OnMapReadyCallback, CalendarDialog.OnDateSelec
 
     override fun onMapReady(naverMap: NaverMap) {
         this.naverMap = naverMap
-        naverMap.moveCamera(CameraUpdate.zoomTo(18.0))
         naverMap.uiSettings.isZoomControlEnabled = false
         naverMap.uiSettings.isScrollGesturesEnabled = false
         naverMap.uiSettings.isScaleBarEnabled = false
@@ -470,7 +480,14 @@ class WriteFragment : Fragment(), OnMapReadyCallback, CalendarDialog.OnDateSelec
         mapMarkerManager = MapMarkerManager(requireContext(), naverMap)
         mapOverlayManager = MapOverlayManager(requireContext(), mapMarkerManager, naverMap)
 
-        showDatePickerDialog()
+        if(writeViewModel.visitDataList.isNotEmpty()){
+            mapOverlayManager.addPathOverlayForLocation(writeViewModel.locationDataList)
+            for (visitdatalist in writeViewModel.visitDataList){
+                mapMarkerManager.addVisitMarkerBasic(visitdatalist)
+            }
+        } else {
+            showDatePickerDialog()
+        }
     }
 
 
@@ -482,7 +499,8 @@ class WriteFragment : Fragment(), OnMapReadyCallback, CalendarDialog.OnDateSelec
         val intent = Intent(Intent.ACTION_PICK)
         intent.setDataAndType(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, "image/*")
         intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
-        galleryResultLauncher.launch(intent) // 갤러리 결과를 galleryResultLauncher로 받음
+        if(::galleryResultLauncher.isInitialized)
+            galleryResultLauncher.launch(intent) // 갤러리 결과를 galleryResultLauncher로 받음
     }
 
     //갤러리 결과를 받는 galleryResultLauncher 설정
@@ -493,7 +511,7 @@ class WriteFragment : Fragment(), OnMapReadyCallback, CalendarDialog.OnDateSelec
                 currentImageIndex = 0 // 인덱스 초기화
 
                 if (myImageAdapter.itemCount + result.data?.clipData!!.itemCount > 10) {
-                    Toast.makeText(requireContext(), "최대 10개의 이미지만 추가 가능합니다.", Toast.LENGTH_LONG).show()
+                    ToastMessageUtils.showToast(requireContext(), getString(R.string.feed_image_max))
                     return@registerForActivityResult
                 }
 
@@ -548,7 +566,7 @@ class WriteFragment : Fragment(), OnMapReadyCallback, CalendarDialog.OnDateSelec
             if (result.resultCode == Activity.RESULT_OK) {
                 val resultUri = UCrop.getOutput(result.data!!)
                 addImage(resultUri!!)
-                myImageAdapter.notifyDataSetChanged()
+                myImageAdapter.notifyItemInserted(currentImageIndex)
                 currentImageIndex++ // 다음 이미지를 위해 인덱스 증가
                 startNextCrop() // 다음 이미지 크롭 시작
             } else if (result.resultCode == UCrop.RESULT_ERROR) {
@@ -602,7 +620,32 @@ class WriteFragment : Fragment(), OnMapReadyCallback, CalendarDialog.OnDateSelec
         file.outputStream().use { it.write(compressedBytes) }
 
         myImageAdapter.imageUri.add(Uri.fromFile(file))
+        if(writeViewModel.imageUris.isEmpty())
+            writeViewModel.imageUris = myImageAdapter.imageUri
     }
 
+    private fun deleteCompressedImages() {
+        CoroutineScope(Dispatchers.IO).launch {
+            val cacheDir = requireContext().cacheDir
+            val files = cacheDir.listFiles() // 디렉터리 내 모든 파일 가져오기
+            files?.forEach { file ->
+                if (file.name.startsWith("compressed_") && file.name.endsWith(".jpeg")) {
+                    file.delete()
+                }
+            }
+        }
+    }
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+
+        callBack = object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                (activity as? MainActivity)?.binding?.navView?.selectedItemId = R.id.SearchFragment
+            }
+        }
+
+        requireActivity().onBackPressedDispatcher.addCallback(this, callBack)
+    }
 
 }

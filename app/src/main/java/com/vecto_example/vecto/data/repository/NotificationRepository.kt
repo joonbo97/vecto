@@ -1,6 +1,7 @@
 package com.vecto_example.vecto.data.repository
 
 import android.util.Log
+import com.google.gson.Gson
 import com.vecto_example.vecto.data.Auth
 import com.vecto_example.vecto.retrofit.VectoService
 
@@ -9,7 +10,7 @@ class NotificationRepository (private val vectoService: VectoService) {
 
     suspend fun getNewNotificationFlag(): Result<Boolean>{
         return try{
-            val response = vectoService.getNewNotificationFlag("Bearer ${Auth.token}")
+            val response = vectoService.getNewNotificationFlag("Bearer ${Auth.accessToken}")
             if (response.isSuccessful) {
 
                 if(response.body()?.result == true) //새로운 알림이 있을 경우
@@ -24,29 +25,37 @@ class NotificationRepository (private val vectoService: VectoService) {
                 }
 
             } else {
+                val errorBody = response.errorBody()?.string()
+                val gson = Gson()
+                val errorResponse: VectoService.VectoResponse<*>? = gson.fromJson(errorBody, VectoService.VectoResponse::class.java)
 
-                Log.d("getNewNotificationFlag", "FAIL: ${response.body()}")
-                Result.failure(Exception("서버오류"))
-
+                Log.d("getNewNotificationFlag", "FAIL: $errorBody")
+                Result.failure(Exception(errorResponse?.code))
             }
         } catch (e: Exception) {
             Log.d("getNewNotificationFlag", "ERROR: ${e.message}")
-            Result.failure(e)
+            Result.failure(Exception("ERROR"))
         }
     }
 
-    suspend fun getNotification(pageNo: Int): VectoService.NotificationResponse {
+    suspend fun getNotification(pageNo: Int): Result<VectoService.NotificationResponse> {
         /*   사용자의 알림 기록 확인   */
+        return try{
+            val response = vectoService.getNotification("Bearer ${Auth.accessToken}", pageNo)
 
-        val response = vectoService.getNotification("Bearer ${Auth.token}", pageNo)
+            if (response.isSuccessful) {
+                Result.success(response.body()?.result!!)
+            } else {
+                val errorBody = response.errorBody()?.string()
+                val gson = Gson()
+                val errorResponse: VectoService.VectoResponse<*>? = gson.fromJson(errorBody, VectoService.VectoResponse::class.java)
 
-        if(response.isSuccessful){
-            Log.d("getNotification", "${response.body()}")
-
-            return response.body()!!.result!!
-        }
-        else{
-            throw Exception("Failed: ${response.errorBody()?.string()}")
+                Log.d("getNotification", "FAIL: $errorBody")
+                Result.failure(Exception(errorResponse?.code))
+            }
+        } catch (e: Exception) {
+            Log.d("getNotification", "ERROR: ${e.message}")
+            Result.failure(Exception("ERROR"))
         }
     }
 }

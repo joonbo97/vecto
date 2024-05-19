@@ -5,15 +5,23 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.vecto_example.vecto.R
 import com.vecto_example.vecto.data.Auth
 import com.vecto_example.vecto.data.repository.FeedRepository
+import com.vecto_example.vecto.data.repository.TokenRepository
 import com.vecto_example.vecto.data.repository.UserRepository
 import com.vecto_example.vecto.retrofit.VectoService
 import com.vecto_example.vecto.utils.FeedDetailType
 import com.vecto_example.vecto.utils.ServerResponse
 import kotlinx.coroutines.launch
 
-class FeedDetailViewModel(private val repository: FeedRepository, private val userRepository: UserRepository) : ViewModel() {
+class FeedDetailViewModel(private val repository: FeedRepository, private val userRepository: UserRepository, private val tokenRepository: TokenRepository) : ViewModel() {
+    private val _reissueResponse = MutableLiveData<String>()
+    val reissueResponse: LiveData<String> = _reissueResponse
+
+    var accessToken: String? = null
+    var refreshToken: String? = null
+
     var originLoginFlag: Boolean? = null
 
     var firstFlag = false
@@ -34,6 +42,11 @@ class FeedDetailViewModel(private val repository: FeedRepository, private val us
     var deleteLikeLoading = false
     var postFollowLoading = false
     var deleteFollowLoading = false
+
+    var postFeedLikeId = -1
+    var deleteFeedLikeId = -1
+    var postFollowId = ""
+    var deleteFollowId = ""
 
     /*   게시글 정보   */
     var nextPage: Int = 0
@@ -61,13 +74,8 @@ class FeedDetailViewModel(private val repository: FeedRepository, private val us
     val deleteFollowResult: LiveData<Boolean> = _deleteFollowResult
 
     /*   에러   */
-    //피드 정보 요청 오류
-    private val _feedErrorLiveData = MutableLiveData<String>()
-    val feedErrorLiveData: LiveData<String> = _feedErrorLiveData
-
-    //팔로우 정보 조회 실패
-    private val _followErrorLiveData = MutableLiveData<String>()
-    val followErrorLiveData: LiveData<String> = _followErrorLiveData
+    private val _errorMessage = MutableLiveData<Int>()
+    val errorMessage: LiveData<Int> = _errorMessage
 
     //팔로우 요청 실패
     private val _postFollowError = MutableLiveData<String>()
@@ -76,6 +84,10 @@ class FeedDetailViewModel(private val repository: FeedRepository, private val us
     //팔로우 삭제 요청 실패
     private val _deleteFollowError = MutableLiveData<String>()
     val deleteFollowError: LiveData<String> = _deleteFollowError
+
+    enum class Function {
+        GetFeedList, PostFeedLike, DeleteFeedLike, PostFollow, DeleteFollow
+    }
 
     fun startLoading(){
         Log.d("FeedDetailViewModel", "Start Loading")
@@ -151,15 +163,25 @@ class FeedDetailViewModel(private val repository: FeedRepository, private val us
                     lastPage = feedPageResponse.lastPage
                     followPage = feedPageResponse.followPage
                 }.onFailure {
-                    _feedErrorLiveData.value = it.message
-                    endLoading()
+                    when(it.message){
+                        ServerResponse.ACCESS_TOKEN_INVALID_ERROR.code -> {
+                            reissueToken(Function.GetFeedList.name)
+                        }
+                        ServerResponse.ERROR.code -> {
+                            _errorMessage.postValue(R.string.APIErrorToastMessage)
+                            endLoading()
+                        }
+                        else -> {
+                            _errorMessage.postValue(R.string.get_feed_fail)
+                            endLoading()
+                        }
+                    }
                 }
             }
         }
     }
 
     private fun checkFollow(newFeedInfoWithFollow: List<VectoService.FeedInfoWithFollow>, feedPageResponse: VectoService.FeedPageResponse){
-        Log.d("FeedDetailViewModel", "checkFollow")
 
         if(Auth.loginFlag.value == true){
             val userIdList = newFeedInfoWithFollow.map {
@@ -183,7 +205,14 @@ class FeedDetailViewModel(private val repository: FeedRepository, private val us
                     allFeedInfo.addAll(newFeedInfoWithFollow)
                     _feedInfoLiveData.postValue(feedPageResponse)
 
-                    _followErrorLiveData.value = it.message
+                    when(it.message){
+                        ServerResponse.ERROR.code -> {
+                            _errorMessage.postValue(R.string.APIErrorToastMessage)
+                        }
+                        else -> {
+                            _errorMessage.postValue(R.string.get_follow_relation_fail)
+                        }
+                    }
                     endLoading()
                 }
             }
@@ -198,9 +227,17 @@ class FeedDetailViewModel(private val repository: FeedRepository, private val us
 
     fun postFeedLike(feedId: Int) {
         postLikeLoading = true
+        postFeedLikeId = feedId
 
         viewModelScope.launch {
             val postFeedLikeResponse = repository.postFeedLike(feedId)
+
+            postFeedLikeResponse.onFailure {
+                if(it.message == ServerResponse.ACCESS_TOKEN_INVALID_ERROR.code){
+                    reissueToken(Function.PostFeedLike.name)
+                    return@launch
+                }
+            }
 
             _postFeedLikeResult.value = postFeedLikeResponse
 
@@ -210,9 +247,17 @@ class FeedDetailViewModel(private val repository: FeedRepository, private val us
 
     fun deleteFeedLike(feedId: Int) {
         deleteLikeLoading = true
+        deleteFeedLikeId = feedId
 
         viewModelScope.launch {
             val deleteFeedLikeResponse = repository.deleteFeedLike(feedId)
+
+            deleteFeedLikeResponse.onFailure {
+                if(it.message == ServerResponse.ACCESS_TOKEN_INVALID_ERROR.code){
+                    reissueToken(Function.DeleteFeedLike.name)
+                    return@launch
+                }
+            }
 
             _deleteFeedLikeResult.value = deleteFeedLikeResponse
 
@@ -222,6 +267,7 @@ class FeedDetailViewModel(private val repository: FeedRepository, private val us
 
     fun postFollow(userId: String) {
         postFollowLoading = true
+        postFollowId = userId
 
         viewModelScope.launch {
             val followResponse = userRepository.postFollow(userId)
@@ -235,6 +281,11 @@ class FeedDetailViewModel(private val repository: FeedRepository, private val us
 
                 endLoading()
             }.onFailure {
+                if(it.message == ServerResponse.ACCESS_TOKEN_INVALID_ERROR.code){
+                    reissueToken(Function.PostFollow.name)
+                    return@launch
+                }
+
                 _postFollowError.value = it.message
 
                 endLoading()
@@ -244,6 +295,7 @@ class FeedDetailViewModel(private val repository: FeedRepository, private val us
 
     fun deleteFollow(userId: String) {
         deleteFollowLoading = true
+        deleteFollowId = userId
 
         viewModelScope.launch {
             val followResponse = userRepository.deleteFollow(userId)
@@ -257,8 +309,38 @@ class FeedDetailViewModel(private val repository: FeedRepository, private val us
 
                 endLoading()
             }.onFailure {
+                if(it.message == ServerResponse.ACCESS_TOKEN_INVALID_ERROR.code){
+                    reissueToken(Function.DeleteFollow.name)
+                    return@launch
+                }
+
                 _deleteFollowError.value = it.message
 
+                endLoading()
+            }
+        }
+    }
+
+    private fun reissueToken(function: String){
+        viewModelScope.launch {
+            val reissueResponse = tokenRepository.reissueToken()
+
+            reissueResponse.onSuccess { //Access Token이 만료되어서 갱신됨
+                accessToken = it.accessToken
+                refreshToken = it.refreshToken
+                _reissueResponse.postValue(function)
+            }.onFailure {
+                when(it.message){
+                    //아직 유효한 경우
+                    ServerResponse.ACCESS_TOKEN_VALID_ERROR.code -> {}
+                    //Refresh Token 만료
+                    ServerResponse.REFRESH_TOKEN_INVALID_ERROR.code -> {
+                        _errorMessage.postValue(R.string.expired_login)
+                    }
+                    else -> {
+                        _errorMessage.postValue(R.string.APIFailToastMessage)
+                    }
+                }
                 endLoading()
             }
         }

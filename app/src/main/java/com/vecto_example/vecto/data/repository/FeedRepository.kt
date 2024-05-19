@@ -1,6 +1,7 @@
 package com.vecto_example.vecto.data.repository
 
 import android.util.Log
+import com.google.gson.Gson
 import com.vecto_example.vecto.data.Auth
 import com.vecto_example.vecto.retrofit.VectoService
 
@@ -29,16 +30,19 @@ class FeedRepository (private val vectoService: VectoService) {
     suspend fun getPersonalFeedList(isFollowPage: Boolean, pageNo: Int): Result<VectoService.FeedPageResponse> {
         /*   로그인 시 알고리즘에 맞는 게시물을 요청하는 함수   */
         return try {
-            val response = vectoService.getPersonalFeedList("Bearer ${Auth.token}", pageNo, isFollowPage)
+            val response = vectoService.getPersonalFeedList("Bearer ${Auth.accessToken}", pageNo, isFollowPage)
 
             if(response.isSuccessful){
                 Log.d("getPersonalFeedList", "SUCCESS: ${response.body()}")
 
                 Result.success(response.body()!!.result!!)
             } else {
-                Log.d("getPersonalFeedList", "FAIL: ${response.errorBody()?.string()}")
+                val errorBody = response.errorBody()?.string()
+                val gson = Gson()
+                val errorResponse: VectoService.VectoResponse<*>? = gson.fromJson(errorBody, VectoService.VectoResponse::class.java)
 
-                Result.failure(Exception("FAIL"))
+                Log.d("getPersonalFeedList", "FAIL: $errorBody")
+                Result.failure(Exception(errorResponse?.code))
             }
         } catch (e: Exception) {
             Log.e("getPersonalFeedList", "ERROR", e)
@@ -70,7 +74,7 @@ class FeedRepository (private val vectoService: VectoService) {
     suspend fun postSearchFeedList(query: String, pageNo: Int): Result<VectoService.FeedPageResponse> {
         /*   검색 시 결과에 맞는 게시물을 확인 할 수 있는 함수   */
         return try {
-            val response = vectoService.postSearchFeedList("Bearer ${Auth.token}", pageNo, query)
+            val response = vectoService.postSearchFeedList("Bearer ${Auth.accessToken}", pageNo, query)
 
             if(response.isSuccessful){
                 Log.d("postSearchFeedList", "SUCCESS: ${response.body()}")
@@ -78,9 +82,12 @@ class FeedRepository (private val vectoService: VectoService) {
                 Result.success(response.body()!!.result!!)
             }
             else{
-                Log.d("postSearchFeedList", "FAIL: ${response.errorBody()?.string()}")
+                val errorBody = response.errorBody()?.string()
+                val gson = Gson()
+                val errorResponse: VectoService.VectoResponse<*>? = gson.fromJson(errorBody, VectoService.VectoResponse::class.java)
 
-                Result.failure(Exception("FAIL"))
+                Log.d("postSearchFeedList", "FAIL: $errorBody")
+                Result.failure(Exception(errorResponse?.code))
             }
         } catch (e: Exception) {
             Log.e("postSearchFeedList", "ERROR", e)
@@ -91,7 +98,7 @@ class FeedRepository (private val vectoService: VectoService) {
     suspend fun postLikeFeedList(pageNo: Int): Result<VectoService.FeedPageResponse> {
         /*   좋아요 누른 게시물 확인   */
         return try {
-            val response = vectoService.postLikeFeedList("Bearer ${Auth.token}", pageNo)
+            val response = vectoService.postLikeFeedList("Bearer ${Auth.accessToken}", pageNo)
 
             if(response.isSuccessful){
                 Log.d("getLikeFeedList", "SUCCESS: ${response.body()}")
@@ -99,9 +106,12 @@ class FeedRepository (private val vectoService: VectoService) {
                 Result.success(response.body()!!.result!!)
             }
             else{
-                Log.d("getLikeFeedList", "FAIL: ${response.errorBody()?.string()}")
+                val errorBody = response.errorBody()?.string()
+                val gson = Gson()
+                val errorResponse: VectoService.VectoResponse<*>? = gson.fromJson(errorBody, VectoService.VectoResponse::class.java)
 
-                Result.failure(Exception("FAIL"))
+                Log.d("postLikeFeedList", "FAIL: $errorBody")
+                Result.failure(Exception(errorResponse?.code))
             }
         } catch (e:Exception) {
             Log.e("getLikeFeedList", "ERROR", e)
@@ -133,7 +143,7 @@ class FeedRepository (private val vectoService: VectoService) {
     suspend fun postUserFeedList(userId: String, pageNo: Int): Result<VectoService.FeedPageResponse> {
         /*   사용자가 작성한 게시물 확인 (로그인)   */
         return try {
-            val response = vectoService.postUserFeedList("Bearer ${Auth.token}", userId, pageNo)
+            val response = vectoService.postUserFeedList("Bearer ${Auth.accessToken}", userId, pageNo)
 
             if(response.isSuccessful){
                 Log.d("postUserFeedList", "SUCCESS: ${response.body()}")
@@ -141,9 +151,12 @@ class FeedRepository (private val vectoService: VectoService) {
                 Result.success(response.body()!!.result!!)
             }
             else{
-                Log.d("postUserFeedList", "FAIL: ${response.errorBody()?.string()}")
+                val errorBody = response.errorBody()?.string()
+                val gson = Gson()
+                val errorResponse: VectoService.VectoResponse<*>? = gson.fromJson(errorBody, VectoService.VectoResponse::class.java)
 
-                Result.failure(Exception("FAIL"))
+                Log.d("postUserFeedList", "FAIL: $errorBody")
+                Result.failure(Exception(errorResponse?.code))
             }
         } catch (e: Exception) {
             Log.e("postUserFeedList", "ERROR", e)
@@ -156,7 +169,7 @@ class FeedRepository (private val vectoService: VectoService) {
         return try {
 
             val response = if (Auth.loginFlag.value == true) {
-                vectoService.getFeedInfo("Bearer ${Auth.token}", feedId)
+                vectoService.getFeedInfo("Bearer ${Auth.accessToken}", feedId)
             } else {
                 vectoService.getFeedInfo(feedId)
             }
@@ -167,9 +180,12 @@ class FeedRepository (private val vectoService: VectoService) {
                 Result.success(response.body()!!.result!!)
             }
             else{
-                Log.d("getFeedInfo", "FAIL: ${response.errorBody()?.string()}")
+                val errorBody = response.errorBody()?.string()
+                val gson = Gson()
+                val errorResponse: VectoService.VectoResponse<*>? = gson.fromJson(errorBody, VectoService.VectoResponse::class.java)
 
-                Result.failure(Exception("FAIL"))
+                Log.d("getFeedInfo", "FAIL: $errorBody")
+                Result.failure(Exception(errorResponse?.code))
             }
         } catch (e: Exception) {
             Log.e("getFeedInfo", "ERROR", e)
@@ -180,15 +196,18 @@ class FeedRepository (private val vectoService: VectoService) {
     suspend fun postFeedLike(feedId: Int): Result<String> {
         /*   게시글 좋아요 추가 함수   */
         return try {
-            val response = vectoService.postFeedLike("Bearer ${Auth.token}", feedId)
+            val response = vectoService.postFeedLike("Bearer ${Auth.accessToken}", feedId)
 
             if(response.isSuccessful){
                 Log.d("postFeedLike", "SUCCESS")
                 Result.success("SUCCESS")
             } else {
-                Log.d("postFeedLike", "FAIL: ${response.errorBody()?.string()}")
+                val errorBody = response.errorBody()?.string()
+                val gson = Gson()
+                val errorResponse: VectoService.VectoResponse<*>? = gson.fromJson(errorBody, VectoService.VectoResponse::class.java)
 
-                Result.failure(Exception("FAIL"))
+                Log.d("postFeedLike", "FAIL: $errorBody")
+                Result.failure(Exception(errorResponse?.code))
             }
         } catch (e: Exception) {
             Log.e("postFeedLike", "ERROR", e)
@@ -199,15 +218,18 @@ class FeedRepository (private val vectoService: VectoService) {
     suspend fun deleteFeedLike(feedId: Int): Result<String> {
         /*   게시글 좋아요 삭제 함수   */
         return try {
-            val response = vectoService.deleteFeedLike("Bearer ${Auth.token}", feedId)
+            val response = vectoService.deleteFeedLike("Bearer ${Auth.accessToken}", feedId)
 
             if(response.isSuccessful){
                 Log.d("deleteFeedLike", "SUCCESS")
                 Result.success("SUCCESS")
             } else {
-                Log.d("deleteFeedLike", "FAIL: ${response.errorBody()?.string()}")
+                val errorBody = response.errorBody()?.string()
+                val gson = Gson()
+                val errorResponse: VectoService.VectoResponse<*>? = gson.fromJson(errorBody, VectoService.VectoResponse::class.java)
 
-                Result.failure(Exception("FAIL"))
+                Log.d("deleteFeedLike", "FAIL: $errorBody")
+                Result.failure(Exception(errorResponse?.code))
             }
         } catch (e: Exception) {
             Log.e("deleteFeedLike", "ERROR", e)
@@ -218,15 +240,18 @@ class FeedRepository (private val vectoService: VectoService) {
     suspend fun deleteFeed(feedId: Int): Result<String> {
         /*   게시글 삭제 함수   */
         return try {
-            val response = vectoService.deleteFeed("Bearer ${Auth.token}", feedId)
+            val response = vectoService.deleteFeed("Bearer ${Auth.accessToken}", feedId)
 
             if(response.isSuccessful){
                 Log.d("deleteFeed", "SUCCESS")
                 Result.success("SUCCESS")
             } else {
-                Log.d("deleteFeed", "FAIL: ${response.errorBody()?.string()}")
+                val errorBody = response.errorBody()?.string()
+                val gson = Gson()
+                val errorResponse: VectoService.VectoResponse<*>? = gson.fromJson(errorBody, VectoService.VectoResponse::class.java)
 
-                Result.failure(Exception("FAIL"))
+                Log.d("deleteFeed", "FAIL: $errorBody")
+                Result.failure(Exception(errorResponse?.code))
             }
         } catch (e: Exception) {
             Log.e("deleteFeed", "ERROR", e)

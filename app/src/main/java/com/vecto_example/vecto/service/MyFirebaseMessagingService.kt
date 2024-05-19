@@ -15,8 +15,8 @@ import com.vecto_example.vecto.R
 
 class MyFirebaseMessagingService:  FirebaseMessagingService(){
     private val CHANNEL_ID = "소셜 알림"
-    private val SHARED_PREF_NAME = "fcm_pref"
-    private val TOKEN_KEY = "fcm_token"
+    private val SHARED_PREF_NAME = "MyAppPreferences"
+    private val TOKEN_KEY = "FCM"
 
     override fun onNewToken(token: String) {
         super.onNewToken(token)

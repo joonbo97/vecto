@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="300dp"
-    android:layout_height="300dp"
+    android:layout_height="260dp"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="@drawable/normal_dialog_box">
 
@@ -9,7 +9,7 @@
         android:id="@+id/DialogImage"
         android:layout_width="179dp"
         android:layout_height="120dp"
-        android:layout_marginTop="45dp"
+        android:layout_marginTop="20dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
@@ -22,26 +22,16 @@
         android:layout_height="wrap_content"
         android:fontFamily="@font/lineseedkr_rg"
         android:textStyle="bold"
-        android:text="해당 장소를 삭제할까요?\n(삭제된 방문지는 복구되지 않아요)"
+        android:text=""
         android:lineSpacingExtra="4sp"
         android:gravity="center"
         android:textColor="@color/black"
         android:textSize="15sp"
-        app:layout_constraintBottom_toTopOf="@+id/OKButtonImage"
+        android:layout_marginTop="10dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/DialogImage"
-        app:layout_constraintVertical_bias="0.5" />
-
-
-    <ImageView
-        android:id="@+id/OKButtonImage"
-        android:layout_width="150dp"
-        android:layout_height="56dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        android:background="@drawable/ripple_dialog_left_gray" />
+        app:layout_constraintTop_toBottomOf="@+id/DialogImage"/>
 
 
     <ImageView
@@ -49,23 +39,17 @@
         android:layout_width="150dp"
         android:layout_height="56dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:background="@drawable/ripple_dialog_right_orange" />
+        app:layout_constraintStart_toStartOf="parent"
+        android:background="@drawable/ripple_dialog_left_orange" />
 
-    <TextView
-        android:id="@+id/OKButtonText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:fontFamily="@font/lineseedkr_bd"
-        android:text="예"
-        android:textColor="@color/white"
-        android:textSize="20sp"
-        app:layout_constraintBottom_toBottomOf="@+id/OKButtonImage"
-        app:layout_constraintEnd_toEndOf="@+id/OKButtonImage"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="@+id/OKButtonImage"
-        app:layout_constraintTop_toTopOf="@+id/OKButtonImage"
-        app:layout_constraintVertical_bias="0.5" />
+
+    <ImageView
+        android:id="@+id/OKButtonImage"
+        android:layout_width="150dp"
+        android:layout_height="56dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:background="@drawable/ripple_dialog_right_gray" />
 
     <TextView
         android:id="@+id/NOButtonText"
@@ -80,6 +64,21 @@
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="@+id/NOButtonImage"
         app:layout_constraintTop_toTopOf="@+id/NOButtonImage"
+        app:layout_constraintVertical_bias="0.5" />
+
+    <TextView
+        android:id="@+id/OKButtonText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/lineseedkr_bd"
+        android:text="예"
+        android:textColor="@color/white"
+        android:textSize="20sp"
+        app:layout_constraintBottom_toBottomOf="@+id/OKButtonImage"
+        app:layout_constraintEnd_toEndOf="@+id/OKButtonImage"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="@+id/OKButtonImage"
+        app:layout_constraintTop_toTopOf="@+id/OKButtonImage"
         app:layout_constraintVertical_bias="0.5" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

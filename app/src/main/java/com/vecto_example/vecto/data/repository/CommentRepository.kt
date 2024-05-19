@@ -35,7 +35,7 @@ class CommentRepository(private val vectoService: VectoService) {
         /*   로그인 시 댓글 요청 함수   */
 
         return try{
-            val response = vectoService.getCommentList("Bearer ${Auth.token}", feedId, pageNo)
+            val response = vectoService.getCommentList("Bearer ${Auth.accessToken}", feedId, pageNo)
 
             if(response.isSuccessful){
                 Log.d("getPersonalCommentList", "SUCCESS: ${response.body()}")
@@ -60,7 +60,7 @@ class CommentRepository(private val vectoService: VectoService) {
         /*   댓글 추가 함수   */
 
         return try {
-            val response = vectoService.addComment("Bearer ${Auth.token}", VectoService.CommentRequest(feedId, content))
+            val response = vectoService.addComment("Bearer ${Auth.accessToken}", VectoService.CommentRequest(feedId, content))
 
             if(response.isSuccessful){
                 Log.d("addComment", "SUCCESS")
@@ -78,7 +78,7 @@ class CommentRepository(private val vectoService: VectoService) {
         /*   댓글 좋아요 추가 함수   */
 
         return try {
-            val response = vectoService.postCommentLike("Bearer ${Auth.token}", commentId)
+            val response = vectoService.postCommentLike("Bearer ${Auth.accessToken}", commentId)
 
             if(response.isSuccessful){
                 Log.d("sendCommentLike", "SUCCESS")
@@ -102,7 +102,7 @@ class CommentRepository(private val vectoService: VectoService) {
         /*   댓글 좋아요 취소 함수   */
 
         return try {
-            val response = vectoService.deleteCommentLike("Bearer ${Auth.token}", commentId)
+            val response = vectoService.deleteCommentLike("Bearer ${Auth.accessToken}", commentId)
 
             if(response.isSuccessful){
                 Log.d("cancelCommentLike", "SUCCESS")
@@ -126,7 +126,7 @@ class CommentRepository(private val vectoService: VectoService) {
         /*   댓글 수정 함수   */
 
         return try {
-            val response = vectoService.updateComment("Bearer ${Auth.token}", updateCommentRequest)
+            val response = vectoService.updateComment("Bearer ${Auth.accessToken}", updateCommentRequest)
 
             if(response.isSuccessful){
                 Log.d("updateComment", "SUCCESS")
@@ -151,7 +151,7 @@ class CommentRepository(private val vectoService: VectoService) {
         /*   댓글 삭제 함수   */
 
         return try {
-            val response = vectoService.deleteComment("Bearer ${Auth.token}", commentId)
+            val response = vectoService.deleteComment("Bearer ${Auth.accessToken}", commentId)
 
             if(response.isSuccessful){
                 Log.d("deleteComment", "SUCCESS")

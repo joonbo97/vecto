@@ -362,4 +362,45 @@
         app:layout_constraintTop_toTopOf="@+id/WriteDoneButton"
         app:layout_constraintVertical_bias="0.53" />
 
+    <ImageView
+        android:id="@+id/cancellationButton"
+        android:layout_width="100dp"
+        android:layout_height="40dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginTop="50dp"
+        android:foreground="@drawable/ripple_gray_large_box"
+        app:backgroundTint="@null"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/WriteDoneButton"/>
+
+    <TextView
+        android:id="@+id/cancellationButtonText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/lineseedkr_bd"
+        android:text="계정 삭제"
+        android:textColor="@color/white"
+        android:textSize="13sp"
+        app:layout_constraintBottom_toBottomOf="@+id/cancellationButton"
+        app:layout_constraintEnd_toEndOf="@+id/cancellationButton"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="@+id/cancellationButton"
+        app:layout_constraintTop_toTopOf="@+id/cancellationButton"
+        app:layout_constraintVertical_bias="0.53" />
+
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:indeterminateDrawable="@drawable/vecto_loading"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.5" />
+
+
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -78,7 +78,7 @@ class InquiryActivity : AppCompatActivity() {
                 type = "application/octet-stream"
                 putExtra(Intent.EXTRA_EMAIL, arrayOf("joonbo97@gmail.com")) // 받는 사람의 이메일 주소
                 putExtra(Intent.EXTRA_SUBJECT, "VECTO_로그데이터") // 이메일 제목
-                putExtra(Intent.EXTRA_TEXT, "${Auth._userId.value.toString()}님의 로그데이터입니다.") // 이메일 본문
+                putExtra(Intent.EXTRA_TEXT, "${Auth.userId.value.toString()}님의 로그데이터입니다.") // 이메일 본문
                 putExtra(Intent.EXTRA_STREAM, fileUri)
                 putExtra(Intent.EXTRA_SUBJECT, "Database File")
                 addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
