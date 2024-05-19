@@ -82,12 +82,16 @@ class UserInfoViewModel(private val feedRepository: FeedRepository, private val 
     private val _postComplaintResult = MutableLiveData<Boolean>()
     val postComplaintResult: LiveData<Boolean> = _postComplaintResult
 
+    /*   로그 아웃   */
+    private val _postLogoutResult = MutableLiveData<Boolean>()
+    val postLogoutResult: LiveData<Boolean> = _postLogoutResult
+
     /*   에러   */
     private val _errorMessage = MutableLiveData<Int>()
     val errorMessage: LiveData<Int> = _errorMessage
 
     enum class Function {
-        FetchUserFeedResults, CheckFollow, PostFollow, DeleteFollow, PostComplaint, PostFeedLike, DeleteFeedLike, DeleteFeed
+        FetchUserFeedResults, CheckFollow, PostFollow, DeleteFollow, PostComplaint, PostFeedLike, DeleteFeedLike, DeleteFeed, PostLogout
     }
 
     private fun startLoading(){
@@ -297,6 +301,30 @@ class UserInfoViewModel(private val feedRepository: FeedRepository, private val 
                 when(it.message){
                     ServerResponse.ACCESS_TOKEN_INVALID_ERROR.code -> {
                         reissueToken(Function.PostComplaint.name)
+                    }
+                    ServerResponse.ERROR.code -> {
+                        _errorMessage.postValue(R.string.APIErrorToastMessage)
+                    }
+                    else -> {
+                        _errorMessage.postValue(R.string.APIFailToastMessage)
+                    }
+                }
+            }
+        }
+    }
+
+    fun postLogout(){
+        startLoading()
+
+        viewModelScope.launch {
+            val logoutResponse = userRepository.postLogout()
+
+            logoutResponse.onSuccess {
+                _postLogoutResult.postValue(true)
+            }.onFailure {
+                when(it.message){
+                    ServerResponse.ACCESS_TOKEN_INVALID_ERROR.code -> {
+                        reissueToken(Function.PostLogout.name)
                     }
                     ServerResponse.ERROR.code -> {
                         _errorMessage.postValue(R.string.APIErrorToastMessage)

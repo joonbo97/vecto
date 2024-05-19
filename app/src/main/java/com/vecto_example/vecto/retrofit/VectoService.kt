@@ -84,6 +84,12 @@ interface VectoService {
         @Body request: ComplaintRequest
     ): Response<VectoResponse<Unit>>
 
+    //로그 아웃
+    @POST("logout")
+    suspend fun postLogout(
+        @Header("Authorization") authorization: String,
+    ): Response<VectoResponse<Unit>>
+
     //탈퇴
     @DELETE("user")
     suspend fun deleteAccount(

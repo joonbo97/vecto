@@ -111,6 +111,8 @@
     <string name="login_none">사용자 정보가 존재하지 않습니다.</string>
     <string name="login_wrong">아이디 혹은 비밀번호가 일치하지 않습니다.</string>
 
+    <string name="logout_success">로그아웃 되었습니다.</string>
+
     <string name="APIFailToastMessage">서버오류가 발생하였습니다. 잠시 후 다시 시도해 주세요.</string>
     <string name="APIErrorToastMessage">서버와의 연결에 실패했습니다. 잠시 후 다시 시도해 주세요.</string>
 </resources>

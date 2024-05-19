@@ -285,6 +285,29 @@ class UserRepository (private val vectoService: VectoService) {
         }
     }
 
+    //로그 아웃
+    suspend fun postLogout(): Result<String> {
+        return try {
+            val response = vectoService.postLogout("Bearer ${Auth.accessToken}")
+
+            if(response.isSuccessful) {
+                Log.d("postLogout", "SUCCESS: ${response.body()}")
+
+                Result.success(response.body()!!.code)
+            } else {
+                val errorBody = response.errorBody()?.string()
+                val gson = Gson()
+                val errorResponse: VectoService.VectoResponse<*>? = gson.fromJson(errorBody, VectoService.VectoResponse::class.java)
+
+                Log.d("postLogout", "FAIL: $errorBody")
+                Result.failure(Exception(errorResponse?.code))
+            }
+        } catch (e: Exception) {
+            Log.e("postLogout", "ERROR", e)
+            Result.failure(Exception("ERROR"))
+        }
+    }
+
     //탈퇴 관련
     suspend fun deleteAccount(): Result<String> {
         return try {

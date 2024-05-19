@@ -26,12 +26,11 @@ import com.vecto_example.vecto.ui.myinfo.MyInfoActivity
 import com.vecto_example.vecto.ui.userinfo.UserInfoViewModel
 import com.vecto_example.vecto.ui.userinfo.UserInfoViewModelFactory
 import com.vecto_example.vecto.utils.LoadImageUtils
+import com.vecto_example.vecto.utils.SaveLoginDataUtils
+import com.vecto_example.vecto.utils.ToastMessageUtils
 
 class MypageFragment : Fragment() {
     lateinit var binding: FragmentMypageBinding
-    private val mypageViewModel: MypageViewModel by viewModels{
-        MypageViewModelFactory(UserRepository(VectoService.create()))
-    }
 
     private val userInfoViewModel: UserInfoViewModel by viewModels {
         UserInfoViewModelFactory(FeedRepository(VectoService.create()), UserRepository(VectoService.create()), TokenRepository(VectoService.create()))
@@ -115,9 +114,7 @@ class MypageFragment : Fragment() {
 
         /*   로그아웃   */
         binding.MypageMenu5.setOnClickListener {
-            mypageViewModel.logout()
-            Toast.makeText(requireContext(), " 로그아웃 되었습니다.", Toast.LENGTH_SHORT).show()
-            (activity as? MainActivity)?.updateBottomNavigationSelection(R.id.SearchFragment)
+            userInfoViewModel.postLogout()
         }
     }
 
@@ -134,6 +131,29 @@ class MypageFragment : Fragment() {
         userInfoViewModel.userInfo.observe(viewLifecycleOwner) {
             if(it.userId.isNotEmpty()) {
                 setUserProfile(it)
+            }
+        }
+
+        userInfoViewModel.postLogoutResult.observe(viewLifecycleOwner) {
+            if(it){
+                SaveLoginDataUtils.deleteData(requireContext())
+                ToastMessageUtils.showToast(requireContext(), getString(R.string.logout_success))
+                (activity as? MainActivity)?.updateBottomNavigationSelection(R.id.SearchFragment)
+            }
+        }
+
+        userInfoViewModel.reissueResponse.observe(viewLifecycleOwner) {
+            if(it == UserInfoViewModel.Function.PostLogout.name){
+                userInfoViewModel.postLogout()
+            }
+        }
+
+        userInfoViewModel.errorMessage.observe(viewLifecycleOwner) {
+            ToastMessageUtils.showToast(requireContext(), getString(it))
+
+            if(it == R.string.expired_login){
+                SaveLoginDataUtils.deleteData(requireContext())
+                (activity as? MainActivity)?.updateBottomNavigationSelection(R.id.SearchFragment)
             }
         }
     }
