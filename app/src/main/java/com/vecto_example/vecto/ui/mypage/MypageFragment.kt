@@ -6,7 +6,6 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.fragment.app.viewModels
 import com.vecto_example.vecto.ui.login.LoginActivity
 import com.vecto_example.vecto.ui.main.MainActivity
