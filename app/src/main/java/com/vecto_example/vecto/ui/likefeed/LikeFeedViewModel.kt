@@ -10,16 +10,14 @@ import com.vecto_example.vecto.data.repository.FeedRepository
 import com.vecto_example.vecto.data.repository.TokenRepository
 import com.vecto_example.vecto.data.repository.UserRepository
 import com.vecto_example.vecto.retrofit.VectoService
-import com.vecto_example.vecto.ui.detail.FeedDetailViewModel
 import com.vecto_example.vecto.utils.ServerResponse
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 
 class LikeFeedViewModel(private val feedRepository: FeedRepository, private val userRepository: UserRepository, private val tokenRepository: TokenRepository) : ViewModel() {
-    private val _reissueResponse = MutableLiveData<String>()
-    val reissueResponse: LiveData<String> = _reissueResponse
-
-    var accessToken: String? = null
-    var refreshToken: String? = null
+    private val _reissueResponse = MutableSharedFlow<VectoService.TokenUpdateEvent>(replay = 0)
+    val reissueResponse = _reissueResponse.asSharedFlow()
 
     var firstFlag = true    //처음 게시글 정보를 받아볼 경우 확인을 위한 Flag
 
@@ -129,7 +127,7 @@ class LikeFeedViewModel(private val feedRepository: FeedRepository, private val 
                 }.onFailure {
                     when(it.message){
                         ServerResponse.ACCESS_TOKEN_INVALID_ERROR.code -> {
-                            reissueToken(FeedDetailViewModel.Function.GetFeedList.name)
+                            reissueToken(Function.GetLikeFeedList.name)
                         }
                         ServerResponse.ERROR.code -> {
                             _errorMessage.postValue(R.string.APIErrorToastMessage)
@@ -280,9 +278,7 @@ class LikeFeedViewModel(private val feedRepository: FeedRepository, private val 
             val reissueResponse = tokenRepository.reissueToken()
 
             reissueResponse.onSuccess { //Access Token이 만료되어서 갱신됨
-                accessToken = it.accessToken
-                refreshToken = it.refreshToken
-                _reissueResponse.postValue(function)
+                _reissueResponse.emit(VectoService.TokenUpdateEvent(function, it))
             }.onFailure {
                 when(it.message){
                     //아직 유효한 경우

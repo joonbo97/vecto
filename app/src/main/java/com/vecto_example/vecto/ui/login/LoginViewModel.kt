@@ -9,6 +9,8 @@ import com.vecto_example.vecto.data.repository.TokenRepository
 import com.vecto_example.vecto.data.repository.UserRepository
 import com.vecto_example.vecto.retrofit.VectoService
 import com.vecto_example.vecto.utils.ServerResponse
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 
 class LoginViewModel(private val userRepository: UserRepository, private val tokenRepository: TokenRepository): ViewModel() {
@@ -32,13 +34,11 @@ class LoginViewModel(private val userRepository: UserRepository, private val tok
     private val _errorMessage = MutableLiveData<Int>()
     val errorMessage: LiveData<Int> = _errorMessage
 
-    private val _reissueResponse = MutableLiveData<String>()
-    val reissueResponse: LiveData<String> = _reissueResponse
+    private val _reissueResponse = MutableSharedFlow<VectoService.UserToken>(replay = 0)
+    val reissueResponse = _reissueResponse.asSharedFlow()
 
     var userId: String? = null
     var nickname: String = ""
-    var accessToken: String? = null
-    var refreshToken: String? = null
 
     fun loginRequest(loginRequest: VectoService.LoginRequest){
         startLoading()
@@ -129,9 +129,7 @@ class LoginViewModel(private val userRepository: UserRepository, private val tok
             val reissueResponse = tokenRepository.reissueToken()
 
             reissueResponse.onSuccess { //Access Token이 만료되어서 갱신됨
-                accessToken = it.accessToken
-                refreshToken = it.refreshToken
-                _reissueResponse.postValue(it.accessToken)
+                _reissueResponse.emit(it)
             }.onFailure {
                 when(it.message){
                     //아직 유효한 경우
@@ -140,6 +138,10 @@ class LoginViewModel(private val userRepository: UserRepository, private val tok
                     }
                     //Refresh Token 만료
                     ServerResponse.REFRESH_TOKEN_INVALID_ERROR.code -> {
+                        _errorMessage.postValue(R.string.expired_login)
+                        endLoading()
+                    }
+                    ServerResponse.REFRESH_TOKEN_NOT_EXIST_ERROR.code -> {
                         _errorMessage.postValue(R.string.expired_login)
                         endLoading()
                     }

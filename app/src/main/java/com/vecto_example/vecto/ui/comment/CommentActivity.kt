@@ -6,8 +6,8 @@ import android.os.Bundle
 import android.view.MotionEvent
 import android.view.View
 import android.view.inputmethod.InputMethodManager
-import android.widget.Toast
 import androidx.activity.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.vecto_example.vecto.ui.comment.adapter.MyCommentAdapter
@@ -24,6 +24,7 @@ import com.vecto_example.vecto.ui.userinfo.UserInfoViewModelFactory
 import com.vecto_example.vecto.utils.RequestLoginUtils
 import com.vecto_example.vecto.utils.SaveLoginDataUtils
 import com.vecto_example.vecto.utils.ToastMessageUtils
+import kotlinx.coroutines.launch
 
 class CommentActivity : AppCompatActivity(), MyCommentAdapter.OnEditActionListener, MyCommentAdapter.OnCommentActionListener,
     MyCommentAdapter.OnReportActionListener {
@@ -79,27 +80,29 @@ class CommentActivity : AppCompatActivity(), MyCommentAdapter.OnEditActionListen
 
     @SuppressLint("NotifyDataSetChanged")
     private fun initObservers() {
-        commentViewModel.reissueResponse.observe(this) {
-            SaveLoginDataUtils.changeToken(this, commentViewModel.accessToken, commentViewModel.refreshToken)
+        lifecycleScope.launch {
+            commentViewModel.reissueResponse.collect {
+                SaveLoginDataUtils.changeToken(this@CommentActivity, it.userToken.accessToken, it.userToken.refreshToken)
 
-            when(it){
-                CommentViewModel.Function.GetCommentList.name -> {
-                    loadComment(feedID)
-                }
-                CommentViewModel.Function.AddComment.name -> {
-                    commentViewModel.addComment(feedID, content)
-                }
-                CommentViewModel.Function.SendCommentLike.name -> {
-                    commentViewModel.sendCommentLike(commentViewModel.sendCommentLikeId)
-                }
-                CommentViewModel.Function.CancelCommentLike.name -> {
-                    commentViewModel.cancelCommentLike(commentViewModel.cancelCommnetLikeId)
-                }
-                CommentViewModel.Function.UpdateComment.name -> {
-                    commentViewModel.updateComment(VectoService.CommentUpdateRequest(editCommentId, content))
-                }
-                CommentViewModel.Function.DeleteComment.name -> {
-                    commentViewModel.deleteComment(commentViewModel.deleteCommentId)
+                when(it.function){
+                    CommentViewModel.Function.GetCommentList.name -> {
+                        loadComment(feedID)
+                    }
+                    CommentViewModel.Function.AddComment.name -> {
+                        commentViewModel.addComment(feedID, content)
+                    }
+                    CommentViewModel.Function.SendCommentLike.name -> {
+                        commentViewModel.sendCommentLike(commentViewModel.sendCommentLikeId)
+                    }
+                    CommentViewModel.Function.CancelCommentLike.name -> {
+                        commentViewModel.cancelCommentLike(commentViewModel.cancelCommentLikeId)
+                    }
+                    CommentViewModel.Function.UpdateComment.name -> {
+                        commentViewModel.updateComment(VectoService.CommentUpdateRequest(editCommentId, content))
+                    }
+                    CommentViewModel.Function.DeleteComment.name -> {
+                        commentViewModel.deleteComment(commentViewModel.deleteCommentId)
+                    }
                 }
             }
         }
@@ -225,13 +228,17 @@ class CommentActivity : AppCompatActivity(), MyCommentAdapter.OnEditActionListen
             ToastMessageUtils.showToast(this, getString(it))
         }
 
-        userInfoViewModel.reissueResponse.observe(this) {
-            SaveLoginDataUtils.changeToken(this, userInfoViewModel.accessToken, userInfoViewModel.refreshToken)
+        lifecycleScope.launch {
+            userInfoViewModel.reissueResponse.collect {
+                SaveLoginDataUtils.changeToken(this@CommentActivity, it.userToken.accessToken, it.userToken.refreshToken)
 
-            if(it == UserInfoViewModel.Function.PostComplaint.name){
-                userInfoViewModel.postComplaint(userInfoViewModel.complaintRequest)
+                if(it.function == UserInfoViewModel.Function.PostComplaint.name){
+                    userInfoViewModel.postComplaint(userInfoViewModel.complaintRequest)
+                }
             }
         }
+
+
 
     }
 

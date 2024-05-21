@@ -13,6 +13,8 @@ import com.vecto_example.vecto.data.repository.UserRepository
 import com.vecto_example.vecto.retrofit.VectoService
 import com.vecto_example.vecto.utils.ServerResponse
 import com.vecto_example.vecto.utils.ValidationUtils
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
@@ -20,11 +22,8 @@ import okhttp3.RequestBody.Companion.asRequestBody
 import java.io.File
 
 class MypageSettingViewModel (private val userRepository: UserRepository, private val tokenRepository: TokenRepository): ViewModel() {
-    private val _reissueResponse = MutableLiveData<String>()
-    val reissueResponse: LiveData<String> = _reissueResponse
-
-    var accessToken: String? = null
-    var refreshToken: String? = null
+    private val _reissueResponse = MutableSharedFlow<VectoService.TokenUpdateEvent>(replay = 0)
+    val reissueResponse = _reissueResponse.asSharedFlow()
 
     private val _updateResult = MutableLiveData<String>()
     val updateResult: LiveData<String> = _updateResult
@@ -89,9 +88,7 @@ class MypageSettingViewModel (private val userRepository: UserRepository, privat
             val reissueResponse = tokenRepository.reissueToken()
 
             reissueResponse.onSuccess { //Access Token이 만료되어서 갱신됨
-                accessToken = it.accessToken
-                refreshToken = it.refreshToken
-                _reissueResponse.postValue(function)
+                _reissueResponse.emit(VectoService.TokenUpdateEvent(function, it))
             }.onFailure {
                 when(it.message){
                     //아직 유효한 경우

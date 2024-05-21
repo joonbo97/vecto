@@ -18,6 +18,7 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
 import com.vecto_example.vecto.R
 import com.vecto_example.vecto.data.Auth
 import com.vecto_example.vecto.data.repository.TokenRepository
@@ -30,6 +31,7 @@ import com.vecto_example.vecto.utils.SaveLoginDataUtils
 import com.vecto_example.vecto.utils.ServerResponse
 import com.vecto_example.vecto.utils.ToastMessageUtils
 import com.yalantis.ucrop.UCrop
+import kotlinx.coroutines.launch
 import java.io.ByteArrayOutputStream
 import java.io.File
 
@@ -116,21 +118,24 @@ class MyInfoActivity : AppCompatActivity() {
             }
         }
 
-        viewModel.reissueResponse.observe(this){
-            SaveLoginDataUtils.changeToken(this, viewModel.accessToken, viewModel.refreshToken)
+        lifecycleScope.launch {
+            viewModel.reissueResponse.collect {
+                SaveLoginDataUtils.changeToken(this@MyInfoActivity, it.userToken.accessToken, it.userToken.refreshToken)
 
-            when(it){
-                MypageSettingViewModel.Function.UpdateUserProfile.name -> {
-                    updateUserInfo()
-                }
-                MypageSettingViewModel.Function.UploadProfileImage.name -> {
-                    viewModel.uploadProfileImage()
-                }
-                MypageSettingViewModel.Function.DeleteAccount.name -> {
-                    viewModel.accountCancellation()
+                when(it.function){
+                    MypageSettingViewModel.Function.UpdateUserProfile.name -> {
+                        updateUserInfo()
+                    }
+                    MypageSettingViewModel.Function.UploadProfileImage.name -> {
+                        viewModel.uploadProfileImage()
+                    }
+                    MypageSettingViewModel.Function.DeleteAccount.name -> {
+                        viewModel.accountCancellation()
+                    }
                 }
             }
         }
+
     }
 
     private fun initListeners() {

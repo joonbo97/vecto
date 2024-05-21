@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
 import androidx.activity.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.gson.Gson
 import com.vecto_example.vecto.R
@@ -23,6 +24,7 @@ import com.vecto_example.vecto.utils.SaveLoginDataUtils
 import com.vecto_example.vecto.utils.ShareFeedUtil
 import com.vecto_example.vecto.utils.ToastMessageUtils
 import com.vecto_example.vecto.utils.ToastMessageUtils.errorMessageHandler
+import kotlinx.coroutines.launch
 
 class OneFeedActivity : AppCompatActivity(), FeedAdapter.OnFeedActionListener {
     private lateinit var binding: ActivityOneFeedBinding
@@ -147,24 +149,28 @@ class OneFeedActivity : AppCompatActivity(), FeedAdapter.OnFeedActionListener {
             }
         }
 
-        viewModel.reissueResponse.observe(this) {
-            SaveLoginDataUtils.changeToken(this, viewModel.accessToken, viewModel.refreshToken)
+        lifecycleScope.launch {
+            viewModel.reissueResponse.collect {
+                SaveLoginDataUtils.changeToken(this@OneFeedActivity, it.userToken.accessToken, it.userToken.refreshToken)
 
-            when(it){
-                SearchViewModel.Function.PostFeedLike.name -> {
-                    viewModel.postFollow(viewModel.postFollowId)
-                }
-                SearchViewModel.Function.DeleteFeedLike.name -> {
-                    viewModel.deleteFeedLike(viewModel.deleteFeedLikeId)
-                }
-                SearchViewModel.Function.PostFollow.name -> {
-                    viewModel.postFollow(viewModel.postFollowId)
-                }
-                SearchViewModel.Function.DeleteFollow.name -> {
-                    viewModel.deleteFollow(viewModel.deleteFollowId)
+                when(it.function){
+                    SearchViewModel.Function.PostFeedLike.name -> {
+                        viewModel.postFollow(viewModel.postFollowId)
+                    }
+                    SearchViewModel.Function.DeleteFeedLike.name -> {
+                        viewModel.deleteFeedLike(viewModel.deleteFeedLikeId)
+                    }
+                    SearchViewModel.Function.PostFollow.name -> {
+                        viewModel.postFollow(viewModel.postFollowId)
+                    }
+                    SearchViewModel.Function.DeleteFollow.name -> {
+                        viewModel.deleteFollow(viewModel.deleteFollowId)
+                    }
                 }
             }
         }
+
+
 
         /*   오류 관련 Observer   */
         viewModel.errorMessage.observe(this) {
@@ -232,6 +238,9 @@ class OneFeedActivity : AppCompatActivity(), FeedAdapter.OnFeedActionListener {
     }
 
     override fun onItemClick(position: Int) {
+        if(position < 0  || position > viewModel.allFeedInfo.lastIndex)
+            return
+
         var subList = viewModel.allFeedInfo.subList(position, viewModel.allFeedInfo.size)
         if(subList.size > 10) {
             subList = subList.subList(0, 10)

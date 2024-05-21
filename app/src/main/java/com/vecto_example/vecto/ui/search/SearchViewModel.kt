@@ -12,14 +12,13 @@ import com.vecto_example.vecto.data.repository.TokenRepository
 import com.vecto_example.vecto.data.repository.UserRepository
 import com.vecto_example.vecto.retrofit.VectoService
 import com.vecto_example.vecto.utils.ServerResponse
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 
 class SearchViewModel(private val repository: FeedRepository, private val userRepository: UserRepository, private val tokenRepository: TokenRepository) : ViewModel() {
-    private val _reissueResponse = MutableLiveData<String>()
-    val reissueResponse: LiveData<String> = _reissueResponse
-
-    var accessToken: String? = null
-    var refreshToken: String? = null
+    private val _reissueResponse = MutableSharedFlow<VectoService.TokenUpdateEvent>(replay = 0)
+    val reissueResponse = _reissueResponse.asSharedFlow()
 
     var originLoginFlag: Boolean? = null    //초기 로그인 상태 (처음 get Feed 위해 null 할당)
 
@@ -386,9 +385,7 @@ class SearchViewModel(private val repository: FeedRepository, private val userRe
             val reissueResponse = tokenRepository.reissueToken()
 
             reissueResponse.onSuccess { //Access Token이 만료되어서 갱신됨
-                accessToken = it.accessToken
-                refreshToken = it.refreshToken
-                _reissueResponse.postValue(function)
+                _reissueResponse.emit(VectoService.TokenUpdateEvent(function, VectoService.UserToken(it.accessToken, it.refreshToken)))
             }.onFailure {
                 when(it.message){
                     //아직 유효한 경우

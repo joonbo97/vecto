@@ -23,6 +23,7 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
@@ -56,6 +57,7 @@ import com.vecto_example.vecto.utils.RequestLoginUtils
 import com.vecto_example.vecto.utils.SaveLoginDataUtils
 import com.vecto_example.vecto.utils.ToastMessageUtils
 import com.yalantis.ucrop.UCrop
+import kotlinx.coroutines.launch
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
@@ -216,19 +218,25 @@ class EditFeedActivity : AppCompatActivity(), OnMapReadyCallback, CalendarDialog
             }
         }
 
-        writeViewModel.reissueResponse.observe(this){
-            when(it){
-                WriteViewModel.Function.UploadMapImages.name -> {
-                    writeViewModel.uploadImages(WriteViewModel.ImageType.MAP.name, writeViewModel.mapImagePart)
-                }
-                WriteViewModel.Function.UploadNormalImages.name -> {
-                    writeViewModel.uploadImages(WriteViewModel.ImageType.NORMAL.name, writeViewModel.normalImagePart)
-                }
-                WriteViewModel.Function.UpdateFeed.name -> {
-                    writeViewModel.updateFeed(writeViewModel.updateFeedRequest)
+        lifecycleScope.launch {
+            writeViewModel.reissueResponse.collect {
+                SaveLoginDataUtils.changeToken(this@EditFeedActivity, it.userToken.accessToken, it.userToken.refreshToken)
+
+                when(it.function){
+                    WriteViewModel.Function.UploadMapImages.name -> {
+                        writeViewModel.uploadImages(WriteViewModel.ImageType.MAP.name, writeViewModel.mapImagePart)
+                    }
+                    WriteViewModel.Function.UploadNormalImages.name -> {
+                        writeViewModel.uploadImages(WriteViewModel.ImageType.NORMAL.name, writeViewModel.normalImagePart)
+                    }
+                    WriteViewModel.Function.UpdateFeed.name -> {
+                        writeViewModel.updateFeed(writeViewModel.updateFeedRequest)
+                    }
                 }
             }
         }
+
+
 
         writeViewModel.errorMessage.observe(this){
             ToastMessageUtils.showToast(this, getString(it))

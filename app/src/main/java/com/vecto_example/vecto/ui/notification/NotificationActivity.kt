@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import androidx.activity.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.vecto_example.vecto.R
@@ -15,6 +16,7 @@ import com.vecto_example.vecto.databinding.ActivityNotificationBinding
 import com.vecto_example.vecto.retrofit.VectoService
 import com.vecto_example.vecto.utils.SaveLoginDataUtils
 import com.vecto_example.vecto.utils.ToastMessageUtils
+import kotlinx.coroutines.launch
 
 class NotificationActivity : AppCompatActivity() {
     lateinit var binding: ActivityNotificationBinding
@@ -65,13 +67,17 @@ class NotificationActivity : AppCompatActivity() {
             }
         }
 
-        notificationViewModel.reissueResponse.observe(this){
-            SaveLoginDataUtils.changeToken(this, notificationViewModel.accessToken, notificationViewModel.refreshToken)
+        lifecycleScope.launch {
+            notificationViewModel.reissueResponse.collect {
+                SaveLoginDataUtils.changeToken(this@NotificationActivity, it.userToken.accessToken, it.userToken.refreshToken)
 
-            if(it == NotificationViewModel.Function.GetNotificationResults.name){
-                getNotification()
+                if(it.function == NotificationViewModel.Function.GetNotificationResults.name){
+                    getNotification()
+                }
             }
         }
+
+
 
         /*   로딩 관련 Observer   */
         notificationViewModel.isLoadingCenter.observe(this) {

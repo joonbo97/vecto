@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import com.vecto_example.vecto.ui.login.LoginActivity
 import com.vecto_example.vecto.ui.main.MainActivity
 import com.vecto_example.vecto.R
@@ -27,6 +28,7 @@ import com.vecto_example.vecto.ui.userinfo.UserInfoViewModelFactory
 import com.vecto_example.vecto.utils.LoadImageUtils
 import com.vecto_example.vecto.utils.SaveLoginDataUtils
 import com.vecto_example.vecto.utils.ToastMessageUtils
+import kotlinx.coroutines.launch
 
 class MypageFragment : Fragment() {
     lateinit var binding: FragmentMypageBinding
@@ -55,10 +57,13 @@ class MypageFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        userInfoViewModel.getUserInfo(Auth.userId.value.toString())
+        if(Auth.userId.value != "")
+            userInfoViewModel.getUserInfo(Auth.userId.value.toString())
 
-        initObservers()
-        initListeners()
+        if(Auth.loginFlag.value == true) {
+            initObservers()
+            initListeners()
+        }
     }
 
     private fun initListeners() {
@@ -141,11 +146,17 @@ class MypageFragment : Fragment() {
             }
         }
 
-        userInfoViewModel.reissueResponse.observe(viewLifecycleOwner) {
-            if(it == UserInfoViewModel.Function.PostLogout.name){
-                userInfoViewModel.postLogout()
+        lifecycleScope.launch {
+            userInfoViewModel.reissueResponse.collect {
+                SaveLoginDataUtils.changeToken(requireContext(), it.userToken.accessToken, it.userToken.refreshToken)
+
+                if(it.function == UserInfoViewModel.Function.PostLogout.name){
+                    userInfoViewModel.postLogout()
+                }
             }
         }
+
+
 
         userInfoViewModel.errorMessage.observe(viewLifecycleOwner) {
             ToastMessageUtils.showToast(requireContext(), getString(it))

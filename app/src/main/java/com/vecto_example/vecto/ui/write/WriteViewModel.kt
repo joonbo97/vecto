@@ -16,15 +16,14 @@ import com.vecto_example.vecto.utils.DateTimeUtils
 import com.vecto_example.vecto.utils.ServerResponse
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import okhttp3.MultipartBody
 
 class WriteViewModel(private val repository: WriteRepository, private val tokenRepository: TokenRepository): ViewModel() {
-    private val _reissueResponse = MutableLiveData<String>()
-    val reissueResponse: LiveData<String> = _reissueResponse
-
-    var accessToken: String? = null
-    var refreshToken: String? = null
+    private val _reissueResponse = MutableSharedFlow<VectoService.TokenUpdateEvent>(replay = 0)
+    val reissueResponse = _reissueResponse.asSharedFlow()
 
     lateinit var mapImagePart: List<MultipartBody.Part>
     lateinit var normalImagePart: List<MultipartBody.Part>
@@ -255,9 +254,7 @@ class WriteViewModel(private val repository: WriteRepository, private val tokenR
             val reissueResponse = tokenRepository.reissueToken()
 
             reissueResponse.onSuccess { //Access Token이 만료되어서 갱신됨
-                accessToken = it.accessToken
-                refreshToken = it.refreshToken
-                _reissueResponse.postValue(function)
+                _reissueResponse.emit(VectoService.TokenUpdateEvent(function, it))
             }.onFailure {
                 when(it.message){
                     //아직 유효한 경우

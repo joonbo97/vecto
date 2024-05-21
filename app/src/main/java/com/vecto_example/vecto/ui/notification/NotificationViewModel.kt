@@ -10,17 +10,18 @@ import com.vecto_example.vecto.data.repository.NotificationRepository
 import com.vecto_example.vecto.data.repository.TokenRepository
 import com.vecto_example.vecto.retrofit.VectoService
 import com.vecto_example.vecto.utils.ServerResponse
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 
 class NotificationViewModel (private val repository: NotificationRepository, private val tokenRepository: TokenRepository): ViewModel() {
-    private val _reissueResponse = MutableLiveData<String>()
-    val reissueResponse: LiveData<String> = _reissueResponse
-
-    var accessToken: String? = null
-    var refreshToken: String? = null
+    private val _reissueResponse = MutableSharedFlow<VectoService.TokenUpdateEvent>(replay = 0)
+    val reissueResponse = _reissueResponse.asSharedFlow()
 
     private var nextPage: Int = 0
     private var lastPage: Boolean = false
+
+    private var notificationLoading = false
 
     private val _isLoadingCenter = MutableLiveData<Boolean>()
     val isLoadingCenter: LiveData<Boolean> = _isLoadingCenter
@@ -43,13 +44,21 @@ class NotificationViewModel (private val repository: NotificationRepository, pri
     val newNotificationFlag = MutableLiveData<Result<Boolean>>()
     fun getNewNotificationFlag() {
 
+        if(notificationLoading)
+            return
+
+        notificationLoading = true
+
         viewModelScope.launch {
             val result = repository.getNewNotificationFlag()
 
-            result.onFailure {
+            result.onSuccess {
+                notificationLoading = false
+            }.onFailure {
                 if(it.message == ServerResponse.ACCESS_TOKEN_INVALID_ERROR.code){
                     reissueToken(Function.GetNewNotificationFlag.name)
-                }
+                } else
+                    notificationLoading = false
             }
 
             newNotificationFlag.value = result
@@ -58,7 +67,6 @@ class NotificationViewModel (private val repository: NotificationRepository, pri
 
     fun getNotificationResults(){
         startLoading()
-        Log.d("getNotification", "LOADING")
 
         viewModelScope.launch {
             if(!lastPage) {
@@ -74,10 +82,10 @@ class NotificationViewModel (private val repository: NotificationRepository, pri
                     endLoading()
                 }.onFailure {
                     when(it.message){
-                        ServerResponse.ACCESS_TOKEN_INVALID_ERROR.name -> {
+                        ServerResponse.ACCESS_TOKEN_INVALID_ERROR.code -> {
                             reissueToken(Function.GetNotificationResults.name)
                         }
-                        ServerResponse.ERROR.name -> {
+                        ServerResponse.ERROR.code -> {
                             _errorMessage.postValue(R.string.APIErrorToastMessage)
                             endLoading()
                         }
@@ -97,9 +105,10 @@ class NotificationViewModel (private val repository: NotificationRepository, pri
             val reissueResponse = tokenRepository.reissueToken()
 
             reissueResponse.onSuccess { //Access Token이 만료되어서 갱신됨
-                accessToken = it.accessToken
-                refreshToken = it.refreshToken
-                _reissueResponse.postValue(function)
+                _reissueResponse.emit(VectoService.TokenUpdateEvent(function, it))
+
+                if(function == Function.GetNewNotificationFlag.name)
+                    notificationLoading = false
             }.onFailure {
                 when(it.message){
                     //아직 유효한 경우
@@ -112,6 +121,7 @@ class NotificationViewModel (private val repository: NotificationRepository, pri
                         _errorMessage.postValue(R.string.APIFailToastMessage)
                     }
                 }
+
                 endLoading()
             }
         }

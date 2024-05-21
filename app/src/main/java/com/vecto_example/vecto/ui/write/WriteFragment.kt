@@ -21,6 +21,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.core.os.bundleOf
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.vecto_example.vecto.ui.main.MainActivity
@@ -188,19 +189,25 @@ class WriteFragment : Fragment(), OnMapReadyCallback, CalendarDialog.OnDateSelec
             }
         }
 
-        writeViewModel.reissueResponse.observe(viewLifecycleOwner){
-            when(it){
-                WriteViewModel.Function.UploadMapImages.name -> {
-                    writeViewModel.uploadImages(WriteViewModel.ImageType.MAP.name, writeViewModel.mapImagePart)
-                }
-                WriteViewModel.Function.UploadNormalImages.name -> {
-                    writeViewModel.uploadImages(WriteViewModel.ImageType.NORMAL.name, writeViewModel.normalImagePart)
-                }
-                WriteViewModel.Function.AddFeed.name -> {
-                    writeViewModel.addFeed(writeViewModel.feedDataForUpload)
+        lifecycleScope.launch {
+            writeViewModel.reissueResponse.collect {
+                SaveLoginDataUtils.changeToken(requireContext(), it.userToken.accessToken, it.userToken.refreshToken)
+
+                when(it.function){
+                    WriteViewModel.Function.UploadMapImages.name -> {
+                        writeViewModel.uploadImages(WriteViewModel.ImageType.MAP.name, writeViewModel.mapImagePart)
+                    }
+                    WriteViewModel.Function.UploadNormalImages.name -> {
+                        writeViewModel.uploadImages(WriteViewModel.ImageType.NORMAL.name, writeViewModel.normalImagePart)
+                    }
+                    WriteViewModel.Function.AddFeed.name -> {
+                        writeViewModel.addFeed(writeViewModel.feedDataForUpload)
+                    }
                 }
             }
         }
+
+
 
         //오류
         writeViewModel.errorMessage.observe(viewLifecycleOwner) {

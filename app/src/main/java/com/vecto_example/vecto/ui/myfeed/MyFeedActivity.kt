@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import androidx.activity.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.gson.Gson
@@ -26,6 +27,7 @@ import com.vecto_example.vecto.utils.SaveLoginDataUtils
 import com.vecto_example.vecto.utils.ShareFeedUtil
 import com.vecto_example.vecto.utils.ToastMessageUtils
 import com.vecto_example.vecto.utils.ToastMessageUtils.errorMessageHandler
+import kotlinx.coroutines.launch
 
 class MyFeedActivity : AppCompatActivity(), MyFeedAdapter.OnFeedActionListener {
     private lateinit var binding: ActivityMyFeedBinding
@@ -170,24 +172,28 @@ class MyFeedActivity : AppCompatActivity(), MyFeedAdapter.OnFeedActionListener {
                 binding.progressBar.visibility = View.GONE
         }
 
-        viewModel.reissueResponse.observe(this){
-            SaveLoginDataUtils.changeToken(this, viewModel.accessToken, viewModel.refreshToken)
+        lifecycleScope.launch {
+            viewModel.reissueResponse.collect {
+                SaveLoginDataUtils.changeToken(this@MyFeedActivity, it.userToken.accessToken, it.userToken.refreshToken)
 
-            when(it){
-                UserInfoViewModel.Function.FetchUserFeedResults.name -> {
-                    getFeed()
-                }
-                UserInfoViewModel.Function.PostFeedLike.name -> {
-                    viewModel.postFeedLike(viewModel.postFeedLikeId)
-                }
-                UserInfoViewModel.Function.DeleteFeedLike.name -> {
-                    viewModel.deleteFeedLike(viewModel.deleteFeedLikeId)
-                }
-                UserInfoViewModel.Function.DeleteFeed.name -> {
-                    viewModel.deleteFeed(viewModel.deleteFeedId)
+                when(it.function){
+                    UserInfoViewModel.Function.FetchUserFeedResults.name -> {
+                        getFeed()
+                    }
+                    UserInfoViewModel.Function.PostFeedLike.name -> {
+                        viewModel.postFeedLike(viewModel.postFeedLikeId)
+                    }
+                    UserInfoViewModel.Function.DeleteFeedLike.name -> {
+                        viewModel.deleteFeedLike(viewModel.deleteFeedLikeId)
+                    }
+                    UserInfoViewModel.Function.DeleteFeed.name -> {
+                        viewModel.deleteFeed(viewModel.deleteFeedId)
+                    }
                 }
             }
         }
+
+
 
         /*   오류 관련 Observer   */
         viewModel.errorMessage.observe(this) {
@@ -246,6 +252,9 @@ class MyFeedActivity : AppCompatActivity(), MyFeedAdapter.OnFeedActionListener {
     }
 
     override fun onItemViewClick(position: Int) {
+        if(position < 0  || position > viewModel.allFeedInfo.lastIndex)
+            return
+
         var subList = viewModel.allFeedInfo.subList(position, viewModel.allFeedInfo.size)
         if(subList.size > 10) {
             subList = subList.subList(0, 10)

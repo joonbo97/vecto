@@ -11,6 +11,7 @@ import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.os.bundleOf
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
@@ -29,6 +30,7 @@ import com.vecto_example.vecto.ui.login.LoginViewModelFactory
 import com.vecto_example.vecto.ui.onefeed.OneFeedActivity
 import com.vecto_example.vecto.utils.SaveLoginDataUtils
 import com.vecto_example.vecto.utils.ToastMessageUtils
+import kotlinx.coroutines.launch
 
 
 class MainActivity : AppCompatActivity() {
@@ -137,12 +139,12 @@ class MainActivity : AppCompatActivity() {
 
         // 저장된 로그인 정보 가져오기
         loginViewModel.userId = sharedPreferences.getString("userId", null)
-        loginViewModel.accessToken = sharedPreferences.getString("accessToken", null)
-        loginViewModel.refreshToken = sharedPreferences.getString("refreshToken", null)
+        val accessToken = sharedPreferences.getString("accessToken", null)
+        val refreshToken = sharedPreferences.getString("refreshToken", null)
         val fcmToken = sharedPreferences.getString("FCM", null)
 
-        if(loginViewModel.userId != null && loginViewModel.accessToken != null && loginViewModel.refreshToken != null && fcmToken != null) {
-            Auth.setToken(VectoService.UserToken(loginViewModel.accessToken!!, loginViewModel.refreshToken!!))
+        if(loginViewModel.userId != null && accessToken != null && refreshToken != null && fcmToken != null) {
+            Auth.setToken(VectoService.UserToken(accessToken, refreshToken))
             loginViewModel.reissueToken()
         } else {
             loginViewModel.loginFinish()
@@ -159,14 +161,19 @@ class MainActivity : AppCompatActivity() {
             loginViewModel.loginFinish()
         }
 
-        loginViewModel.reissueResponse.observe(this){
-            SaveLoginDataUtils.changeToken(this, loginViewModel.accessToken, loginViewModel.refreshToken)
-            loginViewModel.getUserInfo()
+        lifecycleScope.launch {
+            loginViewModel.reissueResponse.collect {
+                SaveLoginDataUtils.changeToken(this@MainActivity, it.accessToken, it.refreshToken)
+                loginViewModel.getUserInfo()
+            }
         }
 
         loginViewModel.errorMessage.observe(this){
             ToastMessageUtils.showToast(this, getString(it))
             loginViewModel.loginFinish()
+
+            if(it == R.string.expired_login)
+                SaveLoginDataUtils.deleteData(this)
         }
     }
 

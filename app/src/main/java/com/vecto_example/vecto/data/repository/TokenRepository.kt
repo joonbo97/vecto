@@ -11,7 +11,7 @@ class TokenRepository(private val vectoService: VectoService) {
             val response = vectoService.reissueToken("Bearer ${Auth.accessToken}", Auth.refreshToken)
 
             if(response.isSuccessful){
-                Log.d("reissueToken", "SUCCESS")
+                Log.d("reissueToken", "SUCCESS: ${response.body()}")
                 Result.success(response.body()!!.result!!)
             } else {
                 val errorBody = response.errorBody()?.string()

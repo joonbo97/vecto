@@ -8,6 +8,7 @@ import android.util.Log
 import android.view.View
 import androidx.activity.viewModels
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.gson.Gson
@@ -32,6 +33,7 @@ import com.vecto_example.vecto.utils.SaveLoginDataUtils
 import com.vecto_example.vecto.utils.ServerResponse
 import com.vecto_example.vecto.utils.ShareFeedUtil
 import com.vecto_example.vecto.utils.ToastMessageUtils
+import kotlinx.coroutines.launch
 
 class UserInfoActivity : AppCompatActivity(), MyFeedAdapter.OnFeedActionListener{
     lateinit var binding: ActivityUserInfoBinding
@@ -301,36 +303,40 @@ class UserInfoActivity : AppCompatActivity(), MyFeedAdapter.OnFeedActionListener
             }
         }
 
-        userInfoViewModel.reissueResponse.observe(this){
-            SaveLoginDataUtils.changeToken(this, userInfoViewModel.accessToken, userInfoViewModel.refreshToken)
+        lifecycleScope.launch {
+            userInfoViewModel.reissueResponse.collect {
+                SaveLoginDataUtils.changeToken(this@UserInfoActivity, it.userToken.accessToken, it.userToken.refreshToken)
 
-            when(it){
-                UserInfoViewModel.Function.FetchUserFeedResults.name -> {
-                    getFeed(userId)
-                }
-                UserInfoViewModel.Function.CheckFollow.name -> {
-                    userInfoViewModel.checkFollow(userId)
-                }
-                UserInfoViewModel.Function.PostFollow.name -> {
-                    userInfoViewModel.postFollow(userId)
-                }
-                UserInfoViewModel.Function.DeleteFollow.name -> {
-                    userInfoViewModel.deleteFollow(userId)
-                }
-                UserInfoViewModel.Function.PostComplaint.name -> {
-                    userInfoViewModel.postComplaint(userInfoViewModel.complaintRequest)
-                }
-                UserInfoViewModel.Function.PostFeedLike.name -> {
-                    userInfoViewModel.postFeedLike(userInfoViewModel.postFeedLikeId)
-                }
-                UserInfoViewModel.Function.DeleteFeedLike.name -> {
-                    userInfoViewModel.deleteFeedLike(userInfoViewModel.deleteFeedLikeId)
-                }
-                UserInfoViewModel.Function.DeleteFeed.name -> {
-                    userInfoViewModel.deleteFeed(userInfoViewModel.deleteFeedId)
+                when(it.function){
+                    UserInfoViewModel.Function.FetchUserFeedResults.name -> {
+                        getFeed(userId)
+                    }
+                    UserInfoViewModel.Function.CheckFollow.name -> {
+                        userInfoViewModel.checkFollow(userId)
+                    }
+                    UserInfoViewModel.Function.PostFollow.name -> {
+                        userInfoViewModel.postFollow(userId)
+                    }
+                    UserInfoViewModel.Function.DeleteFollow.name -> {
+                        userInfoViewModel.deleteFollow(userId)
+                    }
+                    UserInfoViewModel.Function.PostComplaint.name -> {
+                        userInfoViewModel.postComplaint(userInfoViewModel.complaintRequest)
+                    }
+                    UserInfoViewModel.Function.PostFeedLike.name -> {
+                        userInfoViewModel.postFeedLike(userInfoViewModel.postFeedLikeId)
+                    }
+                    UserInfoViewModel.Function.DeleteFeedLike.name -> {
+                        userInfoViewModel.deleteFeedLike(userInfoViewModel.deleteFeedLikeId)
+                    }
+                    UserInfoViewModel.Function.DeleteFeed.name -> {
+                        userInfoViewModel.deleteFeed(userInfoViewModel.deleteFeedId)
+                    }
                 }
             }
         }
+
+
 
         /*   오류 관련 Observer   */
         userInfoViewModel.errorMessage.observe(this){
@@ -463,6 +469,9 @@ class UserInfoActivity : AppCompatActivity(), MyFeedAdapter.OnFeedActionListener
     }
 
     override fun onItemViewClick(position: Int) {
+        if(position < 0  || position > userInfoViewModel.allFeedInfo.lastIndex)
+            return
+
         var subList = userInfoViewModel.allFeedInfo.subList(position, userInfoViewModel.allFeedInfo.size)
         if(subList.size > 10) {
             subList = subList.subList(0, 10)

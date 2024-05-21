@@ -11,6 +11,7 @@ import android.view.MotionEvent
 import android.view.View
 import androidx.activity.viewModels
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.vecto_example.vecto.retrofit.VectoService
@@ -35,6 +36,7 @@ import com.vecto_example.vecto.utils.SaveLoginDataUtils
 import com.vecto_example.vecto.utils.ShareFeedUtil
 import com.vecto_example.vecto.utils.ToastMessageUtils
 import com.vecto_example.vecto.utils.ToastMessageUtils.errorMessageHandler
+import kotlinx.coroutines.launch
 
 class FeedDetailActivity : AppCompatActivity(), OnMapReadyCallback, MyFeedDetailAdapter.OnFeedActionListener {
     private lateinit var binding: ActivityFeedDetailBinding
@@ -330,27 +332,30 @@ class FeedDetailActivity : AppCompatActivity(), OnMapReadyCallback, MyFeedDetail
             }
         }
 
-        viewModel.reissueResponse.observe(this) {
-            SaveLoginDataUtils.changeToken(this, viewModel.accessToken, viewModel.refreshToken)
+        lifecycleScope.launch {
+            viewModel.reissueResponse.collect {
+                SaveLoginDataUtils.changeToken(this@FeedDetailActivity, it.userToken.accessToken, it.userToken.refreshToken)
 
-            when(it){
-                FeedDetailViewModel.Function.GetFeedList.name -> {
-                    getFeed()
-                }
-                FeedDetailViewModel.Function.PostFeedLike.name -> {
-                    viewModel.postFeedLike(viewModel.postFeedLikeId)
-                }
-                FeedDetailViewModel.Function.DeleteFeedLike.name -> {
-                    viewModel.deleteFeedLike(viewModel.deleteFeedLikeId)
-                }
-                FeedDetailViewModel.Function.PostFollow.name -> {
-                    viewModel.postFollow(viewModel.postFollowId)
-                }
-                FeedDetailViewModel.Function.DeleteFollow.name -> {
-                    viewModel.deleteFollow(viewModel.deleteFollowId)
+                when(it.function){
+                    FeedDetailViewModel.Function.GetFeedList.name -> {
+                        getFeed()
+                    }
+                    FeedDetailViewModel.Function.PostFeedLike.name -> {
+                        viewModel.postFeedLike(viewModel.postFeedLikeId)
+                    }
+                    FeedDetailViewModel.Function.DeleteFeedLike.name -> {
+                        viewModel.deleteFeedLike(viewModel.deleteFeedLikeId)
+                    }
+                    FeedDetailViewModel.Function.PostFollow.name -> {
+                        viewModel.postFollow(viewModel.postFollowId)
+                    }
+                    FeedDetailViewModel.Function.DeleteFollow.name -> {
+                        viewModel.deleteFollow(viewModel.deleteFollowId)
+                    }
                 }
             }
         }
+
 
         /*   오류 관련 Observer   */
         viewModel.errorMessage.observe(this){

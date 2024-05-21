@@ -368,6 +368,11 @@ interface VectoService {
         val followingCount: Int
     )
 
+    data class TokenUpdateEvent(
+        val function: String,
+        val userToken: UserToken
+    )
+
     data class FeedPageResponse(
         val nextPage: Int,
         val feeds: List<FeedInfo>,

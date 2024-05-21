@@ -11,14 +11,13 @@ import com.vecto_example.vecto.data.repository.TokenRepository
 import com.vecto_example.vecto.data.repository.UserRepository
 import com.vecto_example.vecto.retrofit.VectoService
 import com.vecto_example.vecto.utils.ServerResponse
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 
 class UserInfoViewModel(private val feedRepository: FeedRepository, private val userRepository: UserRepository, private val tokenRepository: TokenRepository) : ViewModel() {
-    private val _reissueResponse = MutableLiveData<String>()
-    val reissueResponse: LiveData<String> = _reissueResponse
-
-    var accessToken: String? = null
-    var refreshToken: String? = null
+    private val _reissueResponse = MutableSharedFlow<VectoService.TokenUpdateEvent>(replay = 0)
+    val reissueResponse = _reissueResponse.asSharedFlow()
 
     var nextPage: Int = 0
 
@@ -67,7 +66,7 @@ class UserInfoViewModel(private val feedRepository: FeedRepository, private val 
 
     /*   팔로우   */
     //팔로우 여부
-    private val _isFollowing = MutableLiveData<Boolean>(false)
+    private val _isFollowing = MutableLiveData(false)
     val isFollowing: LiveData<Boolean> = _isFollowing
 
     //팔로우 요청
@@ -293,9 +292,9 @@ class UserInfoViewModel(private val feedRepository: FeedRepository, private val 
         this.complaintRequest = complaintRequest
 
         viewModelScope.launch {
-            val followResponse = userRepository.postComplaint(complaintRequest)
+            val complaintResponse = userRepository.postComplaint(complaintRequest)
 
-            followResponse.onSuccess {
+            complaintResponse.onSuccess {
                 _postComplaintResult.value = true
             }.onFailure {
                 when(it.message){
@@ -402,9 +401,7 @@ class UserInfoViewModel(private val feedRepository: FeedRepository, private val 
             val reissueResponse = tokenRepository.reissueToken()
 
             reissueResponse.onSuccess { //Access Token이 만료되어서 갱신됨
-                accessToken = it.accessToken
-                refreshToken = it.refreshToken
-                _reissueResponse.postValue(function)
+                _reissueResponse.emit(VectoService.TokenUpdateEvent(function, it))
             }.onFailure {
                 when(it.message){
                     //아직 유효한 경우

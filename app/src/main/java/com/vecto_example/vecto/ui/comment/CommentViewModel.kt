@@ -11,14 +11,13 @@ import com.vecto_example.vecto.data.repository.CommentRepository
 import com.vecto_example.vecto.data.repository.TokenRepository
 import com.vecto_example.vecto.retrofit.VectoService
 import com.vecto_example.vecto.utils.ServerResponse
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 
 class CommentViewModel(private val repository: CommentRepository, private val tokenRepository: TokenRepository): ViewModel() {
-    private val _reissueResponse = MutableLiveData<String>()
-    val reissueResponse: LiveData<String> = _reissueResponse
-
-    var accessToken: String? = null
-    var refreshToken: String? = null
+    private val _reissueResponse = MutableSharedFlow<VectoService.TokenUpdateEvent>(replay = 0)
+    val reissueResponse = _reissueResponse.asSharedFlow()
 
     var nextPage: Int = 0
     var lastPage: Boolean = false
@@ -26,7 +25,7 @@ class CommentViewModel(private val repository: CommentRepository, private val to
     var firstFlag = true
 
     var sendCommentLikeId = -1
-    var cancelCommnetLikeId = -1
+    var cancelCommentLikeId = -1
     var deleteCommentId = -1
 
     private val _errorMessage = MutableLiveData<Int>()
@@ -145,7 +144,7 @@ class CommentViewModel(private val repository: CommentRepository, private val to
 
     fun cancelCommentLike(commentId: Int) {
         tempLoading = true
-        cancelCommnetLikeId = commentId
+        cancelCommentLikeId = commentId
 
         viewModelScope.launch {
             val cancelCommentLikeResponse = repository.cancelCommentLike(commentId)
@@ -204,9 +203,7 @@ class CommentViewModel(private val repository: CommentRepository, private val to
             val reissueResponse = tokenRepository.reissueToken()
 
             reissueResponse.onSuccess { //Access Token이 만료되어서 갱신됨
-                accessToken = it.accessToken
-                refreshToken = it.refreshToken
-                _reissueResponse.postValue(function)
+                _reissueResponse.emit(VectoService.TokenUpdateEvent(function, it))
             }.onFailure {
                 when(it.message){
                     //아직 유효한 경우

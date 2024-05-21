@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import androidx.activity.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.gson.Gson
@@ -17,13 +18,13 @@ import com.vecto_example.vecto.data.repository.UserRepository
 import com.vecto_example.vecto.databinding.ActivityLikeFeedBinding
 import com.vecto_example.vecto.retrofit.VectoService
 import com.vecto_example.vecto.ui.detail.FeedDetailActivity
-import com.vecto_example.vecto.ui.detail.FeedDetailViewModel
 import com.vecto_example.vecto.ui.search.adapter.FeedAdapter
 import com.vecto_example.vecto.utils.FeedDetailType
 import com.vecto_example.vecto.utils.SaveLoginDataUtils
 import com.vecto_example.vecto.utils.ShareFeedUtil
 import com.vecto_example.vecto.utils.ToastMessageUtils
 import com.vecto_example.vecto.utils.ToastMessageUtils.errorMessageHandler
+import kotlinx.coroutines.launch
 
 class LikeFeedActivity : AppCompatActivity(), FeedAdapter.OnFeedActionListener {
     private lateinit var binding: ActivityLikeFeedBinding
@@ -160,27 +161,30 @@ class LikeFeedActivity : AppCompatActivity(), FeedAdapter.OnFeedActionListener {
             }
         }
 
-        likeFeedViewModel.reissueResponse.observe(this) {
-            SaveLoginDataUtils.changeToken(this, likeFeedViewModel.accessToken, likeFeedViewModel.refreshToken)
+        lifecycleScope.launch {
+            likeFeedViewModel.reissueResponse.collect {
+                SaveLoginDataUtils.changeToken(this@LikeFeedActivity, it.userToken.accessToken, it.userToken.refreshToken)
 
-            when(it){
-                LikeFeedViewModel.Function.GetLikeFeedList.name -> {
-                    getFeed()
-                }
-                LikeFeedViewModel.Function.PostFeedLike.name -> {
-                    likeFeedViewModel.postFollow(likeFeedViewModel.postFollowId)
-                }
-                LikeFeedViewModel.Function.DeleteFeedLike.name -> {
-                    likeFeedViewModel.deleteFeedLike(likeFeedViewModel.deleteFeedLikeId)
-                }
-                LikeFeedViewModel.Function.PostFollow.name -> {
-                    likeFeedViewModel.postFollow(likeFeedViewModel.postFollowId)
-                }
-                LikeFeedViewModel.Function.DeleteFollow.name -> {
-                    likeFeedViewModel.deleteFollow(likeFeedViewModel.deleteFollowId)
+                when(it.function){
+                    LikeFeedViewModel.Function.GetLikeFeedList.name -> {
+                        getFeed()
+                    }
+                    LikeFeedViewModel.Function.PostFeedLike.name -> {
+                        likeFeedViewModel.postFeedLike(likeFeedViewModel.postFeedLikeId)
+                    }
+                    LikeFeedViewModel.Function.DeleteFeedLike.name -> {
+                        likeFeedViewModel.deleteFeedLike(likeFeedViewModel.deleteFeedLikeId)
+                    }
+                    LikeFeedViewModel.Function.PostFollow.name -> {
+                        likeFeedViewModel.postFollow(likeFeedViewModel.postFollowId)
+                    }
+                    LikeFeedViewModel.Function.DeleteFollow.name -> {
+                        likeFeedViewModel.deleteFollow(likeFeedViewModel.deleteFollowId)
+                    }
                 }
             }
         }
+
 
         /*   오류 관련 Observer   */
         likeFeedViewModel.errorMessage.observe(this){
@@ -297,6 +301,9 @@ class LikeFeedActivity : AppCompatActivity(), FeedAdapter.OnFeedActionListener {
     }
 
     override fun onItemClick(position: Int) {
+        if(position < 0  || position > likeFeedViewModel.allFeedInfo.lastIndex)
+            return
+
         var subList = likeFeedViewModel.allFeedInfo.subList(position, likeFeedViewModel.allFeedInfo.size)
         if(subList.size > 10) {
             subList = subList.subList(0, 10)

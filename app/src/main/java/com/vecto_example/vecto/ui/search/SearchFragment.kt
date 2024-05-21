@@ -16,6 +16,7 @@ import android.view.inputmethod.InputMethodManager
 import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -30,7 +31,6 @@ import com.vecto_example.vecto.data.repository.UserRepository
 import com.vecto_example.vecto.databinding.FragmentSearchBinding
 import com.vecto_example.vecto.retrofit.VectoService
 import com.vecto_example.vecto.ui.detail.FeedDetailActivity
-import com.vecto_example.vecto.ui.detail.FeedDetailViewModel
 import com.vecto_example.vecto.ui.login.LoginViewModel
 import com.vecto_example.vecto.ui.login.LoginViewModelFactory
 import com.vecto_example.vecto.ui.main.MainActivity
@@ -43,6 +43,7 @@ import com.vecto_example.vecto.utils.SaveLoginDataUtils
 import com.vecto_example.vecto.utils.ShareFeedUtil
 import com.vecto_example.vecto.utils.ToastMessageUtils
 import com.vecto_example.vecto.utils.ToastMessageUtils.errorMessageHandler
+import kotlinx.coroutines.launch
 
 class SearchFragment : Fragment(), MainActivity.ScrollToTop, FeedAdapter.OnFeedActionListener {
     private lateinit var binding: FragmentSearchBinding
@@ -124,7 +125,8 @@ class SearchFragment : Fragment(), MainActivity.ScrollToTop, FeedAdapter.OnFeedA
         /*   Receiver 초기화 함수   */
         notificationReceiver = object : BroadcastReceiver() {
             override fun onReceive(p0: Context?, p1: Intent?) {
-                notificationViewModel.getNewNotificationFlag()
+                if(Auth.loginFlag.value == true)
+                    notificationViewModel.getNewNotificationFlag()
             }
         }
 
@@ -286,33 +288,37 @@ class SearchFragment : Fragment(), MainActivity.ScrollToTop, FeedAdapter.OnFeedA
             }
         }
 
-        searchViewModel.reissueResponse.observe(viewLifecycleOwner) {
-            SaveLoginDataUtils.changeToken(requireContext(), searchViewModel.accessToken, searchViewModel.refreshToken)
+        lifecycleScope.launch {
+            searchViewModel.reissueResponse.collect {
+                SaveLoginDataUtils.changeToken(requireContext(), it.userToken.accessToken, it.userToken.refreshToken)
 
-            when(it){
-                SearchViewModel.Function.GetFeedList.name -> {
-                    getFeed()
-                }
-                SearchViewModel.Function.PostFeedLike.name -> {
-                    searchViewModel.postFollow(searchViewModel.postFollowId)
-                }
-                SearchViewModel.Function.DeleteFeedLike.name -> {
-                    searchViewModel.deleteFeedLike(searchViewModel.deleteFeedLikeId)
-                }
-                SearchViewModel.Function.PostFollow.name -> {
-                    searchViewModel.postFollow(searchViewModel.postFollowId)
-                }
-                SearchViewModel.Function.DeleteFollow.name -> {
-                    searchViewModel.deleteFollow(searchViewModel.deleteFollowId)
+                when(it.function){
+                    SearchViewModel.Function.GetFeedList.name -> {
+                        getFeed()
+                    }
+                    SearchViewModel.Function.PostFeedLike.name -> {
+                        searchViewModel.postFeedLike(searchViewModel.postFeedLikeId)
+                    }
+                    SearchViewModel.Function.DeleteFeedLike.name -> {
+                        searchViewModel.deleteFeedLike(searchViewModel.deleteFeedLikeId)
+                    }
+                    SearchViewModel.Function.PostFollow.name -> {
+                        searchViewModel.postFollow(searchViewModel.postFollowId)
+                    }
+                    SearchViewModel.Function.DeleteFollow.name -> {
+                        searchViewModel.deleteFollow(searchViewModel.deleteFollowId)
+                    }
                 }
             }
         }
 
-        notificationViewModel.reissueResponse.observe(viewLifecycleOwner) {
-            SaveLoginDataUtils.changeToken(requireContext(), searchViewModel.accessToken, searchViewModel.refreshToken)
+        lifecycleScope.launch {
+            notificationViewModel.reissueResponse.collect {
+                SaveLoginDataUtils.changeToken(requireContext(), it.userToken.accessToken, it.userToken.refreshToken)
 
-            if(it == NotificationViewModel.Function.GetNewNotificationFlag.name){
-                notificationViewModel.getNewNotificationFlag()
+                if(it.function == NotificationViewModel.Function.GetNewNotificationFlag.name){
+                    notificationViewModel.getNewNotificationFlag()
+                }
             }
         }
 
@@ -528,6 +534,9 @@ class SearchFragment : Fragment(), MainActivity.ScrollToTop, FeedAdapter.OnFeedA
     }
 
     override fun onItemClick(position: Int) {
+        if(position < 0  || position > searchViewModel.allFeedInfo.lastIndex)
+            return
+
         var subList = searchViewModel.allFeedInfo.subList(position, searchViewModel.allFeedInfo.size)
         if(subList.size > 10) {
             subList = subList.subList(0, 10)

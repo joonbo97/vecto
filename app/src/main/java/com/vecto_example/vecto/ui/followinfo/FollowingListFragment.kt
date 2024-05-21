@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.vecto_example.vecto.R
 import com.vecto_example.vecto.data.repository.TokenRepository
@@ -16,6 +17,7 @@ import com.vecto_example.vecto.ui.followinfo.adapter.FollowListAdapter
 import com.vecto_example.vecto.utils.SaveLoginDataUtils
 import com.vecto_example.vecto.utils.ToastMessageUtils
 import com.vecto_example.vecto.utils.ToastMessageUtils.errorMessageHandler
+import kotlinx.coroutines.launch
 
 class FollowingListFragment : Fragment(), FollowListAdapter.OnFollowActionListener {
     lateinit var binding: FragmentFollowingListBinding
@@ -82,21 +84,25 @@ class FollowingListFragment : Fragment(), FollowListAdapter.OnFollowActionListen
             followListAdapter.actionPosition = -1
         }
 
-        viewModel.reissueResponse.observe(viewLifecycleOwner) {
-            SaveLoginDataUtils.changeToken(requireContext(), viewModel.accessToken, viewModel.refreshToken)
+        lifecycleScope.launch {
+            viewModel.reissueResponse.collect {
+                SaveLoginDataUtils.changeToken(requireContext(), it.userToken.accessToken, it.userToken.refreshToken)
 
-            when(it){
-                FollowInfoViewModel.Function.GetFollowingList.name -> {
-                    viewModel.getFollowingList(viewModel.userId)
-                }
-                FollowInfoViewModel.Function.PostFollow.name -> {
-                    viewModel.postFollow(viewModel.postFollowId)
-                }
-                FollowInfoViewModel.Function.DeleteFollow.name -> {
-                    viewModel.deleteFollow(viewModel.deleteFollowId)
+                when(it.function){
+                    FollowInfoViewModel.Function.GetFollowingList.name -> {
+                        viewModel.getFollowingList(viewModel.userId)
+                    }
+                    FollowInfoViewModel.Function.PostFollow.name -> {
+                        viewModel.postFollow(viewModel.postFollowId)
+                    }
+                    FollowInfoViewModel.Function.DeleteFollow.name -> {
+                        viewModel.deleteFollow(viewModel.deleteFollowId)
+                    }
                 }
             }
         }
+
+
 
         viewModel.errorMessage.observe(viewLifecycleOwner) {
             ToastMessageUtils.showToast(requireContext(), getString(it))
