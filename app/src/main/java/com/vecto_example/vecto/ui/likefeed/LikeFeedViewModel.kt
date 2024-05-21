@@ -38,10 +38,15 @@ class LikeFeedViewModel(private val feedRepository: FeedRepository, private val 
     var postFollowId = ""
     var deleteFollowId = ""
 
+    lateinit var newFeedInfoWithFollow: List<VectoService.FeedInfoWithFollow>
+    lateinit var feedPageResponse: VectoService.FeedPageResponse
+
     /*   게시글 정보   */
     var nextPage: Int = 0
     var lastPage: Boolean = false
     var followPage: Boolean = true
+
+
 
     private val _feedInfoLiveData = MutableLiveData<VectoService.FeedPageResponse>()
     val feedInfoLiveData: LiveData<VectoService.FeedPageResponse> = _feedInfoLiveData
@@ -80,7 +85,7 @@ class LikeFeedViewModel(private val feedRepository: FeedRepository, private val 
     val deleteFollowError: LiveData<String> = _deleteFollowError
 
     enum class Function {
-        GetLikeFeedList, PostFeedLike, DeleteFeedLike, PostFollow, DeleteFollow
+        GetLikeFeedList, PostFeedLike, DeleteFeedLike, PostFollow, DeleteFollow, CheckFollow
     }
 
 
@@ -144,7 +149,9 @@ class LikeFeedViewModel(private val feedRepository: FeedRepository, private val 
 
     }
 
-    private fun checkFollow(newFeedInfoWithFollow: List<VectoService.FeedInfoWithFollow>, feedPageResponse: VectoService.FeedPageResponse){
+    fun checkFollow(newFeedInfoWithFollow: List<VectoService.FeedInfoWithFollow>, feedPageResponse: VectoService.FeedPageResponse){
+        this.newFeedInfoWithFollow = newFeedInfoWithFollow
+        this.feedPageResponse = feedPageResponse
 
         val userIdList = newFeedInfoWithFollow.map {
             it.feedInfo.userId
@@ -167,6 +174,11 @@ class LikeFeedViewModel(private val feedRepository: FeedRepository, private val 
                 _feedInfoLiveData.postValue(feedPageResponse)
 
             }.onFailure {
+                if(it.message == ServerResponse.ACCESS_TOKEN_INVALID_ERROR.code){
+                    reissueToken(Function.CheckFollow.name)
+                    return@launch
+                }
+
                 if(firstFlag) {
                     allFeedInfo = newFeedInfoWithFollow.toMutableList()
                 } else {

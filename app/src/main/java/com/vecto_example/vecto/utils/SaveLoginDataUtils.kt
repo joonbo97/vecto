@@ -57,22 +57,12 @@ class SaveLoginDataUtils {
 
             val editor = sharedPreferences.edit()
 
-            // 기존 정보 삭제
             editor.apply {
                 remove("accessToken")
                 remove("refreshToken")
                 putString("accessToken", accessToken)
                 putString("refreshToken", refreshToken)
             }.commit()
-
-            editor.remove("accessToken")
-            editor.remove("refreshToken")
-
-            // 새로운 정보 저장
-            editor.putString("accessToken", Auth.accessToken)
-            editor.putString("refreshToken", Auth.refreshToken)
-
-            editor.apply()
         }
     }
 }

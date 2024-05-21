@@ -166,6 +166,9 @@ class OneFeedActivity : AppCompatActivity(), FeedAdapter.OnFeedActionListener {
                     SearchViewModel.Function.DeleteFollow.name -> {
                         viewModel.deleteFollow(viewModel.deleteFollowId)
                     }
+                    SearchViewModel.Function.CheckFollow.name -> {
+                        viewModel.checkFollow(viewModel.newFeedInfoWithFollow, viewModel.feedPageResponse)
+                    }
                 }
             }
         }

@@ -22,7 +22,7 @@ class CommentRepository(private val vectoService: VectoService) {
                 val gson = Gson()
                 val errorResponse: VectoService.VectoResponse<*>? = gson.fromJson(errorBody, VectoService.VectoResponse::class.java)
 
-                Log.d("getCommentList", "FAIL: ${response.errorBody()}")
+                Log.d("getCommentList", "FAIL: $errorBody")
                 Result.failure(Exception(errorResponse!!.code))
             }
         } catch (e: Exception) {
@@ -47,7 +47,7 @@ class CommentRepository(private val vectoService: VectoService) {
                 val gson = Gson()
                 val errorResponse: VectoService.VectoResponse<*>? = gson.fromJson(errorBody, VectoService.VectoResponse::class.java)
 
-                Log.d("getPersonalCommentList", "FAIL: ${response.errorBody()}")
+                Log.d("getPersonalCommentList", "FAIL: $errorBody")
                 Result.failure(Exception(errorResponse!!.code))
             }
         } catch (e: Exception) {
@@ -66,8 +66,12 @@ class CommentRepository(private val vectoService: VectoService) {
                 Log.d("addComment", "SUCCESS")
                 Result.success("SUCCESS")
             } else {
-                Log.d("addComment", "FAIL : ${response.errorBody()}")
-                Result.failure(Exception("FAIL"))
+                val errorBody = response.errorBody()?.string()
+                val gson = Gson()
+                val errorResponse: VectoService.VectoResponse<*>? = gson.fromJson(errorBody, VectoService.VectoResponse::class.java)
+
+                Log.d("addComment", "FAIL: $errorBody")
+                Result.failure(Exception(errorResponse!!.code))
             }
         } catch (e: Exception) {
             Log.e("addComment", "ERROR", e)
@@ -88,7 +92,7 @@ class CommentRepository(private val vectoService: VectoService) {
                 val gson = Gson()
                 val errorResponse: VectoService.VectoResponse<*>? = gson.fromJson(errorBody, VectoService.VectoResponse::class.java)
 
-                Log.d("sendCommentLike", "FAIL: ${response.errorBody()}")
+                Log.d("sendCommentLike", "FAIL: $errorBody")
                 Result.failure(Exception(errorResponse!!.code))
             }
 
@@ -112,7 +116,7 @@ class CommentRepository(private val vectoService: VectoService) {
                 val gson = Gson()
                 val errorResponse: VectoService.VectoResponse<*>? = gson.fromJson(errorBody, VectoService.VectoResponse::class.java)
 
-                Log.d("cancelCommentLike", "FAIL: ${response.errorBody()}")
+                Log.d("cancelCommentLike", "FAIL: $errorBody")
                 Result.failure(Exception(errorResponse!!.code))
             }
 
@@ -136,7 +140,7 @@ class CommentRepository(private val vectoService: VectoService) {
                 val gson = Gson()
                 val errorResponse: VectoService.VectoResponse<*>? = gson.fromJson(errorBody, VectoService.VectoResponse::class.java)
 
-                Log.d("updateComment", "FAIL: ${response.errorBody()}")
+                Log.d("updateComment", "FAIL: $errorBody")
                 Result.failure(Exception(errorResponse!!.code))
             }
 
@@ -161,7 +165,7 @@ class CommentRepository(private val vectoService: VectoService) {
                 val gson = Gson()
                 val errorResponse: VectoService.VectoResponse<*>? = gson.fromJson(errorBody, VectoService.VectoResponse::class.java)
 
-                Log.d("deleteComment", "FAIL: ${response.errorBody()}")
+                Log.d("deleteComment", "FAIL: $errorBody")
                 Result.failure(Exception(errorResponse!!.code))
             }
 

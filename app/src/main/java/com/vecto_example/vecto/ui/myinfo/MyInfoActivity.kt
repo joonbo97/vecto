@@ -1,7 +1,6 @@
 package com.vecto_example.vecto.ui.myinfo
 
 import android.app.Activity
-import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -28,7 +27,6 @@ import com.vecto_example.vecto.dialog.DeleteDialog
 import com.vecto_example.vecto.retrofit.VectoService
 import com.vecto_example.vecto.utils.LoadImageUtils
 import com.vecto_example.vecto.utils.SaveLoginDataUtils
-import com.vecto_example.vecto.utils.ServerResponse
 import com.vecto_example.vecto.utils.ToastMessageUtils
 import com.yalantis.ucrop.UCrop
 import kotlinx.coroutines.launch

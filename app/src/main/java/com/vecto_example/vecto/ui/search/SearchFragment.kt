@@ -308,6 +308,9 @@ class SearchFragment : Fragment(), MainActivity.ScrollToTop, FeedAdapter.OnFeedA
                     SearchViewModel.Function.DeleteFollow.name -> {
                         searchViewModel.deleteFollow(searchViewModel.deleteFollowId)
                     }
+                    SearchViewModel.Function.CheckFollow.name -> {
+                        searchViewModel.checkFollow(searchViewModel.newFeedInfoWithFollow, searchViewModel.feedPageResponse)
+                    }
                 }
             }
         }

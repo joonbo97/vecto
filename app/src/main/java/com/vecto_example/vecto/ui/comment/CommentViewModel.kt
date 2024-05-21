@@ -97,6 +97,7 @@ class CommentViewModel(private val repository: CommentRepository, private val to
             }.onFailure {
                 if(it.message == ServerResponse.ACCESS_TOKEN_INVALID_ERROR.code){
                     reissueToken(Function.GetCommentList.name)
+                    return@launch
                 }
 
                 _commentErrorLiveData.value = commentListResponse
@@ -114,6 +115,7 @@ class CommentViewModel(private val repository: CommentRepository, private val to
             addCommentResponse.onFailure {
                 if(it.message == ServerResponse.ACCESS_TOKEN_INVALID_ERROR.code){
                     reissueToken(Function.AddComment.name)
+                    return@launch
                 }
             }
 
@@ -133,6 +135,7 @@ class CommentViewModel(private val repository: CommentRepository, private val to
             sendCommentLikeResponse.onFailure {
                 if(it.message == ServerResponse.ACCESS_TOKEN_INVALID_ERROR.code){
                     reissueToken(Function.SendCommentLike.name)
+                    return@launch
                 }
             }
 
@@ -152,6 +155,7 @@ class CommentViewModel(private val repository: CommentRepository, private val to
             cancelCommentLikeResponse.onFailure {
                 if(it.message == ServerResponse.ACCESS_TOKEN_INVALID_ERROR.code){
                     reissueToken(Function.CancelCommentLike.name)
+                    return@launch
                 }
             }
 
@@ -169,6 +173,7 @@ class CommentViewModel(private val repository: CommentRepository, private val to
             updateCommentResponse.onFailure {
                 if(it.message == ServerResponse.ACCESS_TOKEN_INVALID_ERROR.code){
                     reissueToken(Function.UpdateComment.name)
+                    return@launch
                 }
             }
 
@@ -188,6 +193,7 @@ class CommentViewModel(private val repository: CommentRepository, private val to
             deleteCommentResponse.onFailure {
                 if(it.message == ServerResponse.ACCESS_TOKEN_INVALID_ERROR.code){
                     reissueToken(Function.DeleteComment.name)
+                    return@launch
                 }
             }
 

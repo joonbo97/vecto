@@ -47,6 +47,9 @@ class FeedDetailViewModel(private val repository: FeedRepository, private val us
     var postFollowId = ""
     var deleteFollowId = ""
 
+    lateinit var newFeedInfoWithFollow: List<VectoService.FeedInfoWithFollow>
+    lateinit var feedPageResponse: VectoService.FeedPageResponse
+
     /*   게시글 정보   */
     var nextPage: Int = 0
     var lastPage: Boolean = false
@@ -85,7 +88,7 @@ class FeedDetailViewModel(private val repository: FeedRepository, private val us
     val deleteFollowError: LiveData<String> = _deleteFollowError
 
     enum class Function {
-        GetFeedList, PostFeedLike, DeleteFeedLike, PostFollow, DeleteFollow
+        GetFeedList, PostFeedLike, DeleteFeedLike, PostFollow, DeleteFollow, CheckFollow
     }
 
     fun startLoading(){
@@ -180,7 +183,9 @@ class FeedDetailViewModel(private val repository: FeedRepository, private val us
         }
     }
 
-    private fun checkFollow(newFeedInfoWithFollow: List<VectoService.FeedInfoWithFollow>, feedPageResponse: VectoService.FeedPageResponse){
+    fun checkFollow(newFeedInfoWithFollow: List<VectoService.FeedInfoWithFollow>, feedPageResponse: VectoService.FeedPageResponse){
+        this.newFeedInfoWithFollow = newFeedInfoWithFollow
+        this.feedPageResponse = feedPageResponse
 
         if(Auth.loginFlag.value == true){
             val userIdList = newFeedInfoWithFollow.map {
@@ -201,6 +206,11 @@ class FeedDetailViewModel(private val repository: FeedRepository, private val us
 
                     endLoading()
                 }.onFailure {
+                    if(it.message == ServerResponse.ACCESS_TOKEN_INVALID_ERROR.code){
+                        reissueToken(Function.CheckFollow.name)
+                        return@launch
+                    }
+
                     allFeedInfo.addAll(newFeedInfoWithFollow)
                     _feedInfoLiveData.postValue(feedPageResponse)
 

@@ -352,6 +352,9 @@ class FeedDetailActivity : AppCompatActivity(), OnMapReadyCallback, MyFeedDetail
                     FeedDetailViewModel.Function.DeleteFollow.name -> {
                         viewModel.deleteFollow(viewModel.deleteFollowId)
                     }
+                    FeedDetailViewModel.Function.CheckFollow.name -> {
+                        viewModel.checkFollow(viewModel.newFeedInfoWithFollow, viewModel.feedPageResponse)
+                    }
                 }
             }
         }

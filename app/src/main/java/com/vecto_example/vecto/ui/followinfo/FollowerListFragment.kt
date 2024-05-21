@@ -13,7 +13,6 @@ import com.vecto_example.vecto.data.repository.TokenRepository
 import com.vecto_example.vecto.data.repository.UserRepository
 import com.vecto_example.vecto.databinding.FragmentFollowerListBinding
 import com.vecto_example.vecto.retrofit.VectoService
-import com.vecto_example.vecto.ui.detail.FeedDetailViewModel
 import com.vecto_example.vecto.ui.followinfo.adapter.FollowListAdapter
 import com.vecto_example.vecto.utils.SaveLoginDataUtils
 import com.vecto_example.vecto.utils.ToastMessageUtils

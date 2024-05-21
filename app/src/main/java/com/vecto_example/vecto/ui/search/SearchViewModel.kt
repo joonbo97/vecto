@@ -45,6 +45,9 @@ class SearchViewModel(private val repository: FeedRepository, private val userRe
     var postFollowId = ""
     var deleteFollowId = ""
 
+    lateinit var newFeedInfoWithFollow: List<VectoService.FeedInfoWithFollow>
+    lateinit var feedPageResponse: VectoService.FeedPageResponse
+
     /*   게시글 정보   */
     var nextPage: Int = 0
     var lastPage: Boolean = false
@@ -90,7 +93,7 @@ class SearchViewModel(private val repository: FeedRepository, private val userRe
     val deleteFollowError: LiveData<String> = _deleteFollowError
 
     enum class Function {
-        GetFeedList, PostFeedLike, DeleteFeedLike, PostFollow, DeleteFollow
+        GetFeedList, PostFeedLike, DeleteFeedLike, PostFollow, DeleteFollow, CheckFollow
     }
 
     private fun startLoading(){
@@ -200,8 +203,10 @@ class SearchViewModel(private val repository: FeedRepository, private val userRe
         }
     }
 
-    private fun checkFollow(newFeedInfoWithFollow: List<VectoService.FeedInfoWithFollow>, feedPageResponse: VectoService.FeedPageResponse){
+    fun checkFollow(newFeedInfoWithFollow: List<VectoService.FeedInfoWithFollow>, feedPageResponse: VectoService.FeedPageResponse){
         Log.d("SearchViewModel", "checkFollow")
+        this.newFeedInfoWithFollow = newFeedInfoWithFollow
+        this.feedPageResponse = feedPageResponse
 
         if(Auth.loginFlag.value == true){
             val userIdList = newFeedInfoWithFollow.map {
@@ -226,6 +231,11 @@ class SearchViewModel(private val repository: FeedRepository, private val userRe
 
                     endLoading()
                 }.onFailure {
+                    if(it.message == ServerResponse.ACCESS_TOKEN_INVALID_ERROR.code){
+                        reissueToken(Function.CheckFollow.name)
+                        return@launch
+                    }
+
                     if(firstFlag) {
                         allFeedInfo = newFeedInfoWithFollow.toMutableList()
                     } else {

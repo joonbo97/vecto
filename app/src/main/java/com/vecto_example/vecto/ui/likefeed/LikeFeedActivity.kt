@@ -181,6 +181,9 @@ class LikeFeedActivity : AppCompatActivity(), FeedAdapter.OnFeedActionListener {
                     LikeFeedViewModel.Function.DeleteFollow.name -> {
                         likeFeedViewModel.deleteFollow(likeFeedViewModel.deleteFollowId)
                     }
+                    LikeFeedViewModel.Function.CheckFollow.name -> {
+                        likeFeedViewModel.checkFollow(likeFeedViewModel.newFeedInfoWithFollow, likeFeedViewModel.feedPageResponse)
+                    }
                 }
             }
         }
