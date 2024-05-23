@@ -48,4 +48,25 @@ class NoticeRepository (private val vectoService: VectoService) {
             Result.failure(Exception("ERROR"))
         }
     }
+
+    suspend fun getNewNotice(): Result<VectoService.NoticeResponse>{
+        return try {
+            val response = vectoService.getNewNotice()
+
+            if(response.isSuccessful) {
+                Log.d("getNewNotice", "SUCCESS: ${response.body()?.result}")
+                Result.success(response.body()?.result!!)
+            } else {
+                val errorBody = response.errorBody()?.string()
+                val gson = Gson()
+                val errorResponse: VectoService.VectoResponse<*>? = gson.fromJson(errorBody, VectoService.VectoResponse::class.java)
+
+                Log.d("getNewNotice", "FAIL: $errorBody")
+                Result.failure(Exception(errorResponse?.code))
+            }
+        }  catch (e: Exception) {
+            Log.d("getNewNotice", "ERROR: ${e.message}")
+            Result.failure(Exception("ERROR"))
+        }
+    }
 }

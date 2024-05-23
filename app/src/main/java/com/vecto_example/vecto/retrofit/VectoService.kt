@@ -316,6 +316,9 @@ interface VectoService {
         @Path("noticeId") noticeId: Int
     ): Response<VectoResponse<NoticeResponse>>
 
+    @GET("notice/latest")
+    suspend fun getNewNotice(): Response<VectoResponse<NoticeResponse>>
+
 
 
 

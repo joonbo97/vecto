@@ -56,6 +56,8 @@ class SearchFragment : Fragment(), MainActivity.ScrollToTop, FeedAdapter.OnFeedA
         NotificationViewModelFactory(NotificationRepository(VectoService.create()), TokenRepository(VectoService.create()))
     }
 
+
+
     private lateinit var loginViewModel: LoginViewModel
 
     private lateinit var feedAdapter: FeedAdapter
@@ -497,6 +499,18 @@ class SearchFragment : Fragment(), MainActivity.ScrollToTop, FeedAdapter.OnFeedA
         binding.NoneText.visibility = View.VISIBLE
     }
 
+    private fun showNotice(){
+        binding.noticeBarImage.visibility = View.VISIBLE
+        binding.noticeText.visibility = View.VISIBLE
+        binding.noticeDeleteIcon.visibility = View.VISIBLE
+    }
+
+    private fun hideNotice(){
+        binding.noticeBarImage.visibility = View.GONE
+        binding.noticeText.visibility = View.GONE
+        binding.noticeDeleteIcon.visibility = View.GONE
+    }
+
 
 
     /*   Adapter CallBack 관련   */
@@ -591,7 +605,5 @@ class SearchFragment : Fragment(), MainActivity.ScrollToTop, FeedAdapter.OnFeedA
 
         callBack.remove()
     }
-
-
 
 }
