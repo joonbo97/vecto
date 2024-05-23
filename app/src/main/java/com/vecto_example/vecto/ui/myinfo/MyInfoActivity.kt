@@ -165,7 +165,7 @@ class MyInfoActivity : AppCompatActivity() {
             updateUserInfo()
         }
 
-        binding.cancellationButton.setOnClickListener {
+        binding.cancellationButtonText.setOnClickListener {
             val deleteDialog = DeleteDialog(this, DeleteDialog.ACCOUNT)
             deleteDialog.showDialog()
             deleteDialog.onOkButtonClickListener = {

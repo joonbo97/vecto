@@ -146,6 +146,67 @@
                 app:layout_constraintEnd_toEndOf="@+id/Qcontent"
                 app:layout_constraintTop_toBottomOf="@+id/Qcontent" />
 
+
+
+
+
+            <ImageView
+                android:id="@+id/QueryBox2"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_marginStart="10dp"
+                android:layout_marginTop="15dp"
+                android:layout_marginEnd="10dp"
+                android:layout_marginBottom="-10dp"
+                android:foreground="@drawable/ripple_normal_box"
+                app:layout_constraintBottom_toBottomOf="@+id/Qcontent2"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.5"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/QueryBox1" />
+
+            <TextView
+                android:id="@+id/Qtitle2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:layout_marginTop="15dp"
+                android:fontFamily="@font/lineseedkr_bd"
+                android:text="Q"
+                android:textColor="@color/vecto_pathcolor"
+                android:textSize="18sp"
+                app:layout_constraintStart_toStartOf="@+id/QueryBox2"
+                app:layout_constraintTop_toTopOf="@+id/QueryBox2" />
+
+            <TextView
+                android:id="@+id/Qtext2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="5dp"
+                android:layout_marginTop="15dp"
+                android:fontFamily="@font/lineseedkr_bd"
+                android:text="알림이 수신되지 않아요."
+                android:textColor="@color/black"
+                android:textSize="18sp"
+                app:layout_constraintStart_toEndOf="@+id/Qtitle2"
+                app:layout_constraintTop_toTopOf="@+id/QueryBox2" />
+
+            <TextView
+                android:id="@+id/Qcontent2"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:layout_marginEnd="20dp"
+                android:fontFamily="@font/lineseedkr_rg"
+                android:lineSpacingExtra="3dp"
+                android:text=" 알림을 수신하기 위해 알림 권한 설정이 필요합니다. \n설정 > 애플케이션 > VECTO > 권한에서 알림 권한이 허용되어있는지 확인해주세요."
+                android:textColor="@color/black"
+                android:textSize="15sp"
+                android:visibility="gone"
+                app:layout_constraintEnd_toEndOf="@id/QueryBox2"
+                app:layout_constraintStart_toStartOf="@+id/Qtitle2"
+                app:layout_constraintTop_toBottomOf="@+id/Qtitle2" />
+
             <TextView
                 android:id="@+id/Text2"
                 android:layout_width="wrap_content"
@@ -158,7 +219,7 @@
                 android:textColor="@color/vecto_gray"
                 android:textSize="12sp"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/QueryBox1" />
+                app:layout_constraintTop_toBottomOf="@+id/QueryBox2" />
 
             <ImageView
                 android:id="@+id/contractTextBox"

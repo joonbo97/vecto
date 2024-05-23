@@ -23,6 +23,7 @@ import com.vecto_example.vecto.ui.followinfo.FollowInfoActivity
 import com.vecto_example.vecto.ui.likefeed.LikeFeedActivity
 import com.vecto_example.vecto.ui.myfeed.MyFeedActivity
 import com.vecto_example.vecto.ui.myinfo.MyInfoActivity
+import com.vecto_example.vecto.ui.notice.NoticeActivity
 import com.vecto_example.vecto.ui.userinfo.UserInfoViewModel
 import com.vecto_example.vecto.ui.userinfo.UserInfoViewModelFactory
 import com.vecto_example.vecto.utils.LoadImageUtils
@@ -113,6 +114,12 @@ class MypageFragment : Fragment() {
         /*   문의하기   */
         binding.MypageMenu4.setOnClickListener {
             val intent = Intent(context, InquiryActivity::class.java)
+            startActivity(intent)
+        }
+
+        /*   문의하기   */
+        binding.myPageNoticeMenu.setOnClickListener {
+            val intent = Intent(context, NoticeActivity::class.java)
             startActivity(intent)
         }
 

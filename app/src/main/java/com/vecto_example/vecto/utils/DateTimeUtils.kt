@@ -44,5 +44,37 @@ class DateTimeUtils {
                 false
             }
         }
+
+        fun getNoticeTime(inputDate: String): String? {
+            val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault())
+            val outputFormat = SimpleDateFormat("yyyy-MM-dd hh:mm", Locale.getDefault())
+
+            return try {
+                val date = inputFormat.parse(inputDate)
+                date?.let { outputFormat.format(it) }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                ""
+            }
+        }
+
+        fun isNewNotice(inputDate: String): Boolean {
+            val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault())
+
+            return try {
+                val date = inputFormat.parse(inputDate)
+                date?.let {
+                    val today = Calendar.getInstance()
+                    val threeDaysAgo = Calendar.getInstance().apply {
+                        add(Calendar.DAY_OF_YEAR, -3)  // 과거 3일 전으로 설정
+                    }
+                    // 날짜가 오늘보다 이전이면서 과거 3일 전 이후인지 확인
+                    it.before(today.time) && it.after(threeDaysAgo.time)
+                } ?: false
+            } catch (e: Exception) {
+                e.printStackTrace()
+                false
+            }
+        }
     }
 }

@@ -308,6 +308,14 @@ interface VectoService {
         @Query("page") page: Int
     ): Response<VectoResponse<NotificationResponse>>
 
+    @GET("notice")
+    suspend fun getNoticeList(): Response<VectoResponse<List<NoticeListResponse>>>
+
+    @GET("notice/{noticeId}")
+    suspend fun getNotice(
+        @Path("noticeId") noticeId: Int
+    ): Response<VectoResponse<NoticeResponse>>
+
 
 
 
@@ -504,6 +512,19 @@ interface VectoService {
         var relation: String,
         val profileUrl: String,
         val nickName: String
+    )
+
+    data class NoticeListResponse(
+        val id: Int,
+        val title: String,
+        val createdAt: String
+    )
+
+    data class NoticeResponse(
+        val id: Int,
+        val title: String,
+        val content: String,
+        val createdAt: String
     )
 
 }

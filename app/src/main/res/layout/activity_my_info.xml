@@ -156,6 +156,8 @@
         android:background="@null"
         android:ellipsize="end"
         android:ems="20"
+        android:paddingTop="10dp"
+        android:paddingBottom="10dp"
         android:fontFamily="@font/lineseedkr_rg"
         android:inputType="text"
         android:maxLines="1"
@@ -227,6 +229,8 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="20dp"
         android:layout_marginEnd="20dp"
+        android:paddingTop="10dp"
+        android:paddingBottom="10dp"
         android:background="@null"
         android:ellipsize="end"
         android:ems="20"
@@ -277,6 +281,8 @@
         android:layout_marginEnd="20dp"
         android:background="@null"
         android:ems="20"
+        android:paddingTop="10dp"
+        android:paddingBottom="10dp"
         android:hint="비밀번호"
         android:inputType="textPassword"
         android:textSize="15sp"
@@ -322,6 +328,8 @@
         android:layout_marginEnd="20dp"
         android:background="@null"
         android:ems="20"
+        android:paddingTop="10dp"
+        android:paddingBottom="10dp"
         android:hint="비밀번호확인"
         android:inputType="textPassword"
         android:textSize="15sp"
@@ -362,31 +370,18 @@
         app:layout_constraintTop_toTopOf="@+id/WriteDoneButton"
         app:layout_constraintVertical_bias="0.53" />
 
-    <ImageView
-        android:id="@+id/cancellationButton"
-        android:layout_width="100dp"
-        android:layout_height="40dp"
-        android:layout_marginEnd="20dp"
-        android:layout_marginTop="50dp"
-        android:foreground="@drawable/ripple_gray_large_box"
-        app:backgroundTint="@null"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/WriteDoneButton"/>
-
     <TextView
         android:id="@+id/cancellationButtonText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:fontFamily="@font/lineseedkr_bd"
-        android:text="계정 삭제"
-        android:textColor="@color/white"
+        android:text="@string/delete_account_text"
+        android:textColor="@color/edit_course_gray"
         android:textSize="13sp"
-        app:layout_constraintBottom_toBottomOf="@+id/cancellationButton"
-        app:layout_constraintEnd_toEndOf="@+id/cancellationButton"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="@+id/cancellationButton"
-        app:layout_constraintTop_toTopOf="@+id/cancellationButton"
-        app:layout_constraintVertical_bias="0.53" />
+        android:layout_marginEnd="40dp"
+        android:layout_marginTop="50dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/WriteDoneButton" />
 
     <ProgressBar
         android:id="@+id/progressBar"

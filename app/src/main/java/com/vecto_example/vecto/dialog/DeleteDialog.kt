@@ -2,6 +2,7 @@ package com.vecto_example.vecto.dialog
 
 import android.app.Dialog
 import android.content.Context
+import android.view.Gravity
 import android.view.WindowManager
 import android.widget.ImageView
 import android.widget.TextView
@@ -38,7 +39,10 @@ class DeleteDialog(context: Context, val type: Int) {
             }
 
             ACCOUNT -> {
+                dialog.findViewById<ImageView>(R.id.DialogImage).setImageResource(R.drawable.delete_sad_image)
                 dialog.findViewById<TextView>(R.id.Guide_TextView).setText(R.string.delete_account_dialog)
+                dialog.findViewById<TextView>(R.id.Guide_TextView).setTextColor(dialog.context.getColor(R.color.edit_course_gray))
+                dialog.findViewById<TextView>(R.id.Guide_TextView).gravity = Gravity.START
             }
         }
 

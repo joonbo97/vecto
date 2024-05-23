@@ -43,6 +43,14 @@ class InquiryActivity : AppCompatActivity() {
             }
         }
 
+        binding.QueryBox2.setOnClickListener {
+            if(binding.Qcontent2.visibility == View.VISIBLE){
+                binding.Qcontent2.visibility = View.GONE
+            } else {
+                binding.Qcontent2.visibility = View.VISIBLE
+            }
+        }
+
         binding.SendLogText.setOnClickListener {
             sendDatabaseByEmail(this, "log_database")
         }

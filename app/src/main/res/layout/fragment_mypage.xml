@@ -372,7 +372,7 @@
         app:layout_constraintVertical_bias="0.5" />
 
     <ImageView
-        android:id="@+id/MypageMenu5"
+        android:id="@+id/myPageNoticeMenu"
         android:layout_width="match_parent"
         android:layout_height="60dp"
         android:layout_marginStart="10dp"
@@ -384,6 +384,57 @@
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/MypageMenu4" />
+
+    <ImageView
+        android:id="@+id/myPageNoticeIcon"
+        android:layout_width="18dp"
+        android:layout_height="18dp"
+        android:layout_marginStart="20dp"
+        app:layout_constraintBottom_toBottomOf="@+id/myPageNoticeMenu"
+        app:layout_constraintStart_toStartOf="@+id/myPageNoticeMenu"
+        app:layout_constraintTop_toTopOf="@+id/myPageNoticeMenu"
+        app:layout_constraintVertical_bias="0.5"
+        app:srcCompat="@drawable/mypage_notice_icon" />
+
+    <TextView
+        android:id="@+id/myPageNoticeText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:fontFamily="@font/lineseedkr_bd"
+        android:text="공지사항"
+        android:textColor="@color/black"
+        android:textSize="15sp"
+        app:layout_constraintBottom_toBottomOf="@+id/myPageNoticeMenu"
+        app:layout_constraintStart_toEndOf="@+id/myPageNoticeIcon"
+        app:layout_constraintTop_toTopOf="@+id/myPageNoticeMenu"
+        app:layout_constraintVertical_bias="0.53" />
+
+
+    <ImageView
+        android:id="@+id/myPageNoticeImage"
+        android:layout_width="15dp"
+        android:layout_height="15dp"
+        android:layout_marginEnd="30dp"
+        android:src="@drawable/mypage_item_icon"
+        app:layout_constraintBottom_toBottomOf="@+id/myPageNoticeMenu"
+        app:layout_constraintEnd_toEndOf="@+id/myPageNoticeMenu"
+        app:layout_constraintTop_toTopOf="@+id/myPageNoticeMenu"
+        app:layout_constraintVertical_bias="0.5" />
+
+    <ImageView
+        android:id="@+id/MypageMenu5"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="15dp"
+        android:layout_marginEnd="10dp"
+        android:layout_marginBottom="15dp"
+        android:background="@drawable/ripple_normal_box"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/myPageNoticeMenu" />
 
     <ImageView
         android:id="@+id/MyPageLogoutIcon"
