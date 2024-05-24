@@ -2,10 +2,12 @@ package com.vecto_example.vecto.ui.followinfo.adapter
 
 import android.content.Intent
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.vecto_example.vecto.R
+import com.vecto_example.vecto.data.Auth
 import com.vecto_example.vecto.databinding.FollowUserlistLitemBinding
 import com.vecto_example.vecto.retrofit.VectoService
 import com.vecto_example.vecto.ui.userinfo.UserInfoActivity
@@ -36,6 +38,11 @@ class FollowListAdapter(): RecyclerView.Adapter<FollowListAdapter.ViewHolder>() 
             else
                 setFollowButton(false)
 
+            if(followUser.userId == Auth.userId.value)
+                setFollowVisibility(false)
+            else
+                setFollowVisibility(true)
+
             itemView.setOnClickListener {
                 val intent = Intent(itemView.context, UserInfoActivity::class.java)
                 intent.putExtra("userId", followUser.userId)
@@ -62,6 +69,13 @@ class FollowListAdapter(): RecyclerView.Adapter<FollowListAdapter.ViewHolder>() 
                 binding.ButtonText.text = "팔로우"
                 binding.ButtonText.setTextColor(ContextCompat.getColor(itemView.context, R.color.white))
             }
+        }
+
+        private fun setFollowVisibility(flag: Boolean) {
+            val visibility = if(flag) View.VISIBLE else View.GONE
+
+            binding.FollowButton.visibility = visibility
+            binding.ButtonText.visibility = visibility
         }
     }
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {

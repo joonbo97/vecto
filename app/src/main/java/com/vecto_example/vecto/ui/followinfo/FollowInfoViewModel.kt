@@ -6,9 +6,11 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.vecto_example.vecto.R
+import com.vecto_example.vecto.data.Auth
 import com.vecto_example.vecto.data.repository.TokenRepository
 import com.vecto_example.vecto.data.repository.UserRepository
 import com.vecto_example.vecto.retrofit.VectoService
+import com.vecto_example.vecto.ui.likefeed.LikeFeedViewModel
 import com.vecto_example.vecto.utils.ServerResponse
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -31,6 +33,9 @@ class FollowInfoViewModel(private val repository: UserRepository, private val to
     var postFollowId = ""
     var deleteFollowId = ""
 
+    var followIdList = mutableListOf<String>()
+    var followList = mutableListOf<VectoService.FollowList>()
+
     //팔로우 요청
     private val _postFollowResult = MutableLiveData<Boolean>()
     val postFollowResult: LiveData<Boolean> = _postFollowResult
@@ -50,7 +55,7 @@ class FollowInfoViewModel(private val repository: UserRepository, private val to
     val deleteFollowError: LiveData<String> = _deleteFollowError
 
     enum class Function {
-        GetFollowerList, GetFollowingList, PostFollow, DeleteFollow
+        GetFollowerList, GetFollowingList, PostFollow, DeleteFollow, SetFollowRelation
     }
 
     private fun startLoading(){
@@ -76,9 +81,20 @@ class FollowInfoViewModel(private val repository: UserRepository, private val to
             val followerResponse = repository.getFollowerList(userId)
 
             followerResponse.onSuccess {
-                _followListResponse.value = it
+                if(Auth.loginFlag.value == false || Auth.userId.value == userId) {
+                    _followListResponse.postValue(it)
+                    endLoading()
+                }
+                else {
+                    followIdList.clear()
+                    it.followRelations.forEach { followList ->
+                        followIdList.add(followList.userId)
+                    }
+                    followList.clear()
+                    followList.addAll(it.followRelations)
 
-                endLoading()
+                    setFollowRelation()
+                }
             }.onFailure {
                 when(it.message){
                     ServerResponse.ACCESS_TOKEN_INVALID_ERROR.code -> {
@@ -95,6 +111,32 @@ class FollowInfoViewModel(private val repository: UserRepository, private val to
                 }
 
                 endLoading()
+            }
+        }
+    }
+
+    fun setFollowRelation() {
+        viewModelScope.launch {
+            val followResponse = repository.getFollowRelation(followIdList)
+
+            followResponse.onSuccess { followStatuses ->
+
+                for(i in 0 until followStatuses.followRelations.size){
+                    followList[i].relation = followStatuses.followRelations[i].relation
+                }
+
+                val followResponseList = VectoService.FollowListResponse(followList)
+                _followListResponse.postValue(followResponseList)
+
+                endLoading()
+            }.onFailure {
+                if(it.message == ServerResponse.ACCESS_TOKEN_INVALID_ERROR.code){
+                    reissueToken(Function.SetFollowRelation.name)
+                    return@launch
+                } else {
+                    endLoading()
+                }
+
             }
         }
     }

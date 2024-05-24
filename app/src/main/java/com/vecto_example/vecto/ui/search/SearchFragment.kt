@@ -25,6 +25,7 @@ import com.vecto_example.vecto.ui.notification.NotificationActivity
 import com.vecto_example.vecto.R
 import com.vecto_example.vecto.data.Auth
 import com.vecto_example.vecto.data.repository.FeedRepository
+import com.vecto_example.vecto.data.repository.NoticeRepository
 import com.vecto_example.vecto.data.repository.NotificationRepository
 import com.vecto_example.vecto.data.repository.TokenRepository
 import com.vecto_example.vecto.data.repository.UserRepository
@@ -34,6 +35,7 @@ import com.vecto_example.vecto.ui.detail.FeedDetailActivity
 import com.vecto_example.vecto.ui.login.LoginViewModel
 import com.vecto_example.vecto.ui.login.LoginViewModelFactory
 import com.vecto_example.vecto.ui.main.MainActivity
+import com.vecto_example.vecto.ui.notice.NoticeActivity
 import com.vecto_example.vecto.ui.notification.NotificationViewModel
 import com.vecto_example.vecto.ui.notification.NotificationViewModelFactory
 import com.vecto_example.vecto.ui.search.adapter.FeedAdapter
@@ -54,6 +56,10 @@ class SearchFragment : Fragment(), MainActivity.ScrollToTop, FeedAdapter.OnFeedA
     }
     private val notificationViewModel: NotificationViewModel by viewModels {
         NotificationViewModelFactory(NotificationRepository(VectoService.create()), TokenRepository(VectoService.create()))
+    }
+
+    private val newNoticeViewModel: NewNoticeViewModel by viewModels {
+        NewNoticeViewModelFactory(NoticeRepository(VectoService.create()))
     }
 
 
@@ -84,12 +90,55 @@ class SearchFragment : Fragment(), MainActivity.ScrollToTop, FeedAdapter.OnFeedA
 
         loginViewModel = ViewModelProvider(requireActivity(), LoginViewModelFactory(UserRepository(VectoService.create()), TokenRepository(VectoService.create())))[LoginViewModel::class.java]
 
+        newNoticeViewModel.getNewNotice()   //공지사항 불러오기
+
         initUI()
         initAds()
         initRecyclerView()
         initObservers()
         initListeners()
         initReceiver()
+    }
+
+    private fun setNotice(notice: VectoService.NoticeResponse) {
+        fun setVisibility (flag: Boolean){
+
+            val visibility = if(flag)
+                View.VISIBLE
+            else
+                View.GONE
+
+            binding.noticeBarImage.visibility = visibility
+            binding.noticeText.visibility = visibility
+            binding.noticeDeleteIcon.visibility = visibility
+        }
+
+
+        val sharedPreferences = requireContext().getSharedPreferences("MyAppPreferences", Context.MODE_PRIVATE)
+        val shownNotice = sharedPreferences.getInt("noticeId", -1)
+
+        if(notice.id == shownNotice){
+            //보여주지 않음
+        } else {
+            setVisibility(true)
+
+            binding.noticeText.text = notice.title
+
+            binding.noticeDeleteIcon.setOnClickListener {
+                sharedPreferences.edit().putInt("noticeId", notice.id).apply()
+
+                setVisibility(false)
+            }
+
+            binding.noticeBarImage.setOnClickListener {
+                sharedPreferences.edit().putInt("noticeId", notice.id).apply()
+
+                setVisibility(false)
+
+                val intent = Intent(context, NoticeActivity::class.java)
+                startActivity(intent)
+            }
+        }
     }
 
     private fun initAds() {
@@ -188,6 +237,11 @@ class SearchFragment : Fragment(), MainActivity.ScrollToTop, FeedAdapter.OnFeedA
 
     @SuppressLint("NotifyDataSetChanged")
     private fun initObservers() {
+        /*   공지 Observer   */
+        newNoticeViewModel.noticeResponse.observe(viewLifecycleOwner){
+            setNotice(it)
+        }
+
         /*   알림 아이콘 관련 Observer   */
         notificationViewModel.newNotificationFlag.observe(viewLifecycleOwner) {
             it.onSuccess { newNotificationFlag->

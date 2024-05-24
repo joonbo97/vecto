@@ -51,6 +51,14 @@ class InquiryActivity : AppCompatActivity() {
             }
         }
 
+        binding.QueryBox3.setOnClickListener {
+            if(binding.Qcontent31.visibility == View.VISIBLE){
+                setContent3(false)
+            } else {
+                setContent3(true)
+            }
+        }
+
         binding.SendLogText.setOnClickListener {
             sendDatabaseByEmail(this, "log_database")
         }
@@ -59,6 +67,18 @@ class InquiryActivity : AppCompatActivity() {
             val intent = Intent(this, PolicyActivity::class.java)
             this.startActivity(intent)
         }
+    }
+
+    private fun setContent3(flag: Boolean) {
+        val visibility = if(flag)
+            View.VISIBLE
+        else
+            View.GONE
+
+        binding.Qcontent31.visibility = visibility
+        binding.contentImage31.visibility = visibility
+        binding.contentImage32.visibility = visibility
+        binding.Qcontent32.visibility = visibility
     }
 
     private fun sendDatabaseByEmail(context: Context, databaseName: String) {

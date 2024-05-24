@@ -34,7 +34,13 @@
     <!-- Dialog Text -->
     <string name="delete_visit_dialog">해당 장소를 삭제할까요?\n(삭제된 방문지는 복구되지 않아요)</string>
     <string name="delete_feed_dialog">해당 게시글을 삭제할까요?\n(삭제된 게시글은 복구되지 않아요)</string>
-    <string name="delete_account_dialog">  회원님에게 탈퇴 전 유의사항을 알려드릴게요.\n\n  · 탈퇴 후 7일간 재가입이 불가능합니다.\n\n  · 유료 구매한 아이템은 자동 소멸되며, 환불이 불가합니다.\n\n  · 탈퇴 시, 계정의 모든 정보는 삭제되며 재가입 시에도 복구가 불가합니다.\n\n  · 법령에서 일정 기간 정보 보관을 규정하거나\n    서비스 운영상 반드시 필요한 경우, 개인정보처리\n    방침에 공개한 내용과 같이 일정 기간 동안 \n    개인정보를 보관 후 파기합니다.</string>
+
+    <string name="delete_account_title">%s님과 헤어진다니 너무 아쉬워요.</string>
+    <string name="delete_account_content">%s님에게 탈퇴 전 유의사항을 알려드릴게요.\n\n
+· 탈퇴 후 7일간 재가입이 불가능합니다.\n\n
+· 유료 구매한 아이템은 자동 소멸되며, 환불이 불가합니다.\n\n
+· 탈퇴 시, 계정의 모든 정보는 삭제되며 재가입 시에도 복구가 불가합니다.\n\n
+· 법령에서 일정 기간 정보 보관을 규정하거나 서비스 운영상 반드시 필요한 경우, 개인정보처리 방침에 공개한 내용과 같이 일정 기간 동안 개인정보를 보관 후 파기합니다.</string>
 
     <!-- Toast Message -->
     <string name="basic_error">오류가 발생했습니다. 다시 시도해주세요.</string>

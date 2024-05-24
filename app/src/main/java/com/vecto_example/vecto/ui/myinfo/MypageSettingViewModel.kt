@@ -34,10 +34,6 @@ class MypageSettingViewModel (private val userRepository: UserRepository, privat
     private val _uploadImageResult = MutableLiveData<String>(Auth.profileImage.value)
     val uploadImageResult: LiveData<String> = _uploadImageResult
 
-    //탈퇴
-    private val _deleteAccount = MutableLiveData<String>()
-    val deleteAccount: LiveData<String> = _deleteAccount
-
     //에러
     private val _errorMessage = MutableLiveData<Int>()
     val errorMessage: LiveData<Int> = _errorMessage
@@ -55,7 +51,7 @@ class MypageSettingViewModel (private val userRepository: UserRepository, privat
     }
 
     enum class Function {
-        UpdateUserProfile, UploadProfileImage, DeleteAccount
+        UpdateUserProfile, UploadProfileImage
     }
 
     fun updateUserProfile(updateData: VectoService.UserUpdateData){
@@ -125,7 +121,7 @@ class MypageSettingViewModel (private val userRepository: UserRepository, privat
             }.onFailure {
                 when(it.message){
                     ServerResponse.ACCESS_TOKEN_INVALID_ERROR.code -> {
-                        reissueToken(Function.UpdateUserProfile.name)
+                        reissueToken(Function.UploadProfileImage.name)
                     }
                     ServerResponse.FAIL.code -> {
                         _errorMessage.postValue(R.string.upload_image_fail)
@@ -231,42 +227,6 @@ class MypageSettingViewModel (private val userRepository: UserRepository, privat
 
             Type.NICKNAME -> {
                 handleValidationResult(ValidationUtils.isValidNickname(input), Type.NICKNAME)
-            }
-        }
-    }
-
-    fun accountCancellation(){
-        if(Auth.provider == "kakao"){
-            UserApiClient.instance.unlink { error ->
-                if (error != null) {
-                    _errorMessage.postValue(R.string.delete_kakao_error)
-                }else {
-                    deleteAccount()
-                }
-            }
-        } else {
-            deleteAccount()
-        }
-    }
-
-    private fun deleteAccount(){
-        viewModelScope.launch {
-            val deleteResponse = userRepository.deleteAccount()
-
-            deleteResponse.onSuccess {
-                _deleteAccount.postValue(it)
-            }.onFailure {
-                when(it.message){
-                    ServerResponse.ACCESS_TOKEN_INVALID_ERROR.code -> {
-                        reissueToken(Function.UpdateUserProfile.name)
-                    }
-                    ServerResponse.ERROR.code -> {
-                        _errorMessage.postValue(R.string.APIErrorToastMessage)
-                    }
-                    else -> {
-                        _errorMessage.postValue(R.string.APIFailToastMessage)
-                    }
-                }
             }
         }
     }

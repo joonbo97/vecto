@@ -55,11 +55,11 @@
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/ScrollInConstraint"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="wrap_content">
 
 
             <TextView
-                android:id="@+id/Text1"
+                android:id="@+id/textFQA"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="20dp"
@@ -77,7 +77,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_marginStart="10dp"
-                android:layout_marginTop="35dp"
+                android:layout_marginTop="15dp"
                 android:layout_marginEnd="10dp"
                 android:layout_marginBottom="-10dp"
                 android:foreground="@drawable/ripple_normal_box"
@@ -85,14 +85,14 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0.5"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="@+id/ScrollInConstraint" />
+                app:layout_constraintTop_toBottomOf="@+id/textFQA" />
 
             <TextView
                 android:id="@+id/Qtitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="20dp"
-                android:layout_marginTop="15dp"
+                android:layout_marginTop="13dp"
                 android:fontFamily="@font/lineseedkr_bd"
                 android:text="Q"
                 android:textColor="@color/vecto_pathcolor"
@@ -105,7 +105,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="5dp"
-                android:layout_marginTop="15dp"
+                android:layout_marginTop="13dp"
                 android:fontFamily="@font/lineseedkr_bd"
                 android:text="경로수집이 작동하지 않아요."
                 android:textColor="@color/black"
@@ -146,10 +146,7 @@
                 app:layout_constraintEnd_toEndOf="@+id/Qcontent"
                 app:layout_constraintTop_toBottomOf="@+id/Qcontent" />
 
-
-
-
-
+            <!--알림 수신 문제-->
             <ImageView
                 android:id="@+id/QueryBox2"
                 android:layout_width="match_parent"
@@ -170,7 +167,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="20dp"
-                android:layout_marginTop="15dp"
+                android:layout_marginTop="13dp"
                 android:fontFamily="@font/lineseedkr_bd"
                 android:text="Q"
                 android:textColor="@color/vecto_pathcolor"
@@ -183,7 +180,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="5dp"
-                android:layout_marginTop="15dp"
+                android:layout_marginTop="13dp"
                 android:fontFamily="@font/lineseedkr_bd"
                 android:text="알림이 수신되지 않아요."
                 android:textColor="@color/black"
@@ -207,6 +204,102 @@
                 app:layout_constraintStart_toStartOf="@+id/Qtitle2"
                 app:layout_constraintTop_toBottomOf="@+id/Qtitle2" />
 
+            <!--경로 다듬기-->
+            <ImageView
+                android:id="@+id/QueryBox3"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_marginStart="10dp"
+                android:layout_marginTop="15dp"
+                android:layout_marginEnd="10dp"
+                android:layout_marginBottom="-10dp"
+                android:foreground="@drawable/ripple_normal_box"
+                app:layout_constraintBottom_toBottomOf="@+id/Qcontent3_2"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.5"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/QueryBox2" />
+
+            <TextView
+                android:id="@+id/Qtitle3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:layout_marginTop="13dp"
+                android:fontFamily="@font/lineseedkr_bd"
+                android:text="Q"
+                android:textColor="@color/vecto_pathcolor"
+                android:textSize="18sp"
+                app:layout_constraintStart_toStartOf="@+id/QueryBox3"
+                app:layout_constraintTop_toTopOf="@+id/QueryBox3" />
+
+            <TextView
+                android:id="@+id/Qtext3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="5dp"
+                android:layout_marginTop="13dp"
+                android:fontFamily="@font/lineseedkr_bd"
+                android:text="\'경로 다듬기\' 가 뭔가요?"
+                android:textColor="@color/black"
+                android:textSize="18sp"
+                app:layout_constraintStart_toEndOf="@+id/Qtitle2"
+                app:layout_constraintTop_toTopOf="@+id/QueryBox3" />
+
+            <TextView
+                android:id="@+id/Qcontent3_1"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:layout_marginEnd="20dp"
+                android:fontFamily="@font/lineseedkr_rg"
+                android:lineSpacingExtra="3dp"
+                android:text=" \'경로 다듬기\'는 목적지 간 경로 수집이 올바르지 않게 수집되었을 때 사용할 수 있는 기능입니다. "
+                android:textColor="@color/black"
+                android:textSize="15sp"
+                android:visibility="gone"
+                android:layout_marginStart="25dp"
+                app:layout_constraintEnd_toEndOf="@id/QueryBox3"
+                app:layout_constraintStart_toStartOf="@+id/QueryBox3"
+                app:layout_constraintTop_toBottomOf="@+id/Qtext3" />
+
+            <ImageView
+                android:id="@+id/contentImage3_1"
+                android:layout_width="250dp"
+                android:layout_height="250dp"
+                android:layout_marginTop="10dp"
+                android:src="@drawable/fqa_course1"
+                android:visibility="gone"
+                app:layout_constraintStart_toStartOf="@id/Qcontent3_1"
+                app:layout_constraintTop_toBottomOf="@+id/Qcontent3_1" />
+
+            <ImageView
+                android:id="@+id/contentImage3_2"
+                android:layout_width="250dp"
+                android:layout_height="250dp"
+                android:layout_marginTop="10dp"
+                android:src="@drawable/fqa_course2"
+                android:visibility="gone"
+                app:layout_constraintStart_toStartOf="@id/contentImage3_1"
+                app:layout_constraintTop_toBottomOf="@+id/contentImage3_1" />
+
+            <TextView
+                android:id="@+id/Qcontent3_2"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:layout_marginEnd="20dp"
+                android:fontFamily="@font/lineseedkr_rg"
+                android:lineSpacingExtra="3dp"
+                android:text=" 위와 같이 정확하게 수집되지 않은 경로를 경로다듬기 기능을 사용하여 최적 경로로 수정할 수 있습니다."
+                android:textColor="@color/black"
+                android:textSize="15sp"
+                android:visibility="gone"
+                app:layout_constraintEnd_toEndOf="@id/QueryBox3"
+                app:layout_constraintStart_toStartOf="@+id/contentImage3_2"
+                app:layout_constraintTop_toBottomOf="@+id/contentImage3_2"
+                app:layout_constraintBottom_toBottomOf="@id/QueryBox3"/>
+
             <TextView
                 android:id="@+id/Text2"
                 android:layout_width="wrap_content"
@@ -219,7 +312,7 @@
                 android:textColor="@color/vecto_gray"
                 android:textSize="12sp"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/QueryBox2" />
+                app:layout_constraintTop_toBottomOf="@+id/QueryBox3" />
 
             <ImageView
                 android:id="@+id/contractTextBox"

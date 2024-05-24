@@ -98,6 +98,9 @@ class FollowingListFragment : Fragment(), FollowListAdapter.OnFollowActionListen
                     FollowInfoViewModel.Function.DeleteFollow.name -> {
                         viewModel.deleteFollow(viewModel.deleteFollowId)
                     }
+                    FollowInfoViewModel.Function.SetFollowRelation.name ->{
+                        viewModel.setFollowRelation()
+                    }
                 }
             }
         }

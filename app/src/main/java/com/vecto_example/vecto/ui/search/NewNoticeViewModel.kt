@@ -10,8 +10,8 @@ import com.vecto_example.vecto.utils.ServerResponse
 import kotlinx.coroutines.launch
 
 class NewNoticeViewModel(private val repository: NoticeRepository): ViewModel() {
-    private val _noticeListResponse = MutableLiveData<VectoService.NoticeResponse>()
-    val noticeListResponse: LiveData<VectoService.NoticeResponse> = _noticeListResponse
+    private val _noticeResponse = MutableLiveData<VectoService.NoticeResponse>()
+    val noticeResponse: LiveData<VectoService.NoticeResponse> = _noticeResponse
 
     private val _errorMessage = MutableLiveData<Int>()
     val errorMessage: LiveData<Int> = _errorMessage
@@ -22,11 +22,8 @@ class NewNoticeViewModel(private val repository: NoticeRepository): ViewModel() 
             val result = repository.getNewNotice()
 
             result.onSuccess {
-                _noticeListResponse.postValue(it)
-            }.onFailure {
-
+                _noticeResponse.postValue(it)
             }
-
         }
     }
 }

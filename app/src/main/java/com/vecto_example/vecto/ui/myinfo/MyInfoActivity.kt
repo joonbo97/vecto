@@ -25,6 +25,8 @@ import com.vecto_example.vecto.data.repository.UserRepository
 import com.vecto_example.vecto.databinding.ActivityMyInfoBinding
 import com.vecto_example.vecto.dialog.DeleteDialog
 import com.vecto_example.vecto.retrofit.VectoService
+import com.vecto_example.vecto.ui.delete_account.DeleteAccountActivity
+import com.vecto_example.vecto.ui.notification.NotificationActivity
 import com.vecto_example.vecto.utils.LoadImageUtils
 import com.vecto_example.vecto.utils.SaveLoginDataUtils
 import com.vecto_example.vecto.utils.ToastMessageUtils
@@ -90,13 +92,6 @@ class MyInfoActivity : AppCompatActivity() {
 
         }
 
-        viewModel.deleteAccount.observe(this){
-            ToastMessageUtils.showToast(this, getString(R.string.delete_success))
-
-            SaveLoginDataUtils.deleteData(this)
-            finish()
-        }
-
         viewModel.isLoading.observe(this) {
             if(it){
                 binding.progressBar.visibility = View.VISIBLE
@@ -126,9 +121,6 @@ class MyInfoActivity : AppCompatActivity() {
                     }
                     MypageSettingViewModel.Function.UploadProfileImage.name -> {
                         viewModel.uploadProfileImage()
-                    }
-                    MypageSettingViewModel.Function.DeleteAccount.name -> {
-                        viewModel.accountCancellation()
                     }
                 }
             }
@@ -166,11 +158,8 @@ class MyInfoActivity : AppCompatActivity() {
         }
 
         binding.cancellationButtonText.setOnClickListener {
-            val deleteDialog = DeleteDialog(this, DeleteDialog.ACCOUNT)
-            deleteDialog.showDialog()
-            deleteDialog.onOkButtonClickListener = {
-                viewModel.accountCancellation()
-            }
+            val intent = Intent(this, DeleteAccountActivity::class.java)
+            startActivity(intent)
         }
     }
 

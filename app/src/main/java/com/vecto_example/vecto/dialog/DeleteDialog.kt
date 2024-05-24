@@ -12,7 +12,6 @@ class DeleteDialog(context: Context, val type: Int) {
     companion object {
         const val VISIT = 0
         const val FEED = 1
-        const val ACCOUNT = 2
     }
 
     private val dialog = Dialog(context, R.style.CustomDialog)
@@ -36,13 +35,6 @@ class DeleteDialog(context: Context, val type: Int) {
 
             FEED -> {
                 dialog.findViewById<TextView>(R.id.Guide_TextView).setText(R.string.delete_feed_dialog)
-            }
-
-            ACCOUNT -> {
-                dialog.findViewById<ImageView>(R.id.DialogImage).setImageResource(R.drawable.delete_sad_image)
-                dialog.findViewById<TextView>(R.id.Guide_TextView).setText(R.string.delete_account_dialog)
-                dialog.findViewById<TextView>(R.id.Guide_TextView).setTextColor(dialog.context.getColor(R.color.edit_course_gray))
-                dialog.findViewById<TextView>(R.id.Guide_TextView).gravity = Gravity.START
             }
         }
 
