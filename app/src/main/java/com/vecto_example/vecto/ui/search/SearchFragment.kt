@@ -116,7 +116,7 @@ class SearchFragment : Fragment(), MainActivity.ScrollToTop, FeedAdapter.OnFeedA
         val sharedPreferences = requireContext().getSharedPreferences("MyAppPreferences", Context.MODE_PRIVATE)
         val shownNotice = sharedPreferences.getInt("noticeId", -1)
 
-        if(notice.id == shownNotice){
+        if(notice.id <= shownNotice){
             //보여주지 않음
         } else {
             setVisibility(true)

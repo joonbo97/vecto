@@ -1,5 +1,6 @@
 package com.vecto_example.vecto.ui.notice.noticelist
 
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -39,6 +40,19 @@ class NoticeListFragment : Fragment(), NoticeAdapter.OnItemClickListener {
         return binding.root
     }
 
+    private fun getShownNoticeId(): Int {
+        val sharedPreferences = requireContext().getSharedPreferences("MyAppPreferences", Context.MODE_PRIVATE)
+
+        return sharedPreferences.getInt("noticeId", -1)
+    }
+
+    private fun setShownNoticeId(noticeId: Int) {
+        if(noticeId > getShownNoticeId()){  //새로 본 Notice Id가 더 클 경우
+            val sharedPreferences = requireContext().getSharedPreferences("MyAppPreferences", Context.MODE_PRIVATE)
+            sharedPreferences.edit().putInt("noticeId", noticeId).apply()
+        }
+    }
+
     private fun initObserver() {
         noticeListViewModel.isLoading.observe(viewLifecycleOwner){
             if(it)
@@ -60,6 +74,7 @@ class NoticeListFragment : Fragment(), NoticeAdapter.OnItemClickListener {
     private fun initRecyclerView() {
         noticeAdapter = NoticeAdapter()
         noticeAdapter.itemClickListener = this
+        noticeAdapter.shownNoticeId = getShownNoticeId()
 
         val noticeRecyclerView = binding.noticeRecyclerView
         noticeRecyclerView.adapter = noticeAdapter
@@ -68,6 +83,8 @@ class NoticeListFragment : Fragment(), NoticeAdapter.OnItemClickListener {
     }
 
     override fun onNoticeItemClick(noticeId: Int) {
+        setShownNoticeId(noticeId)
+
         (activity as? NoticeActivity)?.showDetailFragment(noticeId)
     }
 

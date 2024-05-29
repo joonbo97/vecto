@@ -11,6 +11,8 @@ import com.vecto_example.vecto.utils.DateTimeUtils
 class NoticeAdapter(): RecyclerView.Adapter<NoticeAdapter.NoticeViewHolder>() {
     val noticeList = mutableListOf<VectoService.NoticeListResponse>()
 
+    var shownNoticeId = -1
+
     interface OnItemClickListener {
         fun onNoticeItemClick(noticeId: Int)
     }
@@ -21,7 +23,7 @@ class NoticeAdapter(): RecyclerView.Adapter<NoticeAdapter.NoticeViewHolder>() {
         fun bind(item: VectoService.NoticeListResponse) {
             binding.noticeTitle.text = item.title
 
-            if(DateTimeUtils.isNewNotice(item.createdAt))
+            if((DateTimeUtils.isNewNotice(item.createdAt)) && (shownNoticeId < item.id))
                 binding.newNoticeImage.visibility = View.VISIBLE
             else
                 binding.newNoticeImage.visibility = View.INVISIBLE
