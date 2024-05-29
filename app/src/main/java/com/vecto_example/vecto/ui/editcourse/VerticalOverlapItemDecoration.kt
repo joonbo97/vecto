@@ -1,4 +1,4 @@
-package com.vecto_example.vecto.ui.decoration
+package com.vecto_example.vecto.ui.editcourse
 
 import android.graphics.Rect
 import android.view.View

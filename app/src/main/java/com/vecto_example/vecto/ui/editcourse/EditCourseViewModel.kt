@@ -10,6 +10,7 @@ import com.vecto_example.vecto.data.model.LocationData
 import com.vecto_example.vecto.data.model.VisitData
 import com.vecto_example.vecto.data.repository.TMapRepository
 import com.vecto_example.vecto.retrofit.TMapAPIService
+import com.vecto_example.vecto.utils.ServerResponse
 import kotlinx.coroutines.launch
 import java.time.Duration
 import java.time.LocalDateTime
@@ -55,7 +56,7 @@ class EditCourseViewModel(private val repository: TMapRepository) : ViewModel() 
 
     var totalDistance = 0
 
-    fun recommendRoute(locationDataList: MutableList<LocationData>) {
+    fun recommendRoute(locationDataList: MutableList<LocationData>, type: String) {
         startLoading()
 
         start = LatLng(locationDataList.first().lat, locationDataList.first().lng)
@@ -63,12 +64,25 @@ class EditCourseViewModel(private val repository: TMapRepository) : ViewModel() 
 
 
         viewModelScope.launch {
-            val recommendRouteResponse = repository.recommendRoute(TMapAPIService.RecommendRouteRequest(
-                1, TMapAPIService.key(), start.latitude,
-                start.longitude, end.latitude,
-                end.longitude, "WGS84GEO", "WGS84GEO",
-                "출발지_이름", "도착지_이름", 0
-            ))
+
+            val recommendRouteResponse: Result<TMapAPIService.GeoJsonResponse> = when(type){
+                ServerResponse.VISIT_TYPE_WALK.code -> {
+                    repository.recommendRoute(TMapAPIService.RecommendRouteRequest(1, TMapAPIService.key(), start.latitude, start.longitude, end.latitude, end.longitude, "WGS84GEO", "WGS84GEO", "출발지_이름", "도착지_이름", 0))
+                }
+
+                ServerResponse.VISIT_TYPE_CAR.code -> {
+                    repository.recommendCarRoute(TMapAPIService.RecommendRouteRequest(1, TMapAPIService.key(), start.latitude, start.longitude, end.latitude, end.longitude, "WGS84GEO", "WGS84GEO", "출발지_이름", "도착지_이름", 0))
+                }
+
+                ServerResponse.VISIT_TYPE_PUBLIC_TRANSPORT.code -> {
+                    repository.recommendCarRoute(TMapAPIService.RecommendRouteRequest(1, TMapAPIService.key(), start.latitude, start.longitude, end.latitude, end.longitude, "WGS84GEO", "WGS84GEO", "출발지_이름", "도착지_이름", 0))
+                }
+
+                else -> {
+                    repository.recommendRoute(TMapAPIService.RecommendRouteRequest(1, TMapAPIService.key(), start.latitude, start.longitude, end.latitude, end.longitude, "WGS84GEO", "WGS84GEO", "출발지_이름", "도착지_이름", 0))
+                }
+            }
+
 
             recommendRouteResponse.onSuccess {
 
@@ -219,9 +233,6 @@ class EditCourseViewModel(private val repository: TMapRepository) : ViewModel() 
     }
 
     enum class ButtonType{
-        EDIT_VISIT,
-        EDIT_PATH,
-        SELECT,
-        NONE
+        EDIT_VISIT, EDIT_PATH, SELECT, NONE
     }
 }

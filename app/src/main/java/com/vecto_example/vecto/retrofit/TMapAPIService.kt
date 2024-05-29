@@ -27,6 +27,21 @@ interface TMapAPIService {
         @Query("searchOption") searchOption: Int
     ): Response<GeoJsonResponse>
 
+    @POST("routes")
+    suspend fun recommendedCarRoute(
+        @Query("version") version: Int,
+        @Query("appKey") appKey: String,
+        @Query("startY") startY: Double,
+        @Query("startX") startX: Double,
+        @Query("endY") endY: Double,
+        @Query("endX") endX: Double,
+        @Query("reqCoordType") reqCoordType: String,
+        @Query("resCoordType") resCoordType: String,
+        @Query("startName") startName: String,
+        @Query("endName") endName: String,
+        @Query("searchOption") searchOption: Int
+    ): Response<GeoJsonResponse>
+
     @GET("pois/search/around?")
     suspend fun searchNearbyPoi(
         @Query("version") version: Int,

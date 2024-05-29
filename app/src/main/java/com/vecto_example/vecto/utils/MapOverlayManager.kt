@@ -34,6 +34,11 @@ class MapOverlayManager(private val context: Context, private val mapMarkerManag
         mapMarkerManager.deleteMarker()
     }
 
+    fun deletePathOverlay() {
+        pathOverlays.forEach{ it.map = null }
+        pathOverlays.clear()
+    }
+
     /*   경로 선 생성 함수   */
     fun addPathOverlay(pathPoints: MutableList<LatLng>){
         val pathOverlay = PathOverlay()
@@ -41,8 +46,25 @@ class MapOverlayManager(private val context: Context, private val mapMarkerManag
         if(pathPoints.size > 1) {
             pathOverlay.coords = pathPoints
             pathOverlay.width = 20
+            pathOverlay.zIndex = 20
             pathOverlay.color = ContextCompat.getColor(context, R.color.vecto_pathcolor)
             pathOverlay.outlineColor = ContextCompat.getColor(context, R.color.vecto_pathcolor)
+            pathOverlay.patternImage = OverlayImage.fromResource(R.drawable.pathoverlay_pattern)
+            pathOverlay.patternInterval = 50
+            pathOverlay.map = naverMap
+            pathOverlays.add(pathOverlay)
+        }
+    }
+
+    //Alpha 경로선 생성
+    fun addAlphaPathOverlay(pathPoints: MutableList<LatLng>){
+        val pathOverlay = PathOverlay()
+
+        if(pathPoints.size > 1) {
+            pathOverlay.coords = pathPoints
+            pathOverlay.width = 20
+            pathOverlay.color = Color.argb(255, 186, 198, 213)
+            pathOverlay.outlineColor = Color.argb(255, 186, 198, 213)
             pathOverlay.patternImage = OverlayImage.fromResource(R.drawable.pathoverlay_pattern)
             pathOverlay.patternInterval = 50
             pathOverlay.map = naverMap
@@ -65,6 +87,16 @@ class MapOverlayManager(private val context: Context, private val mapMarkerManag
         pathList.forEach{
             addPathOverlayForLocation(it.coordinates)
         }
+    }
+
+    fun addPathOverlayForAlpha(pathPoints: MutableList<LocationData>) {
+        val pathLatLng = mutableListOf<LatLng>()
+
+        for (i in 0 until pathPoints.size) {
+            pathLatLng.add(LatLng(pathPoints[i].lat, pathPoints[i].lng))
+        }
+
+        addAlphaPathOverlay(pathLatLng)
     }
 
     /*   다음 게시물 Overlay 생성 함수   */
@@ -98,6 +130,17 @@ class MapOverlayManager(private val context: Context, private val mapMarkerManag
         for(i in 0 until pathOverlays.size) {
             pathOverlays[i].color = Color.argb(255, 186, 198, 213)
             pathOverlays[i].outlineColor = Color.argb(255, 186, 198, 213)
+        }
+    }
+
+    fun setHighLightOverlay(pathDataList: MutableList<PathData>, itemPosition: Int){
+        deletePathOverlay()
+
+        pathDataList.forEachIndexed { index, pathData ->
+            if(index == itemPosition)
+                addPathOverlayForLocation(pathData.coordinates)
+            else
+                addPathOverlayForAlpha(pathData.coordinates)
         }
     }
 

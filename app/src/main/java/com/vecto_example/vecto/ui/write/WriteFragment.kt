@@ -41,7 +41,6 @@ import com.vecto_example.vecto.data.repository.TokenRepository
 import com.vecto_example.vecto.databinding.FragmentWriteBinding
 import com.vecto_example.vecto.dialog.CalendarDialog
 import com.vecto_example.vecto.ui.write.adapter.MyImageAdapter
-import com.vecto_example.vecto.ui.decoration.SpacesItemDecoration
 import com.vecto_example.vecto.utils.DateTimeUtils
 import com.vecto_example.vecto.utils.MapMarkerManager
 import com.vecto_example.vecto.utils.MapOverlayManager
@@ -206,7 +205,6 @@ class WriteFragment : Fragment(), OnMapReadyCallback, CalendarDialog.OnDateSelec
                 }
             }
         }
-
 
 
         //오류

@@ -15,7 +15,6 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.vecto_example.vecto.service.LocationService
-import com.vecto_example.vecto.ui.decoration.VerticalOverlapItemDecoration
 import com.vecto_example.vecto.data.model.LocationData
 import com.vecto_example.vecto.data.model.LocationDatabase
 import com.vecto_example.vecto.data.model.PathData
@@ -140,7 +139,7 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
 
             mapOverlayManager.changePathColor()
 
-            editCourseViewModel.recommendRoute(getSelectedPathData().coordinates)
+            editCourseViewModel.recommendRoute(getSelectedPathData().coordinates, getSelectedVisitData().transportType)
 
             editCourseViewModel.responsePathData.clear()
         }

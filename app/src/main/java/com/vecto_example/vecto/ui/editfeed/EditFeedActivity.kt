@@ -2,7 +2,6 @@ package com.vecto_example.vecto.ui.editfeed
 
 import android.annotation.SuppressLint
 import android.app.Activity
-import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -17,7 +16,6 @@ import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import android.view.inputmethod.InputMethodManager
-import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -27,7 +25,6 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import com.naver.maps.map.CameraUpdate
 import com.naver.maps.map.MapFragment
 import com.naver.maps.map.NaverMap
 import com.naver.maps.map.OnMapReadyCallback
@@ -37,7 +34,6 @@ import com.vecto_example.vecto.R
 import com.vecto_example.vecto.data.Auth
 import com.vecto_example.vecto.data.model.LocationData
 import com.vecto_example.vecto.data.model.LocationDatabase
-import com.vecto_example.vecto.data.model.VisitData
 import com.vecto_example.vecto.data.model.VisitDatabase
 import com.vecto_example.vecto.data.repository.TokenRepository
 import com.vecto_example.vecto.databinding.ActivityEditFeedBinding
@@ -46,7 +42,7 @@ import com.vecto_example.vecto.dialog.WriteBottomDialog
 import com.vecto_example.vecto.dialog.WriteNameEmptyDialog
 import com.vecto_example.vecto.retrofit.NaverSearchApiService
 import com.vecto_example.vecto.retrofit.VectoService
-import com.vecto_example.vecto.ui.decoration.SpacesItemDecoration
+import com.vecto_example.vecto.ui.write.SpacesItemDecoration
 import com.vecto_example.vecto.ui.write.WriteRepository
 import com.vecto_example.vecto.ui.write.WriteViewModel
 import com.vecto_example.vecto.ui.write.WriteViewModelFactory

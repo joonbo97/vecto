@@ -20,7 +20,7 @@ import com.vecto_example.vecto.data.model.PathData
 import com.vecto_example.vecto.data.model.VisitData
 import com.vecto_example.vecto.databinding.PostDetailItemBinding
 import com.vecto_example.vecto.retrofit.VectoService
-import com.vecto_example.vecto.ui.decoration.VerticalOverlapItemDecoration
+import com.vecto_example.vecto.ui.editcourse.VerticalOverlapItemDecoration
 import com.vecto_example.vecto.ui.userinfo.UserInfoActivity
 import com.vecto_example.vecto.utils.DateTimeUtils
 import com.vecto_example.vecto.utils.LoadImageUtils
@@ -50,7 +50,7 @@ class MyFeedDetailAdapter(): RecyclerView.Adapter<MyFeedDetailAdapter.ViewHolder
 
         fun onVisitItemClick(visitData: VisitData, itemPosition: Int)
 
-        fun onPathItemClick(pathData: PathData)
+        fun onPathItemClick(pathDataList: MutableList<PathData>, itemPosition: Int)
     }
 
     var feedActionListener: OnFeedActionListener? = null
@@ -236,8 +236,8 @@ class MyFeedDetailAdapter(): RecyclerView.Adapter<MyFeedDetailAdapter.ViewHolder
                     feedActionListener?.onVisitItemClick(visitData, itemPosition)
                 }
 
-                override fun onPathItemClick(pathData: PathData) {
-                    feedActionListener?.onPathItemClick(pathData)
+                override fun onPathItemClick(pathDataList: MutableList<PathData>, itemPosition: Int) {
+                    feedActionListener?.onPathItemClick(pathDataList, itemPosition)
                 }
             }
         }

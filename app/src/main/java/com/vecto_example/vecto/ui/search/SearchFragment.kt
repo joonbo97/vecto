@@ -102,7 +102,6 @@ class SearchFragment : Fragment(), MainActivity.ScrollToTop, FeedAdapter.OnFeedA
 
     private fun setNotice(notice: VectoService.NoticeResponse) {
         fun setVisibility (flag: Boolean){
-
             val visibility = if(flag)
                 View.VISIBLE
             else

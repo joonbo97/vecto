@@ -163,8 +163,6 @@ class FeedDetailActivity : AppCompatActivity(), OnMapReadyCallback, MyFeedDetail
                 // 중앙 아이템 인덱스 계산
                 val centerPosition = (firstVisibleItemPosition + lastVisibleItemPosition) / 2
 
-
-
                 if(lastVisibleItemPosition == myFeedDetailAdapter.feedInfoWithFollow.lastIndex){    //마지막 아이템
                     setOverlayAndCamera(lastVisibleItemPosition)
                 }
@@ -174,8 +172,6 @@ class FeedDetailActivity : AppCompatActivity(), OnMapReadyCallback, MyFeedDetail
                         setOverlayAndCamera(centerPosition)
                     }
                 }
-
-
 
                 if (!recyclerView.canScrollVertically(1)) {
                     if(!viewModel.checkLoading() && myFeedDetailAdapter.lastSize == viewModel.allFeedInfo.size) {
@@ -425,6 +421,9 @@ class FeedDetailActivity : AppCompatActivity(), OnMapReadyCallback, MyFeedDetail
     }
 
     override fun onTitleClick(position: Int) {
+        mapOverlayManager.deletePathOverlay()
+        mapOverlayManager.addPathOverlayForLocation(myFeedDetailAdapter.feedInfoWithFollow[position].feedInfo.location.toMutableList())
+
         if(myFeedDetailAdapter.feedInfoWithFollow[position].feedInfo.visit.size == 1)
             mapOverlayManager.moveCameraForVisitOffset(myFeedDetailAdapter.feedInfoWithFollow[position].feedInfo.visit.first(), offset)
         else
@@ -441,8 +440,8 @@ class FeedDetailActivity : AppCompatActivity(), OnMapReadyCallback, MyFeedDetail
         mapOverlayManager.moveCameraForVisitOffset(visitData, offset)
     }
 
-    override fun onPathItemClick(pathData: PathData) {
-        mapOverlayManager.moveCameraForPathOffsetWithAnimation(pathData.coordinates, dpToPx((offset + 20).toFloat(), this))
+    override fun onPathItemClick(pathDataList: MutableList<PathData>, itemPosition: Int) {
+        mapOverlayManager.moveCameraForPathOffsetWithAnimation(pathDataList[itemPosition].coordinates, dpToPx((offset + 20).toFloat(), this))
+        mapOverlayManager.setHighLightOverlay(pathDataList, itemPosition)
     }
-
 }

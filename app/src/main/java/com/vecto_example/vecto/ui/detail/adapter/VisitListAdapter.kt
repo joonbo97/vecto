@@ -17,7 +17,7 @@ class VisitListAdapter(): RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     interface OnDetailItemClickListener {
         fun onVisitItemClick(visitData: VisitData, itemPosition: Int)
 
-        fun onPathItemClick(pathData: PathData)
+        fun onPathItemClick(pathDataList: MutableList<PathData>, itemPosition: Int)
     }
 
     var detailItemClickListener: OnDetailItemClickListener? = null
@@ -41,7 +41,7 @@ class VisitListAdapter(): RecyclerView.Adapter<RecyclerView.ViewHolder>() {
             binding.visitTitleText.text = item.name
 
             binding.highlightImage.setOnClickListener {
-                detailItemClickListener?.onVisitItemClick(item, adapterPosition / 2)
+                detailItemClickListener?.onVisitItemClick(item, bindingAdapterPosition / 2)
             }
         }
     }
@@ -71,7 +71,7 @@ class VisitListAdapter(): RecyclerView.Adapter<RecyclerView.ViewHolder>() {
             }
 
             binding.highlightImage.setOnClickListener {
-                detailItemClickListener?.onPathItemClick(item)
+                detailItemClickListener?.onPathItemClick(pathData, bindingAdapterPosition / 2)
             }
         }
     }
