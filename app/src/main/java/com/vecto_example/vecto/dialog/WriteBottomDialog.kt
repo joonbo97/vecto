@@ -40,7 +40,7 @@ class WriteBottomDialog(private val context: Context) {
         recyclerView.layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
 
         dialog.setCanceledOnTouchOutside(false)
-        dialog.setCancelable(true)
+        dialog.setCancelable(false)
         dialog.show()
     }
 }

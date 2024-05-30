@@ -316,7 +316,7 @@ class LikeFeedActivity : AppCompatActivity(), FeedAdapter.OnFeedActionListener {
             putExtra("feedInfoListJson", Gson().toJson(subList))
             putExtra("type", FeedDetailType.INTENT_LIKE.code)
             putExtra("query", "")
-            putExtra("nextPage", likeFeedViewModel.nextPage)
+            putExtra("nextFeedId", likeFeedViewModel.nextFeedId)
             putExtra("followPage", likeFeedViewModel.followPage)
             putExtra("lastPage", likeFeedViewModel.lastPage)
         }

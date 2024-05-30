@@ -485,7 +485,7 @@ class UserInfoActivity : AppCompatActivity(), MyFeedAdapter.OnFeedActionListener
             putExtra("feedInfoListJson", Gson().toJson(feedInfoWithFollowList))
             putExtra("type", FeedDetailType.INTENT_USERINFO.code)
             putExtra("query", "")
-            putExtra("nextPage", userInfoViewModel.nextPage)
+            putExtra("nextFeedId", userInfoViewModel.nextFeedId)
             putExtra("followPage", userInfoViewModel.followPage)
             putExtra("lastPage", userInfoViewModel.lastPage)
         }

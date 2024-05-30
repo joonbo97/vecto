@@ -49,7 +49,7 @@ class SearchViewModel(private val repository: FeedRepository, private val userRe
     lateinit var feedPageResponse: VectoService.FeedPageResponse
 
     /*   게시글 정보   */
-    var nextPage: Int = 0
+    var nextFeedId: Int? = null
     var lastPage: Boolean = false
     var followPage: Boolean = true
 
@@ -183,17 +183,17 @@ class SearchViewModel(private val repository: FeedRepository, private val userRe
 
                 if(queryFlag){
                     if(Auth.loginFlag.value == true)
-                        feedListResponse = repository.postSearchFeedList(type, nextPage)
+                        feedListResponse = repository.postSearchFeedList(type, nextFeedId)
                     else
-                        feedListResponse = repository.getSearchFeedList(type, nextPage)
+                        feedListResponse = repository.getSearchFeedList(type, nextFeedId)
 
                     addFeedInfoData(feedListResponse)
                 }else if(type == "Normal"){
-                    feedListResponse = repository.getFeedList(nextPage)
+                    feedListResponse = repository.getFeedList(nextFeedId)
 
                     addFeedInfoData(feedListResponse)
                 } else if(type == "Personal"){
-                    feedListResponse = repository.getPersonalFeedList(followPage, nextPage)
+                    feedListResponse = repository.getPersonalFeedList(followPage, nextFeedId)
 
                     addFeedInfoData(feedListResponse)
                 }
@@ -274,9 +274,9 @@ class SearchViewModel(private val repository: FeedRepository, private val userRe
 
             checkFollow(newFeedInfoWithFollow, feedPageResponse)
 
-            nextPage = feedPageResponse.nextPage    //페이지 정보값 변경
+            nextFeedId = feedPageResponse.nextFeedId
             lastPage = feedPageResponse.lastPage
-            followPage = feedPageResponse.followPage
+            followPage = feedPageResponse.nextPageFollowPage
         }.onFailure {
             when(it.message){
                 ServerResponse.ACCESS_TOKEN_INVALID_ERROR.code -> {
@@ -416,7 +416,7 @@ class SearchViewModel(private val repository: FeedRepository, private val userRe
     fun initSetting(){
         Log.d("SearchViewModel", "initSetting")
 
-        nextPage = 0
+        nextFeedId = null
         lastPage = false
         followPage = true
 

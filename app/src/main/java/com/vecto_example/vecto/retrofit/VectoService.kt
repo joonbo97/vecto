@@ -144,67 +144,67 @@ interface VectoService {
     ): Response<VectoResponse<String>>
 
     //게시글 정보 확인 (비 로그인)
-    @GET("feed/{feedId}")
+    @GET("feed/{feedId}/public")
     suspend fun getFeedInfo(
         @Path("feedId") feedId: Int
     ): Response<VectoResponse<FeedInfo>>
 
     //게시글 정보 확인 (로그인)
-    @POST("feed/{feedId}")
+    @GET("feed/{feedId}/auth")
     suspend fun getFeedInfo(
         @Header("Authorization") authorization: String,
         @Path("feedId") feedId: Int
     ): Response<VectoResponse<FeedInfo>>
 
     //게시글 목록 조회 (비 로그인)
-    @GET("feed/feedList")
+    @GET("feed/list/public")
     suspend fun getFeedList(
-        @Query("page") page: Int
+        @Query("nextFeedId") nextFeedId: Int?
     ): Response<VectoResponse<FeedPageResponse>>
 
     //게시글 목록 조회 (로그인)
-    @GET("feed/feeds/personal")
+    @GET("feed/list/auth")
     suspend fun getPersonalFeedList(
         @Header("Authorization") authorization: String,
-        @Query("page") page: Int,
+        @Query("nextFeedId") nextFeedId: Int?,
         @Query("isFollowPage") isFollowPage: Boolean
     ): Response<VectoResponse<FeedPageResponse>>
 
     //게시글 검색 결과 목록 조회 (비 로그인)
-    @GET("feed/feeds/search")
+    @GET("feed/search/public")
     suspend fun getSearchFeedList(
-        @Query("page") page: Int,
+        @Query("nextFeedId") nextFeedId: Int?,
         @Query("q") q: String
     ): Response<VectoResponse<FeedPageResponse>>
 
     //게시글 검색 결과 목록 조회 (로그인)
-    @POST("feed/feeds/search")
+    @GET("feed/search/auth")
     suspend fun postSearchFeedList(
         @Header("Authorization") authorization: String,
-        @Query("page") page: Int,
+        @Query("nextFeedId") nextFeedId: Int?,
         @Query("q") q: String
     ): Response<VectoResponse<FeedPageResponse>>
 
     //좋아요 한 게시글 목록 조회
-    @POST("feed/likes")
+    @GET("feed/likes")
     suspend fun postLikeFeedList(
         @Header("Authorization") authorization: String,
-        @Query("page") page: Int
+        @Query("nextFeedId") nextFeedId: Int?
     ): Response<VectoResponse<FeedPageResponse>>
 
     //특정 사용자 업로드 게시글 조회 (비 로그인)
-    @GET("feed/user")
+    @GET("feed/user/public")
     suspend fun getUserFeedList(
         @Query("userId") userId: String,
-        @Query("page") page: Int
+        @Query("nextFeedId") nextFeedId: Int?
     ): Response<VectoResponse<FeedPageResponse>>
 
     //특정 사용자 업로드 게시글 조회 (로그인)
-    @POST("feed/user")
+    @GET("feed/user/auth")
     suspend fun postUserFeedList(
         @Header("Authorization") authorization: String,
         @Query("userId") userId: String,
-        @Query("page") page: Int
+        @Query("nextFeedId") nextFeedId: Int?
     ): Response<VectoResponse<FeedPageResponse>>
 
 
@@ -245,18 +245,18 @@ interface VectoService {
     /*   Comment 관련   */
 
     //비 로그인 시 댓글 목록
-    @GET("feed/{feedId}/comments")
+    @GET("comment/{feedId}/public")
     suspend fun getCommentList(
         @Path("feedId") feedId: Int,
-        @Query("page") page: Int
+        @Query("nextCommentId") nextCommentId: Int?
     ): Response<VectoResponse<CommentListResponse>>
 
     //로그인 시 댓글 목록
-    @POST("feed/{feedId}/comments")
+    @GET("comment/{feedId}/auth")
     suspend fun getCommentList(
         @Header("Authorization") authorization: String,
         @Path("feedId") feedId: Int,
-        @Query("page") page: Int
+        @Query("nextCommentId") nextCommentId: Int?
     ): Response<VectoResponse<CommentListResponse>>
 
     //댓글 추가
@@ -385,10 +385,10 @@ interface VectoService {
     )
 
     data class FeedPageResponse(
-        val nextPage: Int,
+        val nextFeedId: Int?,
         val feeds: List<FeedInfo>,
         val lastPage: Boolean,
-        val followPage: Boolean
+        val nextPageFollowPage: Boolean
     )
 
     data class ImageResponse(
@@ -428,7 +428,7 @@ interface VectoService {
     )
 
     data class CommentListResponse(
-        val nextPage: Int,
+        val nextCommentId: Int,
         val comments: List<CommentResponse>,
         val lastPage: Boolean
     )

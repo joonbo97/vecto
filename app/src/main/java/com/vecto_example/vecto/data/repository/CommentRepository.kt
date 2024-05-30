@@ -7,10 +7,10 @@ import com.vecto_example.vecto.retrofit.VectoService
 
 class CommentRepository(private val vectoService: VectoService) {
     /*   Comment 관련된 API 함수   */
-    suspend fun getCommentList(feedId: Int, pageNo: Int): Result<VectoService.CommentListResponse> {
+    suspend fun getCommentList(feedId: Int, nextCommentId: Int?): Result<VectoService.CommentListResponse> {
         /*   모든 댓글을 최신 순으로 확인 할 수 있는 함수   */
         return try{
-            val response = vectoService.getCommentList(feedId, pageNo)
+            val response = vectoService.getCommentList(feedId, nextCommentId)
 
             if(response.isSuccessful){
                 Log.d("getCommentList", "SUCCESS: ${response.body()}")
@@ -31,11 +31,11 @@ class CommentRepository(private val vectoService: VectoService) {
         }
     }
 
-    suspend fun getPersonalCommentList(feedId: Int, pageNo: Int): Result<VectoService.CommentListResponse> {
+    suspend fun getPersonalCommentList(feedId: Int, nextCommentId: Int?): Result<VectoService.CommentListResponse> {
         /*   로그인 시 댓글 요청 함수   */
 
         return try{
-            val response = vectoService.getCommentList("Bearer ${Auth.accessToken}", feedId, pageNo)
+            val response = vectoService.getCommentList("Bearer ${Auth.accessToken}", feedId, nextCommentId)
 
             if(response.isSuccessful){
                 Log.d("getPersonalCommentList", "SUCCESS: ${response.body()}")

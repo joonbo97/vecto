@@ -204,7 +204,7 @@ class FeedDetailActivity : AppCompatActivity(), OnMapReadyCallback, MyFeedDetail
         val feedInfoWithFollowIntent = intent.getStringExtra("feedInfoListJson")
         val type = intent.getStringExtra("type")
         val query = intent.getStringExtra("query")
-        val nextPage = intent.getIntExtra("nextPage", 0)
+        val nextFeedId = intent.getIntExtra("nextFeedId", 0)
         val followPage = intent.getBooleanExtra("followPage", false)
         val lastPage = intent.getBooleanExtra("lastPage", false)
 
@@ -217,7 +217,7 @@ class FeedDetailActivity : AppCompatActivity(), OnMapReadyCallback, MyFeedDetail
             viewModel.type = type
         if(query != null)
             viewModel.query = query
-        viewModel.nextPage = nextPage
+        viewModel.nextFeedId = nextFeedId
         viewModel.followPage = followPage
         viewModel.lastPage = lastPage
         viewModel.userId = feedInfoWithFollow[0].feedInfo.userId

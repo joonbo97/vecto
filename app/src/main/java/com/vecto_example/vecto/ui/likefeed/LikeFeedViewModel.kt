@@ -42,7 +42,7 @@ class LikeFeedViewModel(private val feedRepository: FeedRepository, private val 
     lateinit var feedPageResponse: VectoService.FeedPageResponse
 
     /*   게시글 정보   */
-    var nextPage: Int = 0
+    var nextFeedId: Int? = null
     var lastPage: Boolean = false
     var followPage: Boolean = true
 
@@ -116,7 +116,7 @@ class LikeFeedViewModel(private val feedRepository: FeedRepository, private val 
 
         viewModelScope.launch {
             if(!lastPage){
-                val feedListResponse = feedRepository.postLikeFeedList(nextPage)
+                val feedListResponse = feedRepository.postLikeFeedList(nextFeedId)
 
                 feedListResponse.onSuccess {
 
@@ -126,9 +126,9 @@ class LikeFeedViewModel(private val feedRepository: FeedRepository, private val 
 
                     checkFollow(newFeedInfoWithFollow, it)
 
-                    nextPage = it.nextPage    //페이지 정보값 변경
+                    nextFeedId = it.nextFeedId    //페이지 정보값 변경
                     lastPage = it.lastPage
-                    followPage = it.followPage
+                    followPage = it.nextPageFollowPage
                 }.onFailure {
                     when(it.message){
                         ServerResponse.ACCESS_TOKEN_INVALID_ERROR.code -> {
@@ -310,7 +310,7 @@ class LikeFeedViewModel(private val feedRepository: FeedRepository, private val 
 
     fun initSetting(){
 
-        nextPage = 0
+        nextFeedId = null
         lastPage = false
         followPage = true
 

@@ -7,10 +7,10 @@ import com.vecto_example.vecto.retrofit.VectoService
 
 class FeedRepository (private val vectoService: VectoService) {
     /*   Feed 관련 API 함수   */
-    suspend fun getFeedList(pageNo: Int): Result<VectoService.FeedPageResponse> {
+    suspend fun getFeedList(nextFeedId: Int?): Result<VectoService.FeedPageResponse> {
         /*   모든 게시물을 최신 순으로 확인 할 수 있는 함수   */
         return try{
-            val response = vectoService.getFeedList(pageNo)
+            val response = vectoService.getFeedList(nextFeedId)
 
             if(response.isSuccessful){
                 Log.d("getFeedList", "SUCCESS: ${response.body()}")
@@ -27,10 +27,10 @@ class FeedRepository (private val vectoService: VectoService) {
         }
     }
 
-    suspend fun getPersonalFeedList(isFollowPage: Boolean, pageNo: Int): Result<VectoService.FeedPageResponse> {
+    suspend fun getPersonalFeedList(isFollowPage: Boolean, nextFeedId: Int?): Result<VectoService.FeedPageResponse> {
         /*   로그인 시 알고리즘에 맞는 게시물을 요청하는 함수   */
         return try {
-            val response = vectoService.getPersonalFeedList("Bearer ${Auth.accessToken}", pageNo, isFollowPage)
+            val response = vectoService.getPersonalFeedList("Bearer ${Auth.accessToken}", nextFeedId, isFollowPage)
 
             if(response.isSuccessful){
                 Log.d("getPersonalFeedList", "SUCCESS: ${response.body()}")
@@ -50,10 +50,10 @@ class FeedRepository (private val vectoService: VectoService) {
         }
     }
 
-    suspend fun getSearchFeedList(query: String, pageNo: Int): Result<VectoService.FeedPageResponse> {
+    suspend fun getSearchFeedList(query: String, nextFeedId: Int?): Result<VectoService.FeedPageResponse> {
         /*   검색 시 결과에 맞는 게시물을 확인 할 수 있는 함수   */
         return try {
-            val response = vectoService.getSearchFeedList(pageNo, query)
+            val response = vectoService.getSearchFeedList(nextFeedId, query)
 
             if(response.isSuccessful){
                 Log.d("getSearchFeedList", "SUCCESS: ${response.body()}")
@@ -71,10 +71,10 @@ class FeedRepository (private val vectoService: VectoService) {
         }
     }
 
-    suspend fun postSearchFeedList(query: String, pageNo: Int): Result<VectoService.FeedPageResponse> {
+    suspend fun postSearchFeedList(query: String, nextFeedId: Int?): Result<VectoService.FeedPageResponse> {
         /*   검색 시 결과에 맞는 게시물을 확인 할 수 있는 함수   */
         return try {
-            val response = vectoService.postSearchFeedList("Bearer ${Auth.accessToken}", pageNo, query)
+            val response = vectoService.postSearchFeedList("Bearer ${Auth.accessToken}", nextFeedId, query)
 
             if(response.isSuccessful){
                 Log.d("postSearchFeedList", "SUCCESS: ${response.body()}")
@@ -95,10 +95,10 @@ class FeedRepository (private val vectoService: VectoService) {
         }
     }
 
-    suspend fun postLikeFeedList(pageNo: Int): Result<VectoService.FeedPageResponse> {
+    suspend fun postLikeFeedList(nextFeedId: Int?): Result<VectoService.FeedPageResponse> {
         /*   좋아요 누른 게시물 확인   */
         return try {
-            val response = vectoService.postLikeFeedList("Bearer ${Auth.accessToken}", pageNo)
+            val response = vectoService.postLikeFeedList("Bearer ${Auth.accessToken}", nextFeedId)
 
             if(response.isSuccessful){
                 Log.d("getLikeFeedList", "SUCCESS: ${response.body()}")
@@ -119,10 +119,10 @@ class FeedRepository (private val vectoService: VectoService) {
         }
     }
 
-    suspend fun getUserFeedList(userId: String, pageNo: Int): Result<VectoService.FeedPageResponse> {
+    suspend fun getUserFeedList(userId: String, nextFeedId: Int?): Result<VectoService.FeedPageResponse> {
         /*   사용자가 작성한 게시물 확인 (비 로그인)   */
         return try {
-            val response = vectoService.getUserFeedList(userId, pageNo)
+            val response = vectoService.getUserFeedList(userId, nextFeedId)
 
             if(response.isSuccessful){
                 Log.d("getUserFeedList", "SUCCESS: ${response.body()}")
@@ -140,10 +140,10 @@ class FeedRepository (private val vectoService: VectoService) {
         }
     }
 
-    suspend fun postUserFeedList(userId: String, pageNo: Int): Result<VectoService.FeedPageResponse> {
+    suspend fun postUserFeedList(userId: String, nextFeedId: Int?): Result<VectoService.FeedPageResponse> {
         /*   사용자가 작성한 게시물 확인 (로그인)   */
         return try {
-            val response = vectoService.postUserFeedList("Bearer ${Auth.accessToken}", userId, pageNo)
+            val response = vectoService.postUserFeedList("Bearer ${Auth.accessToken}", userId, nextFeedId)
 
             if(response.isSuccessful){
                 Log.d("postUserFeedList", "SUCCESS: ${response.body()}")

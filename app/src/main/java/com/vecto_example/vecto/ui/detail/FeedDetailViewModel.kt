@@ -51,7 +51,7 @@ class FeedDetailViewModel(private val repository: FeedRepository, private val us
     lateinit var feedPageResponse: VectoService.FeedPageResponse
 
     /*   게시글 정보   */
-    var nextPage: Int = 0
+    var nextFeedId: Int? = null
     var lastPage: Boolean = false
     var followPage: Boolean = true
 
@@ -124,31 +124,31 @@ class FeedDetailViewModel(private val repository: FeedRepository, private val us
                 when(type){
                     FeedDetailType.INTENT_NORMAL.code -> {
                         if(Auth.loginFlag.value == true){
-                            feedListResponse = repository.getPersonalFeedList(followPage, nextPage)
+                            feedListResponse = repository.getPersonalFeedList(followPage, nextFeedId)
                         } else {
-                            feedListResponse = repository.getFeedList(nextPage)
+                            feedListResponse = repository.getFeedList(nextFeedId)
                         }
                     }
                     FeedDetailType.INTENT_QUERY.code -> {
                         if(Auth.loginFlag.value == true)
-                            feedListResponse = repository.postSearchFeedList(type, nextPage)
+                            feedListResponse = repository.postSearchFeedList(type, nextFeedId)
                         else
-                            feedListResponse = repository.getSearchFeedList(type, nextPage)
+                            feedListResponse = repository.getSearchFeedList(type, nextFeedId)
                     }
                     FeedDetailType.INTENT_LIKE.code -> {
-                        feedListResponse = repository.postLikeFeedList(nextPage)
+                        feedListResponse = repository.postLikeFeedList(nextFeedId)
                     }
                     FeedDetailType.INTENT_USERINFO.code -> {
                         if(Auth.loginFlag.value == true)
-                            feedListResponse = repository.postUserFeedList(userId, nextPage)
+                            feedListResponse = repository.postUserFeedList(userId, nextFeedId)
                         else
-                            feedListResponse = repository.getUserFeedList(userId, nextPage)
+                            feedListResponse = repository.getUserFeedList(userId, nextFeedId)
                     }
                     else -> {   //예외는 Normal 로 처리
                         if(Auth.loginFlag.value == true){
-                            feedListResponse = repository.getPersonalFeedList(followPage, nextPage)
+                            feedListResponse = repository.getPersonalFeedList(followPage, nextFeedId)
                         } else {
-                            feedListResponse = repository.getFeedList(nextPage)
+                            feedListResponse = repository.getFeedList(nextFeedId)
                         }
                     }
                 }
@@ -161,9 +161,9 @@ class FeedDetailViewModel(private val repository: FeedRepository, private val us
 
                     checkFollow(newFeedInfoWithFollow, feedPageResponse)
 
-                    nextPage = feedPageResponse.nextPage    //페이지 정보값 변경
+                    nextFeedId = feedPageResponse.nextFeedId    //페이지 정보값 변경
                     lastPage = feedPageResponse.lastPage
-                    followPage = feedPageResponse.followPage
+                    followPage = feedPageResponse.nextPageFollowPage
                 }.onFailure {
                     when(it.message){
                         ServerResponse.ACCESS_TOKEN_INVALID_ERROR.code -> {
@@ -354,7 +354,7 @@ class FeedDetailViewModel(private val repository: FeedRepository, private val us
     }
 
     fun initSetting(){
-        nextPage = 0
+        nextFeedId = null
         lastPage = false
         followPage = true
 

@@ -19,7 +19,7 @@ class CommentViewModel(private val repository: CommentRepository, private val to
     private val _reissueResponse = MutableSharedFlow<VectoService.TokenUpdateEvent>(replay = 0)
     val reissueResponse = _reissueResponse.asSharedFlow()
 
-    var nextPage: Int = 0
+    var nextCommentId: Int? = null
     var lastPage: Boolean = false
 
     var firstFlag = true
@@ -78,9 +78,9 @@ class CommentViewModel(private val repository: CommentRepository, private val to
             val commentListResponse: Result<VectoService.CommentListResponse>
 
             if(Auth.loginFlag.value == true)
-                commentListResponse = repository.getPersonalCommentList(feedId, nextPage)
+                commentListResponse = repository.getPersonalCommentList(feedId, nextCommentId)
             else
-                commentListResponse = repository.getCommentList(feedId, nextPage)
+                commentListResponse = repository.getCommentList(feedId, nextCommentId)
 
             commentListResponse.onSuccess {
 
@@ -92,7 +92,7 @@ class CommentViewModel(private val repository: CommentRepository, private val to
 
                 _commentInfoLiveData.postValue(it)
 
-                nextPage = it.nextPage
+                nextCommentId = it.nextCommentId
                 lastPage = it.lastPage
             }.onFailure {
                 if(it.message == ServerResponse.ACCESS_TOKEN_INVALID_ERROR.code){
@@ -230,7 +230,7 @@ class CommentViewModel(private val repository: CommentRepository, private val to
     fun initSetting(){
         Log.d("COMMENT_VIEWMODEL", "initSetting")
 
-        nextPage = 0
+        nextCommentId = null
         lastPage = false
 
         firstFlag = true

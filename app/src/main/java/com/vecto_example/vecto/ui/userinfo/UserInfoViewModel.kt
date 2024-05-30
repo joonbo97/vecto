@@ -19,7 +19,7 @@ class UserInfoViewModel(private val feedRepository: FeedRepository, private val 
     private val _reissueResponse = MutableSharedFlow<VectoService.TokenUpdateEvent>(replay = 0)
     val reissueResponse = _reissueResponse.asSharedFlow()
 
-    var nextPage: Int = 0
+    var nextFeedId: Int? = null
 
     var isFollowRequestFinished = true  //팔로우 요청 완료 확인
 
@@ -121,9 +121,9 @@ class UserInfoViewModel(private val feedRepository: FeedRepository, private val 
                 val feedListResponse: Result<VectoService.FeedPageResponse>
 
                 if(Auth.loginFlag.value == true)
-                    feedListResponse = feedRepository.postUserFeedList(userId, nextPage)
+                    feedListResponse = feedRepository.postUserFeedList(userId, nextFeedId)
                 else
-                    feedListResponse = feedRepository.getUserFeedList(userId, nextPage)
+                    feedListResponse = feedRepository.getUserFeedList(userId, nextFeedId)
 
                 feedListResponse.onSuccess { feedPageResponse ->
                     if(firstFlag) {
@@ -133,9 +133,9 @@ class UserInfoViewModel(private val feedRepository: FeedRepository, private val 
                     }
                     _feedInfoLiveData.postValue(feedPageResponse)
 
-                    nextPage = feedPageResponse.nextPage    //페이지 정보값 변경
+                    nextFeedId = feedPageResponse.nextFeedId    //페이지 정보값 변경
                     lastPage = feedPageResponse.lastPage
-                    followPage = feedPageResponse.followPage
+                    followPage = feedPageResponse.nextPageFollowPage
                 }.onFailure {
                     when(it.message){
                         ServerResponse.ACCESS_TOKEN_INVALID_ERROR.code -> {
@@ -420,7 +420,7 @@ class UserInfoViewModel(private val feedRepository: FeedRepository, private val 
     }
 
     fun initSetting(){
-        nextPage = 0
+        nextFeedId = null
         lastPage = false
         followPage = true
 

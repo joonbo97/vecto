@@ -268,7 +268,7 @@ class MyFeedActivity : AppCompatActivity(), MyFeedAdapter.OnFeedActionListener {
             putExtra("feedInfoListJson", Gson().toJson(feedInfoWithFollowList))
             putExtra("type", FeedDetailType.INTENT_USERINFO.code)
             putExtra("query", "")
-            putExtra("nextPage", viewModel.nextPage)
+            putExtra("nextFeedId", viewModel.nextFeedId)
             putExtra("followPage", viewModel.followPage)
             putExtra("lastPage", viewModel.lastPage)
         }

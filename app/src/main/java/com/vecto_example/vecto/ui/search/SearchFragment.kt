@@ -623,7 +623,7 @@ class SearchFragment : Fragment(), MainActivity.ScrollToTop, FeedAdapter.OnFeedA
                 putExtra("type", FeedDetailType.INTENT_NORMAL.code)
                 putExtra("query", "")
             }
-            putExtra("nextPage", searchViewModel.nextPage)
+            putExtra("nextFeedId", searchViewModel.nextFeedId)
             putExtra("followPage", searchViewModel.followPage)
             putExtra("lastPage", searchViewModel.lastPage)
         }
