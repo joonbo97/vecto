@@ -47,7 +47,7 @@ class DateTimeUtils {
 
         fun getNoticeTime(inputDate: String): String? {
             val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault())
-            val outputFormat = SimpleDateFormat("yyyy-MM-dd hh:mm", Locale.getDefault())
+            val outputFormat = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault())
 
             return try {
                 val date = inputFormat.parse(inputDate)

@@ -1,7 +1,6 @@
 package com.vecto_example.vecto.retrofit
 
 import com.vecto_example.vecto.BuildConfig
-import retrofit2.Call
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -9,23 +8,32 @@ import retrofit2.http.GET
 import retrofit2.http.Headers
 import retrofit2.http.Query
 
-interface NaverSearchApiService {
+interface NaverApiService {
     @Headers("X-NCP-APIGW-API-KEY-ID: ${BuildConfig.NAVER_KEY1}", "X-NCP-APIGW-API-KEY: ${BuildConfig.NAVER_KEY2}")
     @GET("gc")
     suspend fun reverseGeocode(
         @Query("coords") coords: String,
-        @Query("orders") orders: String, //legalcode,addr,admcode,roadaddr
-        @Query("output") output: String,  //output=json
+        @Query("orders") orders: String,
+        @Query("output") output: String,
     ): Response<ReverseGeocodeResponse>
 
     companion object {
-        fun create(): NaverSearchApiService {
+        fun create(): NaverApiService {
             val retrofit = Retrofit.Builder()
                 .baseUrl("https://naveropenapi.apigw.ntruss.com/map-reversegeocode/v2/")
                 .addConverterFactory(GsonConverterFactory.create())
                 .build()
 
-            return retrofit.create(NaverSearchApiService::class.java)
+            return retrofit.create(NaverApiService::class.java)
+        }
+
+        fun createSearch(): NaverApiService {
+            val retrofit = Retrofit.Builder()
+                .baseUrl("https://openapi.naver.com/v1/search/local.json/")
+                .addConverterFactory(GsonConverterFactory.create())
+                .build()
+
+            return retrofit.create(NaverApiService::class.java)
         }
     }
 
@@ -42,10 +50,8 @@ interface NaverSearchApiService {
 
     data class NaverResult(
         val name: String,
-        // Assuming additional fields based on the example JSON you provided:
         val code: Code?,
         val region: Region?
-        // Add other fields here as needed
     )
 
     data class Code(

@@ -40,7 +40,7 @@ import com.vecto_example.vecto.databinding.ActivityEditFeedBinding
 import com.vecto_example.vecto.dialog.CalendarDialog
 import com.vecto_example.vecto.dialog.WriteBottomDialog
 import com.vecto_example.vecto.dialog.WriteNameEmptyDialog
-import com.vecto_example.vecto.retrofit.NaverSearchApiService
+import com.vecto_example.vecto.retrofit.NaverApiService
 import com.vecto_example.vecto.retrofit.VectoService
 import com.vecto_example.vecto.ui.write.SpacesItemDecoration
 import com.vecto_example.vecto.ui.write.WriteRepository
@@ -65,7 +65,7 @@ class EditFeedActivity : AppCompatActivity(), OnMapReadyCallback, CalendarDialog
     lateinit var binding: ActivityEditFeedBinding
 
     private val writeViewModel: WriteViewModel by viewModels {
-        WriteViewModelFactory(WriteRepository(VectoService.create(), NaverSearchApiService.create()), TokenRepository(VectoService.create()))
+        WriteViewModelFactory(WriteRepository(VectoService.create(), NaverApiService.create()), TokenRepository(VectoService.create()))
     }
 
     private lateinit var myEditImageAdapter: MyEditImageAdapter

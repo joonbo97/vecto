@@ -31,7 +31,7 @@ import com.vecto_example.vecto.data.model.LocationDatabase
 import com.vecto_example.vecto.data.model.VisitDatabase
 import com.vecto_example.vecto.dialog.WriteBottomDialog
 import com.vecto_example.vecto.dialog.WriteNameEmptyDialog
-import com.vecto_example.vecto.retrofit.NaverSearchApiService
+import com.vecto_example.vecto.retrofit.NaverApiService
 import com.vecto_example.vecto.retrofit.VectoService
 import com.naver.maps.map.MapFragment
 import com.naver.maps.map.NaverMap
@@ -63,7 +63,7 @@ class WriteFragment : Fragment(), OnMapReadyCallback, CalendarDialog.OnDateSelec
     private lateinit var binding: FragmentWriteBinding
 
     private val writeViewModel: WriteViewModel by viewModels {
-        WriteViewModelFactory(WriteRepository(VectoService.create(), NaverSearchApiService.create()), TokenRepository(VectoService.create()))
+        WriteViewModelFactory(WriteRepository(VectoService.create(), NaverApiService.create()), TokenRepository(VectoService.create()))
     }
     private lateinit var callBack: OnBackPressedCallback
 

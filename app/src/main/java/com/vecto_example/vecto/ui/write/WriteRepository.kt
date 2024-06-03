@@ -4,11 +4,11 @@ import android.util.Log
 import com.google.gson.Gson
 import com.vecto_example.vecto.data.Auth
 import com.vecto_example.vecto.data.model.VisitData
-import com.vecto_example.vecto.retrofit.NaverSearchApiService
+import com.vecto_example.vecto.retrofit.NaverApiService
 import com.vecto_example.vecto.retrofit.VectoService
 import okhttp3.MultipartBody
 
-class WriteRepository(private val vectoService: VectoService, private val naverService: NaverSearchApiService) {
+class WriteRepository(private val vectoService: VectoService, private val naverService: NaverApiService) {
     /*   게시글 작성 Repository   */
 
     suspend fun uploadImages(imageParts: List<MultipartBody.Part>): Result<VectoService.ImageResponse> {
@@ -89,7 +89,7 @@ class WriteRepository(private val vectoService: VectoService, private val naverS
         }
     }
 
-    suspend fun reverseGeocode(visitData: VisitData): Result<NaverSearchApiService.ReverseGeocodeResponse> {
+    suspend fun reverseGeocode(visitData: VisitData): Result<NaverApiService.ReverseGeocodeResponse> {
         /*   Lat Lng 으로 지역 반환   */
 
         return try {
