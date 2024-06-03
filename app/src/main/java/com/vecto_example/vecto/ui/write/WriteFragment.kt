@@ -170,6 +170,7 @@ class WriteFragment : Fragment(), OnMapReadyCallback, CalendarDialog.OnDateSelec
             if(it == "SUCCESS"){
                 ToastMessageUtils.showToast(requireContext(), getString(R.string.post_feed_success))
 
+                uploadStarted = false
                 writeViewModel.finishUpload()
 
                 myImageAdapter.imageUri.clear()
@@ -180,7 +181,7 @@ class WriteFragment : Fragment(), OnMapReadyCallback, CalendarDialog.OnDateSelec
                 binding.EditTitle.text.clear()
                 binding.EditContent.text.clear()
 
-                uploadStarted = false
+
                 changeMapSize(originalWidth, originalHeight)
 
                 deleteCompressedImages()
