@@ -2,7 +2,6 @@ package com.vecto_example.vecto.retrofit
 
 import com.vecto_example.vecto.data.model.LocationData
 import com.vecto_example.vecto.data.model.VisitData
-import com.vecto_example.vecto.data.model.VisitDataForWrite
 import okhttp3.MultipartBody
 import retrofit2.Response
 import retrofit2.Retrofit
@@ -401,7 +400,7 @@ interface VectoService {
         val uploadtime: String, //게시 시간
         var image: MutableList<String>?, //이미지
         val location: MutableList<LocationData>, //경로 정보
-        val visit: MutableList<VisitDataForWrite>, //방문지 정보
+        val visit: MutableList<VisitData>, //방문지 정보
         var mapimage: MutableList<String>?
     )
 
@@ -468,7 +467,7 @@ interface VectoService {
         val content: String?, //내용
         var image: MutableList<String>?, //이미지
         val location: MutableList<LocationData>, //경로 정보
-        val visit: MutableList<VisitDataForWrite>, //방문지 정보
+        val visit: MutableList<VisitData>, //방문지 정보
         var mapimage: MutableList<String>?
     )
 

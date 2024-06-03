@@ -4,10 +4,8 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Rect
 import android.os.Bundle
-import android.util.Log
 import android.view.MotionEvent
 import android.view.inputmethod.InputMethodManager
-import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.os.bundleOf
@@ -15,8 +13,6 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
-import com.google.android.gms.ads.MobileAds
-import com.google.android.gms.ads.RequestConfiguration
 import com.kakao.sdk.common.KakaoSdk
 import com.vecto_example.vecto.BuildConfig
 import com.vecto_example.vecto.R
@@ -45,9 +41,6 @@ class MainActivity : AppCompatActivity() {
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
-        MobileAds.initialize(this) {}
-        RequestConfiguration.Builder().setTestDeviceIds(listOf("D5F84871B664B1ACC82BC5AC602EC128"))
 
         KakaoSdk.init(this, BuildConfig.KAKAO_KEY)
 

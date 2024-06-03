@@ -2,7 +2,6 @@ package com.vecto_example.vecto.utils
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.util.Log
 import com.vecto_example.vecto.data.Auth
 import com.vecto_example.vecto.retrofit.VectoService
 
@@ -46,7 +45,6 @@ class SaveLoginDataUtils {
 
         @SuppressLint("ApplySharedPref")
         fun changeToken(context: Context, accessToken: String?, refreshToken: String?) {
-            Log.d("changeToken", "${accessToken}, ${refreshToken}")
 
             if(accessToken == null || refreshToken == null)
                 return

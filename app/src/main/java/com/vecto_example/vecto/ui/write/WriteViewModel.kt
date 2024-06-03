@@ -9,7 +9,6 @@ import androidx.lifecycle.viewModelScope
 import com.vecto_example.vecto.R
 import com.vecto_example.vecto.data.model.LocationData
 import com.vecto_example.vecto.data.model.VisitData
-import com.vecto_example.vecto.data.model.VisitDataForWrite
 import com.vecto_example.vecto.data.repository.TokenRepository
 import com.vecto_example.vecto.retrofit.VectoService
 import com.vecto_example.vecto.utils.DateTimeUtils
@@ -54,7 +53,7 @@ class WriteViewModel(private val repository: WriteRepository, private val tokenR
 
     private lateinit var address: MutableList<String>
 
-    lateinit var visitDataForWriteList: MutableList<VisitDataForWrite>
+    lateinit var visitDataForWriteList: MutableList<VisitData>
 
     private val _mapImageDone = MutableLiveData<Boolean>()
     val mapImageDone: LiveData<Boolean> = _mapImageDone
@@ -194,9 +193,8 @@ class WriteViewModel(private val repository: WriteRepository, private val tokenR
     }
 
     fun reverseGeocode() {
-
         visitDataForWriteList = MutableList(visitDataList.size){
-            VisitDataForWrite("", "", 0.0, 0.0, 0.0, 0.0, 0, "", "", 0, ServerResponse.VISIT_TYPE_WALK.code)
+            VisitData("", "", 0.0, 0.0, 0.0, 0.0, 0, "", "", 0, ServerResponse.VISIT_TYPE_WALK.code)
         }
         address = MutableList(visitDataList.size) {""}
         _isCourseDataLoaded.value = true
@@ -207,19 +205,21 @@ class WriteViewModel(private val repository: WriteRepository, private val tokenR
 
                 geocodeList.forEachIndexed { index, result ->
                     result.onSuccess {
-                        if(it.results[0].region?.area1?.name?.isEmpty() == false) {
-                            address[index] += it.results[0].region?.area1?.name.toString()
-                            if (it.results[0].region?.area2?.name?.isEmpty() == false) {
-                                address[index] += (" " + it.results[0].region?.area2?.name)
-                                if (it.results[0].region?.area3?.name?.isEmpty() == false)
-                                    address[index] += (" " + it.results[0].region?.area3?.name)
-                            }
-                        }
+                        val requestResult = it.results[0]
+
+                        requestResult.region?.area1?.name?.takeIf { it.isNotEmpty() }?.let { address[index] += it }
+                        requestResult.region?.area2?.name?.takeIf { it.isNotEmpty() }?.let { address[index] += " $it" }
+                        requestResult.region?.area3?.name?.takeIf { it.isNotEmpty() }?.let { address[index] += " $it" }
+                        requestResult.land?.name?.takeIf { it.isNotEmpty() }?.let { address[index] += " $it" }
+                        requestResult.land?.number1?.takeIf { it.isNotEmpty() }?.let { address[index] += " $it" }
+                        requestResult.land?.number2?.takeIf { it.isNotEmpty() }?.let { address[index] += " $it" }
+                        requestResult.addition0?.value?.takeIf { it.isNotEmpty() }?.let { address[index] += " $it" }
+
                     }.onFailure {
                         address[index] = ""
                     }
 
-                    visitDataForWriteList[index] = VisitDataForWrite(
+                    visitDataForWriteList[index] = VisitData(
                         datetime = visitDataList[index].datetime,
                         endtime = visitDataList[index].endtime,
                         lat = visitDataList[index].lat,

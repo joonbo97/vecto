@@ -66,7 +66,8 @@ class NotificationViewModel (private val repository: NotificationRepository, pri
     }
 
     fun getNotificationResults(){
-        startLoading()
+        if(!lastPage)
+            startLoading()
 
         viewModelScope.launch {
             if(!lastPage) {

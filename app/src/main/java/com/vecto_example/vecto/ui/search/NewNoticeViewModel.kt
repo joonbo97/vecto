@@ -6,7 +6,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.vecto_example.vecto.data.repository.NoticeRepository
 import com.vecto_example.vecto.retrofit.VectoService
-import com.vecto_example.vecto.utils.ServerResponse
 import kotlinx.coroutines.launch
 
 class NewNoticeViewModel(private val repository: NoticeRepository): ViewModel() {

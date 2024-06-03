@@ -3,6 +3,7 @@ package com.vecto_example.vecto.data.model
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
+import com.vecto_example.vecto.utils.VersionManager
 
 class VisitDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
 
@@ -17,7 +18,7 @@ class VisitDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE
 
     companion object {
         private const val DATABASE_NAME = "visit_database"
-        private const val DATABASE_VERSION = 6
+        private const val DATABASE_VERSION = VersionManager.DATABASE_VERSION_CODE
 
         private const val CREATE_TABLE_QUERY = "CREATE TABLE IF NOT EXISTS visit_data (" +
                 "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
@@ -29,6 +30,7 @@ class VisitDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE
                 "lng_set REAL, " +
                 "staytime INTEGER, " +
                 "name TEXT, " +
+                "address TEXT, " +
                 "distance INTEGER, " +
                 "type TEXT" +
                 ")"

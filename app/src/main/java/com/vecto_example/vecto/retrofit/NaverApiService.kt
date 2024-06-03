@@ -17,6 +17,20 @@ interface NaverApiService {
         @Query("output") output: String,
     ): Response<ReverseGeocodeResponse>
 
+    @Headers("X-NCP-APIGW-API-KEY-ID: ${BuildConfig.NAVER_KEY1}", "X-NCP-APIGW-API-KEY: ${BuildConfig.NAVER_KEY2}")
+    @GET("geocode")
+    suspend fun getGeocode(
+        @Query("query") query: String
+    ): Response<GeocodeResponse>
+
+    @GET("search/local.json")
+    suspend fun getSearch(
+        @Query("query") query: String,
+        @Query("display") display: String,
+    )
+
+
+
     companion object {
         fun create(): NaverApiService {
             val retrofit = Retrofit.Builder()
@@ -29,7 +43,7 @@ interface NaverApiService {
 
         fun createSearch(): NaverApiService {
             val retrofit = Retrofit.Builder()
-                .baseUrl("https://openapi.naver.com/v1/search/local.json/")
+                .baseUrl("https://openapi.naver.com/v1/")
                 .addConverterFactory(GsonConverterFactory.create())
                 .build()
 
@@ -39,7 +53,17 @@ interface NaverApiService {
 
     data class ReverseGeocodeResponse(
         val status: Status,
-        val results: List<NaverResult>
+        val results: List<ReverseGeocodeResult>
+    )
+
+    data class GeocodeResponse(
+        val status: String,
+        val addresses: List<Address>?
+    )
+
+    data class Address(
+        val y: String,
+        val x: String
     )
 
     data class Status(
@@ -48,7 +72,15 @@ interface NaverApiService {
         val message: String
     )
 
-    data class NaverResult(
+    data class ReverseGeocodeResult(
+        val name: String,
+        val code: Code?,
+        val region: Region?,
+        val land: Land?,
+        val addition0: Addition?
+    )
+
+    data class GeocodeResult(
         val name: String,
         val code: Code?,
         val region: Region?
@@ -68,6 +100,17 @@ interface NaverApiService {
     )
 
     data class Area(
-        val name: String,
+        val name: String?,
+    )
+
+    data class Land(
+        val name: String?,
+        val number1: String?,
+        val number2: String?,
+    )
+
+    data class Addition(
+        val value: String,
+        val type: String
     )
 }

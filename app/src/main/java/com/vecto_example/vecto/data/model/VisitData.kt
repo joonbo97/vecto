@@ -16,6 +16,7 @@ data class VisitData (
     val lng_set: Double,
     val staytime: Int,
     val name: String,
+    val address: String,
     var distance: Int,
     var transportType: String
 )

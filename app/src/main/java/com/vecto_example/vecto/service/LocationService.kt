@@ -79,7 +79,7 @@ class LocationService : Service() {
                                     saveLog(1)
 
                                     //평균 값과 처음 업데이트 시간을 visit db에 저장함.
-                                    visitDatabase.addVisitData(VisitData(lastUpdateTime!!.format(FORMAT), lastUpdateTime!!.format(FORMAT), lastUpdateLocation.latitude, lastUpdateLocation.longitude, lastUpdateLocation.latitude, lastUpdateLocation.longitude, 0, "", 0, ServerResponse.VISIT_TYPE_WALK.code))
+                                    visitDatabase.addVisitData(VisitData(lastUpdateTime!!.format(FORMAT), lastUpdateTime!!.format(FORMAT), lastUpdateLocation.latitude, lastUpdateLocation.longitude, lastUpdateLocation.latitude, lastUpdateLocation.longitude, 0, "", "",0, ServerResponse.VISIT_TYPE_WALK.code))
 
                                     locationDatabase.deleteLocationDataAfter(lastUpdateTime!!)  //방문 중 경로 데이터 모두 삭제 후, 방문지에 해당하는 좌표 넣어줌
                                     locationDatabase.addLocationData(LocationData(lastUpdateTime!!.format(FORMAT),lastUpdateLocation.latitude, lastUpdateLocation.longitude))
@@ -228,12 +228,7 @@ class LocationService : Service() {
     }
 
     private fun requestLocationUpdates() {
-        val locationRequest = LocationRequest.create().apply {
-            fastestInterval = 7000
-            interval = 10000
-            maxWaitTime = 13000
-            priority = Priority.PRIORITY_HIGH_ACCURACY
-        }
+        val locationRequest = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 10000).build()
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
             == PackageManager.PERMISSION_GRANTED

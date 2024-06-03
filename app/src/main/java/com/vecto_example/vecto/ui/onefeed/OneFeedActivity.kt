@@ -176,8 +176,10 @@ class OneFeedActivity : AppCompatActivity(), FeedAdapter.OnFeedActionListener {
 
 
         /*   오류 관련 Observer   */
-        viewModel.errorMessage.observe(this) {
-            ToastMessageUtils.showToast(this, getString(it))
+        lifecycleScope.launch {
+            viewModel.errorMessage.collect {
+                ToastMessageUtils.showToast(this@OneFeedActivity, getString(it))
+            }
         }
 
         viewModel.followErrorLiveData.observe(this) {

@@ -93,7 +93,7 @@ class WriteRepository(private val vectoService: VectoService, private val naverS
         /*   Lat Lng 으로 지역 반환   */
 
         return try {
-            val response = naverService.reverseGeocode("${visitData.lng_set},${visitData.lat_set}", "legalcode", "json")
+            val response = naverService.reverseGeocode("${visitData.lng_set},${visitData.lat_set}", "roadaddr", "json")
 
             if(response.isSuccessful){
                 Log.d("reverseGeocode", "SUCCESS: ${response.body()}")

@@ -400,6 +400,7 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
         this.naverMap = naverMap
         naverMap.moveCamera(CameraUpdate.zoomTo(18.0))
         naverMap.uiSettings.isZoomControlEnabled = false
+        naverMap.isIndoorEnabled = true
 
         mapMarkerManager = MapMarkerManager(requireContext(), naverMap)
         mapOverlayManager = MapOverlayManager(requireContext(), mapMarkerManager, naverMap)

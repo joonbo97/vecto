@@ -93,7 +93,6 @@ class SearchFragment : Fragment(), MainActivity.ScrollToTop, FeedAdapter.OnFeedA
         newNoticeViewModel.getNewNotice()   //공지사항 불러오기
 
         initUI()
-        initAds()
         initRecyclerView()
         initObservers()
         initListeners()
@@ -138,18 +137,6 @@ class SearchFragment : Fragment(), MainActivity.ScrollToTop, FeedAdapter.OnFeedA
                 startActivity(intent)
             }
         }
-    }
-
-    private fun initAds() {
-/*
-        // Create a new ad view.
-        val adView = binding.adView
-
-        // Create an ad request.
-        val adRequest = AdRequest.Builder().build()
-
-        // Start loading the ad in the background.
-        adView.loadAd(adRequest)*/
     }
 
     override fun onResume() {
@@ -394,11 +381,13 @@ class SearchFragment : Fragment(), MainActivity.ScrollToTop, FeedAdapter.OnFeedA
         }
 
         /*   오류 관련 Observer   */
-        searchViewModel.errorMessage.observe(viewLifecycleOwner) {
-            ToastMessageUtils.showToast(requireContext(), getString(it))
+        lifecycleScope.launch {
+            searchViewModel.errorMessage.collect {
+                ToastMessageUtils.showToast(requireContext(), getString(it))
 
-            if(it == R.string.expired_login)
-                SaveLoginDataUtils.deleteData(requireContext())
+                if(it == R.string.expired_login)
+                    SaveLoginDataUtils.deleteData(requireContext())
+            }
         }
 
         notificationViewModel.errorMessage.observe(viewLifecycleOwner) {
@@ -551,20 +540,6 @@ class SearchFragment : Fragment(), MainActivity.ScrollToTop, FeedAdapter.OnFeedA
         binding.NoneImage.visibility = View.VISIBLE
         binding.NoneText.visibility = View.VISIBLE
     }
-
-    private fun showNotice(){
-        binding.noticeBarImage.visibility = View.VISIBLE
-        binding.noticeText.visibility = View.VISIBLE
-        binding.noticeDeleteIcon.visibility = View.VISIBLE
-    }
-
-    private fun hideNotice(){
-        binding.noticeBarImage.visibility = View.GONE
-        binding.noticeText.visibility = View.GONE
-        binding.noticeDeleteIcon.visibility = View.GONE
-    }
-
-
 
     /*   Adapter CallBack 관련   */
     override fun onPostFeedLike(feedId: Int) {

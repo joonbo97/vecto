@@ -19,6 +19,7 @@ class VisitDatabase(private val context: Context) {
             put("lng_set", visitData.lng_set)
             put("staytime", visitData.staytime)
             put("name", visitData.name)
+            put("address", visitData.address)
             put("distance", visitData.distance)
             put("type", visitData.transportType)
         }
@@ -41,9 +42,10 @@ class VisitDatabase(private val context: Context) {
             val lng_set = cursor.getDouble(cursor.getColumnIndex("lng_set"))
             val staytime = cursor.getInt(cursor.getColumnIndex("staytime"))
             val name = cursor.getString(cursor.getColumnIndex("name"))
+            val address = cursor.getString(cursor.getColumnIndex("address"))
             val distance = cursor.getInt(cursor.getColumnIndex("distance"))
             val type = cursor.getString(cursor.getColumnIndex("type"))
-            dataList.add(VisitData(datetime, endtime, lat, lng, lat_set, lng_set, staytime, name, distance, type))
+            dataList.add(VisitData(datetime, endtime, lat, lng, lat_set, lng_set, staytime, name, address, distance, type))
         }
 
         cursor.close()
@@ -72,11 +74,12 @@ class VisitDatabase(private val context: Context) {
         val lng_set = cursor.getDouble(cursor.getColumnIndex("lng_set"))
         val staytime = cursor.getInt(cursor.getColumnIndex("staytime"))
         val name = cursor.getString(cursor.getColumnIndex("name"))
+        val address = cursor.getString(cursor.getColumnIndex("address"))
         val distance = cursor.getInt(cursor.getColumnIndex("distance"))
         val type = cursor.getString(cursor.getColumnIndex("type"))
         cursor.close()
 
-        return VisitData(datetime, endtime, lat, lng, lat_set, lng_set, staytime, name, distance, type)
+        return VisitData(datetime, endtime, lat, lng, lat_set, lng_set, staytime, name, address, distance, type)
     }
 
     //특정 시간의 데이터를 변경하는 작업
@@ -126,6 +129,7 @@ class VisitDatabase(private val context: Context) {
             put("lng_set", newVisitData.lng_set)
             put("staytime", newVisitData.staytime)
             put("name", newVisitData.name)
+            put("address", newVisitData.address)
             put("distance", newVisitData.distance)
             put("type", newVisitData.transportType)
         }
@@ -185,9 +189,10 @@ class VisitDatabase(private val context: Context) {
             val lng_set = cursor.getDouble(cursor.getColumnIndex("lng_set"))
             val staytime = cursor.getInt(cursor.getColumnIndex("staytime"))
             val name = cursor.getString(cursor.getColumnIndex("name"))
+            val address = cursor.getString(cursor.getColumnIndex("address"))
             val distance = cursor.getInt(cursor.getColumnIndex("distance"))
             val type = cursor.getString(cursor.getColumnIndex("type"))
-            dataList.add(VisitData(datetime, endtime, lat, lng, lat_set, lng_set, staytime, name, distance, type))
+            dataList.add(VisitData(datetime, endtime, lat, lng, lat_set, lng_set, staytime, name, address, distance, type))
         }
 
         cursor.close()
@@ -216,9 +221,10 @@ class VisitDatabase(private val context: Context) {
                 val lng_set = cursor.getDouble(cursor.getColumnIndex("lng_set"))
                 val staytime = cursor.getInt(cursor.getColumnIndex("staytime"))
                 val name = cursor.getString(cursor.getColumnIndex("name"))
+                val address = cursor.getString(cursor.getColumnIndex("address"))
                 val distance = cursor.getInt(cursor.getColumnIndex("distance"))
                 val type = cursor.getString(cursor.getColumnIndex("type"))
-                dataList.add(VisitData(datetime, endtime, lat, lng, lat_set, lng_set, staytime, name, distance, type))
+                dataList.add(VisitData(datetime, endtime, lat, lng, lat_set, lng_set, staytime, name, address, distance, type))
             } while (cursor.moveToNext())
         }
 

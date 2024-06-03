@@ -77,8 +77,8 @@ class SearchViewModel(private val repository: FeedRepository, private val userRe
     val deleteFollowResult: LiveData<Boolean> = _deleteFollowResult
 
     /*   에러   */
-    private val _errorMessage = MutableLiveData<Int>()
-    val errorMessage: LiveData<Int> = _errorMessage
+    private val _errorMessage = MutableSharedFlow<Int>(replay = 0)
+    val errorMessage = _errorMessage.asSharedFlow()
 
     //팔로우 정보 조회 실패
     private val _followErrorLiveData = MutableLiveData<String>()
@@ -158,10 +158,10 @@ class SearchViewModel(private val repository: FeedRepository, private val userRe
             }.onFailure {
                 when(it.message){
                     ServerResponse.ERROR.code -> {
-                        _errorMessage.postValue(R.string.APIErrorToastMessage)
+                        _errorMessage.tryEmit(R.string.APIErrorToastMessage)
                     }
                     else -> {
-                        _errorMessage.postValue(R.string.get_feed_fail)
+                        _errorMessage.tryEmit(R.string.get_feed_fail)
                     }
                 }
                 endLoading()
@@ -283,11 +283,11 @@ class SearchViewModel(private val repository: FeedRepository, private val userRe
                     reissueToken(Function.GetFeedList.name)
                 }
                 ServerResponse.ERROR.code -> {
-                    _errorMessage.postValue(R.string.APIErrorToastMessage)
+                    _errorMessage.tryEmit(R.string.APIErrorToastMessage)
                     endLoading()
                 }
                 else -> {
-                    _errorMessage.postValue(R.string.get_feed_fail)
+                    _errorMessage.tryEmit(R.string.get_feed_fail)
                     endLoading()
                 }
             }
@@ -402,10 +402,10 @@ class SearchViewModel(private val repository: FeedRepository, private val userRe
                     ServerResponse.ACCESS_TOKEN_VALID_ERROR.code -> {}
                     //Refresh Token 만료
                     ServerResponse.REFRESH_TOKEN_INVALID_ERROR.code -> {
-                        _errorMessage.postValue(R.string.expired_login)
+                        _errorMessage.tryEmit(R.string.expired_login)
                     }
                     else -> {
-                        _errorMessage.postValue(R.string.APIFailToastMessage)
+                        _errorMessage.tryEmit(R.string.APIFailToastMessage)
                     }
                 }
                 endLoading()
