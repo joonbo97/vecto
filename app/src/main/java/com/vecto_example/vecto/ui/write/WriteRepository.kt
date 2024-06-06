@@ -2,13 +2,14 @@ package com.vecto_example.vecto.ui.write
 
 import android.util.Log
 import com.google.gson.Gson
+import com.vecto_example.vecto.BuildConfig
 import com.vecto_example.vecto.data.Auth
 import com.vecto_example.vecto.data.model.VisitData
 import com.vecto_example.vecto.retrofit.NaverApiService
 import com.vecto_example.vecto.retrofit.VectoService
 import okhttp3.MultipartBody
 
-class WriteRepository(private val vectoService: VectoService, private val naverService: NaverApiService) {
+class WriteRepository(private val vectoService: VectoService) {
     /*   게시글 작성 Repository   */
 
     suspend fun uploadImages(imageParts: List<MultipartBody.Part>): Result<VectoService.ImageResponse> {
@@ -86,26 +87,6 @@ class WriteRepository(private val vectoService: VectoService, private val naverS
         } catch (e: Exception) {
             Log.e("updateFeed", "ERROR", e)
             Result.failure(e)
-        }
-    }
-
-    suspend fun reverseGeocode(visitData: VisitData): Result<NaverApiService.ReverseGeocodeResponse> {
-        /*   Lat Lng 으로 지역 반환   */
-
-        return try {
-            val response = naverService.reverseGeocode("${visitData.lng_set},${visitData.lat_set}", "roadaddr", "json")
-
-            if(response.isSuccessful){
-                Log.d("reverseGeocode", "SUCCESS: ${response.body()}")
-                Result.success(response.body()!!)
-            }
-            else{
-                Log.d("reverseGeocode", "FAIL: ${response.errorBody()?.string()}")
-                Result.failure(Exception("FAIL"))
-            }
-        } catch (e: Exception) {
-            Log.e("reverseGeocode", "ERROR", e)
-            Result.failure(Exception("ERROR"))
         }
     }
 }

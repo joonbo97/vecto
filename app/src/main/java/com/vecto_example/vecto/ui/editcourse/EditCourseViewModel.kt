@@ -8,15 +8,23 @@ import androidx.lifecycle.viewModelScope
 import com.naver.maps.geometry.LatLng
 import com.vecto_example.vecto.data.model.LocationData
 import com.vecto_example.vecto.data.model.VisitData
+import com.vecto_example.vecto.data.repository.NaverRepository
 import com.vecto_example.vecto.data.repository.TMapRepository
 import com.vecto_example.vecto.retrofit.TMapAPIService
 import com.vecto_example.vecto.utils.ServerResponse
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import java.time.Duration
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
-class EditCourseViewModel(private val repository: TMapRepository) : ViewModel() {
+class EditCourseViewModel(private val repository: TMapRepository, private val naverRepository: NaverRepository) : ViewModel() {
+    private val _setVisitDataList = MutableSharedFlow<MutableList<VisitData>>()
+    val setVisitDataList = _setVisitDataList.asSharedFlow()
 
     private val _responseRecommendLiveData = MutableLiveData<TMapAPIService.GeoJsonResponse>()
     val responseRecommendLiveData: LiveData<TMapAPIService.GeoJsonResponse> = _responseRecommendLiveData
@@ -192,7 +200,6 @@ class EditCourseViewModel(private val repository: TMapRepository) : ViewModel() 
                 _buttonRecommend.value = false
                 _buttonSelect.value = false
             }
-
         }
     }
 
@@ -234,5 +241,82 @@ class EditCourseViewModel(private val repository: TMapRepository) : ViewModel() 
 
     enum class ButtonType{
         EDIT_VISIT, EDIT_PATH, SELECT, NONE
+    }
+
+    fun reverseGeocode(visitDataList: MutableList<VisitData>) {
+        viewModelScope.launch {
+
+            val geocodeList = visitDataList.map { async { naverRepository.reverseGeocode(it) } }.awaitAll()
+
+            var finishedCount = 0
+
+
+            geocodeList.forEachIndexed { index, result ->
+
+                if(visitDataList[index].address.isNullOrEmpty()){
+                    result.onSuccess { geocodeResult ->
+
+                        if(geocodeResult.results.isEmpty())
+                            return@onSuccess
+
+                        val requestResult = geocodeResult.results[0]
+
+                        requestResult.region?.area1?.name?.takeIf { it.isNotEmpty() }?.let { visitDataList[index].address = it }
+                        requestResult.region?.area2?.name?.takeIf { it.isNotEmpty() }?.let { visitDataList[index].address += " $it" }
+                        requestResult.region?.area3?.name?.takeIf { it.isNotEmpty() }?.let { visitDataList[index].address += " $it" }
+                        requestResult.land?.name?.takeIf { it.isNotEmpty() }?.let { visitDataList[index].address += " $it" }
+                        requestResult.land?.number1?.takeIf { it.isNotEmpty() }?.let { visitDataList[index].address += " $it" }
+                        requestResult.land?.number2?.takeIf { it.isNotEmpty() }?.let { visitDataList[index].address += " $it" }
+                        requestResult.addition0?.value?.takeIf { it.isNotEmpty() }?.let { visitDataList[index].address += " $it" }
+
+                        if(visitDataList[index].name.isEmpty() && visitDataList[index].address!!.isNotEmpty()) {
+                            getSearch(visitDataList[index].address!!, visitDataList, finishedCount) { searchResult ->
+                                Log.d("SEARCH ", "SEARCH")
+                                visitDataList[index].name = searchResult
+                                finishedCount++
+                            }
+                        } else {
+                            finishedCount++
+
+                            if(finishedCount == visitDataList.size)
+                                emitVisitData(visitDataList)
+                        }
+                    }.onFailure {
+                        visitDataList[index].address = ""
+                        finishedCount++
+
+                        if(finishedCount == visitDataList.size)
+                            emitVisitData(visitDataList)
+                    }
+                }
+            }
+
+            if(finishedCount == visitDataList.size)
+                emitVisitData(visitDataList)
+        }
+    }
+
+    private fun getSearch(query: String, visitDataList: MutableList<VisitData>, finishedCount: Int, callback: (String) -> Unit){
+
+        viewModelScope.launch {
+            val searchResponse = naverRepository.getSearch(query)
+
+            searchResponse.onSuccess {
+                if(it.items.isNotEmpty()){
+                    callback(it.items[0].title)
+                } else {
+                    callback("")
+                }
+            }.onFailure {
+                callback("")
+            }
+
+            if(finishedCount == visitDataList.size - 1)
+                emitVisitData(visitDataList)
+        }
+    }
+
+    private suspend fun emitVisitData(visitDataList: MutableList<VisitData>){
+        _setVisitDataList.emit(visitDataList)
     }
 }

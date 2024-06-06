@@ -63,7 +63,7 @@ class WriteFragment : Fragment(), OnMapReadyCallback, CalendarDialog.OnDateSelec
     private lateinit var binding: FragmentWriteBinding
 
     private val writeViewModel: WriteViewModel by viewModels {
-        WriteViewModelFactory(WriteRepository(VectoService.create(), NaverApiService.create()), TokenRepository(VectoService.create()))
+        WriteViewModelFactory(WriteRepository(VectoService.create()), TokenRepository(VectoService.create()))
     }
     private lateinit var callBack: OnBackPressedCallback
 
@@ -359,8 +359,6 @@ class WriteFragment : Fragment(), OnMapReadyCallback, CalendarDialog.OnDateSelec
 
                 writeViewModel.visitDataList.clear()
                 writeViewModel.visitDataList.addAll(selectedItems.toMutableList())
-
-                writeViewModel.reverseGeocode()
             }
         }
 

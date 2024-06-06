@@ -65,7 +65,7 @@ class EditFeedActivity : AppCompatActivity(), OnMapReadyCallback, CalendarDialog
     lateinit var binding: ActivityEditFeedBinding
 
     private val writeViewModel: WriteViewModel by viewModels {
-        WriteViewModelFactory(WriteRepository(VectoService.create(), NaverApiService.create()), TokenRepository(VectoService.create()))
+        WriteViewModelFactory(WriteRepository(VectoService.create()), TokenRepository(VectoService.create()))
     }
 
     private lateinit var myEditImageAdapter: MyEditImageAdapter
@@ -114,8 +114,6 @@ class EditFeedActivity : AppCompatActivity(), OnMapReadyCallback, CalendarDialog
         imageUrl = feedInfo.image.toMutableList()
         title = feedInfo.title
         content = feedInfo.content
-
-        writeViewModel.reverseGeocode()
 
         feedId = intent.getIntExtra("feedId", -1)
 
@@ -388,7 +386,6 @@ class EditFeedActivity : AppCompatActivity(), OnMapReadyCallback, CalendarDialog
                 writeViewModel.visitDataList.clear()
                 writeViewModel.visitDataList.addAll(selectedItems.toMutableList())
 
-                writeViewModel.reverseGeocode()
             }
         }
 

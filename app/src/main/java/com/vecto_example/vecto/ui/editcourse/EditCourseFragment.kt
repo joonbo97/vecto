@@ -13,6 +13,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.vecto_example.vecto.service.LocationService
 import com.vecto_example.vecto.data.model.LocationData
@@ -29,16 +30,19 @@ import com.naver.maps.map.NaverMap
 import com.naver.maps.map.OnMapReadyCallback
 import com.vecto_example.vecto.utils.MyClusterItem
 import com.vecto_example.vecto.R
+import com.vecto_example.vecto.data.repository.NaverRepository
 import com.vecto_example.vecto.data.repository.TMapRepository
 import com.vecto_example.vecto.databinding.FragmentEditCourseBinding
 import com.vecto_example.vecto.dialog.CalendarDialog
 import com.vecto_example.vecto.dialog.DeleteDialog
 import com.vecto_example.vecto.popupwindow.PlacePopupWindow
+import com.vecto_example.vecto.retrofit.NaverApiService
 import com.vecto_example.vecto.ui.editcourse.adapter.MyCourseAdapter
 import com.vecto_example.vecto.utils.DateTimeUtils
 import com.vecto_example.vecto.utils.MapMarkerManager
 import com.vecto_example.vecto.utils.MapOverlayManager
 import com.vecto_example.vecto.utils.ToastMessageUtils
+import kotlinx.coroutines.launch
 import ted.gun0912.clustering.clustering.Cluster
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -48,7 +52,7 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
     private lateinit var binding: FragmentEditCourseBinding
 
     private val editCourseViewModel: EditCourseViewModel by viewModels {
-        EditCourseViewModelFactory(TMapRepository(TMapAPIService.create()))
+        EditCourseViewModelFactory(TMapRepository(TMapAPIService.create()), NaverRepository(NaverApiService.create(), NaverApiService.createSearch()))
     }
 
     //Overlay, Marker 관리
@@ -282,6 +286,13 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
             editCourseViewModel.overlayDone()
         }
 
+        /*   ReverseGeocode 완료 Observer   */
+        lifecycleScope.launch {
+            editCourseViewModel.setVisitDataList.collect {
+                updateVisitAddressData(it)
+            }
+        }
+
         /*   주변 장소 검색 완료 Observer   */
         editCourseViewModel.isFinished.observe(viewLifecycleOwner){
             if(it) {    //종료 되었을 때
@@ -439,6 +450,9 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
             visitDataList.add(0, filteredData[0])
 
         if(visitDataList.isNotEmpty()){ //방문 장소가 있을 경우
+
+            setAddress(visitDataList)
+
             //선택한 날짜의 방문지의 처음과 끝까지의 경로
             allPathData = LocationDatabase(requireContext()).getBetweenLocationData(visitDataList.first().datetime, visitDataList.last().datetime)
 
@@ -473,7 +487,7 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
                         locationDataForPath.add(locationData)
 
                         if(visitDataList[cnt - 1].distance == 0){
-                            VisitDatabase(requireContext()).updateVisitDataDistance(visitDataList[cnt - 1].datetime, totalDistance.toInt())
+                            VisitDatabase(requireContext()).updateVisitDataDistance(visitDataList[cnt - 1].datetime, if(totalDistance.toInt() == 0) 1 else totalDistance.toInt())
                         }
 
                         cnt++
@@ -495,6 +509,10 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
         }
 
         editCourseViewModel.overlayDone()
+    }
+
+    private fun setAddress(visitDataList: MutableList<VisitData>){
+        editCourseViewModel.reverseGeocode(visitDataList)
     }
 
     /*   RecyclerView 초기화 함수   */
@@ -571,6 +589,24 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
         editCourseViewModel.overlayDone()
 
         ToastMessageUtils.showToast(requireContext(), getString(R.string.visit_edit_success))
+    }
+
+    private fun updateVisitAddressData(visitDataList: MutableList<VisitData>) {
+        val visitDatabase = VisitDatabase(requireContext())
+
+        visitDataList.forEach {
+            visitDatabase.updateVisitDataAddress(it)
+        }
+
+        if(myCourseAdapter.visitdata.size == visitDataList.size){
+            mapOverlayManager.deleteOverlay()
+
+            mapOverlayManager.addPathOverlayForLocation(allPathData)
+            mapMarkerManager.addBasicMarkers(visitDataList)
+
+            myCourseAdapter.visitdata = visitDataList
+            myCourseAdapter.notifyDataSetChanged()
+        }
     }
 
     private fun deleteVisit(visitData: VisitData, position: Int) {
@@ -725,8 +761,6 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
     override fun onDateSelected(date: String) {
         editCourseViewModel.setDate(date)
         naverMap.onSymbolClickListener = null
-
-        setAdapterData(date)
     }
 
     //Cluster 마커 클릭

@@ -51,8 +51,6 @@ class WriteViewModel(private val repository: WriteRepository, private val tokenR
     private val _updateFeedResult = MutableLiveData<String>()
     val updateFeedResult: LiveData<String> = _updateFeedResult
 
-    private lateinit var address: MutableList<String>
-
     lateinit var visitDataForWriteList: MutableList<VisitData>
 
     private val _mapImageDone = MutableLiveData<Boolean>()
@@ -190,63 +188,6 @@ class WriteViewModel(private val repository: WriteRepository, private val tokenR
         return visitDataForWriteList.all {
             it.name.isNotEmpty() && DateTimeUtils.isValidDateTimeFormat(it.datetime) && DateTimeUtils.isValidDateTimeFormat(it.endtime)
         }
-    }
-
-    fun reverseGeocode() {
-        visitDataForWriteList = MutableList(visitDataList.size){
-            VisitData("", "", 0.0, 0.0, 0.0, 0.0, 0, "", "", 0, ServerResponse.VISIT_TYPE_WALK.code)
-        }
-        address = MutableList(visitDataList.size) {""}
-        _isCourseDataLoaded.value = true
-
-        viewModelScope.launch {
-            try {
-                val geocodeList = visitDataList.map { async { repository.reverseGeocode(it) } }.awaitAll()
-
-                geocodeList.forEachIndexed { index, result ->
-                    result.onSuccess {
-                        val requestResult = it.results[0]
-
-                        requestResult.region?.area1?.name?.takeIf { it.isNotEmpty() }?.let { address[index] += it }
-                        requestResult.region?.area2?.name?.takeIf { it.isNotEmpty() }?.let { address[index] += " $it" }
-                        requestResult.region?.area3?.name?.takeIf { it.isNotEmpty() }?.let { address[index] += " $it" }
-                        requestResult.land?.name?.takeIf { it.isNotEmpty() }?.let { address[index] += " $it" }
-                        requestResult.land?.number1?.takeIf { it.isNotEmpty() }?.let { address[index] += " $it" }
-                        requestResult.land?.number2?.takeIf { it.isNotEmpty() }?.let { address[index] += " $it" }
-                        requestResult.addition0?.value?.takeIf { it.isNotEmpty() }?.let { address[index] += " $it" }
-
-                    }.onFailure {
-                        address[index] = ""
-                    }
-
-                    visitDataForWriteList[index] = VisitData(
-                        datetime = visitDataList[index].datetime,
-                        endtime = visitDataList[index].endtime,
-                        lat = visitDataList[index].lat,
-                        lng = visitDataList[index].lng,
-                        lat_set = visitDataList[index].lat_set,
-                        lng_set = visitDataList[index].lng_set,
-                        staytime = visitDataList[index].staytime,
-                        name = visitDataList[index].name,
-                        address = address[index],
-                        distance = visitDataList[index].distance,
-                        transportType = visitDataList[index].transportType
-                    )
-
-                }
-            } catch (e: Exception) {
-                when(e.message){
-                    ServerResponse.FAIL.code -> {
-                        _errorMessage.postValue(R.string.feed_reverse_geocode_error)
-                    }
-                    ServerResponse.ERROR.code -> {
-                        _errorMessage.postValue(R.string.APIErrorToastMessage)
-                    }
-                }
-            }
-
-        }
-
     }
 
     private fun reissueToken(function: String){

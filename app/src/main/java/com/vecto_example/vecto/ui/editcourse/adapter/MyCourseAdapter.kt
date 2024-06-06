@@ -246,8 +246,6 @@ class MyCourseAdapter(): RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     }
 
     fun updateVisitData(newVisitData: VisitData, position: Int){
-        Log.d("ASD", visitdata.size.toString())
-
         if((newVisitData.lat_set != visitdata[position / 2].lat_set || newVisitData.lng_set != visitdata[position / 2].lng_set) && visitdata.size > 1) //위치도 바뀐 경우
             adjustPathData(newVisitData, position / 2)
 

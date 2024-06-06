@@ -118,6 +118,21 @@ class VisitDatabase(private val context: Context) {
     }
 
     @SuppressLint("Range")
+    fun updateVisitDataAddress(newVisitData: VisitData) {
+        val db = dbHelper.writableDatabase
+        val values = ContentValues().apply {
+            put("name", newVisitData.name)
+            put("address", newVisitData.address)
+        }
+
+        val whereClause = "datetime = ?"
+        val whereArgs = arrayOf(newVisitData.datetime)
+
+        db.update("visit_data", values, whereClause, whereArgs) // 데이터 갱신
+        db.close()
+    }
+
+    @SuppressLint("Range")
     fun updateVisitData(oldVisitData: VisitData, newVisitData: VisitData) {
         val db = dbHelper.writableDatabase
         val values = ContentValues().apply {

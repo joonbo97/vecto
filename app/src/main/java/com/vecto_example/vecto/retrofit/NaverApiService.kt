@@ -5,6 +5,7 @@ import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
+import retrofit2.http.Header
 import retrofit2.http.Headers
 import retrofit2.http.Query
 
@@ -25,9 +26,11 @@ interface NaverApiService {
 
     @GET("search/local.json")
     suspend fun getSearch(
+        @Header("X-Naver-Client-Id") clientId: String,
+        @Header("X-Naver-Client-Secret") clientSecret: String,
         @Query("query") query: String,
-        @Query("display") display: String,
-    )
+        @Query("display") display: Int,
+    ): Response<SearchResult>
 
 
 
@@ -86,6 +89,10 @@ interface NaverApiService {
         val region: Region?
     )
 
+    data class SearchResult(
+        val items: List<Item>
+    )
+
     data class Code(
         val id: String,
         val type: String,
@@ -112,5 +119,9 @@ interface NaverApiService {
     data class Addition(
         val value: String,
         val type: String
+    )
+
+    data class Item(
+        val title: String
     )
 }
