@@ -30,6 +30,7 @@ interface NaverApiService {
         @Header("X-Naver-Client-Secret") clientSecret: String,
         @Query("query") query: String,
         @Query("display") display: Int,
+        @Query("start") start: Int
     ): Response<SearchResult>
 
 

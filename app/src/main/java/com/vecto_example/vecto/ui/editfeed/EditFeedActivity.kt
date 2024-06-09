@@ -114,6 +114,7 @@ class EditFeedActivity : AppCompatActivity(), OnMapReadyCallback, CalendarDialog
         imageUrl = feedInfo.image.toMutableList()
         title = feedInfo.title
         content = feedInfo.content
+        writeViewModel.courseDataLoad()
 
         feedId = intent.getIntExtra("feedId", -1)
 
@@ -255,7 +256,7 @@ class EditFeedActivity : AppCompatActivity(), OnMapReadyCallback, CalendarDialog
                 binding.EditContent.text.toString(),
                 allImageUrl.toMutableList(),
                 writeViewModel.locationDataList,
-                writeViewModel.visitDataForWriteList,
+                writeViewModel.visitDataList,
                 writeViewModel.mapImageUrls.value?.toMutableList()
             ))
     }
@@ -376,6 +377,7 @@ class EditFeedActivity : AppCompatActivity(), OnMapReadyCallback, CalendarDialog
                 }
 
                 //선택한 날짜의 방문지의 처음과 끝까지의 경로
+                writeViewModel.locationDataList.clear()
                 writeViewModel.locationDataList.addAll(LocationDatabase(this).getBetweenLocationData(selectedItems.first().datetime, selectedItems.last().datetime))
 
                 val locationDataForPath = mutableListOf<LocationData>()
@@ -386,6 +388,7 @@ class EditFeedActivity : AppCompatActivity(), OnMapReadyCallback, CalendarDialog
                 writeViewModel.visitDataList.clear()
                 writeViewModel.visitDataList.addAll(selectedItems.toMutableList())
 
+                writeViewModel.courseDataLoad()
             }
         }
 

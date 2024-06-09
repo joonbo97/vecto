@@ -185,7 +185,7 @@ class WriteViewModel(private val repository: WriteRepository, private val tokenR
     }
 
     fun isAllVisitDataValid(): Boolean {
-        return visitDataForWriteList.all {
+        return visitDataList.all {
             it.name.isNotEmpty() && DateTimeUtils.isValidDateTimeFormat(it.datetime) && DateTimeUtils.isValidDateTimeFormat(it.endtime)
         }
     }
@@ -211,6 +211,10 @@ class WriteViewModel(private val repository: WriteRepository, private val tokenR
                 endLoading()
             }
         }
+    }
+
+    fun courseDataLoad(){
+        _isCourseDataLoaded.value = true
     }
 
     fun startLoading(){
@@ -239,7 +243,6 @@ class WriteViewModel(private val repository: WriteRepository, private val tokenR
         _addFeedResult.value = ""
 
         deleteCourseData()
-        visitDataForWriteList.clear()
 
         failUpload()
     }

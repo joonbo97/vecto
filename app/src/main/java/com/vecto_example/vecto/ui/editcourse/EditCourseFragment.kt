@@ -38,6 +38,7 @@ import com.vecto_example.vecto.dialog.DeleteDialog
 import com.vecto_example.vecto.popupwindow.PlacePopupWindow
 import com.vecto_example.vecto.retrofit.NaverApiService
 import com.vecto_example.vecto.ui.editcourse.adapter.MyCourseAdapter
+import com.vecto_example.vecto.utils.DataBaseUtils
 import com.vecto_example.vecto.utils.DateTimeUtils
 import com.vecto_example.vecto.utils.MapMarkerManager
 import com.vecto_example.vecto.utils.MapOverlayManager
@@ -58,6 +59,10 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
     //Overlay, Marker 관리
     private lateinit var mapMarkerManager: MapMarkerManager
     private lateinit var mapOverlayManager: MapOverlayManager
+
+    //DataBase
+    private lateinit var visitDatabase: VisitDatabase
+    private lateinit var locationDatabase: LocationDatabase
 
     //map 설정
     private lateinit var mapView: MapFragment
@@ -88,6 +93,13 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
         initSlide()
 
         return binding.root
+    }
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+
+        visitDatabase = VisitDatabase(context)
+        locationDatabase = LocationDatabase(context)
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -194,17 +206,17 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
     private fun changeCourseData() {    //추천 경로로 변경 함수
         val startTime = LocalDateTime.parse(getSelectedPathData().coordinates.first().datetime, DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"))
 
-        VisitDatabase(requireContext()).updateVisitDataDistance(getSelectedPathData().coordinates.first().datetime, editCourseViewModel.totalDistance)   //total distance 변경
+        visitDatabase.updateVisitDataDistance(getSelectedPathData().coordinates.first().datetime, editCourseViewModel.totalDistance)   //total distance 변경
         myCourseAdapter.visitdata[myCourseAdapter.selectedPosition / 2].distance = editCourseViewModel.totalDistance
 
         //시작과 끝을 제외한 기존 경로 삭제
-        LocationDatabase(requireContext()).deleteLocationDataBetween(getSelectedPathData().coordinates.first().datetime, getSelectedPathData().coordinates.last().datetime)
+        locationDatabase.deleteLocationDataBetween(getSelectedPathData().coordinates.first().datetime, getSelectedPathData().coordinates.last().datetime)
 
         getSelectedPathData().coordinates.clear()
 
         //시작 시간은 시작 지점의 시간.
         editCourseViewModel.responsePathData.forEachIndexed { index, point ->
-            LocationDatabase(requireContext()).addLocationData(LocationData(startTime.plusSeconds(index.toLong() + 1).format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")), point.latitude, point.longitude))
+            locationDatabase.addLocationData(LocationData(startTime.plusSeconds(index.toLong() + 1).format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")), point.latitude, point.longitude))
             getSelectedPathData().coordinates.add(LocationData(startTime.plusSeconds(index.toLong() + 1).format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")), point.latitude, point.longitude))
         }
 
@@ -435,13 +447,13 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
 
         val previousDate = DateTimeUtils.getPreviousDate(selectedDate)
 
-        val filteredData = VisitDatabase(requireContext()).getAllVisitData().filter { visitData ->
+        val filteredData = visitDatabase.getAllVisitData().filter { visitData ->
             val visitDate = visitData.datetime.substring(0, 10)
             val endDate = visitData.endtime.substring(0, 10)
             visitDate == previousDate && endDate == selectedDate
         }
 
-        val visitDataList = VisitDatabase(requireContext()).getAllVisitData().filter {
+        val visitDataList = visitDatabase.getAllVisitData().filter {
             it.datetime.startsWith(selectedDate)
         }.toMutableList()
 
@@ -454,7 +466,9 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
             setAddress(visitDataList)
 
             //선택한 날짜의 방문지의 처음과 끝까지의 경로
-            allPathData = LocationDatabase(requireContext()).getBetweenLocationData(visitDataList.first().datetime, visitDataList.last().datetime)
+            allPathData = locationDatabase.getBetweenLocationData(visitDataList.first().datetime, visitDataList.last().datetime)
+
+            DataBaseUtils.checkLocationDataValidation(visitDataList, allPathData, locationDatabase)
 
             mapOverlayManager.addPathOverlayForLocation(allPathData)
 
@@ -487,14 +501,13 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
                         locationDataForPath.add(locationData)
 
                         if(visitDataList[cnt - 1].distance == 0){
-                            VisitDatabase(requireContext()).updateVisitDataDistance(visitDataList[cnt - 1].datetime, if(totalDistance.toInt() == 0) 1 else totalDistance.toInt())
+                            visitDatabase.updateVisitDataDistance(visitDataList[cnt - 1].datetime, if(totalDistance.toInt() == 0) 1 else totalDistance.toInt())
                         }
 
                         cnt++
                         totalDistance = 0.0
 
                         if (cnt == visitDataList.size) {
-                            Log.d("location", "마지막 항목에 도달하여 종료합니다. 저장된 경로 수: ${myCourseAdapter.pathdata}")
                             break
                         }
                     } else {
@@ -578,7 +591,7 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
 
         val newVisitData = getSelectedVisitData().copy(name = name, lat_set = lat, lng_set = lng)
 
-        VisitDatabase(requireContext()).updateVisitData(getSelectedVisitData(), newVisitData)   //DB 데이터 변경
+        visitDatabase.updateVisitData(getSelectedVisitData(), newVisitData)   //DB 데이터 변경
         myCourseAdapter.updateVisitData(newVisitData, myCourseAdapter.selectedPosition) //Adapter 데이터 변경
 
         mapOverlayManager.deleteOverlay()
@@ -592,7 +605,6 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
     }
 
     private fun updateVisitAddressData(visitDataList: MutableList<VisitData>) {
-        val visitDatabase = VisitDatabase(requireContext())
 
         visitDataList.forEach {
             visitDatabase.updateVisitDataAddress(it)
@@ -630,8 +642,8 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
         }
 
         fun mergeWithBeforeData(position: Int){ //이전 방문지와 합병
-            LocationDatabase(requireContext()).deleteLocationDataBetween(myCourseAdapter.visitdata[position - 1].datetime, myCourseAdapter.visitdata[position].endtime)
-            LocationDatabase(requireContext()).updateLocationData(myCourseAdapter.visitdata[position - 1].datetime, myCourseAdapter.visitdata[position].lat_set, myCourseAdapter.visitdata[position].lng_set)
+            locationDatabase.deleteLocationDataBetween(myCourseAdapter.visitdata[position - 1].datetime, myCourseAdapter.visitdata[position].endtime)
+            locationDatabase.updateLocationData(myCourseAdapter.visitdata[position - 1].datetime, myCourseAdapter.visitdata[position].lat_set, myCourseAdapter.visitdata[position].lng_set)
 
             //재할당을 위한 데이터를 만듬
             val newVisitData = myCourseAdapter.visitdata[position - 1].copy(
@@ -640,17 +652,17 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
                 distance = myCourseAdapter.visitdata[position].distance //이전 distance 값 사용
             )
 
-            VisitDatabase(requireContext()).updateVisitData(myCourseAdapter.visitdata[position - 1], newVisitData)  //기존 데이터를 업데이트 데이터로 변경
+            visitDatabase.updateVisitData(myCourseAdapter.visitdata[position - 1], newVisitData)  //기존 데이터를 업데이트 데이터로 변경
 
             myCourseAdapter.visitdata[position - 1] = newVisitData//직전 방문지에 이전 방문지 데이터를 합친다.
             myCourseAdapter.visitdata.removeAt(position)//해당 위치 방문지 데이터 삭제
 
-            VisitDatabase(requireContext()).deleteVisitData(visitData.datetime)
+            visitDatabase.deleteVisitData(visitData.datetime)
         }
 
         fun mergeWithAfterData(position: Int){  //이후 방문지와 합병
-            LocationDatabase(requireContext()).deleteLocationDataBetween(myCourseAdapter.visitdata[position].datetime, myCourseAdapter.visitdata[position + 1].endtime)
-            LocationDatabase(requireContext()).updateLocationData(myCourseAdapter.visitdata[position].datetime, myCourseAdapter.visitdata[position + 1].lat_set, myCourseAdapter.visitdata[position + 1].lng_set)
+            locationDatabase.deleteLocationDataBetween(myCourseAdapter.visitdata[position].datetime, myCourseAdapter.visitdata[position + 1].endtime)
+            locationDatabase.updateLocationData(myCourseAdapter.visitdata[position].datetime, myCourseAdapter.visitdata[position + 1].lat_set, myCourseAdapter.visitdata[position + 1].lng_set)
 
             //재할당을 위한 데이터를 만듬
             val newVisitData = myCourseAdapter.visitdata[position + 1].copy(
@@ -659,12 +671,12 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
                 //position - 1 의 방문지 distance 를 변경해야하지만, 합쳐질 정도로 가까우므로 같은 값 사용
             )
 
-            VisitDatabase(requireContext()).updateVisitData(myCourseAdapter.visitdata[position + 1], newVisitData)  //기존 데이터를 업데이트 데이터로 변경
+            visitDatabase.updateVisitData(myCourseAdapter.visitdata[position + 1], newVisitData)  //기존 데이터를 업데이트 데이터로 변경
 
             myCourseAdapter.visitdata[position + 1] = newVisitData
             myCourseAdapter.visitdata.removeAt(position)
 
-            VisitDatabase(requireContext()).deleteVisitDataForEndtime(visitData.endtime)
+            visitDatabase.deleteVisitDataForEndtime(visitData.endtime)
         }
 
         fun mergePathData(position: Int){   //경로 합병
@@ -691,7 +703,7 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
                     myCourseAdapter.visitdata.removeAt(0)
                     myCourseAdapter.pathdata.removeAt(0)
 
-                    VisitDatabase(requireContext()).deleteVisitData(visitData.datetime)
+                    visitDatabase.deleteVisitData(visitData.datetime)
                 }
 
             }
@@ -706,12 +718,12 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
                 else
                 {
                     if(myCourseAdapter.visitdata[position - 1].distance != 0)
-                        VisitDatabase(requireContext()).updateVisitDataDistance(myCourseAdapter.visitdata[position - 1].datetime, 0)    //새로운 방문지 추가를 대비하여 초기화
+                        visitDatabase.updateVisitDataDistance(myCourseAdapter.visitdata[position - 1].datetime, 0)    //새로운 방문지 추가를 대비하여 초기화
 
                     myCourseAdapter.visitdata.removeAt(position)
                     myCourseAdapter.pathdata.removeAt(position - 1)
 
-                    VisitDatabase(requireContext()).deleteVisitData(visitData.datetime)
+                    visitDatabase.deleteVisitData(visitData.datetime)
                 }
             }
             else// 중간에 있는 방문지인 경우
@@ -732,12 +744,12 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
                 {
                     val newDistance = myCourseAdapter.visitdata[position - 1].distance + myCourseAdapter.visitdata[position].distance
 
-                    VisitDatabase(requireContext()).updateVisitDataDistance(myCourseAdapter.visitdata[position - 1].datetime, newDistance)
+                    visitDatabase.updateVisitDataDistance(myCourseAdapter.visitdata[position - 1].datetime, newDistance)
 
                     myCourseAdapter.visitdata[position - 1].distance = newDistance
                     myCourseAdapter.visitdata.removeAt(position)
 
-                    VisitDatabase(requireContext()).deleteVisitData(visitData.datetime)
+                    visitDatabase.deleteVisitData(visitData.datetime)
 
                     mergePathData(position)
                 }
@@ -747,7 +759,7 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
         {
             myCourseAdapter.visitdata.removeAt(position)
 
-            VisitDatabase(requireContext()).deleteVisitData(visitData.datetime)
+            visitDatabase.deleteVisitData(visitData.datetime)
 
             mapOverlayManager.deleteOverlay()
         }
@@ -813,7 +825,7 @@ class EditCourseFragment : Fragment(), OnMapReadyCallback, MyCourseAdapter.OnIte
     }
 
     override fun onPathTypeClick(type: String) {
-        VisitDatabase(requireContext()).updateVisitDataType(getSelectedVisitData().datetime, type)
+        visitDatabase.updateVisitDataType(getSelectedVisitData().datetime, type)
 
         myCourseAdapter.successChangeType(type, getSelectedItemPosition())
     }

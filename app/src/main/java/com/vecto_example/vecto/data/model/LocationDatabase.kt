@@ -94,4 +94,21 @@ class LocationDatabase(context: Context) {
 
         return dataList
     }
+
+    /**
+     * 특정 DateTime에 해당하는 LocationData가 존재하는지 확인하는 함수
+     * @param datetime: String
+     * @return 존재 여부를 Boolean 값으로 반환
+     */
+    fun checkLocationDataExists(datetime: String): Boolean {
+        val db = dbHelper.readableDatabase
+        val projection = arrayOf("datetime")
+        val selection = "datetime = ?"
+        val selectionArgs = arrayOf(datetime)
+        val cursor = db.query("location_data", projection, selection, selectionArgs, null, null, null)
+        val exists = cursor.count > 0
+        cursor.close()
+        db.close()
+        return exists
+    }
 }

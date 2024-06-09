@@ -230,7 +230,7 @@ class WriteFragment : Fragment(), OnMapReadyCallback, CalendarDialog.OnDateSelec
                 LocalDateTime.now().withNano(0).toString(),
                 allImageUrl,
                 writeViewModel.locationDataList,
-                writeViewModel.visitDataForWriteList,
+                writeViewModel.visitDataList,
                 writeViewModel.mapImageUrls.value?.toMutableList()
             ))
     }
@@ -346,6 +346,7 @@ class WriteFragment : Fragment(), OnMapReadyCallback, CalendarDialog.OnDateSelec
                 mapOverlayManager.deleteOverlay()
 
                 //선택한 날짜의 방문지의 처음과 끝까지의 경로
+                writeViewModel.locationDataList.clear()
                 writeViewModel.locationDataList.addAll(LocationDatabase(requireContext()).getBetweenLocationData(selectedItems.first().datetime, selectedItems.last().datetime))
 
                 if(selectedItems.size == 1)
@@ -359,6 +360,8 @@ class WriteFragment : Fragment(), OnMapReadyCallback, CalendarDialog.OnDateSelec
 
                 writeViewModel.visitDataList.clear()
                 writeViewModel.visitDataList.addAll(selectedItems.toMutableList())
+
+                writeViewModel.courseDataLoad()
             }
         }
 

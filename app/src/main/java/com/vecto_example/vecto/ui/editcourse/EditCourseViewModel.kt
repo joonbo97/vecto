@@ -245,11 +245,7 @@ class EditCourseViewModel(private val repository: TMapRepository, private val na
 
     fun reverseGeocode(visitDataList: MutableList<VisitData>) {
         viewModelScope.launch {
-
             val geocodeList = visitDataList.map { async { naverRepository.reverseGeocode(it) } }.awaitAll()
-
-            var finishedCount = 0
-
 
             geocodeList.forEachIndexed { index, result ->
 
@@ -269,54 +265,37 @@ class EditCourseViewModel(private val repository: TMapRepository, private val na
                         requestResult.land?.number2?.takeIf { it.isNotEmpty() }?.let { visitDataList[index].address += " $it" }
                         requestResult.addition0?.value?.takeIf { it.isNotEmpty() }?.let { visitDataList[index].address += " $it" }
 
-                        if(visitDataList[index].name.isEmpty() && visitDataList[index].address!!.isNotEmpty()) {
-                            getSearch(visitDataList[index].address!!, visitDataList, finishedCount) { searchResult ->
-                                Log.d("SEARCH ", "SEARCH")
-                                visitDataList[index].name = searchResult
-                                finishedCount++
-                            }
-                        } else {
-                            finishedCount++
 
-                            if(finishedCount == visitDataList.size)
-                                emitVisitData(visitDataList)
+                        if(visitDataList[index].name.isEmpty() && visitDataList[index].address!!.isNotEmpty()) {
+                            val searchResult = getSearch(visitDataList[index].address!!)
+                            visitDataList[index].name = searchResult
                         }
                     }.onFailure {
                         visitDataList[index].address = ""
-                        finishedCount++
-
-                        if(finishedCount == visitDataList.size)
-                            emitVisitData(visitDataList)
                     }
                 }
             }
-
-            if(finishedCount == visitDataList.size)
-                emitVisitData(visitDataList)
+            emitVisitData(visitDataList)
         }
     }
 
-    private fun getSearch(query: String, visitDataList: MutableList<VisitData>, finishedCount: Int, callback: (String) -> Unit){
+    private suspend fun getSearch(query: String): String {
+        val searchResponse = naverRepository.getSearch(query)
 
-        viewModelScope.launch {
-            val searchResponse = naverRepository.getSearch(query)
-
-            searchResponse.onSuccess {
-                if(it.items.isNotEmpty()){
-                    callback(it.items[0].title)
-                } else {
-                    callback("")
-                }
-            }.onFailure {
-                callback("")
+        searchResponse.onSuccess {
+            return if (it.items.isNotEmpty()) {
+                it.items[0].title
+            } else {
+                ""
             }
-
-            if(finishedCount == visitDataList.size - 1)
-                emitVisitData(visitDataList)
+        }.onFailure {
+            return ""
         }
+        return ""
     }
 
     private suspend fun emitVisitData(visitDataList: MutableList<VisitData>){
+        Log.d("emit", "emit")
         _setVisitDataList.emit(visitDataList)
     }
 }
