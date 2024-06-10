@@ -193,6 +193,7 @@ class SearchViewModel(private val repository: FeedRepository, private val userRe
 
                     addFeedInfoData(feedListResponse)
                 } else if(type == "Personal"){
+                    Log.d("ASD", "${followPage}, ${lastPage}")
                     feedListResponse = repository.getPersonalFeedList(followPage, nextFeedId)
 
                     addFeedInfoData(feedListResponse)
@@ -263,8 +264,12 @@ class SearchViewModel(private val repository: FeedRepository, private val userRe
     private fun addFeedInfoData(feedListResponse: Result<VectoService.FeedPageResponse>){
         feedListResponse.onSuccess { feedPageResponse ->
 
+            nextFeedId = feedPageResponse.nextFeedId
+            lastPage = feedPageResponse.lastPage
+            followPage = feedPageResponse.nextPageFollowPage
+
             if(feedPageResponse.feeds.isEmpty() && !lastPage && !queryFlag) {
-                getFeedList("Normal")
+                getFeedList("Personal")
                 return
             }
 
@@ -273,10 +278,6 @@ class SearchViewModel(private val repository: FeedRepository, private val userRe
             }
 
             checkFollow(newFeedInfoWithFollow, feedPageResponse)
-
-            nextFeedId = feedPageResponse.nextFeedId
-            lastPage = feedPageResponse.lastPage
-            followPage = feedPageResponse.nextPageFollowPage
         }.onFailure {
             when(it.message){
                 ServerResponse.ACCESS_TOKEN_INVALID_ERROR.code -> {

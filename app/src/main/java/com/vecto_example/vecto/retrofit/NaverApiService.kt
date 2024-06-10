@@ -34,7 +34,6 @@ interface NaverApiService {
     ): Response<SearchResult>
 
 
-
     companion object {
         fun create(): NaverApiService {
             val retrofit = Retrofit.Builder()
@@ -91,7 +90,8 @@ interface NaverApiService {
     )
 
     data class SearchResult(
-        val items: List<Item>
+        val items: List<Item>,
+        val total: Int
     )
 
     data class Code(
@@ -123,6 +123,8 @@ interface NaverApiService {
     )
 
     data class Item(
-        val title: String
+        val title: String,
+        val mapx: Int,
+        val mapy: Int
     )
 }

@@ -294,8 +294,13 @@ class EditCourseViewModel(private val repository: TMapRepository, private val na
         return ""
     }
 
+    fun getSearch(){
+        viewModelScope.launch {
+            val searchResponse = naverRepository.getSearch("")
+        }
+    }
+
     private suspend fun emitVisitData(visitDataList: MutableList<VisitData>){
-        Log.d("emit", "emit")
         _setVisitDataList.emit(visitDataList)
     }
 }

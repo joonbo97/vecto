@@ -32,7 +32,7 @@ class NaverRepository(private val naverApiService: NaverApiService, private val 
         /*   검색   */
 
         return try {
-            val response = naverSearchService.getSearch(BuildConfig.NAVER_CLIENT_ID, BuildConfig.NAVER_CLIENT_SECRET, query, 5, 2)
+            val response = naverSearchService.getSearch(BuildConfig.NAVER_CLIENT_ID, BuildConfig.NAVER_CLIENT_SECRET, query, 5, 1)
 
             if(response.isSuccessful){
                 Log.d("getSearch", "SUCCESS: ${response.body()}")

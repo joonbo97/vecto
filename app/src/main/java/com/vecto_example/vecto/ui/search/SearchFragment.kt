@@ -129,8 +129,6 @@ class SearchFragment : Fragment(), MainActivity.ScrollToTop, FeedAdapter.OnFeedA
             }
 
             binding.noticeBarImage.setOnClickListener {
-                sharedPreferences.edit().putInt("noticeId", notice.id).apply()
-
                 setVisibility(false)
 
                 val intent = Intent(context, NoticeActivity::class.java)
